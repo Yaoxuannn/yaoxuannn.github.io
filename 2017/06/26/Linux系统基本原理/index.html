@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="简单了解一些Linux的系统原理(init), 等以后学了操作系统再来补充和更正吧~ 先来简单的了解知道个大概.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux系统基本原理(init)">
+<meta property="og:url" content="https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="简单了解一些Linux的系统原理(init), 等以后学了操作系统再来补充和更正吧~ 先来简单的了解知道个大概.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sys.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pro.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/taskStr.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/mem_alloc.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/page.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/fake.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/struct.png">
+<meta property="article:published_time" content="2017-06-26T18:40:07.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:41:51.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sys.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux系统基本原理(init)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&text=Linux系统基本原理(init)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&is_video=false&description=Linux系统基本原理(init)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux系统基本原理(init)&body=Check out this article: https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&name=Linux系统基本原理(init)&description=&lt;p&gt;简单了解一些Linux的系统原理(init), 等以后学了操作系统再来补充和更正吧~ 先来简单的了解知道个大概.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&t=Linux系统基本原理(init)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86-Linux"><span class="toc-number">1.</span> <span class="toc-text">操作系统的基本原理(Linux)</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux系统基本原理(init)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-06-26T18:40:07.000Z" class="dt-published" itemprop="datePublished">2017-06-26</time>
+        
+        (Updated: <time datetime="2020-11-30T01:41:51.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>简单了解一些Linux的系统原理(init), 等以后学了操作系统再来补充和更正吧~ 先来简单的了解知道个大概.</p>
+<span id="more"></span>
+
+<h2 id="操作系统的基本原理-Linux"><a href="#操作系统的基本原理-Linux" class="headerlink" title="操作系统的基本原理(Linux)"></a>操作系统的基本原理(Linux)</h2><p>先来在重复了无数遍的东西, 一个计算机由硬件做底层向上是: 操作系统(<code>内核 kernel</code>) , 由于直接的系统调用不适合编程, 所以有了诸多的库<strong>调用</strong>. 而调用就是使用&#x2F;载入别人写好的模块, 接着为了实现生产功能, 程序员面向这些库进行编程.当然也可以进行混合编程, 面对库和系统调用接口进行编程. 这就是我们静态看到的操作系统的状态.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sys.png" alt="sys"></p>
+<p>那么当系统运行起来, 程序在操作系统中跑起来的时候, 这又是什么状态呢.</p>
+<p>之前说过, 当进行系统调用的时候<code>CPU</code>根据指令执行工作,而指令又分成不同等级的(普通指令–环3, 特权指令–环0), 一般特权指令都是直接对硬件进行的操作, 如果一个程序可以随便调用, 那岂不是就会大乱 ? 那么如果这些程序需要进行硬件管理的操作怎么办呢? 那就调用系统接口进行实现.  </p>
+<p>这样指令排成队列一个一个的交给CPU去执行, 当出现了系统调用的时候, 程序就会等待内核将处理的结果交给程序. 那么此时 就要进行<strong>模式转换</strong>, 这是由程序发起的一次<strong>软中断</strong>实现的. 我们都知道操作系统划分为用户态和内核态, 或者叫模式吧, 那么在这次切换的时候, 程序运行就会从<code>用户模式 --&gt; 内核模式</code> . </p>
+<p>那么现在来说说内核的功用: 进程管理, 文件系统, 网络功能, 内存管理, 驱动程序, 安全</p>
+<p>当用户空间的程序需要用到以上这些功能的时候, 就要向内核发起调用来实现.</p>
+<p>这样, 我们的<code>CPU</code>就在执行普通指令和特权指令的过程中来回切换, 这个过程就是上面说的<strong>模式切换</strong>.</p>
+<p>事实上, 一般情况下, <code>CPU</code>是花费了更多的时间在用户模式的, 这因为只有用户模式的程序才具备生产能力.<code>(&gt;=70%)</code></p>
+<p>我们都知道, <code>Linux</code>是可以同时执行多任务的系统. 但是一个单核<code>CPU</code>同时又只能执行一个任务, 这种是怎么实现的呢?</p>
+<p>为了将有限的资源用在有着无限欲望的进程中, <code>CPU</code>采取了时间片的策略, 一个进程执行一段时间后就会执行另一个任务, 不管是否执行结束. 这样就会产生一个问题,有一些进程, 例如系统进程, 显然应该分配多点时间, 但一般的程序进程就不要占据太长时间了, 或者说, 多个进程在等待, 我该先走哪一个呢?</p>
+<p>这样我们就给进程加了一个优先级的标签, 当然, 一个进程的优先级再高, 他也不能占据着<code>CPU</code>不放 . 因此, 内核使用它进程管理的功能, 如果一个进程占用<code>CPU</code>的时间过长, 内核就会直接将他踢下去, 接着从后面排队的进程中选择一个上来, 这时候的选择仍然是根据优先级, 谁的优先级高谁就被替补上来. \</p>
+<p>在把一个进程踢下去的时候, 如果不对当前的进程进行执行上下文的状态进行保存, 那么下一次在再次执行的时候就又要从头再来了. 这些然是不合理的, 所以每一个进程在被切换下去的时候, 中间数据会放在<code>CPU</code>的寄存器中, 而指令指针永远指向下一个要执行的指令. 当再次执行到这个进程的时候, 就会进行<strong>恢复现场</strong>, 将数据再还回去.</p>
+<p>这个切换的过程是需要占用<code>CPU</code>的资源的, 所以当太多时, <code>CPU</code>会浪费时间在切换上, 当然这个时间的消耗是难免的.</p>
+<p>简单的理解, 进程是活动的实体, 运行中的程序的一个副本. 而程序就是一个静态的代码, 存在于磁盘上.</p>
+<p>所以说进程是存在活动周期的,  内核对每一个进程创建了一个元数据, 存储了这个进程的种种信息. 存储进程的结构体叫做<code>task struct</code>, 这些结构体是以链表的形式存储的,最终形成<code>task list</code></p>
+<p>在上面我们说用户代码是不能进行越权操作的, 但是谁也不能保证用户不会尝试编写这样的危险代码, 所以内核是有着非常严格的审查机制, 在不考虑漏洞的情况下, 任何时刻, 只要出现这样的越权情况出现, 中断被触发, <code>CPU</code>会立即唤醒内核.</p>
+<p>行吧, 接下来就来看看怎么创建一个进程</p>
+<p>像 上帝造人那样. 上帝并不想要关心人间事务, 于是他就仿造自己创造了亚当. 当系统启动时, 会先执行内核代码, 等待内核启动完毕时也就是内核接管一切的时候, 就由内核进行管理和调度 这就是第一个进程, 也就是过去<code>Linux</code>的总进程<code>init</code> 这个进程来创建子进程, 接着子进程会再创建子进程.</p>
+<p>父进程创建子进程, 使用<code>fork()</code>来创建, 这个是<code>Linux</code>的一个系统调用接口. 而<code>fork()</code>之后又会克隆自己的数据到子进程中, 这是另一个系统调用<code>clone()</code>. 也就是说, 在创建的时候, 父进程和子进程共享一个内存空间, 这个时候子进程的数据和父进程是一模一样的, 只要子进程不会修改自己的数据, 他就永远和自己的父进程共享同一个内存空间, 如果一旦出现了子进程修改数据的时候,就会复制一个到另外的内存空间(基于<code>CoW</code>), </p>
+<p>当进程被销毁的时候, 永远都是父进程存活而子进程死亡, 也就是<code>白发人送黑发人</code>.</p>
+<p>在实际的执行过程中, 子进程正常执行而父进程就会进入睡眠, 直到子进程结束父进程收拾掉子进程的残存资源后就会继续执行自己了</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pro.png" alt="pro"></p>
+<p>接下来再说说优先级的优化问题. </p>
+<p>进程存在优先级, 那么当有一千条进程在后面排队时, 因为在每一个结构体当中可以获取到每一个进程的优先级, 那么假设内核挨一个一个去查看, 就会进行完整的遍历, 那么当进程太多的时候就会变的很卡. </p>
+<blockquote>
+<p><strong>进程优先级</strong>:  </p>
+<p><code>0-139</code>: </p>
+<ul>
+<li><code>1-99</code> : 实时优先级  ( 数字越大优先级越高 )</li>
+<li><code>100-139</code>: 静态优先级  ( 数字越小优先级越高 )</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>为了便于管理,  <code>Linux</code>给这个分配了<code>Nice</code>值, 这个值的范围区间是从<code>-20</code>-<code>19</code>, 对应上面的<code>100-139</code>.</p>
+</blockquote>
+<p>上面说过, 一个进程是一个结构体, 那么这个结构体是什么样的呢 ?</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/taskStr.png" alt="taskStr"> </p>
+<ul>
+<li>state 状态</li>
+<li>thread_info 线程信息</li>
+<li>flags 标志位</li>
+<li>run_list tasks 任务列表</li>
+<li>mm 栈内存结构</li>
+<li>real_parent 真实的父进程</li>
+<li>tty </li>
+<li>fs files 文件描述符</li>
+<li>signal 持有的信号</li>
+<li>….</li>
+</ul>
+<p>而每一个功能又导向了一些子结构, 所以是十分复杂的.</p>
+<p>重要的话先说, <strong>每一个进程所拥有的内存都是虚拟的</strong>. </p>
+<p>物理内存只有一个, <code>CPU</code>只有一颗, 机器上有<code>n</code>个进程, 而且我们的进程不断的被创建和销毁, 也就意味着有内存不断的被分配和回收. 每一个进程在创建时, 都是内核在进行资源的分配, 由于不同进程对内存的大小是有区别的, 即使是同一个命令, 在数据不同的时候, 他所需要的内存也是不同的, (<code>e.g: cat anaconda-ks.cfg和cat /etc/service 后者会出现明显的卡顿</code>)  同样 内核也不知道该分给进程多少内存. 这个问题是这样解决的:</p>
+<p>最初整个内存中一定存在的一段是属于内核的, 接着一段是要分配给其他的进程的:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/mem_alloc.png" alt="mem_alloc"></p>
+<p>为了能够高效的分配内存, OS采取了这样的方法 :</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/page.png" alt="page"></p>
+<p>将剩下的内存进行分页, 每一个页的大小是<code>4K</code>, 这样一个一个页的分配给进程, 如果不够就再分配,所以这些的进程的内存组成, 其实是一个一个页拼接起来的.接着, 内核将这些伪装成是一个连续的, 大段内存. 实际上呢, 是虚拟的. 不仅如此, 内核还向进程描绘了一个很棒的前景.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/fake.png" alt="fake"></p>
+<p>每一个进程都以为除开内核就是自己, 其实实际上是用的时候在分配, 你用不到那么多就不给你, 也就是<strong>仅分配给所需要的</strong>. 每一个进程所分到的空间叫做<strong>线性地址空间</strong>, 而总共的内存叫做<strong>物理地址空间</strong>, 他们基本上是离散的对应的关系, 而这种映射关系由内核实现. 这种实现机制就叫做<strong>虚拟内存实现机制</strong>.</p>
+<p> 一个进程的内存构成是这样的: </p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/struct.png" alt="struct"> </p>
+<p>现在就来考虑一个进程的内存不够用了, 那么就要分配更多的内存给他. 内核开始在页中进行扫描, 使用<code>LRU</code>:最近最少使用算法. 一旦发现有页的使用最少, 就先把它挪出来, 当需要的时候就在把他给放回去, 但是这个时候, 回来的页已经不再是原来的那个了, 还记得上面说的进程的<code>task_struct</code>嘛, 这里面存放了映射关系的表, 在每一次进程访问内存的时候, 内核都要做一次转换, 将虚拟的指向物理上的. 这么一个过程由一个<code>CPU</code>上专门的硬件来负责, 叫做<code>mmu : Memory Management Unit</code> . 当一个进程被加载到内存上的时候, 我们就把这个映射关系放到<code>mmu</code>上进行实时的转换. 而进行分配的时候, <code>mmu</code>中的映射关系就要进行重新映射, 这个时候才能访问到真实的内存.</p>
+<p>当进程访问的资源不在内存中的时候, 就要向内核发起调用请求从磁盘装载进内存,这个时候就发生了<strong>缺页异常</strong>. </p>
+<p>尽管前面说过,  每一个进程都以为整个内存空间只有自己, 但是我们又需要进行进程间的通信(<code>IPC: Inter Process Communication</code>) 既然进程彼此不知道其他的存在, 那么我们怎么使他们进行通信啊? 如果是同一主机: 我们有多种方法, 共享内存 信号 信号量等等… 如果是不同主机进行进程间通信, <code>rpc: remote procecure call</code>远程进程调用 , <code>socket</code>套接字.</p>
+<p><strong>Linux的内核多任务是抢占式的多任务</strong></p>
+<p>Linux有多种进程类型: </p>
+<ul>
+<li>守护进程: 在系统引导过程中启动的进程, 跟终端无关的进程;</li>
+<li>前台进程(交互式): 跟终端有关, 通过终端启动的进程.<ul>
+<li>注意: 也可以把前台启动的进程送到后台, 以守护模式运行</li>
+</ul>
+</li>
+</ul>
+<p>接下来再来简单提一下 进程的状态</p>
+<p>运行态: <code>running</code>  就绪态: <code>ready</code> 睡眠态: <code>sleep</code> ( 分为可中断和不可中断的 ) 停止态: 暂停于内存中 ,但不会被调度, 除非手动启动 僵死态: <code>zombie</code> </p>
+<p>最后, 说说进程分类: </p>
+<ul>
+<li>CPU-Bound <code>cpu</code>密集型</li>
+<li>IO-Bound <code>io</code>密集型</li>
+</ul>
+<p>一般都是交互式的进程偏<code>io</code>密集型的.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86-Linux"><span class="toc-number">1.</span> <span class="toc-text">操作系统的基本原理(Linux)</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&text=Linux系统基本原理(init)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&is_video=false&description=Linux系统基本原理(init)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux系统基本原理(init)&body=Check out this article: https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&title=Linux系统基本原理(init)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&name=Linux系统基本原理(init)&description=&lt;p&gt;简单了解一些Linux的系统原理(init), 等以后学了操作系统再来补充和更正吧~ 先来简单的了解知道个大概.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/&t=Linux系统基本原理(init)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

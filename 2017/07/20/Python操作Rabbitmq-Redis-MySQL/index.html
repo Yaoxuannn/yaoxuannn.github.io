@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Python后端一锅端.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python操作Rabbitmq, Redis, MySQL">
+<meta property="og:url" content="https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Python后端一锅端.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://www.rabbitmq.com/img/RabbitMQ-logo.svg">
+<meta property="og:image" content="https://www.rabbitmq.com/img/tutorials/python-one-overall.png">
+<meta property="og:image" content="https://www.rabbitmq.com/img/tutorials/python-two.png">
+<meta property="og:image" content="https://www.rabbitmq.com/img/tutorials/exchanges.png">
+<meta property="og:image" content="https://www.rabbitmq.com/img/tutorials/bindings.png">
+<meta property="og:image" content="https://www.rabbitmq.com/img/tutorials/python-four.png">
+<meta property="og:image" content="https://www.rabbitmq.com/img/tutorials/python-five.png">
+<meta property="og:image" content="https://www.rabbitmq.com/img/tutorials/python-six.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/820332/201601/820332-20160124221240875-1959295808.png">
+<meta property="og:image" content="http://www.sqlalchemy.org/img/sqla_logo.png">
+<meta property="article:published_time" content="2017-07-20T15:54:07.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="RabbitMQ">
+<meta property="article:tag" content="SQLAlchemy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.rabbitmq.com/img/RabbitMQ-logo.svg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python操作Rabbitmq, Redis, MySQL</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/07/21/CentOS7-systemd/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&text=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&is_video=false&description=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python操作Rabbitmq, Redis, MySQL&body=Check out this article: https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&name=Python操作Rabbitmq, Redis, MySQL&description=&lt;p&gt;Python后端一锅端.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&t=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-%E2%80%93-RabbitMQ"><span class="toc-number">1.</span> <span class="toc-text">消息队列 – RabbitMQ</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pika-%E2%80%93-RabbitMQ%E5%AE%98%E6%96%B9%E6%8E%A8%E8%8D%90%E7%9A%84%E8%BF%9E%E6%8E%A5%E5%99%A8"><span class="toc-number">1.1.</span> <span class="toc-text">pika – RabbitMQ官方推荐的连接器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis"><span class="toc-number">2.</span> <span class="toc-text">Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5"><span class="toc-number">2.1.</span> <span class="toc-text">连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text">操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#String"><span class="toc-number">2.2.1.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Hash"><span class="toc-number">2.2.2.</span> <span class="toc-text">Hash</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#List"><span class="toc-number">2.2.3.</span> <span class="toc-text">List</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#set"><span class="toc-number">2.2.4.</span> <span class="toc-text">set</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#sorted-list"><span class="toc-number">2.2.5.</span> <span class="toc-text">sorted list</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#others"><span class="toc-number">2.2.6.</span> <span class="toc-text">others</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E9%81%93"><span class="toc-number">2.3.</span> <span class="toc-text">管道</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sqlalchemy"><span class="toc-number">3.</span> <span class="toc-text">Sqlalchemy</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5-1"><span class="toc-number">3.1.</span> <span class="toc-text">连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%A1%A8"><span class="toc-number">3.2.</span> <span class="toc-text">创建表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5"><span class="toc-number">3.3.</span> <span class="toc-text">增删改查</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python操作Rabbitmq, Redis, MySQL
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-07-20T15:54:07.000Z" class="dt-published" itemprop="datePublished">2017-07-20</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>, <a class="p-category" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a>, <a class="p-category" href="/tags/Redis/" rel="tag">Redis</a>, <a class="p-category" href="/tags/SQLAlchemy/" rel="tag">SQLAlchemy</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Python后端一锅端.</p>
+<span id="more"></span>
+
+<h2 id="消息队列-–-RabbitMQ"><a href="#消息队列-–-RabbitMQ" class="headerlink" title="消息队列 – RabbitMQ"></a>消息队列 – RabbitMQ</h2><p><img src="https://www.rabbitmq.com/img/RabbitMQ-logo.svg" alt="rabbit"></p>
+<p>要明确个的一点是, 所有的消息队列都是<strong>异步</strong>的.</p>
+<p>最简单的一种消息队列模型就是P2P的模式, 一个生产者, 一个消费者, 通过一个队列进行通信.</p>
+<p><img src="https://www.rabbitmq.com/img/tutorials/python-one-overall.png" alt="p2p"></p>
+<p>这种模型有这样的特点: 只有一个消费者和一个生产者, 并且消息一旦被消费就不再存在于消息队列中.当然, 它也是异步的, 生产者在发送完消息之后就可以干自己的事情了.</p>
+<p>进阶一点的模型是这样的:</p>
+<p><img src="https://www.rabbitmq.com/img/tutorials/python-two.png" alt="work queues"></p>
+<p>这时我们的任务队列就支持多个工作人员进行分担处理. 一旦任务较为复杂(比如是一个调整图像大小, 渲染PDF等等), 单个消费者进行起来也比较耗时, 而且任务发送的比较密集, 这时就需要进行任务的分担. 当第二条任务发送过来, 而第一个任务还没有结束的时候(C1忙碌, 处于阻塞的状态), C2就会来接手这个任务.</p>
+<p>此时应该出现了一些问题了. 如果我们的C1和C2忙碌的工作着, 这个时候突然断电了! 我们的仍然滞留在消息队列中的消息怎么办呢? 因此这里我们就引入一种<strong>确认机制</strong>以及消息的<strong>持久化</strong>. </p>
+<p>确认机制和TCP的ACK确认特别相像, 只要消息队列收到了确认说明就会将该消息从队列中移除 这样我们就可以确保在消费者死亡的情况下, 任务也不会丢失.</p>
+<p>另外, 断电的时候我们的消息队列也会停止, 任务依旧会丢失.</p>
+<p>这个时候就要将我们的队列中标记成永久的任务进行磁盘写入 ,在下一次加载的时候进行读取载入, 从而恢复队列.</p>
+<p>至此, 我们的消息队列仍然不完整. 因为他缺少一个重要的部件: <strong>消息交换机</strong>(<code>exchange</code>), 或者叫他控制器, 随你怎么叫, 现在的模型变成了这个样子:</p>
+<p><img src="https://www.rabbitmq.com/img/tutorials/exchanges.png" alt="exchange"></p>
+<p>所有的信息都会经过这个<code>x</code>来进行路由: 根据发送过来的消息上带着的路由标识, 来决定该消息发向哪一个队列. 不仅如此, 我们还可以指定不同的交换类型, 来很方便的进行消息的调度.  此时这些队列都是有名字的队列(要不然向发送对象怎么进行路由啊) 所以为了更加简化这个操作,我们采取随机队列名的方式. 但是这样的话, 我们就不知道怎么进行将信息发送到指定的对象了. 所以这里就又多了一个<strong>绑定</strong>的概念:</p>
+<p><img src="https://www.rabbitmq.com/img/tutorials/bindings.png" alt="binding"></p>
+<p>这样我就可以很简单的实现<code>广播</code>了. 不仅这样, 我们还实现了消息队列附加到消息交换机上.</p>
+<p>现在已经是一个比较标准的消息队列了! 借由routing_key的特性,我们又可以实现很多不同种的路由交换了:</p>
+<p>比如:</p>
+<p><img src="https://www.rabbitmq.com/img/tutorials/python-four.png" alt="direct"></p>
+<p>在上图的实例中, 我们假象出一种日志发送的场景, 我们一个的队列用来发送所有级别的日志, 而单独提供一条队列仅仅的发送错误级别高的(也就是error).</p>
+<p>最后, 再看一下更加深入一点的消息过滤广播模式, 这种模式仍然基于我们上面的routing_key, 只不过我们把这个称作<code>topic</code> :</p>
+<p><img src="https://www.rabbitmq.com/img/tutorials/python-five.png" alt="topic"></p>
+<p>消息队列另一个高级一点的用法就是远程的过程调用(Remote Process Call, RPC)  这个的组成需要一个客户机和一个可以扩展的RPC服务器: </p>
+<p><img src="https://www.rabbitmq.com/img/tutorials/python-six.png" alt="RPC"></p>
+<p>首先说下回调队列是个什么东西. 上图中的随机队列(就是那个返回给客户的)就是回调队列, 这里面还有一个属性值得关注, 就是相关编号. 这是因为为了能够清晰的我知道哪一个回应对应之前的请求, 不仅如此,如果出现不存在的id, 我们可以进行优雅的忽略或者丢弃. 这种情况是怎么会出现的呢? 当服务端发送回来应答但是在收到客户的应答之前却挂了. 在下一次启动时就会进行重复的发送.</p>
+<p>我们的RPC将像这样工作：</p>
+<ul>
+<li>当客户端启动时, 它创建一个匿名独占回调队列</li>
+<li>对于RPC请求，客户端发送一个具有两个属性的消息： reply_to: 它被设置为回调队列. correlation_id: 它被设置为每个请求的唯一值.</li>
+<li>请求被发送到rpc_queue队列</li>
+<li>RPC worker（aka：server）正在等待队列上的请求. 当请求出现时, 它将执行该作业, 并使用reply_to字段中的队列将结果发回给客户端</li>
+<li>客户端等待回调队列中的数据.当信息出现时,它检查correlation_id属性. 如果它与请求中的值相匹配，则返回对应用程序的响应</li>
+</ul>
+<p>至此消息队列(RabbitMQ)的基本就是这样了.</p>
+<p>接下来来看一下Python是怎么来和Rabbit服务器进行连接和交互的.</p>
+<h3 id="pika-–-RabbitMQ官方推荐的连接器"><a href="#pika-–-RabbitMQ官方推荐的连接器" class="headerlink" title="pika – RabbitMQ官方推荐的连接器"></a>pika – RabbitMQ官方推荐的连接器</h3><p>RabbitMQ的架构大体是这样:</p>
+<p><img src="http://images2015.cnblogs.com/blog/820332/201601/820332-20160124221240875-1959295808.png" alt="rabbitMQ"></p>
+<p>其中几个重要概念: (其中有一些在上面也说过了)</p>
+<p>​	Broker：简单来说就是消息队列服务器实体.</p>
+<p>　　Exchange：消息交换机,它指定消息按什么规则,路由到哪个队列.</p>
+<p>　　Queue：消息队列载体,每个消息都会被投入到一个或多个队列.</p>
+<p>　　Binding：绑定,它的作用就是把exchange和queue按照路由规则绑定起来.</p>
+<p>　　Routing Key：路由关键字,exchange根据这个关键字进行消息投递.</p>
+<p>　　vhost：虚拟主机,一个broker里可以开设多个vhost,用作不同用户的权限分离.</p>
+<p>　　producer：消息生产者,就是投递消息的程序.</p>
+<p>　　consumer：消息消费者,就是接受消息的程序.</p>
+<p>　　channel：消息通道,在客户端的每个连接里,可建立多个channel,每个channel代表一个会话任务.</p>
+<p>消息队列的使用过程,如下：</p>
+<ol>
+<li>客户端连接到消息队列服务器,打开一个channel.</li>
+<li>客户端声明一个exchange,并设置相关属性.</li>
+<li>客户端声明一个queue,并设置相关属性.</li>
+<li>客户端使用routing key,在exchange和queue之间建立好绑定关系.</li>
+<li>客户端投递消息到exchange.</li>
+<li>exchange接收到消息后,就根据消息的key和已经设置的binding,进行消息路由,将消息投递到一个或多个队列里.</li>
+</ol>
+<p><strong>pika</strong>是一个第三方的RMQ连接器, 使用起来也很方便. 常规的步骤和上面使用消息队列的方法是一样的.</p>
+<p>一个最简单的发布者例子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pika</span><br><span class="line"></span><br><span class="line">connection = pika.BlockingConnection(pika.ConnectionParameters(host=<span class="string">&quot;localhost&quot;</span>))</span><br><span class="line"></span><br><span class="line">channel = connection.channel()</span><br><span class="line"></span><br><span class="line">channel.queue_declare(queue=<span class="string">&#x27;hello&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">publish</span>(<span class="params">message</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;sending msg: &#123;0&#125;&quot;</span>.<span class="built_in">format</span>(message))</span><br><span class="line">    channel.basic_publish(exchange=<span class="string">&#x27;&#x27;</span>,</span><br><span class="line">                          routing_key=<span class="string">&#x27;&#x27;</span>,</span><br><span class="line">                          body=message)</span><br><span class="line"></span><br><span class="line">publish(<span class="string">&quot;This is a msg.&quot;</span>)</span><br><span class="line">connection.close()</span><br></pre></td></tr></table></figure>
+
+<p>对应的订阅者例子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pika</span><br><span class="line"></span><br><span class="line">connection = pika.BlockingConnection(pika.ConnectionParameters(host=<span class="string">&#x27;localhost&#x27;</span>))</span><br><span class="line"></span><br><span class="line">channel = connection.channel()</span><br><span class="line"></span><br><span class="line">channel.queue_declare(queue=<span class="string">&#x27;hello&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;[*] waiting for logs.&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">callback</span>(<span class="params">ch, method, properties, body</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[*] &#123;0&#125;&quot;</span>.<span class="built_in">format</span>(body.decode(<span class="string">&quot;utf-8&quot;</span>)))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">channel.basic_consume(callback, queue=<span class="string">&#x27;hello&#x27;</span>, no_ack=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">channel.start_consuming()</span><br></pre></td></tr></table></figure>
+
+<p>这就对应最简单的那一种P2P的模型. 一个订阅者和一个发布者.</p>
+<p>那么如何使用pika来进行持久化呢? 很简单, 如果要实现队列的持久化, 只需要在声明的时候声明一下<code>durable</code>属性就可以了: </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">channel.queue_declare(queue=<span class="string">&quot;queueName&quot;</span>, durable=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<p>但是, 这只能保住队列的持久化, 却无法使得队列中的消息保持. </p>
+<p>如果想要使得消息保持呢? 之前就说了我们只有把想要持久化的消息才保留, 因此我们在发送消息的时候就要明确的说:”这个消息是要持久化的!” 这样的一个功能的实现就是依靠消息的发送类型:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">channel.basic_publish(exchange=<span class="string">&#x27;&#x27;</span>,</span><br><span class="line">                      routing_key=<span class="string">&#x27;dest&#x27;</span>, <span class="comment"># 这个其实就是消息的目的地</span></span><br><span class="line">                      body=<span class="string">&#x27;Hello world&#x27;</span>,</span><br><span class="line">                      properties=pika.BasicProperties(</span><br><span class="line">                          delivery_mode=<span class="number">2</span>,  <span class="comment"># make the msg persistent, 通过设置模式为2来告诉RabbitMQ持久化(默认是1, 不持久化)</span></span><br><span class="line">                      ))</span><br></pre></td></tr></table></figure>
+
+<p>你注意到了, 在上面的订阅者的那里有一个<code>no_ack</code>的选项设定成了<code>True</code> 这个意思就是说, 不进行收到检查, 也即是说不向服务端发送确认token. 这样所有的消息就会在发送出去之后从队列中消失.</p>
+<p>如果将该语句注释掉, 情况就大不一样了, 订阅者必须在每次收到消息之后进行确认回复, 否则. <strong>消息会永久留在队列中</strong>, 因为服务端认为该消息没有被客户端收到.</p>
+<p>这个时候就要在客户端的回调函数中加上这样一条语句: ( 手动发送一条 )</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ch.basic_ack(delivery_tag=method.delivery_tag)</span><br></pre></td></tr></table></figure>
+
+<p>接着如果我们开了两个消费者和一个生产者的话, RabbitMQ已经默认实现均衡分配任务, 但是假如说我们的任务是偶数耗时长而奇数任务很轻松的话, 就会造成一个消费者疯狂的工作, 另一只就很轻松.</p>
+<p>为了解决这个问题也就是每一个消费者都只有一个固定的任务量, 当到达这个限度的时候, 就将后来的任务发送给下一个消费者. 这个任务量我们可以把它叫做服务质量(QoS):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">channel.basic_qos(prefetch_count=<span class="number">1</span>)  <span class="comment"># Let each consumer can only handle one msg per time, 这样每一个worker都只能最大同时执行一个任务了</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>重要提示:如果你使用了no_ack选项, 那么这个功能会失效! 因为这是基于客户应答来判断当前消费者的情况的.</strong></p>
+</blockquote>
+<p>接着我们再来看一下上面的路由交换功能实现. 在上面说消息保持的时候, 代码段中由有一个<code>routing_key</code>这个东西就决定这路由的转发方向, 所以我们可以通过这个实现消息的转发. </p>
+<p>来直接看这么一个日志记录的示例:</p>
+<p>发送端:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> pika</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">conn = pika.BlockingConnection(pika.ConnectionParameters(host=<span class="string">&quot;localhost&quot;</span>))</span><br><span class="line"></span><br><span class="line">channel = conn.channel()</span><br><span class="line"></span><br><span class="line">channel.exchange_declare(exchange=<span class="string">&quot;log&quot;</span>, <span class="built_in">type</span>=<span class="string">&quot;direct&quot;</span>) <span class="comment"># 注意这里使用的消息发送类型是direct</span></span><br><span class="line"></span><br><span class="line">levels = [<span class="string">&#x27;info&#x27;</span>, <span class="string">&#x27;warning&#x27;</span>, <span class="string">&#x27;error&#x27;</span>]</span><br><span class="line"></span><br><span class="line">logs = [<span class="string">&quot;You system has to restart.&quot;</span>, <span class="string">&quot;You PyCharm will shut down&quot;</span>, <span class="string">&quot;GoodBye, administrator.&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">20</span>):</span><br><span class="line">    level = levels[random.randint(<span class="number">0</span>, <span class="number">2</span>)]</span><br><span class="line">    log = logs[random.randint(<span class="number">0</span>,<span class="number">2</span>)]</span><br><span class="line">    channel.basic_publish(exchange=<span class="string">&#x27;log&#x27;</span>,</span><br><span class="line">                          routing_key=level,</span><br><span class="line">                          body=log)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Send msg [&#123;0&#125;] &#123;1&#125;&quot;</span>.<span class="built_in">format</span>(level, log))</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+
+<p>接收端:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pika</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">conn = pika.BlockingConnection(pika.ConnectionParameters(host=<span class="string">&quot;localhost&quot;</span>))</span><br><span class="line"></span><br><span class="line">channel = conn.channel()</span><br><span class="line"></span><br><span class="line">channel.exchange_declare(exchange=<span class="string">&#x27;log&#x27;</span>,</span><br><span class="line">                         <span class="built_in">type</span>=<span class="string">&#x27;direct&#x27;</span>)</span><br><span class="line"></span><br><span class="line">queue_name = channel.queue_declare(exclusive=<span class="literal">True</span>).method.queue</span><br><span class="line"></span><br><span class="line">level = <span class="string">&#x27;&#x27;</span>.join(sys.argv[<span class="number">1</span>:]) <span class="keyword">or</span> <span class="string">&#x27;info&#x27;</span></span><br><span class="line"></span><br><span class="line">channel.queue_bind(exchange=<span class="string">&#x27;log&#x27;</span>,</span><br><span class="line">                   queue=queue_name, <span class="comment"># 根据执行时不同的参数, 会绑定不同的队列</span></span><br><span class="line">                   routing_key=level)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;[*] waiting for logs.(&#123;0&#125;)&quot;</span>.<span class="built_in">format</span>(level))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">callback</span>(<span class="params">ch, method, properties, body</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[x] %r:%r&quot;</span> % (method.routing_key, body))</span><br><span class="line"></span><br><span class="line">channel.basic_consume(callback, queue=queue_name, no_ack=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">channel.start_consuming()</span><br></pre></td></tr></table></figure>
+
+<p>这样指明就可以只收到客户想要的类型数据了.</p>
+<p>最后一个, 也就是基于topic的消息过滤广播模式, 事实上也就是上面这一种的变体. 所以在代码上也没什么特别的. 唯一的不同就是type改成<code>topic</code>就行.</p>
+<p>最后一种应用, 在说具体的实现前, 我们先来把消息的几个常见属性列举一下(属性一共有14个, 但是大部分都很少使用)</p>
+<blockquote>
+<p><strong>delivery_mode:</strong> 将消息标记成持久(也就是2)或者transient(任何其他值), 我们在之前说消息持久化的时候提到过这个属性 em? </p>
+<p>**content_type: **用于描述MIME的编码, 现在流行常见也就是<code>application/json</code> </p>
+<p>**reply_to: **用于命名回调队列. (和 RPC 相关 .这个待会我们会说)</p>
+<p>**correlation_id: **( 和RPC相关 ) 用于将RPC响应与请求相关联.</p>
+</blockquote>
+<p>由于我在瞎折腾, 关于RPC的具体实现就省略了吧( 不过基础功能实现了!我只是想再扩展通用化一下(｡・&#96;ω´･) ).</p>
+<h2 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h2><p>有关Redis的基本使用, 由于以前有过使用并且写了一个<a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/05/21/First2Redis/">简单的上手使用文档</a>.</p>
+<p>现在就直接来看实现啦: (这里使用的是**<code>redis-py</code>**库)</p>
+<h3 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h3><p>连接有两种实现方式.</p>
+<p>第一种: – <strong>直接连接</strong> </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"></span><br><span class="line">r = redis.Redis(host=<span class="string">&#x27;localhost&#x27;</span>) <span class="comment"># 直接进行连接</span></span><br><span class="line">r.<span class="built_in">set</span>(<span class="string">&quot;foo&quot;</span>, <span class="string">&#x27;test&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(r.get(<span class="string">&quot;foo&quot;</span>).decode(<span class="string">&quot;utf-8&quot;</span>)) <span class="comment"># 在Python3中, 所以的socket传输都是byte</span></span><br><span class="line"><span class="comment"># test</span></span><br></pre></td></tr></table></figure>
+
+<p>但是在使用redis的场景中, 连接是一件很常见事情, 有可能会有大量的连接活动进行.而这样的方式显然是很低效的. 因此一种更常见的连接实现是这样的:</p>
+<p>第二种: 使用<strong>连接池</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"></span><br><span class="line">pool = redis.ConnectionPool(host=<span class="string">&#x27;localhost&#x27;</span>, max_connections=<span class="number">10</span>)</span><br><span class="line"></span><br><span class="line">r = redis.Redis(connection_pool=pool)</span><br><span class="line">r.<span class="built_in">set</span>(<span class="string">&quot;test&quot;</span>, <span class="string">&quot;foo&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(r.get(<span class="string">&quot;test&quot;</span>).decode(<span class="string">&quot;utf-8&quot;</span>)) </span><br></pre></td></tr></table></figure>
+
+<p>这样就通过一个一个连接池来进行所有连接的管理, 从而避免每次连接建立, 释放连接的开销 , 并且由于每个Redis实例都会维护自己的连接池, 所以这样也实现 多个Redis实例来共享一个连接池.</p>
+<h3 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h3><h4 id="String"><a href="#String" class="headerlink" title="String"></a>String</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set</span>(name, value, ex=<span class="literal">None</span>, px=<span class="literal">None</span>, nx=<span class="literal">False</span>, xx=<span class="literal">False</span>)</span><br><span class="line"><span class="comment"># 设置接口:</span></span><br><span class="line"><span class="comment"># ex: 过期时间(秒)</span></span><br><span class="line"><span class="comment"># px: 过期时间(毫秒)</span></span><br><span class="line"><span class="comment"># nx: name不存在的时候才执行操作</span></span><br><span class="line"><span class="comment"># xx: name存在时进行操作</span></span><br><span class="line">get(name)</span><br><span class="line"><span class="comment"># 获取接口</span></span><br></pre></td></tr></table></figure>
+
+<p>后面的一些参数也可以有单独的接口来设置:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">setnx() <span class="comment"># 相当于是nx=True</span></span><br><span class="line">setex() <span class="comment"># 相当于是ex=True</span></span><br><span class="line">psetex(name,time_ms, value) <span class="comment"># 设置过期时间的快速接口, 这里的时间单位是毫秒, 同样支持timedelta</span></span><br></pre></td></tr></table></figure>
+<p>多个的设置和获取基本和<code>redis</code>的原生接口是一样的:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mset(*args, **kwargs)</span><br><span class="line"><span class="comment"># 使用起来就像这样:</span></span><br><span class="line"><span class="comment"># mset(k1=&#x27;v1&#x27;, k2=&#x27;v2&#x27;)</span></span><br><span class="line"><span class="comment"># 或者:</span></span><br><span class="line"><span class="comment"># mset(&#123;&#x27;k1&#x27;: &#x27;v1&#x27;, &#x27;k2&#x27;: &#x27;v2&#x27;&#125;)</span></span><br><span class="line">mget(keys, *args)</span><br><span class="line"><span class="comment"># 就像这样:</span></span><br><span class="line"><span class="comment"># mget(&#x27;k1&#x27;, &#x27;k2&#x27;)</span></span><br><span class="line"><span class="comment"># 或者:</span></span><br><span class="line"><span class="comment"># mget[&#x27;k1&#x27;, &#x27;k2&#x27;]</span></span><br></pre></td></tr></table></figure>
+
+<p>还有一些多功能的获取和设置:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">getset(name, value)</span><br><span class="line"><span class="comment"># 设置一个新值的时候, 同时返回当前的值</span></span><br><span class="line">r.<span class="built_in">set</span>(<span class="string">&quot;k1&quot;</span>, <span class="string">&quot;v1&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(r.getset(<span class="string">&quot;k1&quot;</span>, <span class="string">&#x27;v2&#x27;</span>)) <span class="comment"># &quot;v1&quot;</span></span><br><span class="line"><span class="built_in">print</span>(r.get(<span class="string">&quot;k1&quot;</span>)) <span class="comment"># &quot;v2&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>范围操作: ( 基本和redis的操作是一样的, 略过 )</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">getrange(key,start,end)</span><br><span class="line">setrange(name,offset,value)</span><br></pre></td></tr></table></figure>
+
+<p>运算函数: </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">incr(self, name, amount=<span class="number">1</span>) <span class="comment"># 做一个自增操作, 如果name不存在, 那么创建name = amount</span></span><br><span class="line"><span class="comment"># 这里的amount必须是整数 该函数和incrby等价</span></span><br><span class="line">incrbyfloat(self,name,amount=<span class="number">1.0</span>) <span class="comment"># 和incr使用起来没有什么不同, 只不过支持小数</span></span><br></pre></td></tr></table></figure>
+
+<p>如果对一个不支持运算的字符进行运算会出现: <code>redis.exceptions.ResponseError: value is not an integer or out of range</code>.</p>
+<p>如果要在已经存在的值后面进行插入操作, 就是<code>append(key,value)</code> 接口都设置的很好使用</p>
+<h4 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h4><p>和redis的哈希操作基本保持一致, 其实大部分的函数执行都是通过Socket远端过程调用( :废话 (｀⌒´メ) )</p>
+<p>这些最基本的接口签名列举在下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">hset(name,key,value)</span><br><span class="line">hmset(name, mapping)</span><br><span class="line"><span class="comment"># mapping 是指字典:</span></span><br><span class="line"><span class="comment"># 使用起来的一个示例是这样:</span></span><br><span class="line"><span class="comment"># hmset(&#x27;user:1&#x27;, &#123;&#x27;number&#x27;: &#x27;123456&#x27;, &#x27;passwd&#x27;: &#x27;8Q7N03TCksw5o1&#x27;&#125;)</span></span><br><span class="line">hget(name, key)</span><br><span class="line">hmget(name, keys, *args)</span><br><span class="line"><span class="comment"># 支持多种的方式的获取:</span></span><br><span class="line"><span class="comment"># hmget(&#x27;user:1&#x27;, [&#x27;number&#x27;, &#x27;passwd&#x27;]) 或者 hmget(&#x27;user:1&#x27;, &#x27;number&#x27;, &#x27;passwd&#x27;)</span></span><br><span class="line"><span class="comment"># 和上面一样, 可以加上nx这样的标志</span></span><br><span class="line"><span class="comment"># 比如: hsetnx(name,key,value) # 只有不存在的时候才会进行添加</span></span><br><span class="line">hgetall(name)</span><br><span class="line"><span class="comment"># 获取所有的键值对 字典返回</span></span><br></pre></td></tr></table></figure>
+
+<p>接着就是一些辅助类的接口:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">hlen(name) <span class="comment"># 获取一个name对应的hash中所有的键值的个数</span></span><br><span class="line">hkeys(name)</span><br><span class="line">hvals(name) <span class="comment"># 返回所有的Key或者Val, list的形式返回</span></span><br><span class="line">hexists(name, key) </span><br><span class="line">hdel(name, *keys) <span class="comment"># 删除一个或者n个键值对</span></span><br><span class="line">hincrby(name, key, amount=<span class="number">1</span>)</span><br><span class="line">hincrbyfloat(name, key, amount=<span class="number">1.0</span>) <span class="comment"># 使用规则都和上面字符串的操作是一样的, 不再赘述</span></span><br></pre></td></tr></table></figure>
+
+<p>最后再说两个Hash迭代的接口:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hscan(name, cursor=<span class="number">0</span>, <span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这个是增量式的迭代获取, 对于数据大的数据很有用, 因为这是分片获取的数据, 并非一次性将所有的数据读取完, 他的参数也基本和redis原生的接口保持一致性.</p>
+<blockquote>
+<p>关于这个hscan方法, 在使用的时候你可能会有疑问: 为什么我的cursor始终是0. 关于这个问题.我在使用scan的时候是正常的, 但是一使用hscan的时候就始终都会一次性的把所有的键遍历一遍. 后续解决</p>
+</blockquote>
+<p>封装了一层返回迭代器的方法: <code>hscan_iter</code> 通过封装hscan来创建生成器 由于是二次封装, 因此参数更精简.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hscan_iter(name, <span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>)</span><br><span class="line"><span class="comment"># for item in r.hscan_iter(&#x27;xx&#x27;):</span></span><br><span class="line"><span class="comment">#    print(item)</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="List"><a href="#List" class="headerlink" title="List"></a>List</h4><p>基本上都很好记, 过一遍就行了:</p>
+<p>基本的操作:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">r.lpush(name, *values) <span class="comment"># 当然反过来就是 rpush(name, *values)</span></span><br><span class="line"><span class="comment"># 同样带上标志位的版本:</span></span><br><span class="line">r.lpushx(name, value) <span class="comment"># 只有name已经存在的时候, 值添加到列表的最左侧 (rpushx)</span></span><br><span class="line"><span class="comment"># 如果是多个值同时插入, 那么最后的存储顺序将会反过来</span></span><br><span class="line">linsert(name, where, refvalue, value) <span class="comment"># 在一个标杆值的前面或者后面插入一个值, 这个where只有两个值, AFTER 和 BEFORE, 接着就是参考值, 如果没有就会返回-1</span></span><br><span class="line">lset(name, index, value) <span class="comment"># 对某一个索引的位置进行重新赋值</span></span><br><span class="line">lrem(name, value, num) <span class="comment"># 删除指定位置的值</span></span><br><span class="line">lpop(name) <span class="comment"># 这里的l可以理解成left, 所以也有rpop(name), 删除对应方向上的元素并返回之</span></span><br><span class="line">lrange(name, start. end)</span><br><span class="line"><span class="comment"># 分片获取数据.</span></span><br><span class="line"><span class="comment"># 获取全部数据就是 lrange(name, 0, -1) [从第0个到最后一个]</span></span><br></pre></td></tr></table></figure>
+
+<p>辅助方法:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">llen(name) <span class="comment"># 返回长度</span></span><br><span class="line">ltrim(name, start, end) <span class="comment"># 仅保留start-end之间的值</span></span><br><span class="line">lindex(name, index) <span class="comment"># 相当于是数组取下标一样使用就行</span></span><br></pre></td></tr></table></figure>
+
+<p>堵塞操作:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">blpop(keys,timeout=<span class="number">0</span>) <span class="comment"># 将多个列表排列，按照从左到右去pop对应列表的元素</span></span><br><span class="line">brpoplpush(src, dst, timeout=<span class="number">0</span>) <span class="comment"># 从一个列表的右侧, 将其添加到另一个表的左侧</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="set"><a href="#set" class="headerlink" title="set"></a>set</h4><p>集合的操作:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">sadd(name,values)</span><br><span class="line"><span class="comment"># name对应的集合中添加元素</span></span><br><span class="line">scard(name)</span><br><span class="line">获取name对应的集合中元素个数</span><br><span class="line">sdiff(keys, *args)</span><br><span class="line"><span class="comment"># keys中去掉和后面的集合所拥有的元素集合</span></span><br><span class="line">sdiffstore(dest, keys, *args)</span><br><span class="line"><span class="comment"># 将sdiff的结果加入到dest对应的集合中</span></span><br><span class="line">sinter(keys, *args)</span><br><span class="line"><span class="comment"># 获取多一个name对应集合的并集</span></span><br><span class="line">sinterstore(dest, keys, *args)</span><br><span class="line"><span class="comment"># 将sinter的结果加入到dest对应的集合中</span></span><br><span class="line">sismember(name, value)</span><br><span class="line"><span class="comment"># 检查value是否是name对应的集合的成员</span></span><br><span class="line">smembers(name)</span><br><span class="line"><span class="comment"># 获取name对应的集合的所有成员</span></span><br><span class="line">smove(src, dst, value)</span><br><span class="line"><span class="comment"># 将某个成员从一个集合中移动到另外一个集合</span></span><br><span class="line">spop(name)</span><br><span class="line"><span class="comment"># 从集合的右侧（尾部）移除一个成员，并将其返回</span></span><br><span class="line">srandmember(name, numbers)</span><br><span class="line"><span class="comment"># 从name对应的集合中随机获取 numbers 个元素</span></span><br><span class="line">srem(name, values)</span><br><span class="line"><span class="comment"># 在name对应的集合中删除某些值</span></span><br><span class="line">sunion(keys, *args)</span><br><span class="line"><span class="comment"># 获取多一个name对应的集合的并集</span></span><br><span class="line">sunionstore(dest,keys, *args)</span><br><span class="line"><span class="comment"># 将sunionstore结果保存到dest对应的集合中</span></span><br><span class="line">sscan(name, cursor=<span class="number">0</span>, <span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>)</span><br><span class="line">sscan_iter(name, <span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>)</span><br><span class="line"><span class="comment"># 同字符串的操作，用于增量迭代分批获取元素，避免内存消耗太大</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="sorted-list"><a href="#sorted-list" class="headerlink" title="sorted list"></a>sorted list</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">zadd(name, *args, **kwargs)</span><br><span class="line"><span class="comment"># 在name对应的有序集合中添加元素</span></span><br><span class="line"><span class="comment"># 如：</span></span><br><span class="line">     <span class="comment"># zadd(&#x27;zz&#x27;, &#x27;n1&#x27;, 1, &#x27;n2&#x27;, 2)</span></span><br><span class="line">     <span class="comment"># 或</span></span><br><span class="line">     <span class="comment"># zadd(&#x27;zz&#x27;, n1=11, n2=22)</span></span><br><span class="line">zcard(name)</span><br><span class="line"><span class="comment"># 获取name对应的有序集合元素的数量</span></span><br><span class="line">zcount(name, <span class="built_in">min</span>, <span class="built_in">max</span>)</span><br><span class="line"><span class="comment"># 获取name对应的有序集合中分数 在 [min,max] 之间的个数</span></span><br><span class="line">zincrby(name, value, amount)</span><br><span class="line"><span class="comment"># 自增name对应的有序集合的 name 对应的分数</span></span><br><span class="line">r.zrange( name, start, end, desc=<span class="literal">False</span>, withscores=<span class="literal">False</span>, score_cast_func=<span class="built_in">float</span>)</span><br><span class="line"><span class="comment"># 按照索引范围获取name对应的有序集合的元素</span></span><br><span class="line"><span class="comment"># 参数：</span></span><br><span class="line">    <span class="comment"># name，redis的name</span></span><br><span class="line">    <span class="comment"># start，有序集合索引起始位置（非分数）</span></span><br><span class="line">    <span class="comment"># end，有序集合索引结束位置（非分数）</span></span><br><span class="line">    <span class="comment"># desc，排序规则，默认按照分数从小到大排序</span></span><br><span class="line">    <span class="comment"># withscores，是否获取元素的分数，默认只获取元素的值</span></span><br><span class="line">    <span class="comment"># score_cast_func，对分数进行数据转换的函数</span></span><br><span class="line"><span class="comment"># 更多：</span></span><br><span class="line">    <span class="comment"># 从大到小排序</span></span><br><span class="line">    <span class="comment"># zrevrange(name, start, end, withscores=False, score_cast_func=float)</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment"># 按照分数范围获取name对应的有序集合的元素</span></span><br><span class="line">    <span class="comment"># zrangebyscore(name, min, max, start=None, num=None, withscores=False, score_cast_func=float)</span></span><br><span class="line">    <span class="comment"># 从大到小排序</span></span><br><span class="line">    <span class="comment"># zrevrangebyscore(name, max, min, start=None, num=None, withscores=False, score_cast_func=float)</span></span><br><span class="line">zrank(name, value)</span><br><span class="line"><span class="comment"># 获取某个值在 name对应的有序集合中的排行（从 0 开始）</span></span><br><span class="line"><span class="comment"># 更多：</span></span><br><span class="line">    <span class="comment"># zrevrank(name, value)，从大到小排序</span></span><br><span class="line">zrem(name, values)</span><br><span class="line"><span class="comment"># 删除name对应的有序集合中值是values的成员</span></span><br><span class="line"><span class="comment"># 如：zrem(&#x27;zz&#x27;, [&#x27;s1&#x27;, &#x27;s2&#x27;])</span></span><br><span class="line">zremrangebyrank(name, <span class="built_in">min</span>, <span class="built_in">max</span>)</span><br><span class="line"><span class="comment"># 根据排行范围删除</span></span><br><span class="line">zremrangebyscore(name, <span class="built_in">min</span>, <span class="built_in">max</span>)</span><br><span class="line"><span class="comment"># 根据分数范围删除</span></span><br><span class="line">zscore(name, value)</span><br><span class="line"><span class="comment"># 获取name对应有序集合中 value 对应的分数</span></span><br><span class="line">zinterstore(dest, keys, aggregate=<span class="literal">None</span>)</span><br><span class="line"><span class="comment"># 获取两个有序集合的交集，如果遇到相同值不同分数，则按照aggregate进行操作</span></span><br><span class="line"><span class="comment"># aggregate的值为:  SUM  MIN  MAX</span></span><br><span class="line">zunionstore(dest, keys, aggregate=<span class="literal">None</span>)</span><br><span class="line"><span class="comment"># 获取两个有序集合的并集，如果遇到相同值不同分数，则按照aggregate进行操作</span></span><br><span class="line"><span class="comment"># aggregate的值为:  SUM  MIN  MAX</span></span><br><span class="line">zscan(name, cursor=<span class="number">0</span>, <span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>, score_cast_func=<span class="built_in">float</span>)</span><br><span class="line">zscan_iter(name, <span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>,score_cast_func=<span class="built_in">float</span>)</span><br><span class="line"><span class="comment"># 同字符串相似，相较于字符串新增score_cast_func，用来对分数进行操作</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="others"><a href="#others" class="headerlink" title="others"></a>others</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">delete(*names)</span><br><span class="line"><span class="comment"># 根据删除redis中的任意数据类型</span></span><br><span class="line">exists(name)</span><br><span class="line"><span class="comment"># 检测redis的name是否存在</span></span><br><span class="line">keys(pattern=<span class="string">&#x27;*&#x27;</span>)</span><br><span class="line"><span class="comment"># 根据模型获取redis的name</span></span><br><span class="line"><span class="comment"># 更多：</span></span><br><span class="line">    <span class="comment"># KEYS * 匹配数据库中所有 key 。</span></span><br><span class="line">    <span class="comment"># KEYS h?llo 匹配 hello ， hallo 和 hxllo 等。</span></span><br><span class="line">    <span class="comment"># KEYS h*llo 匹配 hllo 和 heeeeello 等。</span></span><br><span class="line">    <span class="comment"># KEYS h[ae]llo 匹配 hello 和 hallo ，但不匹配 hillo</span></span><br><span class="line">expire(name ,time)</span><br><span class="line"><span class="comment"># 为某个redis的某个name设置超时时间</span></span><br><span class="line">rename(src, dst)</span><br><span class="line"><span class="comment"># 对redis的name重命名为</span></span><br><span class="line">move(name, db))</span><br><span class="line"><span class="comment"># 将redis的某个值移动到指定的db下</span></span><br><span class="line">randomkey()</span><br><span class="line"><span class="comment"># 随机获取一个redis的name（不删除）</span></span><br><span class="line"><span class="built_in">type</span>(name)</span><br><span class="line"><span class="comment"># 获取name对应值的类型</span></span><br><span class="line">scan(cursor=<span class="number">0</span>, <span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>)</span><br><span class="line">scan_iter(<span class="keyword">match</span>=<span class="literal">None</span>, count=<span class="literal">None</span>)</span><br><span class="line"><span class="comment"># 同字符串操作，用于增量迭代获取key</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h3><p>由于redis-py默认每一次的操作都会创建和断开一次连接( 之前说过优化就是使用连接池 但是这个治标不治本, 因为最后还是要连接池申请和归还释放连接池的 ) 因此 使用管道来在一次请求中指定多个命令, 在默认的情况下pipeline也是原子操作:</p>
+<p>e.g:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"></span><br><span class="line">pool = redis.ConnectionPool(host=<span class="string">&#x27;localhost&#x27;</span>, port=<span class="number">6379</span>)</span><br><span class="line"></span><br><span class="line">r = redis.Redis(connection_pool=pool)</span><br><span class="line"></span><br><span class="line"><span class="comment"># pipe = r.pipeline(transaction=False)</span></span><br><span class="line">pipe = r.pipeline(transaction=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">pipe.<span class="built_in">set</span>(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;WWW&#x27;</span>)</span><br><span class="line">pipe.<span class="built_in">set</span>(<span class="string">&#x27;role&#x27;</span>, <span class="string">&#x27;STU&#x27;</span>)</span><br><span class="line"></span><br><span class="line">pipe.execute()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Sqlalchemy"><a href="#Sqlalchemy" class="headerlink" title="Sqlalchemy"></a>Sqlalchemy</h2><p><img src="http://www.sqlalchemy.org/img/sqla_logo.png" alt="SQLAlchemy"></p>
+<p>sqlalchemy是一个超级强大超级复杂的ORM框架, 主要是用来操作MySQL, 也支持sqlite, oracle好像.</p>
+<p>这个sqlalchemy说实话, 我感觉在日后的使用中, 我连这个框架的80%都用不到, 认真的. 这个ORM实在是太庞大了. 那么就一些常用功能, 记录用法在下.</p>
+<p>我们都知道ORM主要是为了避免直接在代码中插入SQL语句, 另外将数据和对象进行映射, 使得对对象的种种操作可以转换成为对数据的操作, 这个过程由框架完成, 程序员只需要处理熟悉的对象就行了.</p>
+<p>现在我们一边复习SQL, 一边将其转换成为Python实现代码. </p>
+<h3 id="连接-1"><a href="#连接-1" class="headerlink" title="连接"></a>连接</h3><p>这个就没有MySQL的代码了, 直接看下sqlalchemy是怎么进行的吧:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> create_engine</span><br><span class="line">engine = create_engine(<span class="string">&quot;mysql+pymysql://user:password@192.168.56.101/db_name&quot;</span>, encoding=<span class="string">&quot;utf-8&quot;</span>, echo=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<p>很简单吧, 这里使用的连接器是pymysql, 接着写下用户名密码地址数据库名就可以了</p>
+<p>后面的参数echo就是说是否进行显示sqlalchemy做了些什么.</p>
+<h3 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h3><p>创建表, 就是定义对象的行为, 请看:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy.ext.declarative <span class="keyword">import</span> declarative_base</span><br><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> Column, Integer, String</span><br><span class="line"></span><br><span class="line">Base = declarative_base()</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">User</span>(<span class="title class_ inherited__">Base</span>):</span><br><span class="line">    __tablename__ = <span class="string">&#x27;user&#x27;</span></span><br><span class="line">    <span class="built_in">id</span> = Column(Integer, primary_key=<span class="literal">True</span>, autoincrement=<span class="literal">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">32</span>))</span><br><span class="line">    password = Column(String(<span class="number">64</span>), nullable=<span class="literal">False</span>)</span><br><span class="line">   </span><br><span class="line">Base.metadata.create_all(engine)</span><br></pre></td></tr></table></figure>
+
+<p>这样就会将表user创建.</p>
+<p>对应的SQL语句是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE user (</span><br><span class="line">  id INT AUTO_INCREMENT PRIMARY KEY,</span><br><span class="line">  name VARCHAR(32),</span><br><span class="line">  password VARCHAR(64) NOT NULL</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>如果想要创建外键约束, 很简单, 这么写:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class Record(Base):</span><br><span class="line">    __tablename__ = <span class="string">&quot;record&quot;</span></span><br><span class="line">    <span class="built_in">id</span> = Column(Integer, primary_key=True, autoincrement=True)</span><br><span class="line">    day = Column(Integer, nullable=False)</span><br><span class="line">    status = Column(String(16), default=<span class="string">&#x27;N&#x27;</span>)</span><br><span class="line">    user_id = Column(Integer, ForeignKey(<span class="string">&#x27;user.id&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+<p>当然, 这是需要导入的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">from sqlalchemy import ForeignKey</span><br></pre></td></tr></table></figure>
+
+<p>转换成为SQL语句就是这样子:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE record (</span><br><span class="line">  id INT AUTO_INCREMENT PRIMARY KEY,</span><br><span class="line">  day INT NOT NULL,</span><br><span class="line">  status VARCHAR(16) DEFAULT &#x27;N&#x27;,</span><br><span class="line">  CONSTRAINT FOREIGN KEY (user_id) REFERENCES user (id)</span><br><span class="line">) ;</span><br></pre></td></tr></table></figure>
+
+<h3 id="增删改查"><a href="#增删改查" class="headerlink" title="增删改查"></a>增删改查</h3><p>首先操作之前, 我们需要拿到一个cursor, 在这里的表现是session:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> sessionmaker</span><br><span class="line">Session = sessionmaker(bind=engine)</span><br><span class="line">session = Session()</span><br></pre></td></tr></table></figure>
+
+<p>通过这个session, 我们就可以做进一步的操作. 首先来看增加(插入操作). 首先为了插入一条数据, 我们要做的就是创建一个表的实例, 也就是相当于是数据库中的一个条目啦:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">user_obj = User(name=<span class="string">&quot;Justin&quot;</span>, password=password_str)</span><br><span class="line">session.add(user_obj)</span><br></pre></td></tr></table></figure>
+
+<p>此时并没有插入到数据库中.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">session.commit()</span><br></pre></td></tr></table></figure>
+
+<p>现在就可以了.</p>
+<p>对应的SQL语句是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO user (name,password) VALUES(&quot;Justin&quot;, password_str);</span><br></pre></td></tr></table></figure>
+
+<p>删除也很简单, 直接把对象实例传过去就行了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">session.delete(user_obj)</span><br></pre></td></tr></table></figure>
+
+<p>即:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DELETE FROM user WHERE XXXX #(这里就不好表示了...);</span><br></pre></td></tr></table></figure>
+
+<p>那么更改呢? 得益于数据对象映射, 更改变得再简单不过了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># user_obj = User(name=&quot;Justin&quot;, password=password_str)</span></span><br><span class="line"><span class="comment"># 直接修改属性就行了</span></span><br><span class="line">user_obj.name = <span class="string">&quot;Bieber&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>对应的SQL语句就是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UPDATE user SET name = &#x27;Bieber&#x27; WHERE name = &#x27;Justin&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>接下来就说说较为复杂的查吧:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">data = session.query(User).<span class="built_in">all</span>()</span><br><span class="line">data = session.query(User).first()</span><br></pre></td></tr></table></figure>
+
+<p>这是最简单的两种了, 其中query方法会返回一个Query对象, 后面的all方法其实就是返回一个list()之后的Query , 而first也就是多了一层判断, 返回list的第一个.</p>
+<p>这样查询就和:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM user;</span><br></pre></td></tr></table></figure>
+
+<p>一样.</p>
+<p>接着看下带有条件的查询:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data = session.query(User).<span class="built_in">filter</span>(User.<span class="built_in">id</span> &gt; <span class="number">1</span>, User.<span class="built_in">id</span> &lt; <span class="number">3</span>).<span class="built_in">all</span>()</span><br></pre></td></tr></table></figure>
+
+<p>我故意没有写成&#x3D;号形式, 就是想说明一下这个filter函数的签名:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">filter</span>(<span class="params">self, *criterion</span>):</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以进行条件查询, 也就相当于是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM user WHERE id &gt; 1 AND id &lt; 3;</span><br></pre></td></tr></table></figure>
+
+<p>还有数目查询:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data = session.query(Admin).count()</span><br></pre></td></tr></table></figure>
+
+<p>先这样吧. 脖子疼..</p>
+<p><strong>来自未来尝试自行实现一个ORM框架的我的补充: 这个地方其实很多细节都没有提到, 例如Python的运算符重载, metaclass等等, 以后有时间可以写点.</strong></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-%E2%80%93-RabbitMQ"><span class="toc-number">1.</span> <span class="toc-text">消息队列 – RabbitMQ</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pika-%E2%80%93-RabbitMQ%E5%AE%98%E6%96%B9%E6%8E%A8%E8%8D%90%E7%9A%84%E8%BF%9E%E6%8E%A5%E5%99%A8"><span class="toc-number">1.1.</span> <span class="toc-text">pika – RabbitMQ官方推荐的连接器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis"><span class="toc-number">2.</span> <span class="toc-text">Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5"><span class="toc-number">2.1.</span> <span class="toc-text">连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text">操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#String"><span class="toc-number">2.2.1.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Hash"><span class="toc-number">2.2.2.</span> <span class="toc-text">Hash</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#List"><span class="toc-number">2.2.3.</span> <span class="toc-text">List</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#set"><span class="toc-number">2.2.4.</span> <span class="toc-text">set</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#sorted-list"><span class="toc-number">2.2.5.</span> <span class="toc-text">sorted list</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#others"><span class="toc-number">2.2.6.</span> <span class="toc-text">others</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E9%81%93"><span class="toc-number">2.3.</span> <span class="toc-text">管道</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sqlalchemy"><span class="toc-number">3.</span> <span class="toc-text">Sqlalchemy</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5-1"><span class="toc-number">3.1.</span> <span class="toc-text">连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%A1%A8"><span class="toc-number">3.2.</span> <span class="toc-text">创建表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5"><span class="toc-number">3.3.</span> <span class="toc-text">增删改查</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&text=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&is_video=false&description=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python操作Rabbitmq, Redis, MySQL&body=Check out this article: https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&title=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&name=Python操作Rabbitmq, Redis, MySQL&description=&lt;p&gt;Python后端一锅端.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/&t=Python操作Rabbitmq, Redis, MySQL"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

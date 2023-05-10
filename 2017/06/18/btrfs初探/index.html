@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="btrfs是一个先进的文件系统, 由Oracle研发, 在2014年推出了稳定版,支持很多EXT系列文件系统不支持的特性.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="btrfs初探">
+<meta property="og:url" content="https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="btrfs是一个先进的文件系统, 由Oracle研发, 在2014年推出了稳定版,支持很多EXT系列文件系统不支持的特性.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-06-19T01:13:57.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:28:22.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>btrfs初探</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/06/20/RAID%E5%8F%82%E8%80%83/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&text=btrfs初探"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&is_video=false&description=btrfs初探"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=btrfs初探&body=Check out this article: https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&name=btrfs初探&description=&lt;p&gt;btrfs是一个先进的文件系统, 由Oracle研发, 在2014年推出了稳定版,支持很多EXT系列文件系统不支持的特性.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&t=btrfs初探"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Btrfs%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">Btrfs的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%89%8D%E5%85%88%E6%9D%A5%E8%AF%B4%E4%B8%80%E4%B8%8BBtrfs%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-number">2.1.</span> <span class="toc-text">使用前先来说一下Btrfs的构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Btrfs%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">2.2.</span> <span class="toc-text">Btrfs文件系统的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.1.</span> <span class="toc-text">文件系统</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86"><span class="toc-number">2.2.2.</span> <span class="toc-text">物理磁盘管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%87%8D%E5%88%86%E9%85%8D"><span class="toc-number">2.2.3.</span> <span class="toc-text">数据重分配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%90%E5%8D%B7%E4%BD%BF%E7%94%A8"><span class="toc-number">2.2.4.</span> <span class="toc-text">子卷使用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E5%86%8D%E8%AF%B4%E4%B8%80%E4%B8%AA%E5%B0%8F%E4%B8%9C%E8%A5%BF"><span class="toc-number">2.3.</span> <span class="toc-text">最后再说一个小东西</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        btrfs初探
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-06-19T01:13:57.000Z" class="dt-published" itemprop="datePublished">2017-06-18</time>
+        
+        (Updated: <time datetime="2020-11-30T01:28:22.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>btrfs是一个先进的文件系统, 由Oracle研发, 在2014年推出了稳定版,支持很多EXT系列文件系统不支持的特性.</p>
+<span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p> Btrfs的最大特性就是支持<code>Cow(Copy on write 写时复制)</code>.</p>
+<p>下面简单介绍一下Btrfs的核心特性:</p>
+<ul>
+<li>多物理卷支持, 支持<code>RAID</code>, 联机”添加”, “移除”, “修改”</li>
+<li>写时复制<code>(CoW)</code>, 复制 更新 替换指针, 而非就地更新(备份)</li>
+<li>数据和元数据校验码 <code>checksum, </code>快速检测文件是否损毁</li>
+<li>子卷 <code>sub_volume</code></li>
+<li>快照, 支持快照的快照, 也是基于<code>CoW</code></li>
+<li>透明压缩: 文件存储时进行压缩,读取时自动解压缩</li>
+</ul>
+<h2 id="Btrfs的使用"><a href="#Btrfs的使用" class="headerlink" title="Btrfs的使用"></a>Btrfs的使用</h2><p>BTreeFS的命令有两种语法风格的, 一种是单独的一个个小命令, 一个是子命令的形式(较新).</p>
+<p>较新的Linux命令都是以子命令的形式编写的, 就像<code>mkfs -t</code>和<code>mkfs.ext4/mkfs.btrfs</code>, 严格的说,前者也不能说是子命令, 像<code>ip</code>系列的命令才叫子命令的形式.</p>
+<h3 id="使用前先来说一下Btrfs的构建"><a href="#使用前先来说一下Btrfs的构建" class="headerlink" title="使用前先来说一下Btrfs的构建"></a>使用前先来说一下Btrfs的构建</h3><p>创建<code>Btrfs</code>的命令仍然是<code>mkfs</code>, 只不过原理不一样了, 所以参数和<code>ext</code>系列是不一样的.</p>
+<p>先来看一下常用的参数有哪些吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ man mkfs.brtfs</span><br><span class="line">-m| --metadata &lt;profile&gt; 指定元数据如何跨越物理卷, 合法的值有:raid0, raid1, raid5, raid6, raid10, single[默认值], dup(冗余, duplicate,仅仅是复制一份罢了).</span><br><span class="line">-d| --data &lt;<span class="built_in">type</span>&gt; 指定数据如何跨越物理卷, 和上面的是基本一样的值(没有dup选项).</span><br><span class="line">-L| --label &lt;name&gt; 声明一个小于256Bytes的字符串来当做文件系统的卷标(标签)</span><br><span class="line">-O| --feature &lt;f1&gt;,[&lt;f2&gt;...] 查看和指定文件系统和内核支持的特性</span><br><span class="line">可以使用 -O list-all</span><br></pre></td></tr></table></figure>
+
+<p>接下来就要改变思路了, Btree文件系统在同一个磁盘的不同分区的意义就不大了,因为这样就失去了冗余能力,但是这样比较简单,虽然失去了意义. 所以,选取多个磁盘共同组成一个B树文件系统.  </p>
+<p>下面来创建一个Btrfs的文件系统, 事实上过程是很简单的, 我新分配了3块虚拟磁盘, 每一个的大小是<code>10.00GB</code>, 这样现在的系统状态是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ fdisk -l</span><br><span class="line">Disk /dev/sdb: 10 GiB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/sdd: 10 GiB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/sdc: 10 GiB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br></pre></td></tr></table></figure>
+
+<p>还有一个已经都挂载的用于系统和<code>swap</code>的磁盘<code>sda</code>.</p>
+<p>那么现在把<code>sdb</code>和<code>sdc</code>进行格式化,构成一个文件系统.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ mkfs.btrfs -L <span class="string">&quot;mydata&quot;</span> /dev/sd&#123;b,c&#125;</span><br><span class="line">Label:              mydata</span><br><span class="line">`UUID`:               </span><br><span class="line">Node size:          16384</span><br><span class="line">Sector size:        4096</span><br><span class="line">Filesystem size:    20.00GiB</span><br><span class="line">Block group profiles:</span><br><span class="line">  Data:             RAID0             2.00GiB</span><br><span class="line">  Metadata:         RAID1             1.00GiB</span><br><span class="line">  System:           RAID1             8.00MiB</span><br><span class="line">SSD detected:       no</span><br><span class="line">Incompat features:  extref, skinny-metadata</span><br><span class="line">Number of devices:  2</span><br><span class="line">Devices:</span><br><span class="line">   ID        SIZE  PATH</span><br><span class="line">    1    10.00GiB  /dev/sdb</span><br><span class="line">    2    10.00GiB  /dev/sdc</span><br></pre></td></tr></table></figure>
+
+<p>很快就创建成功了, 整个文件系统的大小是<code>20.00GB</code></p>
+<h3 id="Btrfs文件系统的使用"><a href="#Btrfs文件系统的使用" class="headerlink" title="Btrfs文件系统的使用"></a>Btrfs文件系统的使用</h3><h4 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h4><p>btrfs支持很多子命令, 每一个子命令有包含很多的二级子命令. 其中一个是<code>filesystem</code>, 他有一个子命令可以擦看当前的btrfs的状态.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs filesystem show</span><br><span class="line">Label: <span class="string">&#x27;mydata&#x27;</span>  UUID: acc64201-b842-41ed-b651-b41c84839d63</span><br><span class="line">	Total devices 2 FS bytes used 112.00KiB</span><br><span class="line">	devid    1 size 10.00GiB used 2.01GiB path /dev/sdb</span><br><span class="line">	devid    2 size 10.00GiB used 2.01GiB path /dev/sdc</span><br></pre></td></tr></table></figure>
+
+<p>很快就可以发现文件系统mydata拥有一个<code>UUID</code>, 可是大家都知道,每一个磁盘应该都有一个<code>UUID</code>才对, 但是这样搞我不就无法定位到单个硬盘了吗, 别急.使用我们之前查看<code>UUID</code>的命令来试一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ blkid</span><br><span class="line">/dev/sda1: UUID=<span class="string">&quot;62e883b5-6150-4294-a6d2-a387b5cec8b8&quot;</span> TYPE=<span class="string">&quot;ext4&quot;</span> PARTUUID=<span class="string">&quot;8b164ce4-01&quot;</span></span><br><span class="line">/dev/sdb: LABEL=<span class="string">&quot;mydata&quot;</span> UUID=<span class="string">&quot;acc64201-b842-41ed-b651-b41c84839d63&quot;</span> UUID_SUB=<span class="string">&quot;90475d97-7147-4d75-99a0-a9e2841dcd87&quot;</span> TYPE=<span class="string">&quot;btrfs&quot;</span></span><br><span class="line">/dev/sdc: LABEL=<span class="string">&quot;mydata&quot;</span> UUID=<span class="string">&quot;acc64201-b842-41ed-b651-b41c84839d63&quot;</span> UUID_SUB=<span class="string">&quot;93d9ad4c-47f0-41ed-a387-7adaee0268c0&quot;</span> TYPE=<span class="string">&quot;btrfs&quot;</span></span><br><span class="line">/dev/sda5: UUID=<span class="string">&quot;8f65d150-3b30-40e5-8f9e-cae947a8321f&quot;</span> TYPE=<span class="string">&quot;swap&quot;</span> PARTUUID=<span class="string">&quot;8b164ce4-05&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>从输出结果我们发现, 两个共同组成<code>btrfs</code>的磁盘共有一个<code>UUID</code>, 但是却多了一个叫<code>UUID_SUB</code>的属性, 这个属性就是上面说的每一个磁盘的<code>UUID</code>, 因为这些个磁盘叫做这个<code>FS</code>的子卷,因此就取名字叫<code>UUID_SUB</code>了.</p>
+<p>上面的<code>filesystem</code>的子命令<code>show</code>可以来筛选输出的内容:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ brtfs filesystem show [OPTIONS]</span><br><span class="line">--mounted 仅显示挂载的btrfs文件系统</span><br><span class="line">--all-devices  显示所有的btrfs文件系统</span><br><span class="line">后面也可以直接跟上设备路径, UUID, 卷标等等</span><br></pre></td></tr></table></figure>
+
+<p>至此, 我们就可以创建和查看<code>btrfs</code>文件系统了</p>
+<p>再介绍一下<code>filesystem</code>其他的一些子命令: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs filesystem</span><br><span class="line">usage: btrfs filesystem [&lt;group&gt;] &lt;<span class="built_in">command</span>&gt; [&lt;args&gt;]</span><br><span class="line"></span><br><span class="line">    btrfs filesystem <span class="built_in">sync</span> &lt;path&gt;</span><br><span class="line">        Force a <span class="built_in">sync</span> on a filesystem</span><br><span class="line">        强制写入磁盘</span><br><span class="line">    btrfs filesystem defragment [options] &lt;file&gt;|&lt;<span class="built_in">dir</span>&gt; [&lt;file&gt;|&lt;<span class="built_in">dir</span>&gt;...]</span><br><span class="line">        Defragment a file or a directory</span><br><span class="line">        清理磁盘碎片</span><br><span class="line">    btrfs filesystem resize [devid:][+/-]&lt;newsize&gt;[kKmMgGtTpPeE]|[devid:]max &lt;path&gt;</span><br><span class="line">        Resize a filesystem</span><br><span class="line">        改变文件系统的大小</span><br><span class="line">    btrfs filesystem label [&lt;device&gt;|&lt;mount_point&gt;] [&lt;newlabel&gt;]</span><br><span class="line">        Get or change the label of a filesystem</span><br><span class="line">    	查看文件系统的卷标或者进行重命名</span><br><span class="line">    btrfs filesystem usage [options] &lt;path&gt; [&lt;path&gt;..]</span><br><span class="line">        Show detailed information about internal filesystem usage .</span><br><span class="line">        显示详细的文件系统使用情况</span><br><span class="line"></span><br><span class="line">overall filesystem tasks and information</span><br></pre></td></tr></table></figure>
+
+<p>其中很多命令都需要在我们进行挂载后才可以使用, 现在就来把他加入到目录树上吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">mkdir</span> /mydata</span><br><span class="line">[root@WWW ~]$ mount -t btrfs /dev/sdb /mydata <span class="comment"># 使用-t选项来限制文件系统类型</span></span><br><span class="line">[root@WWW ~]$ mount</span><br><span class="line">/dev/sda1 on / <span class="built_in">type</span> ext4 (rw,relatime,errors=remount-ro,data=ordered)</span><br><span class="line">...</span><br><span class="line">/dev/sdb on /mydata <span class="built_in">type</span> btrfs (rw,relatime,space_cache,subvolid=5,subvol=/)</span><br><span class="line"><span class="comment"># 那么如果把/dev/sdc挂载会出现什么现象呢? 我们来试试.</span></span><br><span class="line">[root@WWW ~]$ umount /mydata</span><br><span class="line">[root@WWW ~]$ mount -t btrfs /dev/sdc /mydata <span class="comment"># 这次来挂载/dev/sdc</span></span><br><span class="line">[root@WWW ~]$ mount</span><br><span class="line">/dev/sda1 on / <span class="built_in">type</span> ext4 (rw,relatime,errors=remount-ro,data=ordered)</span><br><span class="line">...</span><br><span class="line">/dev/sdb on /mydata <span class="built_in">type</span> btrfs (rw,relatime,space_cache,subvolid=5,subvol=/)</span><br><span class="line"><span class="comment"># 输出是一样的!</span></span><br></pre></td></tr></table></figure>
+
+<p>现在我们就可以使用一些<code>filesystem</code>的命令了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs filesystem &#123;<span class="built_in">df</span>,<span class="built_in">du</span>,label,usage...&#125;</span><br><span class="line"><span class="comment"># df和du的功能和之前的df.du功能是一样的,只不过输出的信息有区别.</span></span><br><span class="line"><span class="comment"># 输出的信息包括: 存储的类型(元数据,数据,系统) 大小 使用情况.</span></span><br><span class="line"><span class="comment"># label 不写新标签就是显示当前卷标.</span></span><br><span class="line"><span class="comment"># usage 会显示相较df更详细的信息.但是都是围绕着那些数据类型构成来的.</span></span><br></pre></td></tr></table></figure>
+
+<p>之前说过<code>btrfs</code>是支持透明压缩的 只要在挂载的时候 加上 <code>-o</code> 添加参数<code>compress=&#123;lzo|zlib&#125;</code> </p>
+<p>这样之后, 文件就会得到自动的压缩和解压缩, 这个过程对用户是透明的.</p>
+<p><code>Btrfs</code>支持在线调整大小, 就像<code>LVM</code>那样, 使用<code>resize</code>命令.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs filesystem resize -4G /mydata</span><br><span class="line">Resize <span class="string">&#x27;/mydata/&#x27;</span> of <span class="string">&#x27;4G&#x27;</span></span><br><span class="line"><span class="comment"># 接下来再查看一下</span></span><br><span class="line">[root@WWW ~]$ btrfs filesystem show</span><br><span class="line">Label: <span class="string">&#x27;mydata&#x27;</span>  uuid: 51136d0b-5bfb-4c0b-8d88-bb05f40455eb</span><br><span class="line">	Total devices 2 FS bytes used 808.00KiB</span><br><span class="line">	devid    1 size 4.00GiB used 1.81GiB path /dev/sdb</span><br><span class="line">	devid    2 size 8.00GiB used 1.81GiB path /dev/sdc</span><br><span class="line">[root@WWW ~]$ <span class="built_in">df</span> -hl</span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">udev            2.0G     0  2.0G   0% /dev</span><br><span class="line">tmpfs           396M  6.1M  390M   2% /run</span><br><span class="line">/dev/sda1        16G  9.2G  5.7G  63% /</span><br><span class="line">tmpfs           2.0G     0  2.0G   0% /dev/shm</span><br><span class="line">tmpfs           5.0M     0  5.0M   0% /run/lock</span><br><span class="line">tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup</span><br><span class="line">tmpfs           396M   16K  396M   1% /run/user/132</span><br><span class="line">tmpfs           396M   32K  396M   1% /run/user/0</span><br><span class="line">/dev/sdb         12G   17M  6.0G   1% /mydata <span class="comment"># 缩减了4个G.</span></span><br><span class="line"><span class="comment"># 还可以直接使用max.</span></span><br><span class="line">[root@WWW ~]$ btrfs filesystem resize max /mydata</span><br><span class="line">Resize <span class="string">&#x27;/mydata/&#x27;</span> of <span class="string">&#x27;max&#x27;</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">df</span> -hl</span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">udev            2.0G     0  2.0G   0% /dev</span><br><span class="line">tmpfs           396M  6.1M  390M   2% /run</span><br><span class="line">/dev/sda1        16G  9.2G  5.7G  63% /</span><br><span class="line">tmpfs           2.0G     0  2.0G   0% /dev/shm</span><br><span class="line">tmpfs           5.0M     0  5.0M   0% /run/lock</span><br><span class="line">tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup</span><br><span class="line">tmpfs           396M   16K  396M   1% /run/user/132</span><br><span class="line">tmpfs           396M   32K  396M   1% /run/user/0</span><br><span class="line">/dev/sdb         16G   17M  6.0G   1% /mydata</span><br></pre></td></tr></table></figure>
+
+<h4 id="物理磁盘管理"><a href="#物理磁盘管理" class="headerlink" title="物理磁盘管理"></a>物理磁盘管理</h4><p>如果我还想让这个空间更大呢?那就需要增加新的磁盘进来．就像<code>LVM</code>那样, <code>btrfs</code>进行底层设备的管理的命令是<code>device</code>子命令.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs device &lt;COMMAND&gt;</span><br><span class="line"><span class="comment"># 常用的命令是:</span></span><br><span class="line"><span class="comment"># add 增加一个设备进文件系统</span></span><br><span class="line"><span class="comment"># delete/remove 从文件系统中移除一个设备</span></span><br><span class="line"><span class="comment"># scan 寻找btrfs的设备(不会用)</span></span><br></pre></td></tr></table></figure>
+
+<p>现在我们先试试为我们的文件系统增加一个磁盘来扩充空间.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs device add /dev/sdd /mydata</span><br><span class="line">root@kali:/mydata<span class="comment"># df -hl</span></span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">udev            2.0G     0  2.0G   0% /dev</span><br><span class="line">tmpfs           396M  6.1M  390M   2% /run</span><br><span class="line">/dev/sda1        16G  9.2G  5.7G  63% /</span><br><span class="line">tmpfs           2.0G     0  2.0G   0% /dev/shm</span><br><span class="line">tmpfs           5.0M     0  5.0M   0% /run/lock</span><br><span class="line">tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup</span><br><span class="line">tmpfs           396M   16K  396M   1% /run/user/132</span><br><span class="line">tmpfs           396M   24K  396M   1% /run/user/0</span><br><span class="line">/dev/sdb         24G   17M   21G   1% /mydata <span class="comment"># 真的增加了!</span></span><br></pre></td></tr></table></figure>
+
+<p>删除一个设备也是很简单的, 直接将<code>add</code>换成<code>remove</code>就行了.在移除的前, <code>btrfs</code>会自动将数据迁移出去, 因此,要保证在移除后整个文件系统剩余的磁盘数量仍然能够将数据完整的保留下来.</p>
+<h4 id="数据重分配"><a href="#数据重分配" class="headerlink" title="数据重分配"></a>数据重分配</h4><p>接下来再来看一下<code>btrfs</code>中的<code>balance</code> .这个<code>balance</code>就好像是磁盘阵列的修复, 他会将数据进行一次重新的分配.</p>
+<p>直接启动<code>balance</code>会收到警告:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs balance start /mydata/</span><br><span class="line">WARNING:</span><br><span class="line"></span><br><span class="line">	Full balance without filters requested. This operation is very</span><br><span class="line">	intense and takes potentially very long. It is recommended to</span><br><span class="line">	use the balance filters to narrow down the balanced data.</span><br><span class="line">	Use <span class="string">&#x27;btrfs balance start --full-balance&#x27;</span> option to skip this</span><br><span class="line">	warning. The operation will start <span class="keyword">in</span> 10 seconds.</span><br><span class="line">	Use Ctrl-C to stop it.</span><br></pre></td></tr></table></figure>
+
+<p>这是因为如果数据量很大, <code>	balance</code>会成为一个很耗时的过程. 因此建议加上过滤.</p>
+<p>在<code>balance</code>的过程中, 可以随时进行<code>pause</code>, <code>cancel</code>, <code>resume</code>的操作, 也可以随时查看状态, 使用<code>status</code>.</p>
+<p><code>balance</code>里常用的过滤器, 我其实就只用过<strong>convert</strong>. 将对应的<code>section</code>转换为指定的格式(<code>single,dup,raid&#123;0,1,5,6&#125;</code>)</p>
+<p>使用起来就像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs filesystem show</span><br><span class="line">Label: <span class="string">&#x27;myNewData&#x27;</span>  uuid: 8de2ca1c-75ea-4573-ad80-4ef1768d1a6b</span><br><span class="line">	Total devices 1 FS bytes used 448.00KiB</span><br><span class="line">	devid    1 size 8.00GiB used 1.12GiB path /dev/sdb</span><br><span class="line">oot@kali:/mydata/backup<span class="comment"># btrfs balance start -dconvert=raid0 -sconvert=raid0 -mconvert=raid0 /mydata/ -f</span></span><br><span class="line">ERROR: error during balancing <span class="string">&#x27;/mydata/&#x27;</span>: Invalid argument</span><br><span class="line">There may be more info <span class="keyword">in</span> syslog - try dmesg | <span class="built_in">tail</span></span><br><span class="line"><span class="comment"># 报错了.这是因为一共就只有1张盘, 怎么可能跑RAID呢?</span></span><br><span class="line">[root@WWW ~]$ btrfs balance start -dconvert=single -sconvert=single -mconvert=single /mydata/ -f</span><br><span class="line">Done, had to relocate 4 out of 4 chunks</span><br><span class="line"><span class="comment"># 这样就不会报错.</span></span><br><span class="line">[root@WWW ~]$ btrfs device add /dev/sd&#123;c,d,e&#125; /mydata/</span><br><span class="line">[root@WWW ~]$ btrfs filesystem show</span><br><span class="line">Label: <span class="string">&#x27;myNewData&#x27;</span>  uuid: 8de2ca1c-75ea-4573-ad80-4ef1768d1a6b</span><br><span class="line">	Total devices 4 FS bytes used 384.00KiB</span><br><span class="line">	devid    1 size 8.00GiB used 1.09GiB path /dev/sdb</span><br><span class="line">	devid    2 size 8.00GiB used 0.00B path /dev/sdc</span><br><span class="line">	devid    3 size 8.00GiB used 0.00B path /dev/sdd</span><br><span class="line">	devid    4 size 8.00GiB used 0.00B path /dev/sde</span><br><span class="line"><span class="comment"># 接下来, 转换为RAID试一试, 先看一下当前的状态</span></span><br><span class="line">[root@WWW ~]$ btrfs filesystem usage /mydata/</span><br><span class="line">Overall:</span><br><span class="line">    Device size:		  32.00GiB</span><br><span class="line">    Device allocated:		   1.09GiB</span><br><span class="line">    Device unallocated:		  30.91GiB</span><br><span class="line">    Device missing:		     0.00B</span><br><span class="line">    Used:			 384.00KiB</span><br><span class="line">    Free (estimated):		  31.72GiB	(min: 31.72GiB)</span><br><span class="line">    Data ratio:			      1.00</span><br><span class="line">    Metadata ratio:		      1.00</span><br><span class="line">    Global reserve:		  16.00MiB	(used: 0.00B)</span><br><span class="line"></span><br><span class="line">Data,single: Size:832.00MiB, Used:256.00KiB</span><br><span class="line">   /dev/sdb	 832.00MiB</span><br><span class="line"></span><br><span class="line">Metadata,single: Size:256.00MiB, Used:112.00KiB</span><br><span class="line">   /dev/sdb	 256.00MiB</span><br><span class="line"></span><br><span class="line">System,single: Size:32.00MiB, Used:16.00KiB</span><br><span class="line">   /dev/sdb	  32.00MiB</span><br><span class="line"></span><br><span class="line">Unallocated:</span><br><span class="line">   /dev/sdb	   6.91GiB</span><br><span class="line">   /dev/sdc	   8.00GiB</span><br><span class="line">   /dev/sdd	   8.00GiB</span><br><span class="line">   /dev/sde	   8.00GiB</span><br><span class="line"><span class="comment"># 是single, 下面执行</span></span><br><span class="line">[root@WWW ~]$ btrfs balance start -dconvert=raid5 -mconvert=raid5 -sconvert=raid5 /mydata/ -f</span><br><span class="line">Done, had to relocate 3 out of 3 chunks</span><br><span class="line">[root@WWW ~]$ btrfs filesystem <span class="built_in">df</span> /mydata/</span><br><span class="line">Data, RAID5: total=3.00GiB, used=832.00KiB</span><br><span class="line">System, RAID5: total=96.00MiB, used=16.00KiB</span><br><span class="line">Metadata, RAID5: total=288.00MiB, used=112.00KiB</span><br><span class="line">GlobalReserve, single: total=16.00MiB, used=0.00B</span><br></pre></td></tr></table></figure>
+
+<h4 id="子卷使用"><a href="#子卷使用" class="headerlink" title="子卷使用"></a>子卷使用</h4><p>前面还说过了, <code>btrfs</code>支持子卷(<code>subvolume</code>). 来看一下如何创建和管理子卷吧.</p>
+<p>子卷就是文件系统中一个拥有自己的文件目录结构的部分, 快照也是基于此创建的.  你可以直挂载一个子卷.</p>
+<p><strong>需要注意的是,子卷的原理和LVM的实现时有区别,尽管表现起来看起来是一样的,btrfs的子卷是基于文件实现的,而不像LVM是基于block的.</strong></p>
+<p><code>btrfs</code>的子卷管理是使用的<code>subvolume</code>子命令.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs subvolume [COMMAND]</span><br><span class="line"><span class="comment"># create 创建一个子卷</span></span><br><span class="line"><span class="comment"># list 列出所有的子卷</span></span><br></pre></td></tr></table></figure>
+
+<p>先来创建一个子卷:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs subvolume create /mydata/logs</span><br><span class="line">Create subvolume <span class="string">&#x27;/mydata/logs&#x27;</span></span><br><span class="line">[root@WWW ~]$ btrfs subvolume list /mydata/</span><br><span class="line">ID 275 gen 161 top level 5 path logs</span><br></pre></td></tr></table></figure>
+
+<p>上面的<code>ID</code>就是卷<code>ID</code>.</p>
+<p>子卷是可以被单独挂载的.现在我们来做个试验吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先把父卷给卸载了</span></span><br><span class="line">[root@WWW ~]$ umount /mydata </span><br><span class="line">[root@WWW ~]$ mount -o subvol=logs /dev/sdb /mnt</span><br><span class="line">[root@WWW ~]$ btrfs subvolume show /mnt</span><br><span class="line">/mnt</span><br><span class="line">	Name: 			logs</span><br><span class="line">	UUID: 			5d29a288-22b1-4044-a420-6d9c0073b565</span><br><span class="line">	Parent UUID: 		-</span><br><span class="line">	Received UUID: 		-</span><br><span class="line">	Creation time: 		2017-06-21 02:22:34 -0700</span><br><span class="line">	Subvolume ID: 		275</span><br><span class="line">	Generation: 		163</span><br><span class="line">	Gen at creation: 	161</span><br><span class="line">	Parent ID: 		    5</span><br><span class="line">	Top level ID: 	     5</span><br><span class="line">	Flags: 			    -</span><br><span class="line">	Snapshot(s):</span><br></pre></td></tr></table></figure>
+
+<p>接下来再把父卷给挂回来:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 要先卸载子卷哦</span></span><br><span class="line">[root@WWW ~]$ umount /mnt</span><br><span class="line">[root@WWW ~]$ mount /dev/sdb /mydata</span><br><span class="line">[root@WWW ~]$ <span class="built_in">ls</span> /mydata/logs/</span><br><span class="line">messages</span><br></pre></td></tr></table></figure>
+
+<p>看,我们的文件还在里面, 这就说明当父卷挂载时,所有的子卷也都会被挂载.</p>
+<p>接下来把他删除了吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs subvolume delete /mydata/logs/</span><br><span class="line">Delete subvolume (no-commit): <span class="string">&#x27;/mydata/logs&#x27;</span></span><br><span class="line">[root@WWW ~]$ btrfs subvolume list /mydata/</span><br><span class="line"><span class="comment"># 没有输出了, 说明已经被我们删掉了.</span></span><br></pre></td></tr></table></figure>
+
+<p>之前说过,快照是基于子卷来构建的, 体验一下<code>btrfs</code>的快照:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ btrfs subvolume create /mydata/logs</span><br><span class="line"><span class="comment"># 然后随便往里面填一点东西</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">cp</span> -rp /etc/grub.d /mydata/logs/</span><br><span class="line"><span class="comment"># 接下来给这个子卷做个快照</span></span><br><span class="line">[root@WWW ~]$ btrfs subvolume snapshot /mydata/logs /mydata/logs_snapshot</span><br><span class="line">Create a snapshot of <span class="string">&#x27;/mydata/logs/&#x27;</span> <span class="keyword">in</span> <span class="string">&#x27;/mydata/logs_snapshot&#x27;</span></span><br><span class="line">[root@WWW ~]$ btrfs subvolume list /mydata</span><br><span class="line">ID 276 gen 170 top level 5 path logs</span><br><span class="line">ID 277 gen 170 top level 5 path logs_snapshot</span><br></pre></td></tr></table></figure>
+
+<p>接着的使用方法就和LVM的快照差不多了.</p>
+<p>删除快照的方法和删除子卷的方法一样( 因为就是子卷嘛 ).</p>
+<p>除了这种文件系统的快照, <code>btrfs</code>还支持文件级别的快照. 方法很简单, 直接使用熟悉的<code>cp</code>命令就可以了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cp</span> --reflink README README.snap</span><br><span class="line"><span class="comment"># 这个reflink也是基于 CoW 写时复制的机制的.</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="最后再说一个小东西"><a href="#最后再说一个小东西" class="headerlink" title="最后再说一个小东西"></a>最后再说一个小东西</h3><p>如何将我们的<code>ext</code>系统转变为<code>btrfs</code>文件系统呢?</p>
+<p>直接做演示:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line">root@kali:/mydata/logs/grub.d<span class="comment"># fdisk /dev/sdf</span></span><br><span class="line"></span><br><span class="line">Welcome to fdisk (util-linux 2.29.2).</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, <span class="keyword">until</span> you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line">Disk /dev/sdf: 8 GiB, 8589934592 bytes, 16777216 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x0e2e36eb</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition <span class="built_in">type</span></span><br><span class="line">   p   primary (0 primary, 0 extended, 4 free)</span><br><span class="line">   e   extended (container <span class="keyword">for</span> logical partitions)</span><br><span class="line">Select (default p): </span><br><span class="line"></span><br><span class="line">Using default response p.</span><br><span class="line">Partition number (1-4, default 1): </span><br><span class="line">First sector (2048-16777215, default 2048): </span><br><span class="line">Last sector, +sectors or +size&#123;K,M,G,T,P&#125; (2048-16777215, default 16777215): +2G  </span><br><span class="line"></span><br><span class="line">Created a new partition 1 of <span class="built_in">type</span> <span class="string">&#x27;Linux&#x27;</span> and of size 2 GiB.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line">Disk /dev/sdf: 8 GiB, 8589934592 bytes, 16777216 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x0e2e36eb</span><br><span class="line"></span><br><span class="line">Device     Boot Start     End Sectors Size Id Type</span><br><span class="line">/dev/sdf1        2048 4196351 4194304   2G 83 Linux</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered.</span><br><span class="line">Calling ioctl() to re-read partition table.</span><br><span class="line">Syncing disks.</span><br><span class="line"></span><br><span class="line">root@kali:/mydata/logs/grub.d<span class="comment"># partprobe </span></span><br><span class="line">root@kali:/mydata/logs/grub.d<span class="comment"># mke2fs -t ext4 /dev/sdf1</span></span><br><span class="line">mke2fs 1.43.4 (31-Jan-2017)</span><br><span class="line">Creating filesystem with 524288 4k blocks and 131072 inodes</span><br><span class="line">Filesystem UUID: 213ded53-11a5-4d7b-9d3b-b196c543261b</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">	32768, 98304, 163840, 229376, 294912</span><br><span class="line"></span><br><span class="line">Allocating group tables: <span class="keyword">done</span>                            </span><br><span class="line">Writing inode tables: <span class="keyword">done</span>                            </span><br><span class="line">Creating journal (16384 blocks): <span class="keyword">done</span></span><br><span class="line">Writing superblocks and filesystem accounting information: <span class="keyword">done</span> </span><br><span class="line"></span><br><span class="line">root@kali:/mydata/logs/grub.d<span class="comment"># mount /dev/sdf1 /mnt</span></span><br><span class="line">root@kali:/mydata/logs/grub.d<span class="comment"># cd /mnt/</span></span><br><span class="line">root@kali:/mnt<span class="comment"># cp /etc/fstab ./</span></span><br><span class="line">root@kali:/mnt<span class="comment"># cat fstab </span></span><br><span class="line"><span class="comment"># /etc/fstab: static file system information.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Use &#x27;blkid&#x27; to print the universally unique identifier for a</span></span><br><span class="line"><span class="comment"># device; this may be used with UUID= as a more robust way to name devices</span></span><br><span class="line"><span class="comment"># that works even if disks are added and removed. See fstab(5).</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># &lt;file system&gt; &lt;mount point&gt;   &lt;type&gt;  &lt;options&gt;       &lt;dump&gt;  &lt;pass&gt;</span></span><br><span class="line"><span class="comment"># / was on /dev/sda1 during installation</span></span><br><span class="line">UUID=62e883b5-6150-4294-a6d2-a387b5cec8b8 /               ext4    errors=remount-ro 0       1</span><br><span class="line"><span class="comment"># swap was on /dev/sda5 during installation</span></span><br><span class="line">UUID=8f65d150-3b30-40e5-8f9e-cae947a8321f none            swap    sw              0       0</span><br><span class="line">/dev/sr0        /media/cdrom0   udf,iso9660 user,noauto     0       0</span><br><span class="line">root@kali:/<span class="comment"># fsck -f /dev/sdf1</span></span><br><span class="line">fsck from util-linux 2.29.2</span><br><span class="line">e2fsck 1.43.4 (31-Jan-2017)</span><br><span class="line">Pass 1: Checking inodes, blocks, and sizes</span><br><span class="line">Pass 2: Checking directory structure</span><br><span class="line">Pass 3: Checking directory connectivity</span><br><span class="line">Pass 4: Checking reference counts</span><br><span class="line">Pass 5: Checking group summary information</span><br><span class="line">/dev/sdf1: 12/131072 files (0.0% non-contiguous), 26157/524288 blocks</span><br><span class="line">root@kali:/<span class="comment"># btrfs-convert /dev/sdf1</span></span><br><span class="line">create btrfs filesystem:</span><br><span class="line">	blocksize: 4096</span><br><span class="line">	nodesize:  16384</span><br><span class="line">	features:  extref, skinny-metadata (default)</span><br><span class="line">creating ext2 image file</span><br><span class="line">creating btrfs metadatacopy inodes [o] [         3/        12]</span><br><span class="line">conversion completeroot@kali:/<span class="comment"># </span></span><br><span class="line">root@kali:/<span class="comment"># btrfs filesystem show</span></span><br><span class="line">Label: <span class="string">&#x27;myNewData&#x27;</span>  uuid: 8de2ca1c-75ea-4573-ad80-4ef1768d1a6b</span><br><span class="line">	Total devices 4 FS bytes used 1.01MiB</span><br><span class="line">	devid    1 size 8.00GiB used 1.12GiB path /dev/sdb</span><br><span class="line">	devid    2 size 8.00GiB used 1.12GiB path /dev/sdc</span><br><span class="line">	devid    3 size 8.00GiB used 1.12GiB path /dev/sdd</span><br><span class="line">	devid    4 size 8.00GiB used 1.12GiB path /dev/sde</span><br><span class="line"></span><br><span class="line">Label: none  uuid: 823109e6-34dd-4efe-ad1d-a63424b4a820</span><br><span class="line">	Total devices 1 FS bytes used 102.43MiB</span><br><span class="line">	devid    1 size 2.00GiB used 292.15MiB path /dev/sdf1</span><br></pre></td></tr></table></figure>
+
+<p>所以,其实是很简单的,直接进行一下<code>btrfs-convert</code>就好了. 在生成的文件系统中会出现一个叫做<code>ext2_saved</code>的镜像文件, 这个文件是用来进行回滚的, 就是重新恢复成<code>EXT</code>文件系统.</p>
+<p>其实还是<code>btrfs</code>命令, 直接加上<code>-r</code>参数 就好了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ umount /mnt/</span><br><span class="line">[root@WWW ~]$ btrfs-convert -r /dev/sdf1</span><br><span class="line">rollback complete</span><br><span class="line">[root@WWW ~]$ blkid /dev/sdf1</span><br><span class="line">/dev/sdf1: UUID=<span class="string">&quot;213ded53-11a5-4d7b-9d3b-b196c543261b&quot;</span> TYPE=<span class="string">&quot;ext4&quot;</span> PARTUUID=<span class="string">&quot;0e2e36eb-01&quot;</span></span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Btrfs%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">Btrfs的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%89%8D%E5%85%88%E6%9D%A5%E8%AF%B4%E4%B8%80%E4%B8%8BBtrfs%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-number">2.1.</span> <span class="toc-text">使用前先来说一下Btrfs的构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Btrfs%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">2.2.</span> <span class="toc-text">Btrfs文件系统的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.1.</span> <span class="toc-text">文件系统</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86"><span class="toc-number">2.2.2.</span> <span class="toc-text">物理磁盘管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%87%8D%E5%88%86%E9%85%8D"><span class="toc-number">2.2.3.</span> <span class="toc-text">数据重分配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%90%E5%8D%B7%E4%BD%BF%E7%94%A8"><span class="toc-number">2.2.4.</span> <span class="toc-text">子卷使用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E5%86%8D%E8%AF%B4%E4%B8%80%E4%B8%AA%E5%B0%8F%E4%B8%9C%E8%A5%BF"><span class="toc-number">2.3.</span> <span class="toc-text">最后再说一个小东西</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&text=btrfs初探"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&is_video=false&description=btrfs初探"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=btrfs初探&body=Check out this article: https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&title=btrfs初探"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&name=btrfs初探&description=&lt;p&gt;btrfs是一个先进的文件系统, 由Oracle研发, 在2014年推出了稳定版,支持很多EXT系列文件系统不支持的特性.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/&t=btrfs初探"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

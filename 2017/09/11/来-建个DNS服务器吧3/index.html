@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="来稍微说点高级的话题: 子域授权 转发服务器的建立 Bind的安全和权限管理 Bind的编译安装 和 压力测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="来,建个DNS服务器吧(Part3)">
+<meta property="og:url" content="https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="来稍微说点高级的话题: 子域授权 转发服务器的建立 Bind的安全和权限管理 Bind的编译安装 和 压力测试">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-09-12T00:05:44.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="DNS">
+<meta property="article:tag" content="Bind">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>来,建个DNS服务器吧(Part3)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/10/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A72/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&text=来,建个DNS服务器吧(Part3)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&is_video=false&description=来,建个DNS服务器吧(Part3)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=来,建个DNS服务器吧(Part3)&body=Check out this article: https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&name=来,建个DNS服务器吧(Part3)&description=&lt;p&gt;来稍微说点高级的话题: 子域授权 转发服务器的建立 Bind的安全和权限管理 Bind的编译安装 和 压力测试&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&t=来,建个DNS服务器吧(Part3)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%90%E5%9F%9F%E6%8E%88%E6%9D%83%E5%92%8C%E8%BD%AC%E5%8F%91%E7%9B%B8%E5%85%B3%E8%AF%9D%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">子域授权和转发相关话题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bind-view-%E8%A7%86%E5%9B%BE"><span class="toc-number">3.</span> <span class="toc-text">bind view 视图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bind%E7%9A%84%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85"><span class="toc-number">4.</span> <span class="toc-text">Bind的编译安装</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        来,建个DNS服务器吧(Part3)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-12T00:05:44.000Z" class="dt-published" itemprop="datePublished">2017-09-11</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Bind/" rel="tag">Bind</a>, <a class="p-category" href="/tags/DNS/" rel="tag">DNS</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>来稍微说点高级的话题: 子域授权 转发服务器的建立 Bind的安全和权限管理 Bind的编译安装 和 压力测试</p>
+<span id="more"></span>
+
+<h2 id="子域授权和转发相关话题"><a href="#子域授权和转发相关话题" class="headerlink" title="子域授权和转发相关话题"></a>子域授权和转发相关话题</h2><p>为啥我们要做子域授权 ? 这是我们实现分布式DNS数据库的一个前提. 由于全球DNS的查询量太大了, 所以我们才进行切割不同的部分, 授权不同的服务器, 自顶向下分成N层结构.</p>
+<p>要想完成子域授权(正向解析, 反向解析略麻烦暂且不提), 首先我们需要在正向区域中设定一个子区域, 比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">play.yaoxuannn.com.</span><br><span class="line">music.yaoxuannn.com.</span><br></pre></td></tr></table></figure>
+
+<p>这里已经是三级域了, <code>play,music</code>已经不再是作为主机了, 而是域名. 因此这个时候他们的记录就已经不再是A了, 而是NS. 接着就在后面写上服务器地址就行了, 就好像是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">play.yaoxuannn.com.	IN	NS	ns1.play.yaoxuannn.com.</span><br><span class="line">play.yaoxuannn.com.	IN	NS	ns2.play.yaoxuannn.com. <span class="comment"># 当然也是可以出现两个的啦</span></span><br><span class="line">music.yaoxuannn.com.	IN	NS	ns1.music.yaoxuannn.com.</span><br><span class="line">ns1.play.yaoxuannn.com.	IN	A	192.168.199.33</span><br><span class="line">ns2.play.yaoxuannn.com.	IN	A	192.168.199.44</span><br><span class="line">ns1.music.yaoxuannn.com	IN	A	192.168.199.20</span><br></pre></td></tr></table></figure>
+
+<p>这样的记录其实就说明, 在<code>yaoxuannn.com</code>这个域下有两个子域play和music, 分别有2和1台服务器. 但是, 这里的大大大前提是:<strong>父域justin13wyx必须在com域下获得授权.</strong> 否则没法在互联网上获得授权.</p>
+<p>现在我们来说一个稍微有一点混乱的事情: 假设现在有这样的结构(我就是不画图, 你来打我啊hhh): 根域下有一个叫me的子域, me下面又授权一个justin13wyx的子域, 而justin13wyx这个子域里面又有一个子域叫music, 一个DNS解析服务器ns1, 一台主机www, 而在子域music下有一台主机叫s1, 而这个子域music同时又是自己DNS解析服务器. OK , 环境介绍完了. 那么现在来讲这个事情, 如果music.yaoxuannn.com下的主机s1.music.jsutin13wyx.me想要知道<a target="_blank" rel="noopener" href="http://www.yaoxuannn.com的地址/">www.yaoxuannn.com的地址</a>, 那么查询的过程是什么样的呢?</p>
+<p>首先, 要明确的是<strong>子域不知道自己父域在哪里, 只有父域知道自己的直接子域的位置. 这种感觉就好像和Java中继承正好相反. 在Java中我们从父类中派生出很多子类. 而父类并不知道自己有哪些子类, 而子类却唯一知道自己的父类是谁.</strong> 接着, 主机s1像他所在的music子域中的DNS服务器music发起请求, 那么这个时候music会怎么做呢? 我们说过子域是不知道自己父域的位置的, 那么此时music会直接去询问根域, 根域告诉他我授权给me这个家伙了, 你去找他. 于是接着me说你去找justin13wyx这个家伙, 我授权给他了. 晕+_+. 结果搞来搞去又回来了, 自己家的事, 结果绕了这么大的圈子.</p>
+<p>那怎么办呀? 在这种情况下, 我们就可以定义<strong>转发区域</strong>了. 其实很简单, 就是当出现了我不负责的域的请求的时候或者我找不到的时候, 那么我就会去将这个请求转交给指定的服务器. 怎么样? 是不是有点像我们的默认路由呢 ? <strong>定义转发</strong> 就是这个意思.</p>
+<p>定义转发服务器也是有要求的:  被转发的服务器必须能够进行递归, 否则不予转发. 另外, 如果我们的请求被转发的服务器也不知道的话, 他还是要去根域去找. 那与其这样干嘛还要麻烦人家呀. 所以这个时候我们不如直接就去找根就好了嘛. 所以我们加上特殊的规则样的约束, 只有当请求这个域的位置的时候, 我们才把他转发到那里, 其他的情况的话我们就直接去找根就好了. (越来越像我们的路由表了..)</p>
+<p>前者叫做全局转发(全部转发), 也就是凡是非本机所负责的解析的区域的请求, 统统转发到指定的服务器, 使用一下结构:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Options &#123;</span><br><span class="line">	forward &#123;first|only&#125;</span><br><span class="line">	forwarders</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而第二种叫做区域转发: 仅转发对特定区域的请求至某服务器:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">zone <span class="string">&quot;ZONE_NAME&quot;</span> &#123;</span><br><span class="line">	<span class="built_in">type</span> forward;</span><br><span class="line">	forward &#123;first|only&#125;</span><br><span class="line">	forwarders</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中, forward定义<strong>转发模式</strong> , 转发模式有两种, 一种叫做<strong>first</strong> , 一种是<strong>only</strong>. 什么意思呢? first的意思就是说, 遇到困难我先都不想就把问题抛过去, 如果对方不搭理我, 那就只好乖乖的去找根了. 而only的意思就是说, 如果不搭理我那就放弃了..不玩了</p>
+<p>那现在就来创建一下试试吧!</p>
+<p>还是先来说一下现在的实验环境, 依然是那两台CentOS7主机, 但是我将之前所有的测试解析库文件都挪走了, 也就是说现在的状态是刚刚安装配置好的bind的样子.</p>
+<p>先给我们的实验机一号配上yaoxuannn.com的zone:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$TTL</span> 1D</span><br><span class="line"><span class="variable">$ORIGIN</span> yaoxuannn.com.</span><br><span class="line">@       IN      SOA     ns1.yaoxuannn.com.     admin.yaoxuannn.com. (</span><br><span class="line">                        2017091001</span><br><span class="line">                        1H</span><br><span class="line">                        5M</span><br><span class="line">                        3D</span><br><span class="line">                        1D )</span><br><span class="line">        IN      NS      ns1</span><br><span class="line">        IN      NS      ns2</span><br><span class="line">ns1     IN      A       192.168.56.101</span><br><span class="line">ns2     IN      A       192.168.56.102</span><br><span class="line">www     IN      A       192.168.199.10</span><br><span class="line">*       IN      CNAME   www</span><br></pre></td></tr></table></figure>
+
+<p>接着又是熟悉的权限配置了. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># cd /var/named/</span></span><br><span class="line">[root@WWW named]<span class="comment"># chown :named yaoxuannn.com.zone </span></span><br><span class="line">[root@WWW named]<span class="comment"># chmod 640 yaoxuannn.com.zone</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来, 在yaoxuannn.com的zone中定义子域music, 这一步其实就是子域授权了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">music   IN      NS      ns1.music</span><br><span class="line">ns1.music       IN      A       192.168.56.103</span><br></pre></td></tr></table></figure>
+
+<p>这个时候可先别做测试呀, 你肯定会失败的. 为什么?我们的子域没有配置啊 这样你怎么也不会查询成功的.</p>
+<p>那现在就开始配置子域, 进入实验二号机:</p>
+<p>现在rfc1912.zones里面加上zone记录:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">zone <span class="string">&quot;music.yaoxuannn.com&quot;</span> &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;music.yaoxuannn.com.zone&quot;</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>接着书写解析库文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$TTL</span> 1D</span><br><span class="line"><span class="variable">$ORIGIN</span> music.yaoxuannn.com.</span><br><span class="line">@       IN      SOA     ns1.music.yaoxuannn.com.     admin.music.yaoxuannn.com. (</span><br><span class="line">                        2017091001</span><br><span class="line">                        1H</span><br><span class="line">                        5M</span><br><span class="line">                        3D</span><br><span class="line">                        1D )</span><br><span class="line">        IN      NS      ns1</span><br><span class="line">ns1     IN      A       192.168.56.103</span><br><span class="line">www     IN      A       192.168.199.20</span><br><span class="line">*       IN      CNAME   www</span><br></pre></td></tr></table></figure>
+
+<p>那么现在, 在子域的DNS服务器上, 我们可以进行子域的解析但是不能进行父域的解析.  对于父域的DNS服务器来说, 除了可以进行自己域内的解析以外, 还可以进行子域的DNS服务器(也就是music.yaoxuannn.com)的解析. 你可能在测试的时候发现, 你父域的DNS解析子域的时候总是显示服务器无法到达. 一直报错.</p>
+<p>是这样的, 因为默认我们的各种工具提供的都是递归查找, 这样造成的后果就是每一次都会去找根域. 所以你应该使用dig工具提供的<code>+norecurse</code>选项. 这样才可以得到结果, 但是依然你是得不到答复的 你只能得到子域的DNS服务器的地址而已. 那么怎么样才能得到准确的解析结果呢? 很简单, 配置转发!</p>
+<p>首先我们先来试一试给子域加上转发, 使得他可以进行对父域的解析: (rfc1912.zones)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">zone <span class="string">&quot;yaoxuannn.com&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> forward;</span><br><span class="line">        forward only;</span><br><span class="line">        forwarders &#123; 192.168.56.101; &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>先别急着测试, 接下来我们再把一号试验机加上转发, 使得它可以解析子域的位置:(named.conf)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">options &#123;</span><br><span class="line">        listen-on port 53 &#123; 192.168.56.101; &#125;;</span><br><span class="line">//      listen-on-v6 port 53 &#123; ::1; &#125;;</span><br><span class="line">        directory       <span class="string">&quot;/var/named&quot;</span>;</span><br><span class="line">        dump-file       <span class="string">&quot;/var/named/data/cache_dump.db&quot;</span>;</span><br><span class="line">        statistics-file <span class="string">&quot;/var/named/data/named_stats.txt&quot;</span>;</span><br><span class="line">        memstatistics-file <span class="string">&quot;/var/named/data/named_mem_stats.txt&quot;</span>;</span><br><span class="line">        allow-query     &#123; any; &#125;;</span><br><span class="line">        forward         first;</span><br><span class="line">        forwarders      &#123; 192.168.56.103; &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>行了, 相信你开心的配置完毕了, 但是却发现似乎P用都没有.</p>
+<p>那么, 接下来将介绍一个大大大大超级无敌大大大大的<strong>坑</strong>:</p>
+<p>请务必要把:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dnssec-enable no;</span><br><span class="line">dnssec-validation no;</span><br></pre></td></tr></table></figure>
+
+<p><strong>关闭</strong> 而不是 <strong>注释</strong> 因为注释的默认值是yes. 所以一定要写清楚NO! 接下来你就可以的得到你想看到的结果了.</p>
+<p>行了, 现在转发配置就这样了吧~ 下面说说简单的安全机制和权限管理</p>
+<h2 id="权限管理"><a href="#权限管理" class="headerlink" title="权限管理"></a>权限管理</h2><p>这里我们说一说Bind的安全项目的配置. 首先是<strong>ACL</strong>  访问控制列表</p>
+<p>也就是把一个或者多个主机归并成一个集合, 并通过一个统一的名称调用.这个配置起来就和他的功能一样好懂:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">acl acl_name &#123;</span><br><span class="line">	ip;</span><br><span class="line">	ip;</span><br><span class="line">	hostname;</span><br><span class="line">	net/prelen;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>示个例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">acl mynet &#123;</span><br><span class="line">	172.16.0.0/16;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ACL提供了几个内定义的: none(没有一个主机), any(任意主机), local(本机),localnet(本机IP同掩码进行计算的网络地址)  还记得我们在最一开始提到了allow-query这个属性不? 这个地方我们就写了any啊. 如果内置的不满意, 那么就手写一acl就可以了. 但是注意: 只能先定义后使用, 而且一般我们都把他定义在配置文件中options的前面.</p>
+<p>我们可以来做个试验咯, 比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">zone <span class="string">&quot;yaoxuannn.com&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;yaoxuannn.com.zone&quot;</span>;</span><br><span class="line">        allow-query &#123; 127.0.0.1; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment"># 加入了一个allow-query属性</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来我们尝试用本机的外部IP地址来进行解析:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW named]<span class="comment"># dig yaoxuannn.com @192.168.56.101</span></span><br><span class="line"></span><br><span class="line">; &lt;&lt;&gt;&gt; DiG 9.9.4-RedHat-9.9.4-50.el7_3.1 &lt;&lt;&gt;&gt; yaoxuannn.com @192.168.56.101</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- <span class="string">opcode: QUERY, status: NOERROR, id: 30002</span></span><br><span class="line"><span class="string">;; flags: qr aa rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; OPT PSEUDOSECTION:</span></span><br><span class="line"><span class="string">; EDNS: version: 0, flags:; udp: 4096</span></span><br><span class="line"><span class="string">;; QUESTION SECTION:</span></span><br><span class="line"><span class="string">;yaoxuannn.com.			IN	A</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; AUTHORITY SECTION:</span></span><br><span class="line"><span class="string">yaoxuannn.com.		86400	IN	SOA	ns1.yaoxuannn.com. admin.yaoxuannn.com. 2017091002 3600 300 259200 86400</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; Query time: 0 msec</span></span><br><span class="line"><span class="string">;; SERVER: 192.168.56.101#53(192.168.56.101)</span></span><br><span class="line"><span class="string">;; WHEN: Mon Sep 11 11:42:53 EDT 2017</span></span><br><span class="line"><span class="string">;; MSG SIZE  rcvd: 89</span></span><br></pre></td></tr></table></figure>
+
+<p>没有结果了.  不过说实话,作为一台DNS服务器, 我们一般还是应该允许查询的属性设置成any吧.</p>
+<p>除了这个allow-query(允许查询的主机, 白名单), 我们就把他叫做访问控制的指令, 还有allow-transfer(允许进行区域传送的主机, 白名单)</p>
+<p>之前就说过了, 区域传送是十分危险的, 但当时没有提到怎么进行限制, 现在就可已进行尝试了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">zone <span class="string">&quot;yaoxuannn.com&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;yaoxuannn.com.zone&quot;</span>;</span><br><span class="line">        allow-transfer &#123; 127.0.0.1; &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>用我们今天刚刚做好的传送服务器来试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW named]<span class="comment"># dig axfr yaoxuannn.com @192.168.56.101</span></span><br><span class="line"></span><br><span class="line">; &lt;&lt;&gt;&gt; DiG 9.9.4-RedHat-9.9.4-50.el7_3.1 &lt;&lt;&gt;&gt; axfr yaoxuannn.com @192.168.56.101</span><br><span class="line">;; global options: +cmd</span><br><span class="line">; Transfer failed.</span><br></pre></td></tr></table></figure>
+
+<p>这样就达到我们的目的了. 当然ACL是贯穿所有的, 你可以直接把ACL写到这里面. </p>
+<p>接着还有allow-recursion{} 和allow-update {} 这个update在默认的配置文件里也有, 什么意思? 其实就是字面意思了.  允许更新数据库中的内容, 因为有的时候我们的主机IP可能是通过DHCP协议获取的, 那么DNS服务器会得到通知, 于是自动进行改变.</p>
+<h2 id="bind-view-视图"><a href="#bind-view-视图" class="headerlink" title="bind view 视图"></a>bind view 视图</h2><p>先来假设这样的情况, 假设中国移动, 中国电信之间的总入口带宽很小, 只有100G. 那么这样就会带来一个问题. 这样移动的用户访问位于电信机房内的服务器的时候, 就会变得异常的慢. 而访问移动的就不会有什么问题. 这样的影响是很大的. 为了留住用户, 那么站点的组织者就会在各大运营商机房内的都放置了一台服务器. 接着只要使得移动的用户访问移动机房内的机器, 电信的用户访问电信的机器就行了. 但是问题在于 这些机器的域名可都是一个. 也就是说来自不同运营商的用户得到同一个域名的解析是不一样的.</p>
+<p>类似的, 如果小米公司的内部员工在公司访问自己家的服务器(私有地址), DNS解析服务器应该直接返回给他们私有地址, 但是外网用户访问的时候就应该得到小米的防火墙或其他设备的地址, 接着在经过NAT转换连接上. 类似这样的需求. 当然常见的还是第一个例子.</p>
+<p>对于Bind而言, 这个东西就是Bind的View(视图). 简单的说, 你可以把View当做是容器, 就像Docker一样的感觉(不熟悉Docker, 日后再说) 我们可以定义多个view, 每一个view都有同一条域名的记录, 但是他们指向的文件却不同. 每个view指向一组特定的客户端. 原理其实也很简单: Bind提供多个View, 当客户端发起请求的时候, bind自上而下进行匹配, 一旦匹配到View和客户端, 即停止匹配将在得到的view中进行查询. 如果匹配到最后都没有检查到. 那么就直接拒绝请求. 为了防止这样的情况发生. 我们一般都会设置一个匹配特定网络以外的所有网络这么一条view. </p>
+<p>定义一个view是很简单的了, 基本上在options中的属性都可以用在view中:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 一个view的定义:</span></span><br><span class="line">view VIEW_NAME &#123;</span><br><span class="line">	match-clients &#123;  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中最重要的属性就是上面的那个match-clients了, 另外还有一些注意项: 一旦我们启用了view, 那么所有的zone必须全部放在view中. 由于我们是自上而下匹配的, 所有优先级问题和顺序问题需要规划好. 还有一个问题, 根区域记录放在哪里呢? </p>
+<p>首先, 根区域的存在意义是什么呢? 我们知道当来自互联网的机器询问到我们这边的时候并且请去做递归查询, 遇到我们不知道或者不负责的查询的时候我们就会去请求根去了. 但是, 如果我们压根都不允许递归查询的话, 不写根都是可以的. 一般情况下, 只给本地的机器做递归, 所以 根区域的记录只要放在match本地的view中就可以了.</p>
+<p>我也是拼了老命在做实验啊….我笔记本的风扇在疯狂的旋转.. 不说了, 一共开了三台虚拟机, 两台Cent OS, 一台Ubuntu. 其中两台CentOS的IP分别是192.168.56.101和192.168.56.103, 而Ubuntu是192.168.56.102. 101作为DNS服务器, 而其他的两台CentOS作为内部主机, Ubuntu作为一台外部主机, 其实就是在说他们的view不同罢了. 其中CentOS们是一个acl组的, 叫做test. 而Ubuntu没有分组, 默认直接在view中使用了IP来表示. 那么现在就直接看一下配置和最终的效果吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">acl <span class="built_in">test</span> &#123;</span><br><span class="line">        192.168.56.101;</span><br><span class="line">        192.168.56.103;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment"># 这是101DNS服务器中的acl配置.</span></span><br><span class="line">view external &#123;</span><br><span class="line">        match-clients &#123; 192.168.56.102; &#125;;</span><br><span class="line">        zone <span class="string">&quot;yaoxuannn.com&quot;</span> IN &#123;</span><br><span class="line">                <span class="built_in">type</span> master;</span><br><span class="line">                file <span class="string">&quot;102yaoxuannn.com.zone&quot;</span>;</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">view internal &#123;</span><br><span class="line">        match-clients &#123; <span class="built_in">test</span>; &#125;;</span><br><span class="line">        allow-recursion &#123; <span class="built_in">test</span>; &#125;;</span><br><span class="line">        zone <span class="string">&quot;yaoxuannn.com&quot;</span> IN &#123;</span><br><span class="line">                <span class="built_in">type</span> master;</span><br><span class="line">                file <span class="string">&quot;yaoxuannn.com.zone&quot;</span>;</span><br><span class="line">                allow-transfer &#123; 127.0.0.1; &#125;;</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">#上面是两个view的设置</span></span><br></pre></td></tr></table></figure>
+
+<p>我直接将原来的yaoxuannn.com.zone文件进行<code>cp -a</code> 得到102.yaoxuannn.com, 接着把其中的www对应的记录值改成了192.168.56.20 ( 原来是192.168.56.10 )</p>
+<p>最后测试的结果是什么样子呢? </p>
+<p>Ubuntu能够进行解析, 并且得到192.168.56.20的结果:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:~<span class="comment"># dig www.yaoxuannn.com @192.168.56.101</span></span><br><span class="line"></span><br><span class="line">; &lt;&lt;&gt;&gt; DiG 9.9.5-3ubuntu0.8-Ubuntu &lt;&lt;&gt;&gt; www.yaoxuannn.com @192.168.56.101</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- <span class="string">opcode: QUERY, status: NOERROR, id: 56124</span></span><br><span class="line"><span class="string">;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 3</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; OPT PSEUDOSECTION:</span></span><br><span class="line"><span class="string">; EDNS: version: 0, flags:; udp: 4096</span></span><br><span class="line"><span class="string">;; QUESTION SECTION:</span></span><br><span class="line"><span class="string">;www.yaoxuannn.com.		IN	A</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; ANSWER SECTION:</span></span><br><span class="line"><span class="string">www.yaoxuannn.com.	86400	IN	A	192.168.199.20 # 得到20的结果</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; AUTHORITY SECTION:</span></span><br><span class="line"><span class="string">yaoxuannn.com.		86400	IN	NS	ns1.yaoxuannn.com.</span></span><br><span class="line"><span class="string">yaoxuannn.com.		86400	IN	NS	ns2.yaoxuannn.com.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; ADDITIONAL SECTION:</span></span><br><span class="line"><span class="string">ns1.yaoxuannn.com.	86400	IN	A	192.168.56.101</span></span><br><span class="line"><span class="string">ns2.yaoxuannn.com.	86400	IN	A	192.168.56.102</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; Query time: 7 msec</span></span><br><span class="line"><span class="string">;; SERVER: 192.168.56.101#53(192.168.56.101)</span></span><br><span class="line"><span class="string">;; WHEN: Tue Sep 12 03:54:49 PDT 2017</span></span><br><span class="line"><span class="string">;; MSG SIZE  rcvd: 131</span></span><br></pre></td></tr></table></figure>
+
+<p>而 ,另外一边103解析得到的结果就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># dig www.yaoxuannn.com @192.168.56.101</span></span><br><span class="line"></span><br><span class="line">; &lt;&lt;&gt;&gt; DiG 9.9.4-RedHat-9.9.4-50.el7_3.1 &lt;&lt;&gt;&gt; www.yaoxuannn.com @192.168.56.101</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- <span class="string">opcode: QUERY, status: NOERROR, id: 44198</span></span><br><span class="line"><span class="string">;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 3</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; OPT PSEUDOSECTION:</span></span><br><span class="line"><span class="string">; EDNS: version: 0, flags:; udp: 4096</span></span><br><span class="line"><span class="string">;; QUESTION SECTION:</span></span><br><span class="line"><span class="string">;www.yaoxuannn.com.		IN	A</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; ANSWER SECTION:</span></span><br><span class="line"><span class="string">www.yaoxuannn.com.	86400	IN	A	192.168.199.10</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; AUTHORITY SECTION:</span></span><br><span class="line"><span class="string">yaoxuannn.com.		86400	IN	NS	ns2.yaoxuannn.com.</span></span><br><span class="line"><span class="string">yaoxuannn.com.		86400	IN	NS	ns1.yaoxuannn.com.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; ADDITIONAL SECTION:</span></span><br><span class="line"><span class="string">ns1.yaoxuannn.com.	86400	IN	A	192.168.56.101</span></span><br><span class="line"><span class="string">ns2.yaoxuannn.com.	86400	IN	A	192.168.56.102</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; Query time: 2 msec</span></span><br><span class="line"><span class="string">;; SERVER: 192.168.56.101#53(192.168.56.101)</span></span><br><span class="line"><span class="string">;; WHEN: Tue Sep 12 07:02:10 EDT 2017</span></span><br><span class="line"><span class="string">;; MSG SIZE  rcvd: 131</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来我们说说CDN吧, 这个写前端的小伙伴肯定都很熟悉, 因为通常都会选择一些合适的CDN来进行JS库的快速加载. 那么什么到底啥是CDN嘞? 其实就是内容分发网络的意思, 能够把同一个服务的内容分发到多处. 说白了其实就是大量的缓存服务器, 假设我们很土豪, 在全世界各地的机房内都放上我们的服务器, 他们都保存(缓存)我们原始服务器的副本. 这样来自某个网络的用户进行查看的时候, 得到不同的DNS解析结果, 从而访问属于他那个位置的缓存服务器. 这样分布式的内容分发服务, 就叫做CDN. 而构建这样的CDN网络, 一种实现方式就是智能DNS. 除了这种方法, 还有负载均衡调度用户到不同的服务器上. 这种又叫做全局负载均衡网络.</p>
+<h2 id="Bind的编译安装"><a href="#Bind的编译安装" class="headerlink" title="Bind的编译安装"></a>Bind的编译安装</h2><p>首先当然是<a target="_blank" rel="noopener" href="https://ftp.isc.org/isc/bind9/cur/9.10/bind-9.10.6.tar.gz">获取源码</a>咯. 接着解包之后我们进入目录看到的应该是下面这样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW bind-9.10.6]<span class="comment"># ls</span></span><br><span class="line">acconfig.h  bind.keys     config.h.in        configure     doc      HISTORY.md             isc-config.sh.html  ltmain.sh      OPTIONS     srcid    win32utils</span><br><span class="line">aclocal.m4  bind.keys.h   config.h.win32     configure.in  docutil  install-sh             isc-config.sh.in    make           OPTIONS.md  unit</span><br><span class="line">Atffile     CHANGES       config.sub         contrib       FAQ.xml  isc-config.sh.1        lib                 Makefile.<span class="keyword">in</span>    README      util</span><br><span class="line">bin         config.guess  config.threads.in  COPYRIGHT     HISTORY  isc-config.sh.docbook  libtool.m4          mkinstalldirs  README.md   version</span><br></pre></td></tr></table></figure>
+
+<p>我们说过编译一个C语言程序无非就是configure, make, make install. 当然这个也不例外. </p>
+<p>在这里说一下常用的configure选项, 首先是 –prefix和 –sysconfdir这两个超常用通用选项. 以后要是想删除这个就直接把这个而目录删除就好了. 接着是关闭ipv6和关闭chroot功能, 以及启用多线程功能. 这样Bind可以在多核机器上表现更优异.</p>
+<p>最后的configure命令就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW bind-9.10.6]<span class="comment"># ./configure --prefix=/usr/local/bind9 --sysconfdir=/etc/bind9 --disable-ipv6 --disable-chroot --enable-threads</span></span><br></pre></td></tr></table></figure>
+
+<p>:arrow_right_hook:直接回车吧!</p>
+<p>接着我们想到了一个问题, 我们使用rpm包进行安装完的之后, named会用普通用户named来运行named来着. 所以我们要先创建用户:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW bind-9.10.6]<span class="comment"># groupadd -g 53 named -r</span></span><br><span class="line">[root@WWW bind-9.10.6]<span class="comment"># useradd -u 53 -g named named -r</span></span><br><span class="line">[root@WWW bind-9.10.6]<span class="comment"># id named</span></span><br><span class="line">uid=53(named) gid=53(named) <span class="built_in">groups</span>=53(named)</span><br></pre></td></tr></table></figure>
+
+<p>好了, 接下来就是常规的几步了.</p>
+<p><strong>加入&#x2F;etc&#x2F;profile.d&#x2F;内的PATH环境变量</strong></p>
+<p><strong>导出链接库编辑&#x2F;etc&#x2F;ld.so.conf.d&#x2F;*.conf加入自己的lib目录, 使用ldconfig重建</strong></p>
+<p><strong>链接头文件到&#x2F;usr&#x2F;include下</strong></p>
+<p><strong>编辑&#x2F;etc&#x2F;man.config, 加入man的路径</strong></p>
+<p>总之就先这样吧, 回去看一下我们的Bind源码目录, 里面有一个叫contrib的目录, 里面是一些第三方的辅助Bind的程序, 其中有个叫queryperf的, 这个是一个做压力测试的工具, 很小, 直接configure, make就可以使用了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW queryperf]<span class="comment"># queryperf -h</span></span><br><span class="line"></span><br><span class="line">DNS Query Performance Testing Tool</span><br><span class="line">Version: <span class="variable">$Id</span>: queryperf.c,v 1.12 2007/09/05 07:36:04 marka Exp $</span><br><span class="line"></span><br><span class="line">Usage: queryperf [-d datafile] [-s server_addr] [-p port] [-q num_queries]</span><br><span class="line">                 [-b bufsize] [-t <span class="built_in">timeout</span>] [-n] [-l <span class="built_in">limit</span>] [-f family] [-1]</span><br><span class="line">                 [-i interval] [-r arraysize] [-u unit] [-H histfile]</span><br><span class="line">                 [-T qps] [-e] [-D] [-R] [-c] [-v] [-h]</span><br></pre></td></tr></table></figure>
+
+<p>首先我们需要一个测试文件很简单, <code>域名 类型</code>就行了 .</p>
+<p>比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">www.yaoxuannn.com A</span><br></pre></td></tr></table></figure>
+
+<p>接下来使用<code>queryperf -d CONFIGFILE -s SERVER</code> 就行了. 完成后就会受到一份报告:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># queryperf -d test -s 192.168.56.101</span></span><br><span class="line"></span><br><span class="line">DNS Query Performance Testing Tool</span><br><span class="line">Version: <span class="variable">$Id</span>: queryperf.c,v 1.12 2007/09/05 07:36:04 marka Exp $</span><br><span class="line"></span><br><span class="line">[Status] Processing input data</span><br><span class="line">[Status] Sending queries (beginning with 192.168.56.101)</span><br><span class="line">[Status] Testing complete</span><br><span class="line"></span><br><span class="line">Statistics:</span><br><span class="line"></span><br><span class="line">  Parse input file:     once</span><br><span class="line">  Ended due to:         reaching end of file</span><br><span class="line"></span><br><span class="line">  Queries sent:         1451520 queries</span><br><span class="line">  Queries completed:    1451520 queries</span><br><span class="line">  Queries lost:         0 queries</span><br><span class="line">  Queries delayed(?):   0 queries</span><br><span class="line"></span><br><span class="line">  RTT max:         	0.035401 sec</span><br><span class="line">  RTT min:              0.000362 sec</span><br><span class="line">  RTT average:          0.001011 sec</span><br><span class="line">  RTT std deviation:    0.000838 sec</span><br><span class="line">  RTT out of range:     0 queries</span><br><span class="line"></span><br><span class="line">  Percentage completed: 100.00%</span><br><span class="line">  Percentage lost:        0.00%</span><br><span class="line"></span><br><span class="line">  Started at:           Tue Sep 12 08:30:05 2017</span><br><span class="line">  Finished at:          Tue Sep 12 08:31:27 2017</span><br><span class="line">  Ran <span class="keyword">for</span>:              81.967886 seconds</span><br><span class="line"></span><br><span class="line">  Queries per second:   17708.398628 qps</span><br></pre></td></tr></table></figure>
+
+<p>不过这样的压力测试由于我是本机测试所以无法得到带宽带来的性能损耗. 接下来我们玩一个好玩的, 可以试试把rndc的日志记录功能打开, 再进行测试.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%90%E5%9F%9F%E6%8E%88%E6%9D%83%E5%92%8C%E8%BD%AC%E5%8F%91%E7%9B%B8%E5%85%B3%E8%AF%9D%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">子域授权和转发相关话题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bind-view-%E8%A7%86%E5%9B%BE"><span class="toc-number">3.</span> <span class="toc-text">bind view 视图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bind%E7%9A%84%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85"><span class="toc-number">4.</span> <span class="toc-text">Bind的编译安装</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&text=来,建个DNS服务器吧(Part3)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&is_video=false&description=来,建个DNS服务器吧(Part3)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=来,建个DNS服务器吧(Part3)&body=Check out this article: https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&title=来,建个DNS服务器吧(Part3)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&name=来,建个DNS服务器吧(Part3)&description=&lt;p&gt;来稍微说点高级的话题: 子域授权 转发服务器的建立 Bind的安全和权限管理 Bind的编译安装 和 压力测试&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/&t=来,建个DNS服务器吧(Part3)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

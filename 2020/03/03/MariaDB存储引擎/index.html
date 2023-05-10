@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="我们之前初步了解了MariaDB, 接着学习了MySQL的一些关于权限, 缓存和索引的东西. 接下来我们继续聊聊关于存储引擎的相关知识.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MariaDB存储引擎和事务">
+<meta property="og:url" content="https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="我们之前初步了解了MariaDB, 接着学习了MySQL的一些关于权限, 缓存和索引的东西. 接下来我们继续聊聊关于存储引擎的相关知识.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/show_engine_percona_xtraDB.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/%E4%BA%8B%E5%8A%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/%E5%B9%BB%E8%AF%BB_from_Wikipedia.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/log.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/long_query_time.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/slow_query_log.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/error_log.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/bin_log_show_event.png">
+<meta property="article:published_time" content="2020-03-04T02:28:47.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:43:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/show_engine_percona_xtraDB.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>MariaDB存储引擎和事务</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&text=MariaDB存储引擎和事务"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&is_video=false&description=MariaDB存储引擎和事务"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MariaDB存储引擎和事务&body=Check out this article: https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&name=MariaDB存储引擎和事务&description=&lt;p&gt;我们之前初步了解了MariaDB, 接着学习了MySQL的一些关于权限, 缓存和索引的东西. 接下来我们继续聊聊关于存储引擎的相关知识.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&t=MariaDB存储引擎和事务"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#InnoDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">1.</span> <span class="toc-text">InnoDB存储引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MyISAM%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">2.</span> <span class="toc-text">MyISAM存储引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">3.</span> <span class="toc-text">其他的一些存储引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CSV%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">3.1.</span> <span class="toc-text">CSV存储引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MRG-MYISAM"><span class="toc-number">3.2.</span> <span class="toc-text">MRG_MYISAM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BLACKHOLE"><span class="toc-number">3.3.</span> <span class="toc-text">BLACKHOLE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MEMORY"><span class="toc-number">3.4.</span> <span class="toc-text">MEMORY</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PERFORMANCE-SCHEMA"><span class="toc-number">3.5.</span> <span class="toc-text">PERFORMANCE_SCHEMA</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ARCHIVE"><span class="toc-number">3.6.</span> <span class="toc-text">ARCHIVE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="toc-number">4.</span> <span class="toc-text">MySQL的并发控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E4%BA%8B%E5%8A%A1"><span class="toc-number">5.</span> <span class="toc-text">MySQL的事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-number">5.1.</span> <span class="toc-text">事务隔离级别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MariaDB%E7%9A%84%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-number">6.</span> <span class="toc-text">MariaDB的日志文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-number">6.1.</span> <span class="toc-text">查询日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-number">6.2.</span> <span class="toc-text">慢查询日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97"><span class="toc-number">6.3.</span> <span class="toc-text">错误日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%97%A5%E5%BF%97"><span class="toc-number">6.4.</span> <span class="toc-text">二进制日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E7%BB%A7%E6%97%A5%E5%BF%97"><span class="toc-number">6.5.</span> <span class="toc-text">中继日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E6%97%A5%E5%BF%97"><span class="toc-number">6.6.</span> <span class="toc-text">事务日志</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        MariaDB存储引擎和事务
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-03-04T02:28:47.000Z" class="dt-published" itemprop="datePublished">2020-03-03</time>
+        
+        (Updated: <time datetime="2020-11-30T01:43:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database/" rel="tag">Database</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>我们之前初步了解了MariaDB, 接着学习了MySQL的一些关于权限, 缓存和索引的东西. 接下来我们继续聊聊关于存储引擎的相关知识.</p>
+<span id="more"></span>
+
+<p>我们之前聊过MySQL的架构, 其中, 有很多可插拔的第三方或者社区支持的<strong>存储引擎</strong>, 说到底MySQL的很多特性都是来源于存储引擎的, 其中比较有名的就是MyISAM和InnoDB, 相比于MyISAM, InnoDB支持事务, 这一点就让InnoDB让更多人选择, 或者成为默认的存储引擎(5.5版本之后). 但是当然啦, 存储引擎不止这两个, 还有很多的, 接下来我们就来就其中几个比较重要的来做说明.</p>
+<h2 id="InnoDB存储引擎"><a href="#InnoDB存储引擎" class="headerlink" title="InnoDB存储引擎"></a>InnoDB存储引擎</h2><p>我们在创建一个新表的时候, 就会指明使用到的存储引擎. (CREATE TABLE … ENGINE&#x3D;…), 所以说到底, 存储引擎是一个表级别的概念, 就是表的类型.</p>
+<p>首当其中就是InnoDB了. InnoDB的设计目标是处理大量的短期事务, 并且, 在机器宕机, 出现断电等导致内存数据还没有被写入到磁盘中的情况下, InnoDB可以自动的进行数据的修复, 这样的一大好处就是避免数据的不一致, 而MyISAM不具备这样的特性, 从而只能进行手动的修复, 手动的修复就会很容易的造成数据不一致(inconsistent).</p>
+<p>InnoDB的数据存储在<strong>表空间</strong>中. 这个表空间就是InnoDB组织数据的”黑盒子”, 在文件系统上表现为一个由InnoDB理解的文件系统. 因此, InnoDB也可以支持裸设备, 即是说, 你可以直接分个区无需格式化从而直接供InnoDB使用.</p>
+<p>对于InnoDB来说, 有多种存放数据的策略:</p>
+<ul>
+<li>所有的InnoDB表的数据, 索引, 都放置在同一个表空间中. (不易管理, 一些操作不被支持)</li>
+<li>每个表使用单独的表空间存储表的数据和索引 <code>(innodb_file_per_table=ON)</code></li>
+</ul>
+<p>对于第一种存放的方式, 在datadir定义的目录下, 会出现<code>idbdata</code>开头的文件, 自动编号.</p>
+<p>我们来看看默认配置下, datadir下的文件样子</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 mysql]<span class="comment"># ls -l /var/lib/mysql/</span></span><br><span class="line">total 28704</span><br><span class="line">-rw-rw----. 1 mysql mysql    16384 Mar  4 10:26 aria_log.00000001</span><br><span class="line">-rw-rw----. 1 mysql mysql       52 Mar  4 10:26 aria_log_control</span><br><span class="line">drwx------. 2 mysql mysql     4096 Mar  4 12:17 hellodb</span><br><span class="line">-rw-rw----. 1 mysql mysql 18874368 Mar  4 10:26 ibdata1</span><br><span class="line">-rw-rw----. 1 mysql mysql  5242880 Mar  4 10:26 ib_logfile0</span><br><span class="line">-rw-rw----. 1 mysql mysql  5242880 Mar  4 10:26 ib_logfile1</span><br><span class="line">drwx------. 2 mysql mysql     4096 Mar  4 10:26 mysql</span><br><span class="line">srwxrwxrwx. 1 mysql mysql        0 Mar  4 10:26 mysql.sock</span><br><span class="line">drwx------. 2 mysql mysql     4096 Mar  4 10:26 performance_schema</span><br></pre></td></tr></table></figure>
+
+<p>其中的ibdata1就是我们的表空间了.</p>
+<p>接下来我们修改配置加上<code>innodb_file_per_table</code>之后, 来创建一个新表试试.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; create database mydb;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; use mydb;</span><br><span class="line">Database changed</span><br><span class="line">MariaDB [mydb]&gt; create table t1 (<span class="built_in">id</span> int, name char(30));</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [mydb]&gt; Bye</span><br><span class="line">[root@node1 mysql]<span class="comment"># ls /var/lib/mysql/mydb/ -l</span></span><br><span class="line">total 208</span><br><span class="line">-rw-rw----. 1 mysql mysql    65 Mar  8 11:32 db.opt</span><br><span class="line">-rw-rw----. 1 mysql mysql  8586 Mar  8 11:32 t1.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql 98304 Mar  8 11:32 t1.ibd</span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 在这个数据库目录下, 有一个叫做<code>t1.ibd</code>的文件. 这个玩意就是表空间文件, 表现为<code>table_name.ibd</code>这个样子. 另外的一个<code>*.frm</code>的文件是表格式定义(format).</p>
+<p>接下来我们快速过一遍InnoDB的一些特性:</p>
+<ul>
+<li>基于MVCC来支持高并发 – MVCC-Multi Version Concurrency Control</li>
+<li>支持所有的事务隔离级别, 默认级别: REPEATABLE READ</li>
+<li>使用间隙锁防止幻读</li>
+<li>使用聚集索引</li>
+<li>支持”自适应哈希索引” – Adaptive Hash Index</li>
+<li>支持热备 (在线) – <code>xtrabackup</code></li>
+<li>支持行级锁</li>
+</ul>
+<p>我们之前在介绍MariaDB的时候就说过, 它使用的其实不是InnoDB存储引擎, 而是一个社区的改良版, <code>XtraDB</code>. 其实在我们列出存储引擎的时候就能看到:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/show_engine_percona_xtraDB.png" alt="show_engine_percona_xtraDB"></p>
+<p>这个Percona是一个著名的MySQL的技术顾问公司.</p>
+<h2 id="MyISAM存储引擎"><a href="#MyISAM存储引擎" class="headerlink" title="MyISAM存储引擎"></a>MyISAM存储引擎</h2><p>接下来我们再来说MyISAM, 这个存储引擎早期是针对一些数据仓库设计的, 即较少的写操作, 较多的读操作. 因为不适合在线事务处理. 但MyISAM是MySQL很早期的存储引擎, 因此是十分成熟的. 并且他还有一个很棒的特性就是支持全文索引(<code>FULLTEXT idnex</code>), 可以压缩, 支持空间函数. 相较于InnoDB精细的锁粒度, MyISAM是表级的锁, 因此十分容易出现竞争态. 还有就是我们说过的, 不支持安全恢复.</p>
+<p>因此在MariaDB中, 我们使用MyISAM的时候, 就会使用<code>Aria</code>存储引擎, 你可以在上面的图中的最后一行看到. 这就是支持安全恢复的MyISAM存储引擎.</p>
+<p>那么MyISAM是如何存储数据的呢? 我们之前使用的hellodb数据库就是使用的MyISAM引擎, 我们来看看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># ls /var/lib/mysql/hellodb/ -l</span></span><br><span class="line">total 140</span><br><span class="line">-rw-rw----. 1 mysql mysql 8636 Mar  4 12:17 classes.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql  172 Mar  4 12:17 classes.MYD</span><br><span class="line">-rw-rw----. 1 mysql mysql 2048 Mar  4 12:17 classes.MYI</span><br><span class="line">-rw-rw----. 1 mysql mysql 8630 Mar  4 12:17 coc.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql  112 Mar  4 12:17 coc.MYD</span><br><span class="line">-rw-rw----. 1 mysql mysql 2048 Mar  4 12:17 coc.MYI</span><br><span class="line">-rw-rw----. 1 mysql mysql 8602 Mar  4 12:17 courses.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql  144 Mar  4 12:17 courses.MYD</span><br><span class="line">-rw-rw----. 1 mysql mysql 2048 Mar  4 12:17 courses.MYI</span><br><span class="line">-rw-rw----. 1 mysql mysql   61 Mar  4 12:17 db.opt</span><br><span class="line">-rw-rw----. 1 mysql mysql 8658 Mar  4 12:17 scores.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql  180 Mar  4 12:17 scores.MYD</span><br><span class="line">-rw-rw----. 1 mysql mysql 2048 Mar  4 12:17 scores.MYI</span><br><span class="line">-rw-rw----. 1 mysql mysql 8736 Mar  4 12:17 students.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql  624 Mar  4 12:17 students.MYD</span><br><span class="line">-rw-rw----. 1 mysql mysql 2048 Mar  4 12:17 students.MYI</span><br><span class="line">-rw-rw----. 1 mysql mysql 8656 Mar  4 12:17 teachers.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql   92 Mar  4 12:17 teachers.MYD</span><br><span class="line">-rw-rw----. 1 mysql mysql 2048 Mar  4 12:17 teachers.MYI</span><br><span class="line">-rw-rw----. 1 mysql mysql 8622 Mar  4 12:17 toc.frm</span><br><span class="line">-rw-rw----. 1 mysql mysql    0 Mar  4 12:17 toc.MYD</span><br><span class="line">-rw-rw----. 1 mysql mysql 1024 Mar  4 12:17 toc.MYI</span><br></pre></td></tr></table></figure>
+
+<p>可以看到一共有三种文件类型, <code>frm</code>,  <code>MYD</code>, <code>MYI</code>. 其实大概可以猜出来, 其中<code>frm</code>和上面一样是存储表的格式的, D代表Data, I代表Index, 因此, 对于MyISAM来说, 数据和索引是分开存放的. 每一个表都是这三个文件.</p>
+<h2 id="其他的一些存储引擎"><a href="#其他的一些存储引擎" class="headerlink" title="其他的一些存储引擎"></a>其他的一些存储引擎</h2><h3 id="CSV存储引擎"><a href="#CSV存储引擎" class="headerlink" title="CSV存储引擎"></a>CSV存储引擎</h3><p>首先CSV (逗号分隔) 就是一种数据结构, 把它当做表来处理, 就是这么简单. </p>
+<p>显然这是不支持索引的, 但是对于导出导入就很灵活.</p>
+<h3 id="MRG-MYISAM"><a href="#MRG-MYISAM" class="headerlink" title="MRG_MYISAM"></a>MRG_MYISAM</h3><p>可以将多个MyISAM的表合并成为一个虚拟表.</p>
+<h3 id="BLACKHOLE"><a href="#BLACKHOLE" class="headerlink" title="BLACKHOLE"></a>BLACKHOLE</h3><p>就是<code>/dev/null</code>, 没有实现任何的存储机制.</p>
+<h3 id="MEMORY"><a href="#MEMORY" class="headerlink" title="MEMORY"></a>MEMORY</h3><p>内存存储引擎, 性能很好(因为全是内存表), 支持hash索引, 并且还有表级锁. 这个临时表存在一个存储的上限, 达到上限就会被写入到磁盘上.</p>
+<h3 id="PERFORMANCE-SCHEMA"><a href="#PERFORMANCE-SCHEMA" class="headerlink" title="PERFORMANCE_SCHEMA"></a>PERFORMANCE_SCHEMA</h3><p>伪存储引擎, 用来记录MySQL的一些运行数据. 启动前和启动后都是空的.</p>
+<h3 id="ARCHIVE"><a href="#ARCHIVE" class="headerlink" title="ARCHIVE"></a>ARCHIVE</h3><p>用于数据归档, 仅支持insert和select. 会缓存所有写并使用zlib进行压缩, 但是每一次的select都要进行全表扫描. 有行级锁和专用缓存区.</p>
+<h2 id="MySQL的并发控制"><a href="#MySQL的并发控制" class="headerlink" title="MySQL的并发控制"></a>MySQL的并发控制</h2><p>接下来我们简单的说说, MySQL的读写锁.</p>
+<p>读锁就是共享锁, 一个资源可以被多次增加读锁; 写锁就是独占锁, 或者说叫做排它锁. 那么对于并发访问控制而言, 锁的粒度就十分重要了, 比较常见的是, 表级锁和行级锁. 这里肯定不是越精细就越好, 精细的粒度带来的是更大的锁开销, 因此, 寻找一个锁策略可以在数据安全和锁粒度这两者中获取平衡就至关重要了.</p>
+<p>几乎每种存储引擎都可以自行实现自己的锁策略和锁粒度, 同时MySQL在服务器级别也实现了锁, 默认的锁级别就是表级锁. 并且用户是可以进行显式请求施加锁的, 虽然这不是一件推荐做的事情, 因为大多数的情况下, 这些操作都是存储引擎自动完成的, 尽量应该避免用户的干预. 我们把这里的隐式锁叫做存储引擎自动施加的, 而显式锁就是用户手动添加.</p>
+<p>接下来我们演示一下, 用户手动加锁的操作. 还是先看看帮助文档:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; <span class="built_in">help</span> lock</span><br><span class="line">Name: <span class="string">&#x27;LOCK&#x27;</span></span><br><span class="line">Description:</span><br><span class="line">Syntax:</span><br><span class="line">LOCK TABLES</span><br><span class="line">    tbl_name [[AS] <span class="built_in">alias</span>] lock_type</span><br><span class="line">    [, tbl_name [[AS] <span class="built_in">alias</span>] lock_type] ...</span><br><span class="line"></span><br><span class="line">lock_type:</span><br><span class="line">    READ [LOCAL]</span><br><span class="line">  | [LOW_PRIORITY] WRITE</span><br><span class="line"></span><br><span class="line">UNLOCK TABLES</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>lock tables</code>来指明加锁. 解锁使用<code>lock tables</code>.</p>
+<p>现在我们登陆两个线程, 一个加锁, 另外一个尝试做操作, 来看看变化.</p>
+<p>线程1:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [mydb]&gt; lock tables t1 write;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [mydb]&gt; unlock tables;</span><br><span class="line">Query OK, 0 rows affected (0.01 sec)</span><br></pre></td></tr></table></figure>
+
+<p>线程2:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [mydb]&gt; select SQL_NO_CACHE * from t1;</span><br><span class="line">+------+------+</span><br><span class="line">| id   | name |</span><br><span class="line">+------+------+</span><br><span class="line">|    1 | name |</span><br><span class="line">+------+------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [mydb]&gt; select SQL_NO_CACHE * from t1;</span><br><span class="line">+------+------+</span><br><span class="line">| id   | name |</span><br><span class="line">+------+------+</span><br><span class="line">|    1 | name |</span><br><span class="line">+------+------+</span><br><span class="line">1 row in set (12.46 sec)</span><br></pre></td></tr></table></figure>
+
+<p>其中, 第一次的查询操作是没有加锁的, 而第二次的查询时, 我们已经加锁了, 因此查询被堵塞. 在我们释放锁的一瞬间, 结果就返回了. 从查询的时间可以看出来, 这次查询是被堵塞了.</p>
+<p>注意这个地方我在每次查询的时候都加上了<code>SQL_NO_CACHE</code>参数, 目的就是为了防止缓存. 如果你在加了写锁之后发现还可以访问数据, 那大概是来源于缓存, 这个时候你可以update表一次, 从而令缓存失效就可以了.</p>
+<p>除了这样加锁, 我们还可以在查询的时候就加上锁, 也可以使用<code>FLUSH TABLES</code>来加锁. 不过这里就不赘述了.</p>
+<h2 id="MySQL的事务"><a href="#MySQL的事务" class="headerlink" title="MySQL的事务"></a>MySQL的事务</h2><p>什么是<strong>事务</strong>嘞? 这可真是老生常谈了, 事务是一组原子性的SQL查询, 或者说是一个独立的工作单元. 任何一个事务都要经过ACID测试, 即:</p>
+<ul>
+<li>A: Atomicity: 原子性. 整个事务中的所有操作, 要么全部成功执行 , 要么全部失败回滚. 具体实现上, 我们需要撤销和重做日志.</li>
+<li>C: Consistency: 一致性. 数据库总是从一个一致性状态转换至另外一个一致性状态.</li>
+<li>I: Isolation: 隔离性. 一个事物所做出的的操作, 在提交之前, 是不能被其他的事务所看见的. 由此引入, 多种隔离级别, 隔离级别会影响到并发性能和数据的安全性.</li>
+<li>D: Durability: 持久性. 一个事务提交, 其所作的修改会永久保存在数据库中.</li>
+</ul>
+<p>我们来看下事务的生命周期:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/%E4%BA%8B%E5%8A%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png" alt="事务的生命周期"></p>
+<p>大体上, 我们需要显式启动事务, 接着进行一堆修改操作, 一旦提交, 就会持久保存. 或者, 进行回滚操作, 就会回到最初的状态.</p>
+<p>当然, 只有支持事务的存储引擎才能支持上面的操作. 我们之前使用的测试sql是使用的MyISAM引擎, 我们可以修改成InnoDB来做测试.</p>
+<p>事实上, 对于InnoDB而言, 默认每一条语句都是一个小事务, 有一个控制这个行为变量:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]&gt; show global variables like &#x27;autocommit&#x27;;</span><br><span class="line">+---------------+-------+</span><br><span class="line">| Variable_name | Value |</span><br><span class="line">+---------------+-------+</span><br><span class="line">| autocommit    | ON    |</span><br><span class="line">+---------------+-------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>也就是自动提交, 这参数默认是开启的, 也就是所其实每一次的SQL的操作, 都会被打开一个事务, 然后自动提交. 这个行为其实是很消耗磁盘IO的, 所以建议显式的进行事务请求和提交, 就可以有效降低数据库的IO.</p>
+<p>其实事务还支持<strong>保存点(save point)</strong>, 这个其实有点类似git的版本控制, 我们可以选择回滚到某一个位置, 来看文档:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]&gt; help savepoint;</span><br><span class="line">Name: &#x27;SAVEPOINT&#x27;</span><br><span class="line">Description:</span><br><span class="line">Syntax:</span><br><span class="line">SAVEPOINT identifier</span><br><span class="line">ROLLBACK [WORK] TO [SAVEPOINT] identifier</span><br><span class="line">RELEASE SAVEPOINT identifier</span><br><span class="line"></span><br><span class="line">InnoDB supports the SQL statements SAVEPOINT, ROLLBACK TO SAVEPOINT,</span><br><span class="line">RELEASE SAVEPOINT and the optional WORK keyword for ROLLBACK.</span><br></pre></td></tr></table></figure>
+
+<p>我们可以直接选择回滚到某一个位置上.</p>
+<h3 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h3><p>接着我们来说说事务的隔离级别. 有以下的级别:</p>
+<ul>
+<li>READ UNCOMMITTED (读未提交)</li>
+<li>READ COMMITTED (读提交)</li>
+<li>REPEATABLE READ (可重读)</li>
+<li>SERILIAZABLE (可串行化)</li>
+</ul>
+<p>在事务中, 会出现很多问题, 这些问题有:</p>
+<ul>
+<li>脏读: 读别的事务没有提交的数据</li>
+<li>不可重复读: 数据两次读到的值不一样</li>
+<li>幻读: 多个事务, 其中一个事务多次执行的结果在第二个事务的干预下产生了不一致.</li>
+</ul>
+<blockquote>
+<p>关于这个地方, 我要稍微多说说关于这个幻读, 因为有点难以理解. SQL标准上的意思更多的是在强调: 查询结果出现了新增行. 举维基百科的例子就很清楚了:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/%E5%B9%BB%E8%AF%BB_from_Wikipedia.png" alt="幻读_from_Wikipedia"></p>
+</blockquote>
+<p>对于这些问题, 不同的隔离级别会有不同的读问题.</p>
+<p>定义MySQL的隔离级别的参数叫做<code>tx_isolation</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]&gt; show global variables like &#x27;%isolation%&#x27;;</span><br><span class="line">+---------------+-----------------+</span><br><span class="line">| Variable_name | Value           |</span><br><span class="line">+---------------+-----------------+</span><br><span class="line">| tx_isolation  | REPEATABLE-READ |</span><br><span class="line">+---------------+-----------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到我们现在用的是可重读.</p>
+<p>说回到我们的InnoDB, 我们提到了一个特性叫做MVCC机制, 即多版本并发控制, 这个机制会在MySQL启动的时候存储数据集的快照, 然后通过这个快照来实现很多事务和并发操作. 不过这只是一点点浅显的实现, 关于MVCC的技术细节还是十分复杂的. 这里就略过啦.</p>
+<p>但是, 尽管我们有事务, 还是可能会有新的问题, 考虑这样的场景. 一个事务进行提交, 其中包含大量的写语句, 假设现在使用的是机械硬盘, 机械硬盘的一个特性就是需要寻道. 如果我们的要操作的数据块是分散的, 大量的随机IO是需要消耗很多时间的, 假设正在寻道中, 数据库服务器崩了, 那么我的这些操作也就中断了, 数据就不一致了. 这咋办?</p>
+<p>这就需要日志了, 还记得我们之前提到的事务日志吗? MySQL在提交事务操作的时候, 不会直接写到数据文件里面, 而是先写事务日志, 而这个事务日志文件是磁盘上连续的地址, 一次寻道, 就可以全部写进去. 这样的话, 如果数据库崩溃, 即使内存中缓冲区的数据被清掉了, 但是在重启的时候, 数据库会进行一次检查, 将事务日志的内容写到数据文件中. 另外, 这个事务日志一般都是多个出现, 一般是2个或者3个. 这是为了防止文件过大.</p>
+<p>事务日志的写入类型都是 “追加”, 因此写入操作都是 “顺序IO”. 这些日志都是<strong>预写式日志(write ahead logging)</strong>.</p>
+<p>事务日志是由存储引擎控制的, 我们来看看innodb的日志:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># ls /var/lib/mysql/ -lh</span></span><br><span class="line">total 29M</span><br><span class="line">-rw-rw----. 1 mysql mysql  16K Mar  8 11:30 aria_log.00000001</span><br><span class="line">-rw-rw----. 1 mysql mysql   52 Mar  8 11:30 aria_log_control</span><br><span class="line">drwx------. 2 mysql mysql  272 Mar  8 13:32 hellodb</span><br><span class="line">-rw-rw----. 1 mysql mysql  18M Mar  8 13:32 ibdata1</span><br><span class="line">-rw-rw----. 1 mysql mysql 5.0M Mar  8 13:32 ib_logfile0</span><br><span class="line">-rw-rw----. 1 mysql mysql 5.0M Mar  4 10:26 ib_logfile1</span><br><span class="line">drwx------. 2 mysql mysql   48 Mar  8 11:32 mydb</span><br><span class="line">drwx------. 2 mysql mysql 4.0K Mar  4 10:26 mysql</span><br><span class="line">srwxrwxrwx. 1 mysql mysql    0 Mar  8 11:30 mysql.sock</span><br><span class="line">drwx------. 2 mysql mysql 4.0K Mar  4 10:26 performance_schema</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到两个一样大的文件<code>ib_logfile</code>, 这就是InnoDB的日志啦, 当然这个日志文件的大小也是可以调整的, 日志的数量也是可以调整的, 包括存放的位置都有变量控制:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]&gt; show global variables like &#x27;innodb_log%&#x27;;</span><br><span class="line">+---------------------------+---------+</span><br><span class="line">| Variable_name             | Value   |</span><br><span class="line">+---------------------------+---------+</span><br><span class="line">| innodb_log_block_size     | 512     |</span><br><span class="line">| innodb_log_buffer_size    | 8388608 |</span><br><span class="line">| innodb_log_file_size      | 5242880 |</span><br><span class="line">| innodb_log_files_in_group | 2       |</span><br><span class="line">| innodb_log_group_home_dir | ./      |</span><br><span class="line">+---------------------------+---------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<h2 id="MariaDB的日志文件"><a href="#MariaDB的日志文件" class="headerlink" title="MariaDB的日志文件"></a>MariaDB的日志文件</h2><p>接下来我们继续说说MariaDB的日志文件, 我们在上面说到的InnoDB存储引擎对应的数据文件叫做<code>X.ibd</code>. 为了保证数据, 事件, 服务等等多类功能, 提供了多种日志, 这些日志包括:</p>
+<ul>
+<li>查询日志: query log (默认是不会开启的, 因为磁盘IO过多)</li>
+<li>慢查询日志: slow query log (慢查询是指查询时间过长的查询, 为了检查和分析速度慢的原因)</li>
+<li>错误日志: error log</li>
+<li>二进制日志: binary log</li>
+<li>中继日志: relay log</li>
+<li>事务日志: transaction log</li>
+</ul>
+<p>我们一个一个看配置和使用.</p>
+<h3 id="查询日志"><a href="#查询日志" class="headerlink" title="查询日志"></a>查询日志</h3><p>查询日志是用来记录查询操作的, 这个日志如果开启会有非常大量的数据. 如此大量数据, 我们如果要分析日志就会变得比较困难了, 因此这个查询日志有两种记录方式:</p>
+<ul>
+<li>文件: file</li>
+<li>表: table</li>
+</ul>
+<p>因此, MySQL的查询日志其实也可以导入到MySQL中. 我们先来看一下变量:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/log.png" alt="log"></p>
+<p>这里的<code>general_log</code>就是控制我们的查询日志是否开启的, 默认是关闭的. 而后存储的路径, 这个路径默认是主机名, 这里我的是<code>node1</code>, 所以就这样了. 另外这里的路径是相对的, 我们也可以修改成绝对路径. 后面还有<code>log_output</code>, 表示日志存储格式是文件类型. 除此之外, 也可以改成<code>TABLE</code>或者<code>NONE</code>. </p>
+<p>当然了, 并不是所有的查询操作都有被记录的价值. 更多的我们应该关注慢查询日志.</p>
+<h3 id="慢查询日志"><a href="#慢查询日志" class="headerlink" title="慢查询日志"></a>慢查询日志</h3><p> 慢查询是指执行时长超出指定时长的查询操作. 这个指定时长其实也是我们定义的.</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/long_query_time.png" alt="long_query_time"></p>
+<p>默认的时间是10秒钟. </p>
+<p>同样的, 也有对应参数标明开启状态和存储位置:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/slow_query_log.png" alt="slow_query_log"></p>
+<p>除此之外, 向上面看, 还有其他的参数表示慢查询的一些过滤器啥的. 关于过滤器, 我们可以稍微多看看. 这个会对查询的记录做限制, 例如全连接, 全表扫描, 缓存未命中, 临时表查询等等等才会记录. 另外, 还有记录速率, 记录的详细程度等等选项.</p>
+<h3 id="错误日志"><a href="#错误日志" class="headerlink" title="错误日志"></a>错误日志</h3><p>错误日志虽然叫做错误, 但其实并不仅仅是错误信息, 也有可能其他的一些信息, 例如daemon启动关闭的事件. 另外, 错误日志中还会出现:</p>
+<ul>
+<li>运行中产生的错误信息</li>
+<li>scheduler运行event时产生的日志信息</li>
+<li>主从复制架构中的从服务器上启动从服务器线程时产生的信息</li>
+</ul>
+<p>我们使用的CentOS 7发行版中是默认打开了错误日志的, 我们可以见到:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/error_log.png" alt="error_log"></p>
+<p>简单看一下这个文件的内容, 也就是上面的说的那些信息. 有些东西看起来像是警告而不是错误, 那是因为还有一个选项. 叫做<code>log_warning</code>, 这个选项决定是否要记录警告信息到错误日志文件中去.</p>
+<h3 id="二进制日志"><a href="#二进制日志" class="headerlink" title="二进制日志"></a>二进制日志</h3><p>二进制日志是最重要的日志了, 它用来通过”重放”日志文件中的事件, 来生成数据的副本. 在我们的数据目录下就能看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># ls /var/lib/mysql/</span></span><br><span class="line">aria_log.00000001  hellodb  ib_logfile0  mariadb-bin.000001  mydb   mysql.sock</span><br><span class="line">aria_log_control   ibdata1  ib_logfile1  mariadb-bin.index   mysql  performance_schema</span><br></pre></td></tr></table></figure>
+
+<p>在一些发行版中这个二进制日志是默认打开的, 但也有的版本是需要手动开启的. 控制这个日志开启与否的变量叫做<code>log-bin</code>. </p>
+<p>在mysql的客户端中, 其实也可以查看我们当前的二进制日志, 有这么一条:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; show binary logs;</span><br><span class="line">+--------------------+-----------+</span><br><span class="line">| Log_name           | File_size |</span><br><span class="line">+--------------------+-----------+</span><br><span class="line">| mariadb-bin.000001 |       436 |</span><br><span class="line">+--------------------+-----------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>这样是展示当前服务器上的日志有哪些 (注意这里并不是正在使用的, 后面会说), 我们之前说过, 这个日志本身mysql也是可以看的, 我们可以通过客户端来检视这些日志中的事件:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/bin_log_show_event.png" alt="bin_log_show_event"></p>
+<p>我们来看下这里面的表头, 首先是我们读取的文件名, 接着是当前事件的起始位置和结束位置, 这里我们可以结束位置和下一个事件的起始位置是一样的, 也就是说, 这个结束位置, 实际上是指下一个事件的位置, 虽然名字是这么叫的. 接着还有, 事件的类型, 执行的服务器的ID, 这个ID在我们之后的主从复制的架构中会说到.  以及每一个事件的信息.</p>
+<p>接下来我们可以做个实验, 我们停止服务之后再开启:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# systemctl stop mariadb</span><br><span class="line">[root@node1 ~]# systemctl start mariadb</span><br><span class="line">[root@node1 ~]# </span><br></pre></td></tr></table></figure>
+
+<p>接着还是来查看一下:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; show master logs;</span><br><span class="line">+--------------------+-----------+</span><br><span class="line">| Log_name           | File_size |</span><br><span class="line">+--------------------+-----------+</span><br><span class="line">| mariadb-bin.000001 |       455 |</span><br><span class="line">| mariadb-bin.000002 |       245 |</span><br><span class="line">+--------------------+-----------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>看! 现在就有两个了, 这就说明 我们的这个日志文件是自动滚动的. 那如何得到当前正在使用的日志文件的信息呢? 我们可以使用<code>show master status</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; show master status;</span><br><span class="line">+--------------------+----------+--------------+------------------+</span><br><span class="line">| File               | Position | Binlog_Do_DB | Binlog_Ignore_DB |</span><br><span class="line">+--------------------+----------+--------------+------------------+</span><br><span class="line">| mariadb-bin.000002 |      245 |              |                  |</span><br><span class="line">+--------------------+----------+--------------+------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以看到当前正在使用的以及当前的事件要写在什么位置.</p>
+<p>另外, 我们的二进制日志有三种记录格式, 分别是:</p>
+<ul>
+<li>基于”语句”记录: statement</li>
+<li>基于”行”记录: row</li>
+</ul>
+<p>以及将两种混合的mix模式, 让系统自行判定基于哪种方式来进行记录. 那我们为什么需要有多种记录方式呢?</p>
+<p>考虑这样的情况, 如果现在有两个事务, 一个是update所有年龄大于等于60的某个值, 另一个是将一个人的年龄从59改成了60, 在这种情况下, 如果记录到日志中之后, 进行重放就会出现问题, 因为语句的执行顺序不一定会相同. </p>
+<p>基于行, 我们就记录数据. 基于语句, 我们就记录执行的语句.</p>
+<p>接着我们再来说说二进制日志文件的构成, 有两类文件:</p>
+<ul>
+<li>日志文件: mysql-bin.文件名后缀, 二进制格式</li>
+<li>索引文件: mysql-bin.index, 文本格式</li>
+</ul>
+<p>我们可以cat一下这个索引文件:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 mysql]# cat mariadb-bin.index </span><br><span class="line">./mariadb-bin.000001</span><br><span class="line">./mariadb-bin.000002</span><br></pre></td></tr></table></figure>
+
+<p>那么哪些变量操作我们的二进制日志的行为嘞? 来看:</p>
+<ul>
+<li><code>binlog_format</code> 默认这里是statement, 表示我们基于语句进行记录</li>
+<li><code>max_binlog_size</code> 单个二进制日志文件的最大体积, 默认是1G, 如果达到最大值就会进行自动日志滚动 (当然啦, 这个肯定不会是精确值).</li>
+<li><code>max_binlog_stmt_cache_size</code>, <code>max_binlog_cache_size</code> 这两个看名字就懂啦</li>
+<li><code>expire_logs_days</code> 设置日志的过期时长. 默认是0. 意为不启用</li>
+<li><code>sync_binlog</code> 是否启动二进制日志的同步功能, 0表示不启用, 1表示启用, N(&gt;1)表示等到N个二进制日志收集之后才会被同步.</li>
+</ul>
+<p>在我们装的mysql的bin目录下, 有一个专门的用来dump二进制日志的工具, 叫做<code>mysqlbinlog</code>. 这个玩意可以让我们直接在命令行中看日志中的事件, 来随便截一段看看:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">BEGIN</span><br><span class="line">/*!*/;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">at 313</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">200322  5:50:45 server <span class="built_in">id</span> 1  end_log_pos 409 	Query	thread_id=2	exec_time=0	error_code=0</span></span><br><span class="line">use `mydb`/*!*/;</span><br><span class="line">SET TIMESTAMP=1584827445/*!*/;</span><br><span class="line">insert into t1 values (2, &quot;test&quot;)</span><br><span class="line">/*!*/;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">at 409</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">200322  5:50:45 server <span class="built_in">id</span> 1  end_log_pos 436 	Xid = 13</span></span><br><span class="line">COMMIT/*!*/;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">at 436</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">200322  6:04:31 server <span class="built_in">id</span> 1  end_log_pos 455 	Stop</span></span><br><span class="line">DELIMITER ;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">End of <span class="built_in">log</span> file</span></span><br><span class="line">ROLLBACK /* added by mysqlbinlog */;</span><br></pre></td></tr></table></figure>
+
+<p>你看, 这些信息其实就是我们刚刚看到的事件的各种信息, 例如发生的日期和时间, 服务器表示, 结束位置, 事件类型, 线程ID, 语句的时间戳和写入二进制文件中的时间差, 错误代码等等</p>
+<p>说道工具的使用, 其实直接看文档就好, 一些常用的选项:</p>
+<ul>
+<li>start-position &#x2F; stop-position : 开始和终止位置</li>
+<li>start-datetime &#x2F; stop-datetime : 开始和结束时间, 格式形如这样: YYYY-MM-DD hh:mm:ss</li>
+</ul>
+<h3 id="中继日志"><a href="#中继日志" class="headerlink" title="中继日志"></a>中继日志</h3><p>这个日志等到复制架构中, 我们再来聊. 这个玩意是从服务器用来保存从主服务器的二进制日志中读取到的事件.</p>
+<h3 id="事务日志"><a href="#事务日志" class="headerlink" title="事务日志"></a>事务日志</h3><p>事务日志是由事务性存储引擎自行管理和使用的, 而且它们一般是成对的出现的, 一个叫做<code>redo</code>, 一个叫做<code>undo</code>.</p>
+<p>关于事务日志, 我们在上一节中已经提到了一些. 这里我们就这样啦.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#InnoDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">1.</span> <span class="toc-text">InnoDB存储引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MyISAM%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">2.</span> <span class="toc-text">MyISAM存储引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E7%9A%84%E4%B8%80%E4%BA%9B%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">3.</span> <span class="toc-text">其他的一些存储引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CSV%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="toc-number">3.1.</span> <span class="toc-text">CSV存储引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MRG-MYISAM"><span class="toc-number">3.2.</span> <span class="toc-text">MRG_MYISAM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BLACKHOLE"><span class="toc-number">3.3.</span> <span class="toc-text">BLACKHOLE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MEMORY"><span class="toc-number">3.4.</span> <span class="toc-text">MEMORY</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PERFORMANCE-SCHEMA"><span class="toc-number">3.5.</span> <span class="toc-text">PERFORMANCE_SCHEMA</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ARCHIVE"><span class="toc-number">3.6.</span> <span class="toc-text">ARCHIVE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="toc-number">4.</span> <span class="toc-text">MySQL的并发控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E4%BA%8B%E5%8A%A1"><span class="toc-number">5.</span> <span class="toc-text">MySQL的事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-number">5.1.</span> <span class="toc-text">事务隔离级别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MariaDB%E7%9A%84%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-number">6.</span> <span class="toc-text">MariaDB的日志文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-number">6.1.</span> <span class="toc-text">查询日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-number">6.2.</span> <span class="toc-text">慢查询日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97"><span class="toc-number">6.3.</span> <span class="toc-text">错误日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%97%A5%E5%BF%97"><span class="toc-number">6.4.</span> <span class="toc-text">二进制日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E7%BB%A7%E6%97%A5%E5%BF%97"><span class="toc-number">6.5.</span> <span class="toc-text">中继日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E6%97%A5%E5%BF%97"><span class="toc-number">6.6.</span> <span class="toc-text">事务日志</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&text=MariaDB存储引擎和事务"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&is_video=false&description=MariaDB存储引擎和事务"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MariaDB存储引擎和事务&body=Check out this article: https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&title=MariaDB存储引擎和事务"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&name=MariaDB存储引擎和事务&description=&lt;p&gt;我们之前初步了解了MariaDB, 接着学习了MySQL的一些关于权限, 缓存和索引的东西. 接下来我们继续聊聊关于存储引擎的相关知识.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/&t=MariaDB存储引擎和事务"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

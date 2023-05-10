@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Python中的进程和线程.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python学习笔记(1)">
+<meta property="og:url" content="https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Python中的进程和线程.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-03-17T20:24:33.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python学习笔记(1)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/01/17/%E5%AF%B9JavaScript%E9%97%AD%E5%8C%85%E7%9A%84%E7%90%86%E8%A7%A3/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&text=Python学习笔记(1)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&is_video=false&description=Python学习笔记(1)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python学习笔记(1)&body=Check out this article: https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&name=Python学习笔记(1)&description=&lt;p&gt;Python中的进程和线程.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&t=Python学习笔记(1)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E8%BF%9B%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">多进程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%80%E8%BE%9F%E5%AD%90%E8%BF%9B%E7%A8%8B%E2%80%93Process"><span class="toc-number">1.1.</span> <span class="toc-text">开辟子进程–Process</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E6%B1%A0%E2%80%93Pool"><span class="toc-number">1.2.</span> <span class="toc-text">进程池–Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%90%E8%BF%9B%E7%A8%8B%E4%B8%AD%E7%9A%84IO%E2%80%93%E6%96%B0%E7%9A%84%E6%A8%A1%E5%9D%97subprocess"><span class="toc-number">1.3.</span> <span class="toc-text">子进程中的IO–新的模块subprocess</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E9%97%B4%E7%9A%84%E9%80%9A%E4%BF%A1%E2%80%93Queue-amp-Pipe"><span class="toc-number">1.4.</span> <span class="toc-text">进程间的通信–Queue&amp;Pipe</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">多线程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Lock-in-Thread"><span class="toc-number">2.1.</span> <span class="toc-text">Lock in Thread</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ThreadLocal"><span class="toc-number">2.2.</span> <span class="toc-text">ThreadLocal</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python学习笔记(1)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-03-17T20:24:33.000Z" class="dt-published" itemprop="datePublished">2017-03-17</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Python中的进程和线程.</p>
+<span id="more"></span>
+
+<blockquote>
+<p>线程，是操作系统分发给CPU的最小执行单位，至少一条线程组成进程。</p>
+</blockquote>
+<p>要想实现多任务，自然就会有以下三种方法：</p>
+<ul>
+<li>多进程模式</li>
+<li>多线程模式</li>
+<li>多线程+多进程模式</li>
+</ul>
+<p>Python对于线程和进程的支持都不错，在以上三种模式中，前两种较为常见。</p>
+<h2 id="多进程"><a href="#多进程" class="headerlink" title="多进程"></a>多进程</h2><p><code>os</code>模块中封装了OS的<code>fork</code>调用，通过这个可以非常方便的创建子进程.(pid &#x3D; process id)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Process (%s) is running...&quot;</span> % os.getpid())<span class="comment"># os.getpid() 可以获得当前进程的id</span></span><br><span class="line">pid = os.fork()</span><br><span class="line"><span class="keyword">if</span> pid == <span class="number">0</span>:</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;I am a child process (%s) and my parent is (%s)&quot;</span> % (os.getpid(), os.getppid()))<span class="comment"># os.getppid() 可以获得当前进程的父进程的id</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Create a child process (%s)&quot;</span> % pid)</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，<code>fork</code>调用只有<code>Unix/Linux</code>才有，由于<code>Mac</code>是基于<code>Unix</code>的，所以也可以，那么如何在<code>Windows</code>上使用<code>python</code>编写多进程程序呢？</p>
+<p>Python提供了<strong>multiprocessing</strong>模块来实现跨平台的多进程。</p>
+<p>这个模块中提供了 <code>Process</code>，<code>Pool</code>, <code>Queue</code> 和 <code>Pipe</code> 这四个类</p>
+<h3 id="开辟子进程–Process"><a href="#开辟子进程–Process" class="headerlink" title="开辟子进程–Process"></a>开辟子进程–Process</h3><p>先从<code>Process</code>开始：</p>
+<p>通过Process()来构造一个子进程实例，它接受的参数有：(group&#x3D;None,target&#x3D;None,name&#x3D;None,args&#x3D;(),kwargs&#x3D;{},*,daemon&#x3D;None)</p>
+<p>一个个来分析：</p>
+<ul>
+<li>group 是不需要赋值的，这是一个保留参数，日后Python实现了ThreadGroup类，这个参数便可以发挥作用</li>
+<li>target 是可以被<code>run()</code>方法调用的一个可被调用的对象，其实就是子进程要执行的代码</li>
+<li>name 子进程的名字</li>
+<li>args target的参数 tuple型</li>
+<li>kwargs target的参数 dict型</li>
+<li>daemon 是否为守护进程(前台进程&#x2F;后台进程)</li>
+</ul>
+<p>现在来看一个实例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Process</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run_proc</span>(<span class="params">name</span>): <span class="comment"># 声明子进程任务</span></span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Run child process %s (%s)...&quot;</span> % (name, os.getpid()))</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Parent process is %s&quot;</span> % os.getpid())</span><br><span class="line">  p = Process(target=run_proc, args=(<span class="string">&quot;test&quot;</span>,)) <span class="comment"># 构造子进程</span></span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Child process will start...&quot;</span>)</span><br><span class="line">  p.start() <span class="comment"># 准备就绪</span></span><br><span class="line">  p.join() <span class="comment"># 等待执行结束</span></span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&#x27;Child process end&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>start()</code>方法表示进程准备就绪，等待CPU的调用<br><code>join()</code>方法使得主进程等待子进程的结束再执行后续，通常用于进程间的同步</p>
+<blockquote>
+<p><strong>run()<strong>方法和</strong>start()<strong>方法的区别：</strong>run()<strong>方法相当于是简单调用了一下子进程的</strong>target</strong>方法，仅仅是一般调用，而start()方法才是真的开启了进程执行。<br>可以尝试执行两个分别打印100次数字和字母的进程，分别调用**run()<strong>和</strong>start()<strong>试试，你会发现使用</strong>run()<strong>调用的结果是先打印完100个数字(字母)，再打印字母(数字)，而</strong>start()<strong>调用的结果是混合打印。(计算机处理的速度很快，最好加上</strong>time.sleep(random.random())**，就能看到非常明显的结果)</p>
+</blockquote>
+<h3 id="进程池–Pool"><a href="#进程池–Pool" class="headerlink" title="进程池–Pool"></a>进程池–Pool</h3><p>在需要批量建立许多子进程的场景下，可以使用进程池。</p>
+<p>构造一个进程池的标准方法是<code>Pool([processes[,initializer[,intargs[,maxtasksperchild[,context]]]]])</code></p>
+<p>其中常用的就应该只有processes这个参数了，表示构造的子进程的数量，缺省值是<code>os.cpu_count()</code>的值，也就是你CPU的核数。</p>
+<p>话不多说，在一个实例中感受一下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Pool</span><br><span class="line"><span class="keyword">import</span> os, time, random</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">long_time_task</span>(): <span class="comment"># 声明子进程任务</span></span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Starting run %s (%s)&quot;</span> % (name, os.getpid()))</span><br><span class="line">  start = time.time()</span><br><span class="line">  time.sleep(random.random()*<span class="number">3</span>)</span><br><span class="line">  end = time.time()</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Task %s runs %0.2f seconds.&quot;</span> % (name, (end - start)))</span><br><span class="line"><span class="keyword">if</span> __name__ = <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Parent process is %s&quot;</span> % os.getpid())</span><br><span class="line">  p = Pool(<span class="number">4</span>)</span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    p.apply_async(long_time_task, args=(i,))</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Waiting for all subprocesses done...&quot;</span>)</span><br><span class="line">  p.close()</span><br><span class="line">  p.join()</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;All subprocesses done.&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>其中，我们建立了一个四进程的进程池，使用<code>apply_async(func[,args[,kwds[,callback[,error_callback]]])</code>来为子进程调用一个函数。</p>
+<p>后面使用<code>close()</code>使得进程池中不会再被提交进其他的任务，一旦等到所有的任务完成，工作进程就会退出。</p>
+<p>在调用<code>join()</code>之前必须要先调<code>close()</code>或<code>terminate()</code>方法</p>
+<h3 id="子进程中的IO–新的模块subprocess"><a href="#子进程中的IO–新的模块subprocess" class="headerlink" title="子进程中的IO–新的模块subprocess"></a>子进程中的IO–新的模块subprocess</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> subprocesses</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;# ls -l -a -h&quot;</span>)</span><br><span class="line">ec = subprocesses.call([<span class="string">&quot;ls&quot;</span>, <span class="string">&quot;-l&quot;</span>, <span class="string">&quot;-a&quot;</span>, <span class="string">&quot;-h&quot;</span>]) <span class="comment"># call方法返回一个returncode对象</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Exit Code:&quot;</span>,ec)</span><br></pre></td></tr></table></figure>
+
+<p>运行该代码，结果和直接在命令行键入命令是同等效果。</p>
+<p>接下来我们来看一下subprocess中的Popen类，该类用于在一个新进程中执行一个子程序。</p>
+<p>Popen的构造器接受19个参数，很可怕…，不过常用的也就前几个，其他用缺省值就好，需要用时再查Doc，</p>
+<p><code>Popen(args, bufsize=-1, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=True, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0, restore_signals=True, start_new_session=False, pass_fds=(), *, encoding=None, errors=None)</code></p>
+<ul>
+<li>args 也就是在Shell中手工输入命令了，如果是string，直接执行，如果是sequence，就把第一个元素作为命令。</li>
+<li>stdin,stdout,stderr 在Popen.communicate()很常用 也就是流的位置了</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;$ nslookup&#x27;</span>)</span><br><span class="line">p = subprocess.Popen([<span class="string">&#x27;nslookup&#x27;</span>], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)</span><br><span class="line">output, err = p.communicate(<span class="string">b&#x27;set q=mx\npython.org\nexit\n&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(output.decode(<span class="string">&#x27;utf-8&#x27;</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Exit code:&#x27;</span>, p.returncode)</span><br></pre></td></tr></table></figure>
+
+<p>重点来说一下<code>communicate()</code>这个方法，它接受两个参数，其中一个就是相当于我们在Shell中直接输入的命令，二就是timeout参数</p>
+<h3 id="进程间的通信–Queue-amp-Pipe"><a href="#进程间的通信–Queue-amp-Pipe" class="headerlink" title="进程间的通信–Queue&amp;Pipe"></a>进程间的通信–Queue&amp;Pipe</h3><p>进程间通信的方式有很多种：</p>
+<ul>
+<li><p>管道（pipe）及有名管道（named pipe）：管道可用于具有亲缘关系的父子进程间的通信，有名管道除了具有管道所具有的功能外，它还允许无亲缘关系进程间的通信。</p>
+</li>
+<li><p>信号（signal）：信号是在软件层次上对中断机制的一种模拟，它是比较复杂的通信方式，用于通知进程有某事件发生，一个进程收到一个信号与处理器收到一个中断请求效果上可以说是一致的。</p>
+</li>
+<li><p>消息队列（message queue）：消息队列是消息的链接表，它克服了上两种通信方式中信号量有限的缺点，具有写权限得进程可以按照一定得规则向消息队列中添加新信息；对消息队列有读权限得进程则可以从消息队列中读取信息。</p>
+</li>
+<li><p>共享内存（shared memory）：可以说这是最有用的进程间通信方式。它使得多个进程可以访问同一块内存空间，不同进程可以及时看到对方进程中对共享内存中数据得更新。这种方式需要依靠某种同步操作，如互斥锁和信号量等。</p>
+</li>
+<li><p>信号量（semaphore）：主要作为进程之间及同一种进程的不同线程之间得同步和互斥手段。</p>
+</li>
+<li><p>套接字（socket）：这是一种更为一般得进程间通信机制，它可用于网络中不同机器之间的进程间通信，应用非常广泛。</p>
+</li>
+</ul>
+<p>先从Queue开始：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Queue, Process</span><br><span class="line"><span class="keyword">import</span> os, time, random</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">write</span>(<span class="params">q</span>):</span><br><span class="line">  <span class="keyword">for</span> n <span class="keyword">in</span> [<span class="string">&quot;A&quot;</span>, <span class="string">&quot;B&quot;</span>, <span class="string">&quot;C&quot;</span>]:</span><br><span class="line">    q.put(n)</span><br><span class="line">    time.sleep(random.random())</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">read</span>(<span class="params">q</span>):</span><br><span class="line">  <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    value = q.get(<span class="literal">True</span>)</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">  q = Queue()</span><br><span class="line">  pw = Process(target=write, args=(q,)) <span class="comment"># 创建写进程</span></span><br><span class="line">  pr = Process(target=read, args=(q,)) <span class="comment"># 创建读进程</span></span><br><span class="line">  pw.start()</span><br><span class="line">  pr.start()</span><br><span class="line">  pw.join()</span><br><span class="line">  pr.terminate()</span><br></pre></td></tr></table></figure>
+
+<p>然后是Pipe:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Pipe, Process</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">conn</span>):</span><br><span class="line">  conn.send([<span class="string">&quot;A&quot;</span>,<span class="string">&quot;B&quot;</span>,<span class="string">&quot;C&quot;</span>])</span><br><span class="line">  conn.close</span><br><span class="line"><span class="keyword">if</span> __name__ = <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">   parent_conn,child_conn = Pipe()</span><br><span class="line">   p = Process(target=func, args=(child_conn,)) <span class="comment">#子进程绑定发送任务</span></span><br><span class="line">   <span class="built_in">print</span>(parent_conn.recv()) <span class="comment"># [&quot;A&quot;,&quot;B&quot;,&quot;C&quot;]  父进程接受到子进程发来的信息</span></span><br><span class="line">   p.join()</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="多线程"><a href="#多线程" class="headerlink" title="多线程"></a>多线程</h2><p>Python所提供的线程，不是虚拟出来的而是，真实的POSIX线程。</p>
+<p>标准库中提供两个模块：<code>_thread</code>,<code>threading</code>。其中<code>_thread</code>是低级模块，<code>threading</code>是对<code>_thread</code>的封装，是一个高级模块。</p>
+<p>还是用一个例子来切入吧：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time, threading</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">loop</span>():</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&#x27;thread (%s) is running...&#x27;</span> % threading.current_thread().name)</span><br><span class="line">  n = <span class="number">0</span></span><br><span class="line">  <span class="keyword">while</span> n &lt; <span class="number">5</span>:</span><br><span class="line">    n += <span class="number">1</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;thread %s &gt;&gt;&gt; %s&#x27;</span> % (threading.current_thread().name, n))</span><br><span class="line">    time.sleep()</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;thread %s ended&quot;</span> % threading.current_thread().name)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;thread %s is running ...&quot;</span> % threading.current_thread().name)</span><br><span class="line">t = threading.Thread(target=loop, name=<span class="string">&quot;LoopThread&quot;</span>)</span><br><span class="line">t.start()</span><br><span class="line">t.join()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;All done!&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>基本上，thread的API和process的很相似的，构造器参数是一模一样的，线程的启动，等待也和process类似。</p>
+<p>上述代码中，出现最多的接口就是<code>threading.current_thread()</code>了，这个方法永远返回当前运行的线程实例，每个进程都会有至少一个线程，这个线程叫主线程，主线程可以开启新的子线程，主线程的名字为MainThread，子线程的名字在我们创建实例的时候制定，若为空，则Python会自动为其命名。</p>
+<p>线程和进程最大的区别就是，每一条进程的资源是拷贝过来的，因此他们互不影响，而线程不同，所有的变量是线程共享的。</p>
+<p>所以接下来，我们来看一下线程的锁。</p>
+<h3 id="Lock-in-Thread"><a href="#Lock-in-Thread" class="headerlink" title="Lock in Thread"></a>Lock in Thread</h3><p>先来看一下在没有锁机制的情况下，多线程之间是怎样把数据改乱的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time, threading</span><br><span class="line">balance = <span class="number">0</span> <span class="comment"># 关键数据</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">change</span>(<span class="params">n</span>):</span><br><span class="line">  <span class="keyword">global</span> balance</span><br><span class="line">  balance += n</span><br><span class="line">  balance -= n</span><br><span class="line">  <span class="comment"># 相当于没做操作，值不变</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run_thread</span>(<span class="params">n</span>):</span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000000</span>):</span><br><span class="line">    change(n)</span><br><span class="line">t1 = threading.Thread(target=run_thread, args=(<span class="number">5</span>,))</span><br><span class="line">t2 = threading.Thread(target=run_thread, args=(<span class="number">8</span>,))</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t1.join()</span><br><span class="line">t2.join()</span><br><span class="line"><span class="built_in">print</span>(balance) <span class="comment"># 不一定是0了 实际测试中我出现了 -8 13 5 11等值</span></span><br></pre></td></tr></table></figure>
+
+<p>为什么会有这样的结果呢，原因是，<code>balance += n</code> 这一步看似简单的语句中，执行顺序是<code>temp = balance + n</code> –&gt; <code>balance = temp</code>，这样的步骤，而两条线程又是混搭执行的，所以可能会出现:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">temp1 = balance + n</span><br><span class="line">temp2 = balance + n</span><br><span class="line">balance = temp1  <span class="comment"># 5</span></span><br><span class="line">balance = temp2  <span class="comment"># 8</span></span><br><span class="line">temp1 = balance - n</span><br><span class="line">balance = temp1 <span class="comment"># 3</span></span><br><span class="line">temp2 = balance - n</span><br><span class="line">balance = temp2 - n <span class="comment"># -5</span></span><br></pre></td></tr></table></figure>
+
+<p>为了解决这个问题，我们引入锁机制。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">balance = <span class="number">0</span></span><br><span class="line">lock = threading.Lock() <span class="comment"># 取得锁实例</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run_thread</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000000</span>):</span><br><span class="line">        <span class="comment"># 先要获取锁:</span></span><br><span class="line">        lock.acquire()</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="comment"># 此时就没问题</span></span><br><span class="line">            change_it(n)</span><br><span class="line">        <span class="keyword">finally</span>:</span><br><span class="line">            <span class="comment"># 改完了一定要释放锁:</span></span><br><span class="line">            lock.release()</span><br></pre></td></tr></table></figure>
+
+<p>这种简单的锁非常容易造成死锁的.</p>
+<p>就比如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> threading</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>lock = threading.Lock()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">def</span> <span class="title function_">run</span>():</span><br><span class="line"><span class="meta">... </span>   lock.acquire()</span><br><span class="line"><span class="meta">... </span>   <span class="built_in">print</span>(<span class="string">&quot;要被锁住了.&quot;</span>)</span><br><span class="line"><span class="meta">... </span>   lock.require()</span><br><span class="line"><span class="meta">... </span>   <span class="built_in">print</span>(<span class="string">&quot;(这一句执行不到)啊!被锁住了!&quot;</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>t = threading.Thread(target=run)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>t.start()</span><br><span class="line">要被锁住了</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>exit()</span><br><span class="line">(main_thread已经被锁住了, 无法退出.)</span><br></pre></td></tr></table></figure>
+
+<p>这显然不是我们要的结果.所以在比较资源控制复杂的情况下, 更应该使用Python提供的递归锁(RLock)</p>
+<p>原理很简单, 递归锁对象由一个计数器,每加锁一次,该计数器加一,每解锁一次,该计数器减一.</p>
+<p>除了锁,上面提到的信号量也是解决资源冲突问题的一个方式:</p>
+<p>信号量就可以简单的控制临界区资源的最大线程数.</p>
+<p>使用起来和锁几乎是一样的, 其实信号量就是锁的进一步封装.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">data = <span class="string">&quot;secretData&quot;</span></span><br><span class="line">semaphore = threading.BoundedSemaphore(<span class="number">5</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run</span>():</span><br><span class="line">  semaphore.acquire()</span><br><span class="line">  <span class="built_in">print</span>(data)</span><br><span class="line">  time.sleep(<span class="number">1</span>)</span><br><span class="line">  semaphore.release()</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">20</span>):</span><br><span class="line">  t = threading.Thread(target=run)</span><br></pre></td></tr></table></figure>
+
+<p>接着, 你会看到每1s最多也就有5条线程在访问临界区资源.</p>
+<p>线程的队列也可以达到锁的作用, 这里的队列和上面的进程队列不一样, 上面的队列是为了进行通信, 而线程之间本身就可以通信.( 当然了,他们的API设计基本是一样的 )</p>
+<p><strong>注意啦:在终端下直接跑的Python是单线程的,所以当队列的元素超过了maxsize以及在Queue.qsize()为0的时候get都会造成线程堵塞,然后就GG了.</strong></p>
+<p>一共有三种Queue, 除了上面的最基本的Queue,还有LifoQueue和PriorityQueue.</p>
+<p>见名知意, LIFO就是(Last in First out)后进先出的队列, 而P就是优先队列, 后进先出队列和基本的队列的使用的方法没有什么不同.</p>
+<p>而优先队列在put的时候, 要加入权重, 接着在取出的时候就会按照权重的大小从小开始排列.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> queue</span><br><span class="line">q = queue.priorityQueue()</span><br><span class="line">q.put((<span class="number">10</span>, <span class="string">&quot;Justin&quot;</span>))</span><br><span class="line">q.put((<span class="number">45</span>, <span class="string">&quot;tin&quot;</span>))</span><br><span class="line">q.put((<span class="number">5</span>, <span class="string">&quot;Jus&quot;</span>))</span><br><span class="line">q.get()</span><br><span class="line">(<span class="number">5</span>, <span class="string">&quot;Jus&quot;</span>)</span><br><span class="line">q.get()</span><br><span class="line">(<span class="number">10</span>, <span class="string">&quot;Justin&quot;</span>)</span><br><span class="line">q.get()</span><br><span class="line">(<span class="number">45</span>, <span class="string">&quot;tin&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>解决了全局变量的干扰问题，我们想到，为什么不用局部变量呢？</p>
+<p>如果使用局部变量，那么每一条线程间的调用就只能通过函数传参来实现，很蠢.</p>
+<p>所以，下一个登场的新角色–ThreadLocal!</p>
+<h3 id="ThreadLocal"><a href="#ThreadLocal" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h3><p><code>ThreadLocal</code>使用起来很方便，只要先声明一个全局的<code>ThreadLocal</code>实例，接着把需要传递的参数作为该实例的属性添加上去就好。</p>
+<p>调用时，只要读属性就好。</p>
+<p>就像这样：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="comment"># 创建全局ThreadLocal对象:</span></span><br><span class="line">local_school = threading.local()</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">process_student</span>():</span><br><span class="line">    std = local_school.student <span class="comment"># 获取值</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Hello, %s (in %s)&#x27;</span> % (std, threading.current_thread().name))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">process_thread</span>(<span class="params">name</span>):</span><br><span class="line">    local_school.student = name <span class="comment"># 绑定值</span></span><br><span class="line">    process_student()</span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target= process_thread, args=(<span class="string">&#x27;Alice&#x27;</span>,), name=<span class="string">&#x27;Thread-A&#x27;</span>)</span><br><span class="line">t2 = threading.Thread(target= process_thread, args=(<span class="string">&#x27;Bob&#x27;</span>,), name=<span class="string">&#x27;Thread-B&#x27;</span>)</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t1.join()</span><br><span class="line">t2.join()</span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E8%BF%9B%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">多进程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%80%E8%BE%9F%E5%AD%90%E8%BF%9B%E7%A8%8B%E2%80%93Process"><span class="toc-number">1.1.</span> <span class="toc-text">开辟子进程–Process</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E6%B1%A0%E2%80%93Pool"><span class="toc-number">1.2.</span> <span class="toc-text">进程池–Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%90%E8%BF%9B%E7%A8%8B%E4%B8%AD%E7%9A%84IO%E2%80%93%E6%96%B0%E7%9A%84%E6%A8%A1%E5%9D%97subprocess"><span class="toc-number">1.3.</span> <span class="toc-text">子进程中的IO–新的模块subprocess</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E9%97%B4%E7%9A%84%E9%80%9A%E4%BF%A1%E2%80%93Queue-amp-Pipe"><span class="toc-number">1.4.</span> <span class="toc-text">进程间的通信–Queue&amp;Pipe</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">多线程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Lock-in-Thread"><span class="toc-number">2.1.</span> <span class="toc-text">Lock in Thread</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ThreadLocal"><span class="toc-number">2.2.</span> <span class="toc-text">ThreadLocal</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&text=Python学习笔记(1)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&is_video=false&description=Python学习笔记(1)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python学习笔记(1)&body=Check out this article: https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&title=Python学习笔记(1)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&name=Python学习笔记(1)&description=&lt;p&gt;Python中的进程和线程.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/&t=Python学习笔记(1)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

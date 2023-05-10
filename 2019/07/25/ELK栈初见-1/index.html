@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="我们运行的各种服务在工作过程中都会产生巨大的日志, 如果是小规模的生产环境我们可以简单的通过将各种软件的日志复制到数据库或者直接文件系统上进行汇总. 当然这种不仅仅限日志量十分的少而且这样做会带来很多的弊端, 例如我们很难对其中的日志进行搜索和分析, 另外巨大的IO量对我们的硬盘也是一种巨大的考验. 今天就来学习ELK栈的第一步, 我们先来了解一下搜索引擎的简单原理.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ELK栈初见-1">
+<meta property="og:url" content="https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="我们运行的各种服务在工作过程中都会产生巨大的日志, 如果是小规模的生产环境我们可以简单的通过将各种软件的日志复制到数据库或者直接文件系统上进行汇总. 当然这种不仅仅限日志量十分的少而且这样做会带来很多的弊端, 例如我们很难对其中的日志进行搜索和分析, 另外巨大的IO量对我们的硬盘也是一种巨大的考验. 今天就来学习ELK栈的第一步, 我们先来了解一下搜索引擎的简单原理.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%B8%80%E4%B8%AA%E5%B8%B8%E8%A7%81%E7%9A%84%E6%9E%B6%E6%9E%84.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/%E7%B4%A2%E5%BC%95%E8%A1%A8%E7%9A%84%E6%A0%B7%E5%AD%90.png">
+<meta property="article:published_time" content="2019-07-25T18:09:24.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:34:13.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Lucene">
+<meta property="article:tag" content="ElasticSearch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%B8%80%E4%B8%AA%E5%B8%B8%E8%A7%81%E7%9A%84%E6%9E%B6%E6%9E%84.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>ELK栈初见-1</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&text=ELK栈初见-1"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&is_video=false&description=ELK栈初见-1"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ELK栈初见-1&body=Check out this article: https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&name=ELK栈初见-1&description=&lt;p&gt;我们运行的各种服务在工作过程中都会产生巨大的日志, 如果是小规模的生产环境我们可以简单的通过将各种软件的日志复制到数据库或者直接文件系统上进行汇总. 当然这种不仅仅限日志量十分的少而且这样做会带来很多的弊端, 例如我们很难对其中的日志进行搜索和分析, 另外巨大的IO量对我们的硬盘也是一种巨大的考验.&lt;/p&gt;
+&lt;p&gt;今天就来学习ELK栈的第一步, 我们先来了解一下搜索引擎的简单原理.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&t=ELK栈初见-1"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E4%B8%80%E4%B8%AA%E5%85%B8%E5%9E%8B%E6%9E%B6%E6%9E%84%E8%AF%B4%E8%B5%B7"><span class="toc-number">1.</span> <span class="toc-text">从一个典型架构说起</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E6%8E%A2%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-number">2.</span> <span class="toc-text">初探搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lucene"><span class="toc-number">3.</span> <span class="toc-text">Lucene</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ElasticSearch"><span class="toc-number">4.</span> <span class="toc-text">ElasticSearch</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ES%E9%9B%86%E7%BE%A4%E7%9A%84%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">ES集群的工作过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E4%BB%B6"><span class="toc-number">4.2.</span> <span class="toc-text">插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ES%E7%9A%84API"><span class="toc-number">4.3.</span> <span class="toc-text">ES的API</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        ELK栈初见-1
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-07-25T18:09:24.000Z" class="dt-published" itemprop="datePublished">2019-07-25</time>
+        
+        (Updated: <time datetime="2020-11-30T01:34:13.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a>, <a class="p-category" href="/tags/Lucene/" rel="tag">Lucene</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>我们运行的各种服务在工作过程中都会产生巨大的日志, 如果是小规模的生产环境我们可以简单的通过将各种软件的日志复制到数据库或者直接文件系统上进行汇总. 当然这种不仅仅限日志量十分的少而且这样做会带来很多的弊端, 例如我们很难对其中的日志进行搜索和分析, 另外巨大的IO量对我们的硬盘也是一种巨大的考验.</p>
+<p>今天就来学习ELK栈的第一步, 我们先来了解一下搜索引擎的简单原理.</p>
+<span id="more"></span>
+
+<h2 id="从一个典型架构说起"><a href="#从一个典型架构说起" class="headerlink" title="从一个典型架构说起"></a>从一个典型架构说起</h2><p>我们之前谈论过了很多架构模型, 其中最常见的就是在一个系统的最前方加入反向代理进行负载均衡, 我们把这一层叫做接入层, 接着向后, 接入层的服务会优先向后方的缓存服务请求缓存, 即缓存层, 包括一些静态和动态资源, 如果命中则直接返回, 如果发生了miss就会再向后方真正的服务提供者请求资源, 也就是说真正的服务器层.</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%B8%80%E4%B8%AA%E5%B8%B8%E8%A7%81%E7%9A%84%E6%9E%B6%E6%9E%84.png" alt="一个常见的架构"></p>
+<p>想想看, 我们应该在那个地方进行日志的收集呢? 如果是真实服务器层, 可能80%以上的请求都没有到达这个地方, 显然我们应该在更前方部署日志服务. 如果是在缓存层呢, 在这地方是可以进行日志收集的. 但是显然, 接入层会过滤掉一些非法的请求或者是无权限的请求. 另外, 如果我们的站点足够大, 可能在接入层的前方还要一个CDN网络, 这些都要纳入我们的考虑范围中.</p>
+<p>为什么需要日志? 通过日志, 我们可以来分析和获取PV和UV, 从而得到自己站点的推荐系统. 这是十分重要的. 这就是我们为什么要收集日志.</p>
+<p>说到了收集日志, 稍微想一下就可以知道, 仅仅假设我们有4台Web服务器, 产生的日志量都是巨大的. 如果我们想在这些日志中知道某一个IP的访问次数, 可以说是一个比较麻烦的事情了. 尤其是这种检索只是一个很简单的检索.</p>
+<p>我们可以把日志存储在文件系统中, 或者是数据库系统中, 甚至是一些分布式的数据库系统中, 例如拥有分布式能力的mongodb, 但是存储容易, 我们如何对日志进行分析呢?  当我们把数据存入数据库的时候, 对数据进行分析其实就是进行特定的查询, 能够做到. 但是涉及到日志的时候就会变得麻烦:</p>
+<ul>
+<li>其一是我们的日志数据并发量太大, 一般的关系型数据库很难撑住</li>
+<li>其二是我们的日志是半结构化数据, 对于分析数据较为麻烦</li>
+</ul>
+<p>而且假设使用到MySQL, 由于使用的是最左前缀索引, 也会带来很多问题.</p>
+<p>因此, 使用一般的关系型数据库来进行日志的存储和查询是不太方便的. 所以, 我们需要一个<strong>搜索引擎</strong>来帮助我们进行<strong>全文检索</strong>.</p>
+<h2 id="初探搜索引擎"><a href="#初探搜索引擎" class="headerlink" title="初探搜索引擎"></a>初探搜索引擎</h2><p>搜索引擎可以做到根据我们的检索关键字来进行一般和更高级的检索. 这是数据库系统所做不到的. 我们说程序本身无非就是由数据结构和算法构成的. 对于我们的搜索引擎程序来说亦是如此, 他也需要一个数据存储模型和一个支持这种存储的算法.</p>
+<p>一个搜索引擎, 主要是由两个部分构成的 , 其中一个叫做搜索组件, 也就是所谓的程序部分, 这个部分通过用户键入的关键字进行优化(正规化)并且构建出结果. 另外一个组件叫做索引链. 连接这两个部分的就是所谓索引. 这些索引从哪里来? 我们最熟悉的应该就是爬虫程序了. 如果说是我们上面的日志, 我们可以通过设置代理(Agent)来监听日志文件, 当文件被插入了新的数据就把数据流式复制到我们的收集程序中. 但是同样这还是上面的问题, 并发压力大, IO受不住. 因此我们可以在前端设置一个缓冲, 例如队列. </p>
+<p>在获取到了源数据之后, 程序就需要对这些数据进行<strong>文档</strong>构建从而形成自己的索引了. 这里所说的文档其实搜索引擎的数据格式了, 在文档中, 存储了大量的键值对数据. 就有一点点像我们之前所了解的YAML格式. </p>
+<p>接收到源数据之后, 构成文档. 我们知道使用搜索引擎搜索的时候一般都是通过键入关键字词而不是一句话, 因此我们需要进行<strong>切词</strong>. 在切完词之后我们才可以进行全文搜索. 另外, 对结果排序也是一个需要考虑的问题, 如何设计权重?</p>
+<p>说到这, 我们就可以来简单的小结一下了, 一个搜索引擎的搜索组件就是由上面说到的构建查询部分加上查询的运行, 以及读取结果返回给前端. 当然了, 我们还需要一个前端的访问UI, 不管是命令行操作界面还是图形操作, 总归是有一个能够提供访问接口的东西.</p>
+<p>说完了搜索组件, 我们就来说说所索引链. 这个组件就是用来构建索引的, 我们刚刚说了对收集到的文档进行切词构建索引. 这里的索引是<strong>倒排</strong>的. 一般SQL的索引是正排的. 什么是倒排的呢? 我们构建的索引形如这样:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/%E7%B4%A2%E5%BC%95%E8%A1%A8%E7%9A%84%E6%A0%B7%E5%AD%90.png" alt="索引表的样子"></p>
+<p>左边就是词, 而右边就是这个词出现的文档. </p>
+<p>比如说正排就是在一篇文档中寻找出现的词, 正好是反过来的, 我们在SQL中也正好就是一个大单位数据中寻找小单位数据.</p>
+<p>因此, 一个大体的获取索引链过程:</p>
+<blockquote>
+<p><strong>获取</strong>原始文档信息, 构建<strong>文档</strong>, 进行文档<strong>分析</strong> – 其中最关键的动作是<strong>切词</strong>, 创建<strong>倒排索引</strong></p>
+</blockquote>
+<p>以上就是索引链, 和上面的搜索组件一起成为搜索引擎程序. 当然我们这里所讨论的文档, 全部都是文本信息.</p>
+<p>说起来简单, 其实这里的切词还是十分有讲究的. 这涉及到太多了, 例如, 用户的文档中有可能存在很多typo, 还有语法修正, 近义词同义词, 大小写, 语种等等. 因此我们也需要特殊的词根分析器, 其中比较有名的一个开源索引链程序, 就叫做Lucene. 当然他不负责进行搜索和文档获取, 也不提供任何前端界面. 而一个使用到Lucene的前端就是我们熟悉的Elastic Search.</p>
+<h2 id="Lucene"><a href="#Lucene" class="headerlink" title="Lucene"></a>Lucene</h2><p>从上面我们知道, 对于一个索引链而言, 最重要的部分就是文档了, 而文档通俗的说就是包含了一个或者多个域的容器(键值对), 在搜索时我们所检索的东西是其中的field, 也就是所谓域.</p>
+<p>创建域的时候, 我们可以对域指定选项来说明和限制Lucene在添加域的时候做哪些操作. 这个过程就是对域的分析过程. 这些索引选项, 指定在进行倒排索引的时候能否被搜索, 如何存储, 如何索引等等. 例如有:</p>
+<ul>
+<li>索引选项</li>
+<li>存储选项</li>
+<li>项向量使用选项</li>
+<li>…</li>
+</ul>
+<p>他们可以单独也可以一起使用. 以索引选项为例, 它通过倒排索引来控制文本是否可被搜索:</p>
+<ul>
+<li>Index.ANALYZED: 分析(切词)并且单独作为索引项.</li>
+<li>Index.Not_ANALYZED: 不分析(切词), 把整个内容都当做一个索引项.</li>
+<li>Index.ANALYZED_NORMS: 类似于ANALYZED, 但是不存储加权信息, 这个信息在Lucene中被叫做<code>Norms</code></li>
+<li>Index.Not_ANALYZED_NORMS: 类似于Not_ANALYZED, 不存储Norms.</li>
+<li>Index.NO: 不对这个值进行索引, 也就是该域不能被搜索.</li>
+</ul>
+<p>再比如, 对于存储选项, 指定是否要存储域的真实值. 这是什么意思? 对于有些域的值是全大写的, 或者大小写混杂, 我们在存储的时候有时需要保留, 有时是不需要保留原始值的.</p>
+<ul>
+<li>store.YES: 存储真实值(相当于存储两份)</li>
+<li>store.NO: 不存储真实值</li>
+</ul>
+<p>在默认情况下, 文档和域的权值都是1, 我们可以通过对文档和域进行加权操作.</p>
+<p>由于Lucene是使用JAVA语言所研发的, 因此其中所有的东西都是对象. 我们在查询索引的时候, Lucene返回的是一个叫做scoreDoc的对象, 并且有序. Lucene根据加权标准计算出一个分值, 根据这个分值来排序.</p>
+<p>当然了, Lucene只是一个库, 因此它提供了大量的API来搜索. 对于这些API就不再赘述, 在介绍ES的时候可能会捎带这说一说.</p>
+<h2 id="ElasticSearch"><a href="#ElasticSearch" class="headerlink" title="ElasticSearch"></a>ElasticSearch</h2><p>ES在Lucene的基础上, 将Lucene API所提供的数据集进行分片, 从而能够支持分布式构建还有实时查询. 我们之前说过, Lucene中最重要的组件就是索引, 就类比SQL中的表概念一样, 这个索引组件中有很多文档. 就像SQL的索引和表是在硬盘上有物理文件的, 索引也是如此. 但是不同的是, Lucene的文档是<strong>schema-free</strong>的, 他不像SQL那样是定义好的.</p>
+<p>和InnoDB类似, 倒排索引和文档都是放在一个文件中的. ES为了能够实现并行的搜索, 他将Lucene的索引进行了切片(shard), 每一个节点都持有部分的数据集, 这就给每一个节点引入了单点故障(SPOF), 由于每一个节点持有的数据集都不是完整的, 那么只要有一部分损坏, 就意味着全部的数据集损坏. 解决这个单点问题最简单的方法就是对数据集做冗余. 我们可以对这些数据集做副本, 这就像是之前我们使用到的MySQL的主从复制一样.</p>
+<p>那么问题来了, 我在搜索的时候, 如何才能知道我要搜索的数据在哪个节点上呢? 这个时候, 我们可以把ES当做是一个分布式的存储, 想要获得数据, 要么使用客户端, 要么通过ES Restful API, 因此, 这个接口可以帮助我们进行调度转发或者请求决策.</p>
+<p>由于ES是基于Lucene的, 因此很多基本组件都和Lucene类似:</p>
+<ul>
+<li>首先是<strong>索引</strong>, 是文档的容器. 索引是具有类似属性的文档的集合. 类似于表. 索引名必须是全小写字母.</li>
+<li><strong>类型</strong>, 类型是索引内部的逻辑分区, 其意义完全取决于用户需求. 一个索引内部可定义为一个或者多个的类型. 一般来说, 类型就是拥有相同的域的文档的预定义. 但是建议还是在一个索引中存储一个类型的数据.</li>
+<li><strong>文档</strong>, 文档是索引和搜索的原子单位, 包含了一个或者多个域. 基于JSON格式来表示.</li>
+<li><strong>映射</strong>,  原始内容存储为文档之前需要事先进行分析(切词, 过滤, …), 映射用于定义此分析机制该如何实现.</li>
+</ul>
+<p>我们前面说过ES可以组成分布式的构建, 当我们把ES组成集群的时候, 也有一些集群组件的概念:</p>
+<ul>
+<li>Cluster: ES的集群标识为集群名称, 默认是<code>elasticsearch</code>. 节点就是靠这个名字来决定加入到哪个集群中. 一个节点只能属于一个集群.</li>
+<li>Node: 运行了单个ES实例的主机即为节点, 用于存储数据, 参与集群索引及搜索操作, 节点的表示靠节点名.</li>
+<li>Shard: 将索引切割成为的物理存储组件, 但是每一个shard都是一个独立且完整的索引. 创建索引的时候, ES默认将其分割成5个shard, 用户也可以按需定义(创建之前).<ul>
+<li>primary shard, 主shard<ul>
+<li>replica, 副本shard, 用于数据冗余和查询的时候的, 用户可以定义这个冗余的数量, 可以动态修改.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="ES集群的工作过程"><a href="#ES集群的工作过程" class="headerlink" title="ES集群的工作过程"></a>ES集群的工作过程</h3><p>启动的时候, ES会通过默认的的多播方式, 或者单播方式在9300&#x2F;tcp查找同一个集群中的其他节点, 并与之进行通信. 集群中的所有节点会选举出一个主节点负责管理整个集群状态, 以及在集群范围内决定各个shards的分布方式. </p>
+<p>集群存在状态: green, red, yellow.</p>
+<p>green就代表工作正常, red表示不可用. 当有节点出现问题, 集群就是yellow状态, 即修复模式. 另外, 在yellow状态下如果有某主shard的节点出现问题, 此时就需要从副本shard中寻找一个, 并且把它提升成为主shard. 此时所有的副本shard处于未分配模式, 整个集群的吞吐率也会有限制. </p>
+<p>另外, 主节点会周期性的检查集群. 如果副本数量不够, 会启动复制过程, 直到满足条件.</p>
+<p>说这么多其实没啥感觉, 我们直接去跑一个双节点的集群玩一玩.</p>
+<p>ES直接启动很简单, 配置文件就在<code>/etc/elasticsearch/elasticsearch.yml</code>, YAML格式的配置文件.</p>
+<p>这里我们如果没有修改绑定的地址, ES默认就是本机单node模式, 监听在本地回环接口上, 也就是我们常说的<code>127.0.0.1</code>. 但是, 一旦我们修改到了一个公网地址上, ES就会默认从单机开发模式变成生产环境模式的配置, 并且强制进行一次启动检查. </p>
+<p>这个启动检查就包括检查一些重要的配置, 其中需要我们显式声明一些关于节点发现的配置. </p>
+<p>这里注意, 建议使用IPv4的地址来通信. 另外, 如果在配置文件中设置了IPv4地址但是仍然绑定的IPv6的话, 需要在<code>jvm.options</code>中加上:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Djava.net.preferIPv4Stack=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>几个重要的配置例如:</p>
+<ul>
+<li>cluster.name: 集群的名字</li>
+<li>node.name: 节点名</li>
+<li>network.host: 发布和绑定的网络地址</li>
+<li>discovery.seed_hosts: 要去搜索的节点列表</li>
+<li>cluster.initial_master_nodes: 在一开始启动中显式指明的能成为master节点的节点列表</li>
+</ul>
+<p>当我们配好这些配置之后就可以启动了.</p>
+<p>接着我们可以在启动完成之后通过<code>curl</code>命令来访问接口试试:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# curl -X GET &#x27;http://192.168.10.101:9200/_cat/nodes&#x27;</span><br><span class="line">192.168.10.101 18 92 0 0.00 0.02 0.09 dilmrt * node1</span><br><span class="line">192.168.10.102 23 93 0 0.00 0.03 0.08 dilmrt - node2</span><br></pre></td></tr></table></figure>
+
+<p>可以看到我们两个节点已经启动, 并且位于一个集群中. 我们也可以直接访问9200端口, 这时候显示的信息就是相当于Nginx的<code>It Works</code>, 或者<code>hello world</code>. 我们来看下:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# curl node1:9200</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;node1&quot;,</span><br><span class="line">  &quot;cluster_name&quot; : &quot;myes&quot;,</span><br><span class="line">  &quot;cluster_uuid&quot; : &quot;uRZGU96yS-6JpC3wDzK39A&quot;,</span><br><span class="line">  &quot;version&quot; : &#123;</span><br><span class="line">    &quot;number&quot; : &quot;7.7.0&quot;,</span><br><span class="line">    &quot;build_flavor&quot; : &quot;default&quot;,</span><br><span class="line">    &quot;build_type&quot; : &quot;rpm&quot;,</span><br><span class="line">    &quot;build_hash&quot; : &quot;81a1e9eda8e6183f5237786246f6dced26a10eaf&quot;,</span><br><span class="line">    &quot;build_date&quot; : &quot;2020-05-12T02:01:37.602180Z&quot;,</span><br><span class="line">    &quot;build_snapshot&quot; : false,</span><br><span class="line">    &quot;lucene_version&quot; : &quot;8.5.1&quot;,</span><br><span class="line">    &quot;minimum_wire_compatibility_version&quot; : &quot;6.8.0&quot;,</span><br><span class="line">    &quot;minimum_index_compatibility_version&quot; : &quot;6.0.0-beta1&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;tagline&quot; : &quot;You Know, for Search&quot;</span><br><span class="line">&#125;</span><br><span class="line">[root@node1 ~]# curl node2:9200</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;node2&quot;,</span><br><span class="line">  &quot;cluster_name&quot; : &quot;myes&quot;,</span><br><span class="line">  &quot;cluster_uuid&quot; : &quot;uRZGU96yS-6JpC3wDzK39A&quot;,</span><br><span class="line">  &quot;version&quot; : &#123;</span><br><span class="line">    &quot;number&quot; : &quot;7.7.0&quot;,</span><br><span class="line">    &quot;build_flavor&quot; : &quot;default&quot;,</span><br><span class="line">    &quot;build_type&quot; : &quot;rpm&quot;,</span><br><span class="line">    &quot;build_hash&quot; : &quot;81a1e9eda8e6183f5237786246f6dced26a10eaf&quot;,</span><br><span class="line">    &quot;build_date&quot; : &quot;2020-05-12T02:01:37.602180Z&quot;,</span><br><span class="line">    &quot;build_snapshot&quot; : false,</span><br><span class="line">    &quot;lucene_version&quot; : &quot;8.5.1&quot;,</span><br><span class="line">    &quot;minimum_wire_compatibility_version&quot; : &quot;6.8.0&quot;,</span><br><span class="line">    &quot;minimum_index_compatibility_version&quot; : &quot;6.0.0-beta1&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;tagline&quot; : &quot;You Know, for Search&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到两个节点的集群UUID也是一样的.</p>
+<h3 id="插件"><a href="#插件" class="headerlink" title="插件"></a>插件</h3><p>插件也是ES的一个重要的组件, 我们可以通过进行加入插件来扩展ES的功能. 例如, 我们可以添加自定义的映射类型, 自定义分析器, 本地脚本, 以及自定义发现方式.</p>
+<p>最简单的安装插件的方式就是直接把插件丢到目标目录下, 我们可以先来看一下安装生成的文件:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# rpm -ql elasticsearch</span><br><span class="line">...</span><br><span class="line">/usr/share/elasticsearch/bin/elasticsearch-plugin</span><br><span class="line">...</span><br><span class="line">/usr/share/elasticsearch/plugins</span><br><span class="line">/var/lib/elasticsearch</span><br><span class="line">/var/log/elasticsearch</span><br></pre></td></tr></table></figure>
+
+<p>这个目录就是插件存放的地方了. 除此之外, 我们也可以使用它提供的插件管理程序.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-icu</span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Installing analysis-icu</span></span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Downloading analysis-icu from elastic</span></span><br><span class="line">[=================================================] 100%   </span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Installed analysis-icu</span></span><br><span class="line">[root@node1 ~]# /usr/share/elasticsearch/bin/elasticsearch-plugin list</span><br><span class="line">analysis-icu</span><br><span class="line">[root@node1 ~]# ls /usr/share/elasticsearch/plugins/</span><br><span class="line">analysis-icu</span><br></pre></td></tr></table></figure>
+
+<p>就像这样. 我们可以直接安装官方的插件, 或者可以传递路径, 网络或者本地均可.</p>
+<h3 id="ES的API"><a href="#ES的API" class="headerlink" title="ES的API"></a>ES的API</h3><p>实在是繁多, <a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html">API参考</a></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E4%B8%80%E4%B8%AA%E5%85%B8%E5%9E%8B%E6%9E%B6%E6%9E%84%E8%AF%B4%E8%B5%B7"><span class="toc-number">1.</span> <span class="toc-text">从一个典型架构说起</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E6%8E%A2%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-number">2.</span> <span class="toc-text">初探搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lucene"><span class="toc-number">3.</span> <span class="toc-text">Lucene</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ElasticSearch"><span class="toc-number">4.</span> <span class="toc-text">ElasticSearch</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ES%E9%9B%86%E7%BE%A4%E7%9A%84%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">ES集群的工作过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E4%BB%B6"><span class="toc-number">4.2.</span> <span class="toc-text">插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ES%E7%9A%84API"><span class="toc-number">4.3.</span> <span class="toc-text">ES的API</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&text=ELK栈初见-1"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&is_video=false&description=ELK栈初见-1"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ELK栈初见-1&body=Check out this article: https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&title=ELK栈初见-1"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&name=ELK栈初见-1&description=&lt;p&gt;我们运行的各种服务在工作过程中都会产生巨大的日志, 如果是小规模的生产环境我们可以简单的通过将各种软件的日志复制到数据库或者直接文件系统上进行汇总. 当然这种不仅仅限日志量十分的少而且这样做会带来很多的弊端, 例如我们很难对其中的日志进行搜索和分析, 另外巨大的IO量对我们的硬盘也是一种巨大的考验.&lt;/p&gt;
+&lt;p&gt;今天就来学习ELK栈的第一步, 我们先来了解一下搜索引擎的简单原理.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/&t=ELK栈初见-1"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

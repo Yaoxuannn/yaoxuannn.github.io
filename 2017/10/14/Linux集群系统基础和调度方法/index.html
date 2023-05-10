@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="从今天开始学习Linux集群知识 !">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux集群系统基础和调度方法">
+<meta property="og:url" content="https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="从今天开始学习Linux集群知识 !">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lamp.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_ip.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs-dr.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_dr.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs-tun.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lva_nat_lab.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_dr_lab.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_arp.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_dr_res.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/MindMap/Cluster1_mind.png">
+<meta property="article:published_time" content="2017-10-14T19:31:23.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:43:43.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Cluster">
+<meta property="article:tag" content="LVS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lamp.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux集群系统基础和调度方法</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&text=Linux集群系统基础和调度方法"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&is_video=false&description=Linux集群系统基础和调度方法"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux集群系统基础和调度方法&body=Check out this article: https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&name=Linux集群系统基础和调度方法&description=&lt;p&gt;从今天开始学习Linux集群知识 !&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&t=Linux集群系统基础和调度方法"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4-Cluster"><span class="toc-number">1.</span> <span class="toc-text">集群 Cluster</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">集群的类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS%E9%9B%86%E7%BE%A4%E7%9A%84%E5%AE%9E%E7%8E%B0-%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">LVS集群的实现(概述)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6"><span class="toc-number">2.0.1.</span> <span class="toc-text">硬件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6"><span class="toc-number">2.0.2.</span> <span class="toc-text">软件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS"><span class="toc-number">3.</span> <span class="toc-text">LVS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LVS%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.1.</span> <span class="toc-text">LVS的类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-nat"><span class="toc-number">3.1.1.</span> <span class="toc-text">lvs-nat</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-dr"><span class="toc-number">3.1.2.</span> <span class="toc-text">lvs-dr</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-tun"><span class="toc-number">3.1.3.</span> <span class="toc-text">lvs-tun</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-fullnat"><span class="toc-number">3.1.4.</span> <span class="toc-text">lvs_fullnat</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#session%E4%BF%9D%E6%8C%81"><span class="toc-number">3.2.</span> <span class="toc-text">session保持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LVS-%E8%B0%83%E5%BA%A6%E5%99%A8-Scheduler"><span class="toc-number">3.3.</span> <span class="toc-text">LVS 调度器(Scheduler)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LVS%E7%9A%84%E8%B0%83%E5%BA%A6"><span class="toc-number">3.4.</span> <span class="toc-text">LVS的调度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E5%BB%BALVS%E9%9B%86%E7%BE%A4"><span class="toc-number">4.</span> <span class="toc-text">构建LVS集群</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NAT%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.1.</span> <span class="toc-text">NAT模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DR%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.2.</span> <span class="toc-text">DR模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS%E7%9A%84%E9%98%B2%E7%81%AB%E5%A2%99%E6%A0%87%E8%AE%B0%E5%92%8CSession%E7%BB%91%E5%AE%9A"><span class="toc-number">5.</span> <span class="toc-text">LVS的防火墙标记和Session绑定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS%E7%9A%84HA%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">6.</span> <span class="toc-text">LVS的HA解决方案</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux集群系统基础和调度方法
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-14T19:31:23.000Z" class="dt-published" itemprop="datePublished">2017-10-14</time>
+        
+        (Updated: <time datetime="2020-11-30T01:43:43.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cluster/" rel="tag">Cluster</a>, <a class="p-category" href="/tags/LVS/" rel="tag">LVS</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>从今天开始学习Linux集群知识 !</p>
+<span id="more"></span>
+
+<h2 id="集群-Cluster"><a href="#集群-Cluster" class="headerlink" title="集群 Cluster"></a>集群 Cluster</h2><p>什么是一个集群啊? 或者说为什么需要集群啊? 首先我们先来从一个普通的LAMP&#x2F;LNMP看:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lamp.png" alt="lamp"></p>
+<p>我们的httpd是一个前端服务器同时也是一个反向代理服务器, 也就是说所有的请求都要经过它. 当请求的数量就很大的时候, httpd就会有点吃不消了. 除此之外, 我们说说后面的动态资源– php. 动态资源一般只有20%的请求. 由于处理起来是需要时间的, 所以这个的最大并发量也是有一个限制的, 甚至有可能前端服务器还没有到达瓶颈, 后端服务已经承载不住了. 当超出了之后, 整体的性能也会急剧下降.</p>
+<p>于是在这样的场景下, 我们有两种扩展的方式:</p>
+<ul>
+<li>scale up: 向上扩展. 也就是找个性能更好的主机, 但是性价比很不高, 往往会花大价钱, 不推荐.</li>
+<li>scale out: 向外扩展. 也就是多加机器, 分散请求 ,但是先要分散就需要一个接入点, 将服务进行分散.</li>
+</ul>
+<p>比如这里的PHP服务, 我可以多来几台, 由httpd来调度, 这就需要httpd能够提供调度, 也就是将受到的请求发散到各个PHP服务器上, 其中httpd有个模块就是做这个事情的.</p>
+<p>由于http协议是个无状态的协议, 因此他需要进行追踪. 一种可行的是cookie, 但是不是很安全. 而且考虑到以某宝为例, 并且假设其使用PHP做动态资源, 我们可以在浏览网页的时候, 加入购物车对么, 假设这个时候用户的请求被调度到了第一台PHP服务器, 于是这个操作被存储到了一个特殊的空间, 我们叫做<strong>session</strong>. 而后第二次访问的时候, 还是被调度到了第一台PHP服务器, 但是他携带的第一次访问服务端给的cookie, 就依然可以得到自己上一次访问的相关信息. 接着用户第三次访问, 但是这一次他被导向了第二台PHP服务器, 这个时候Cookie就没用了. 那么, session里的数据呢? 也没了, 自己的购物车就这样的清空了, 显然是不行的. 那怎么办? </p>
+<p>使用数据库吧, 这样就解决了. 但是我的MySQL数据库也有很多啊. 怎么知道我的数据在哪一个数据库服务器里? 这个时候我们的所使用的一般是<strong>主从复制</strong>的架构. 也就是写操作都是写到一个固定的MySQL服务器上, 而其他的MySQL会自动进行同步和复制, 一般情况下, 我们的正常业务中都是读多写少的模型, 所以我们采取这样的操作, 只有主服务器可以进行写操作, 只有从服务器可以进行读操作, 而从服务器有多个.</p>
+<p>但是这样又太麻烦了, 我们的程序怎么进行读操作啊? 多台MySQL, 虽然可以在程序中进行轮询或者不管怎么方式访问, 耦合度又太高了, 如果日后这些从服务器进行了改变, 难道还要修改程序的代码? 因此, 我们可以搞出来一个中间件. 所有的请求都发向这个中间件就好, 接着由这个middleware进行调度和分发, 最后返回结果就行了. 除了提供这样的功能, 中间件还可以提供消息队列的功能, 当流量很大的时候还是可以进行排队, 然后挨个处理.</p>
+<p>这还只是后端就已经这么过分了, 如果我们把httpd分成两台, 那问题就更加严重了. 首先, 我需要两倍的静态页面? 还是其他的处理方法? 接着, 后端的服务器又怎么部署? 如果我想要进行程序的改版, 那岂不是n倍部署? 另外, 两台前端服务器? 怎么将用户均匀调度呢? 我们想到之前说过DNS的A记录, 我可以将一个域名绑定多个IP, 这样就可以轮询了. 事实上, 这种方法是一个会很不好的解决方案, 因为DNS存在缓存, 而大量用户使用运营商的DNS缓存, 所有我们不能达到期待的效果.</p>
+<p>于是, 我们又在httpd前面加了一个<strong>负载均衡器</strong>. 但是这样的话, 负载均衡器又会变成性能瓶颈. 而且, 我们的负载均衡器作为网络入口, 还需要进行nat转换.另外, 既然是作为入口, 那么万一这台负载均衡器炸了怎么办, 整个系统就完了? 所以, 我们还需要对着这一台负载均衡器进行备份. 也就是<strong>冗余</strong> 而当活动主机出现了故障, 冗余主机怎么知道呢? 更严重的是, 如果负载均衡器是一个有状态的服务的话, 这个状态如何在冗余切换进行来的时候进行传递呢 ? 是很麻烦啊..</p>
+<p>说到这里为止, 什么是个集群, 就差不多可以来说说了. <strong>多台主机,为了满足某个特定目的,而组合起来使用. 这样一个计算机集合</strong>, 我们就叫做<strong>集群(cluster)</strong>.</p>
+<h3 id="集群的类型"><a href="#集群的类型" class="headerlink" title="集群的类型"></a>集群的类型</h3><p>LB集群: 负载均衡集群, 通过scale out形式, 主要分摊负载.</p>
+<p>HA集群: 高可用集群, 通过冗余, 能够做到服务一直可用, 一直在线.</p>
+<p>为了衡量服务的可用性(availability), 我们需要考虑无故障时间和修复时间. </p>
+<p>HP集群: 高性能集群…略</p>
+<p>大规模并行处理集群: 分布式 map-reduce (hadoop等) …略</p>
+<p>我们在这一部分先来说说负载集群. 还是先来考虑之前的数据库读写分离. 为什么我们说只有MySQL需要进行读写分离呢? 到底区别在哪里? </p>
+<p><strong>httpd不需要存储数据</strong> 正是因为这个, 所以我们才要对MySQL进行分离, 因为需要得到数据集. 读写不分离行吗? 如果每一个MySQL主机既可以读, 也可以写. 那么结果集是离散的. 所以我们 在这个情况下, 可以使用一个大的框架进行统筹, 将离散的数据集拼成一个完整的. 但是这还不够. 如果我们 需要进行大数据的排序结果集, 每一个MySQL服务器将排好序的部分结果集提交给集合器, 但是集合器这个时候拿到的只是三个结果集, 没有索引. 怎么排序? </p>
+<p>所以一旦使用这种方式, 我们的访问模型就会发生改变, 其实仔细想想, 我们不会去访问2年前的微博, 也不会去查看你几个月之前的淘宝商品. 也就是说, 只有20%左右的商品是热点数据, 而这些当中可能也有20%是热点中的热点. 是最频繁访问的数据. 所以说<strong>业务模型决定数据的存储方式</strong>. </p>
+<p>当我们在考虑一个系统的时候, 我们往往会考虑下面的几个:</p>
+<ul>
+<li>可扩展性</li>
+<li>可用性</li>
+<li>容量</li>
+<li>性能</li>
+</ul>
+<p>作为一个系统运维: 我们在进行运维的时候, 首先要确保<strong>服务可用</strong>, 这是最重要的, <strong>稳定大于一切</strong>, 这个达成之后, 我们就要进行<strong>标准化</strong>, 能够标准了, 就可以<strong>自动化</strong>了. </p>
+<p>构建高可用扩展系统的重要原则:</p>
+<ul>
+<li><strong>在系统内部尽量避免串行化和交互</strong></li>
+</ul>
+<p>考虑负载均衡器成为了瓶颈, 这时候我们就要考虑使用多地部署, 多机房冗余部署. 多系统部署. 例如, 华北地区走华北机房的流量, 华南地区走华南机房的流量, 一旦华南机房挂掉了, 我们就需要一个大的, 全局的服务能够将华南地区的流量引到华北地区. 这里的全局服务, 我们把它叫做<code>GSLB</code>, 也就是<code>Global Service Load Balancing</code>  比如基于View的DNS. 同时还有小型的<code>SLB</code>, 也就是<code>Service Load Balancing</code>. </p>
+<p>另外, http静态资源还是可以进行缓存的, 所以我们就可以把对静态资源的请求结果缓存到离用户最近的服务器上. 这样有极大部分的请求都会直接命中缓存, 而最终到达负载均衡器的只有一部分的请求了.</p>
+<h2 id="LVS集群的实现-概述"><a href="#LVS集群的实现-概述" class="headerlink" title="LVS集群的实现(概述)"></a>LVS集群的实现(概述)</h2><p>首先我们来说说负载均衡集群的实现, 这里主要分成软件和硬件两个层次来说.</p>
+<h4 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h4><p>硬件上比较有名的就是F5 BIG-IP了, 但是价格昂贵; 还例如Citrix Netscaler, A10, Array, Redware等等.</p>
+<p>这个不是重点了,略过了</p>
+<h4 id="软件"><a href="#软件" class="headerlink" title="软件"></a>软件</h4><p>主要是 lvs, haproxy, nginx, ats(Apache traffic server). 我们可以对这些软件(当然硬件也可以)按照工作的协议层次划分:</p>
+<ul>
+<li>传输层: LVS, haproxy(mode tcp)</li>
+<li>应用层: 基本上都是反向代理: nginx, haproxy, ats</li>
+</ul>
+<p>于是, 我们开始正式介绍<strong>lvs</strong>.</p>
+<h2 id="LVS"><a href="#LVS" class="headerlink" title="LVS"></a>LVS</h2><p>LVS是一个工作在四层的负载均衡器. 我们之前在说iptables的时候说过, iptables在内核中工作的框架&#x2F;组件叫做netfilter, 这个LVS其实也是工作在netfilter之上的. 由于工作在内核, 所以LVS必须理解来访的请求, 从而根据规则进行转发. 正常情况下, 我们的数据包是经过预先路由到入站接着进入用户空间, 但是如果LVS, 就不会将数据包发向用户空间而直接进行FORWARD.</p>
+<p>LVS的全称是Linux Virtual Server. 为什么叫这个名字呢? 其实就和我们理解反向代理差不多.他不提供那个服务但是对外宣称自己提供.LVS基于请求的IP和端口进行转发, 而(三层)路由器基于目的IP进行转发, (二层)交换机基于MAC地址进行转发. 所以我们也可以把LVS称为是四层交换, 或者四层路由. 当然无非都是转发.</p>
+<p>原先我们使用iptables进行nat转发的时候, 是在PREROUTING进行DNAT, 也就是在还没来得及路由的时候就把数据包的流向进行更改. 但是LVS并不是这样玩的, 他实际上工作在INPUT上. 在INPUT链上, LVS定义了集群规则, 从而强行改变正常流向. 直接扔到特定的网卡上. 所以如果需要使用LVS, 我们需要定义好哪些端口是需要进行LVS转发的, 以及扔到哪些real server去, 这些主机有多少个, 以及挑选方式是什么等等</p>
+<p>和iptables一样, LVS也有两个部分构成, 一个工作在内核空间, 叫做<code>ipvs</code>; 一个工作在用户空间, 叫做<code>ipvsadm</code>. </p>
+<p>所以如果想要使用LVS, 前提是我们需要这个用户空间的命令行工具, 管理集群服务. LVS依附在netfilter上工作, 所以如果想使用此功能当然你要确保netfilter时启用的, 当然了LVS在内核选项中也是启用的. 怎么判断呢? 在我们编译内核的时候, 还记得生成的<code>.config</code>吗? 对了, 我可以从这里面获得相关的信息.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># grep -i -A 5 &quot;ipvs&quot; /boot/config-3.10.0-693.2.2.el7.x86_64 </span></span><br><span class="line">CONFIG_NETFILTER_XT_MATCH_IPVS=m</span><br><span class="line">CONFIG_NETFILTER_XT_MATCH_LENGTH=m</span><br><span class="line">CONFIG_NETFILTER_XT_MATCH_LIMIT=m</span><br><span class="line">CONFIG_NETFILTER_XT_MATCH_MAC=m</span><br><span class="line">CONFIG_NETFILTER_XT_MATCH_MARK=m</span><br><span class="line">CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m</span><br><span class="line">--</span><br><span class="line"><span class="comment"># IPVS transport protocol load balancing support</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">CONFIG_IP_VS_PROTO_TCP=y</span><br><span class="line">CONFIG_IP_VS_PROTO_UDP=y</span><br><span class="line">CONFIG_IP_VS_PROTO_AH_ESP=y</span><br><span class="line">CONFIG_IP_VS_PROTO_ESP=y</span><br><span class="line">--</span><br><span class="line"><span class="comment"># IPVS scheduler</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">CONFIG_IP_VS_RR=m</span><br><span class="line">CONFIG_IP_VS_WRR=m</span><br><span class="line">CONFIG_IP_VS_LC=m</span><br><span class="line">CONFIG_IP_VS_WLC=m</span><br><span class="line">--</span><br><span class="line"><span class="comment"># IPVS SH scheduler</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">CONFIG_IP_VS_SH_TAB_BITS=8</span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># IPVS application helper</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">CONFIG_IP_VS_FTP=m</span><br><span class="line">CONFIG_IP_VS_NFCT=y</span><br><span class="line">CONFIG_IP_VS_PE_SIP=m</span><br></pre></td></tr></table></figure>
+
+<p>也看到了 这里使用的是CentOS7做的实验. 可以很清楚的看出来, LVS功能是开启的, 支持诸多协议: TCP, UDP, AH_ESP, ESP~ 而且他的负载均衡算法都是编译成了模块存在的. </p>
+<p>在使用LVS之前, 我们先来看一下整个LVS的工作架构, 有关一些名词等等:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_ip.png" alt="lvs_ip"></p>
+<h3 id="LVS的类型"><a href="#LVS的类型" class="headerlink" title="LVS的类型"></a>LVS的类型</h3><p>然后看看LVS的类型, 有四种:</p>
+<ul>
+<li>lvs-nat: 其实就是多目标的DNAT(iptables)</li>
+<li>lvs-dr(direct routing直接路由)</li>
+<li>lvs-tun(ip tunneling)</li>
+<li>lvs-fullnat(扩展功能)</li>
+</ul>
+<h4 id="lvs-nat"><a href="#lvs-nat" class="headerlink" title="lvs-nat"></a>lvs-nat</h4><p>首先我们先来看一下lvs-nat, 其实这个过程和我们之前的iptables的nat转换没什么太大的不同呀~我们来过一遍过程. 首先, 客户端CIP像向VIP发出请求, 请求报文到达VIP, 由LVS强行将报文进行修改之后送到POSTROUTING. 此时报文的源地址还是CIP, 但是目的地址RIP. 后面的real server收到请求, 将响应结果报文封装. 注意啊, 此时的报文目的地址是CIP, 而源地址是RIP. 而且RS的网关一定要是前面的director才行(否则报文送不出去啊), 接着就是正常的过程了, director走正常流程经由FORWARD, 最后从外部接口发送到目的地址CIP. 一次通信结束.</p>
+<p>不管怎么说, 我们要在director中, (准确的说是LVS专用的), 维护一张nat转换表.</p>
+<p>如果基于nat的方式, 显然RS和DIP应该使用私网地址, 且RS的网关需要指向DIP. 另外请求和响应报文都要经由director转发, 这样极高的负载的场景中, director将会成为系统瓶颈. diretor还要支持端口映射才行.</p>
+<h4 id="lvs-dr"><a href="#lvs-dr" class="headerlink" title="lvs-dr"></a>lvs-dr</h4><p>接着我们看一下lvs-dr, 这种模型是LVS默认使用的, 在大规模场景中经常使用. 而且也是一种较难理解的模型.</p>
+<p>这个的原理是<strong>修改请求报文的目标MAC地址</strong>进行转发. 在说这个之前, 我们要先来看一下这个模型的架构图:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs-dr.png" alt="lvs-dr"></p>
+<p>这里我们把director, real server都连接到一个交换机上(此时他们都只需要一个网卡), 首先先来回忆一下用户的请求是怎么到达我们的服务器的:</p>
+<p>首先, 用户那边将包的目的地址设置成为我们的服务器的公网IP地址, 接着经过变换, 重重路由和网关, 请求到达图中的最后一个路由, 我们知道, 每一次经过一个路由, 包的源MAC地址都会变成那个路由的MAC地址对吗? 所以当最后一个路由想要将包发送过来的时候, 这个时候转换成为本地网络通信. 也就是说从图中右边那个接口出来的包头前需要再次附着一个MAC头(源MAC和目的MAC). 源MAC就是路由接口的那个MAC了BUT. 路由器怎么知道目的MAC是多少呢? 先来想下他知道什么. 对哦, 目的IP. 所以这个时候就可以做ARP广播了, 接着只有director发出回应, 路由器得到MAC地址, 完成通信.</p>
+<p>那么, 接着过程是这样走的, 请求发到director之后, director从和都连接在一个交换机上的RS中挑选一台发出响应, 过程结束.</p>
+<p>也就是说:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_dr.png" alt="lvs_dr"></p>
+<p>这样的一个过程, 明确的一点是, 响应报文不会经过director了, 由RS直接发出. 这样会存在一个致命的问题. 源IP地址不是VIP了. 怎么办? 处理方法是这样的: <strong>每一个RS和Director的地址是一样的, 都是VIP.</strong> </p>
+<p>问题就这样解决了? 当然不是, 这会引入一个新的问题. 当路由器做ARP广播的时候, 所有的主机都给了响应, 这怎么行? </p>
+<p>其实, 我们的解决方法是这样的: 其实每一个主机都有两个IP, 对于director来说, 他有一个VIP和一个DIP, 而每一个RS也有一个VIP, 还有一个RIP. 这样当请求到达director的时候, 他会进行ARP广播获得挑选出来的那个RIP的主机的MAC地址, 接着IP包头依然是CIP-&gt;VIP, 封装MAC帧的时候, 将目的MAC封装成挑选出来的主机的那个MAC, 交换机是而二层设备, 只能转发帧, 所以就将请求报文发向挑选好的RS, RS收到报文之后解开MAC帧, 查看内部的IP包头, 源IP: CIP, 目的IP: VIP, VIP是不是自己的IP? <strong>是的</strong> !所以进入用户空间进行处理~.</p>
+<p>可能还是有点问题, 来想一想RIP, DIP和VIP能够是同一网段吗? 其实这些倒不是十分重要的问题, 我的VIP, DIP, RIP全都是公网IP都是可行的, 而且这样还方便我们做远程管理. 实际上, 我们要确保VIP, DIP以及RIP必须要在一个物理网段中, 这样director的ARP广播才可以到达啊, 另外一般情况下, 我们会把DIP和RIP规划到一个子网段中 因为这样更好理解, 但是这并不绝对, 不在同一网段也无所谓.</p>
+<p>既然RIP和VIP不在同一网段,那么显然网关, 出口路由就不能是进来的那个了, 所以我们需要再添加一个路由器, 充当出口路由了. 挨? 可是这样不对啊?我们要求出去的响应报文的源IP一定要是VIP才行啊? 我们的主机是Linux主机, 内核会遵从一个原则: 响应报文从哪一个网卡出去, 那么源地址就一定是那个网卡的IP地址.</p>
+<p>对于每一个RS来说, 我们的RIP是配置在物理网卡上的, 而VIP是配置在lo这样的接口上的. 因此分发下来的报文是经由物理网卡转向lo, 最终发向上层用户空间的. 接着, 响应报文默认是从物理接口出去的, 我们强行将其规定成先走lo, 在转向物理网卡出去. 这是必须的一步.</p>
+<p>最后我们稍微总结一下dr集群的几个特点:</p>
+<ul>
+<li>保证前端路由器将目标IP为VIP的请求报文发送到director上</li>
+<li>解决方法: <ul>
+<li>静态绑定</li>
+<li>arptables</li>
+<li>修改内核参数</li>
+</ul>
+</li>
+<li>RS的RIP可以使用私网地址, 也可以使用公网地址</li>
+<li>RS和directors一定要在同一个物理网络中</li>
+<li>请求报文经过director调度, 但是响应报文一定不经过director</li>
+<li>不支持端口映射</li>
+<li>RS的网关不能指向RIP</li>
+</ul>
+<p>以上就是最常见的两种集群类型啦, 接着我们再来看看剩下的:</p>
+<h4 id="lvs-tun"><a href="#lvs-tun" class="headerlink" title="lvs-tun"></a>lvs-tun</h4><p>先来想想之前的两种, 他们都有一个共同的缺点, director和RS之间的距离不可能很长, 对嘛? 甚至第二种连路由器都不能连接.</p>
+<p>而tun就可以解决这样的问题, 我们不修改请求报文的IP首部, 而是通过在原有的ip首部之外, 再封装一个ip首部. 大体的原理就是这样. 其实只要理解了之前的 理解这个tun就不难了:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs-tun.png" alt="lvs-tun"></p>
+<p>其实就有点像是加强版的 lvs-dr 了. 只不过由于是走IP隧道, 所以要求director和RS需要支持IP隧道协议. RS主机依然是物理网卡RIP, lo接口VIP的模式, 接着响应的时候就会有RS直接一口气发向User.</p>
+<p>但是这样其实也会有一个问题, 就是<strong>MTU</strong>. 当然这是所有隧道的问题, 由于包头增大(多了一个IP包头[20字节]), 导致MTU相对来说不够就会进行<strong>IP分组分片操作</strong>.</p>
+<h4 id="lvs-fullnat"><a href="#lvs-fullnat" class="headerlink" title="lvs_fullnat"></a>lvs_fullnat</h4><p>最后一个full-nat , 就是director同时修改源地址和目标IP. 怎么搞的呢? 其实就是在进去的时候把源IP换一下, 出去的时候把目的IP和源IP都换一下.</p>
+<p>这样的话, 就可以跨机房(director和RS不在同一个机房), 而且支持端口映射机制.</p>
+<h3 id="session保持"><a href="#session保持" class="headerlink" title="session保持"></a>session保持</h3><p>接着我们聊聊之前说过的session保持. 一般有三种session保持的方式:</p>
+<ul>
+<li>session绑定<ul>
+<li>就是说将来自该用户的请求全部定向到某个特定的RS上, 追踪用户的方法就是维护一个session表, 通过定时器机制来维持. 这种机制也即: <code>ip_hash</code> 对来源IP进行hash之后存表. 但是现在我们有很多连接互联网的方式是使用SNAT的呀, 也就是说一个IP可能后面是几百台机器. 这样一点都不均衡了, 力度还十分粗糙.</li>
+<li>所以还可以使用cookie_hash. (进程级别, 应用层)</li>
+</ul>
+</li>
+<li>session集群<ul>
+<li>上面的session绑定有个严重的问题, 就是一旦RS宕机, 整个session就全部都没了.所以需要进行session复制和同步就好了每一个主机都有每一个用户的session.但是这个模式会影响性能和网络拥塞.</li>
+</ul>
+</li>
+<li>session服务器<ul>
+<li>上面的session集群虽然可行, 但是如果电源中断, 整个集群宕掉, 所有的session还是一样全体消失. 所以我们需要进行session的持久化. 具体说来就是找一台第三方的存储服务器. 这样每一台主机都去找这个存储服务器就行了.而且我们可以使用memcache或者redis这样的键值存储. 当然缺点也是有的: 一来引入了单点, 二来会带来延迟. 所以还是要慢慢的进行新的架构或者研发.</li>
+</ul>
+</li>
+</ul>
+<h3 id="LVS-调度器-Scheduler"><a href="#LVS-调度器-Scheduler" class="headerlink" title="LVS 调度器(Scheduler)"></a>LVS 调度器(Scheduler)</h3><p>其实所谓的调度器, 就是一些算法的程序实现罢了.我们之前也看到了LVS支持的一些调度算法. 当然那些并不是全部. 我们将调度算法分成<strong>静态的方法</strong>和<strong>动态的方法</strong>. 其中静态的方法就是说仅根据算法本身进行调度. 而动态方法能够根据算法和各个RS当前的负载状态来进行调度. 显然, 静态方法能够保证起点是公平的, 而动态方法能够尽可能使得结果更加公平.</p>
+<p>静态方法有这些: </p>
+<ul>
+<li>RR(<code>round robin轮调</code>), </li>
+<li>WRR(<code>weighted RR,加权的RR</code>),  </li>
+<li>SH(<code>source hash, 实现session保持的机制会损害负载均衡的效果</code>), </li>
+<li>DH(<code>destination hash, 对同一个目标的请求是始终发向同一RS</code>).</li>
+</ul>
+<p>对于动态方法, 其实就是一开始直接调用算法, 接着在后面就会开始讲各个RS负载状态加入考虑. 这就引入了Overhead, 通过这个来量化RS的负载情况. 经过计算Overhead最小的主机就会优先纳入考虑.</p>
+<p>而动态方法有这些: </p>
+<ul>
+<li>LC(<code>Least connection, 最小连接, 如果每一个都是0, 就自上而下: Overhead=Active * 256+Inactive</code>), </li>
+<li>WLC(<code>Weighted LC, 加权的LC: Overhead=(Active * 256 + Inactive)/weight, 但是这样的算法会有一个缺点, 那就是由于自上而下的策略, 会使得最开始的时候(也就是0连接), 会直接选择第一台主机, 然而万一这个第一台主机就是性能最差的那一台怎么办?于是就需要下面的SED来补救.</code>), </li>
+<li>SED(<code>Shortest Expectation Delay, 也就是最小希望延迟: Overhead=(Active+1)*256/weight. 其实就是尽量保证权重最大的来响应请求.但是这样其实也有问题</code>), </li>
+<li>NQ(<code>Never Queue.永不排队, 十分独特, 先把权重从大到小来一遍, 接着使用SED逐渐排除所有的RS. 接着循环就行了.</code>), </li>
+<li>LBLC(<code>Locality-Base LC, 就是动态的DH算法</code>), </li>
+<li>LBLCR(<code>LBLC with  Replication, 带复制的LBLC.两台缓存服务器互相复制.</code>).</li>
+</ul>
+<h3 id="LVS的调度"><a href="#LVS的调度" class="headerlink" title="LVS的调度"></a>LVS的调度</h3><p> 接下来终于要来说说如何使用ipvsadm啦~由于我们已经会写iptables了, 所以ipvsadm其实是很简单的. 无非也就是一些规则的增删查改了. 而ipvsadm也无非就是管理集群服务, 和管理集群服务中的RS.</p>
+<p>一个ipvs主机可以同时定义多个cluster service, 这主要依靠tcp和udp的端口决定. 另外一个cluster service上至少应该由一个real server. 定义时, 只要指明lvs-type 以及lvs-scheduler就行了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 管理集群服务</span></span><br><span class="line">ipvsadm -A|E -t|u|f service-address [-s scheduler]</span><br><span class="line">        [-p [<span class="built_in">timeout</span>]] [-M netmask] [-b sched-flags]</span><br><span class="line">ipvsadm -D -t|u|f service-address</span><br><span class="line"></span><br><span class="line">[service-address]</span><br><span class="line">  tcp: -t ip:port</span><br><span class="line">  udp: -u ip:port</span><br><span class="line">  fwm: -f 防火墙标记, 也就是经过netfilter的时候的一个token类似的东西.</span><br><span class="line"></span><br><span class="line">[scheduler]</span><br><span class="line">  default wlc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 管理集群服务中的RS</span></span><br><span class="line">ipvsadm -a|e -t|u|f service-address -r server-address</span><br><span class="line">        [-g|i|m] [-w weight] [-x upper] [-y lower]</span><br><span class="line">ipvsadm -d -t|u|f service-address -r server-address</span><br><span class="line"></span><br><span class="line">[server-address]:</span><br><span class="line">  ip[:port]</span><br><span class="line">  </span><br><span class="line">[lvs-type]:</span><br><span class="line">  -g: gateway, dr</span><br><span class="line">  -i: ipip, tun</span><br><span class="line">  -m: masquerade, nat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清空和查看</span></span><br><span class="line">ipvsadm -C</span><br><span class="line">ipvsadm -L|l [options]</span><br><span class="line"><span class="comment"># restore 和 save</span></span><br><span class="line">ipvsadm -R</span><br><span class="line">ipvsadm -S [-n]</span><br><span class="line"><span class="comment"># 置零计数器</span></span><br><span class="line">ipvsadm -Z [-t|u|f service-address]</span><br><span class="line"><span class="comment"># </span></span><br><span class="line">ipvsadm --<span class="built_in">set</span> tcp tcpfin udp</span><br><span class="line">ipvsadm --start-daemon state [--mcast-interface interface]</span><br><span class="line">        [--syncid syncid]</span><br><span class="line">ipvsadm --stop-daemon state</span><br></pre></td></tr></table></figure>
+
+<p>基本上大写选项都是在管理集群服务的, 而小写选项都是在管理集群服务中的RS. 而且这个玩意也有一个save和一个restore.</p>
+<h2 id="构建LVS集群"><a href="#构建LVS集群" class="headerlink" title="构建LVS集群"></a>构建LVS集群</h2><p>终于开始了, 来亲手构造一个nat和dr模型的集群吧.</p>
+<h3 id="NAT模型"><a href="#NAT模型" class="headerlink" title="NAT模型"></a>NAT模型</h3><p>首先来看一下我们的实验拓扑图:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lva_nat_lab.png" alt="lva_nat_lab"></p>
+<p>由于使用Vmware, 所以这里使用建立不同的虚拟网络来做隔离. 信息图中已经很明白了, </p>
+<p>现在先来是构建环境, 先要把网络拓扑搭建完成. </p>
+<p>接着就开启后端两个服务器的httpd服务, 并且配置默认页面(先设置成为不同的可区分的页面).</p>
+<p>接着清空所有iptables规则. 接着使用director去访问后面的两个节点.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># curl http://192.168.20.7</span></span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># curl http://192.168.20.8</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>接着我们要确认核心转发功能是开启的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># cat /proc/sys/net/ipv4/ip_forward</span></span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+
+<p>接下来就简单了, 请看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -A -t 172.16.100.9:80 -s rr</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L -n</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  172.16.100.9:80 rr</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -a -t 172.16.100.9:80 -r 192.168.20.7:80 -m</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -a -t 172.16.100.9:80 -r 192.168.20.8:80 -m</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L -n</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  172.16.100.9:80 rr</span><br><span class="line">  -&gt; 192.168.20.7:80              Masq    1      0          0         </span><br><span class="line">  -&gt; 192.168.20.8:80              Masq    1      0          0    </span><br></pre></td></tr></table></figure>
+
+<p>接下来访问试试: ( 因为我担心会有缓存的影响, 所以使用本机的shell来跑 )</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 交替出现node2和node3, 这就是rr算法, 轮询. 接着我还用ab跑了一个简单的1000次访问:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L -n</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  172.16.100.9:80 rr</span><br><span class="line">  -&gt; 192.168.20.7:80              Masq    1      0          504       </span><br><span class="line">  -&gt; 192.168.20.8:80              Masq    1      0          501    </span><br></pre></td></tr></table></figure>
+
+<p>可以看到基本上平摊了请求. 其实, 当我们进行ipvsadm的停止操作的时候, 默认service unit会执行保存操作, 而开启时会进行重读上次保存的配置的操作. 但是终究没有我们手动保存来的靠谱:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -S &gt; ~/ipvsadm</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -C</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L -n</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -R &lt; ~/ipvsadm </span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L -n</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  192.168.20.1:80 rr</span><br><span class="line">  -&gt; 192.168.20.7:80              Masq    1      0          0         </span><br><span class="line">  -&gt; 192.168.20.8:80              Masq    1      0          0         </span><br><span class="line">[root@VM-node1 ~]<span class="comment"># cat ipvsadm </span></span><br><span class="line">-A -t VM-node1:http -s rr</span><br><span class="line">-a -t VM-node1:http -r 192.168.20.7:http -m -w 1</span><br><span class="line">-a -t VM-node1:http -r 192.168.20.8:http -m -w 1</span><br></pre></td></tr></table></figure>
+
+<p>和iptables基本上是一样的, 但是这个地方, 建议在保存的时候 加上-n参数, 这样就不用进行反向解析了. 而Unit就是这样做的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># cat /usr/lib/systemd/system/ipvsadm.service </span></span><br><span class="line">[Unit]</span><br><span class="line">Description=Initialise the Linux Virtual Server</span><br><span class="line">After=syslog.target network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=oneshot</span><br><span class="line">ExecStart=/bin/bash -c <span class="string">&quot;exec /sbin/ipvsadm-restore &lt; /etc/sysconfig/ipvsadm&quot;</span></span><br><span class="line">ExecStop=/bin/bash -c <span class="string">&quot;exec /sbin/ipvsadm-save -n &gt; /etc/sysconfig/ipvsadm&quot;</span></span><br><span class="line">ExecStop=/sbin/ipvsadm -C</span><br><span class="line">RemainAfterExit=<span class="built_in">yes</span></span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们试试进行更改功能, 这里就使用另一种调度算法(SH)来试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -E -t 172.16.100.9:80 -s sh</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -Ln</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  172.16.100.9:80 sh</span><br><span class="line">  -&gt; 192.168.20.7:80              Masq    1      0          0         </span><br><span class="line">  -&gt; 192.168.20.8:80              Masq    1      0          0   </span><br></pre></td></tr></table></figure>
+
+<p>接着访问就会起到效果了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://172.16.100.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>更改集群服务中的rs也很简单, 就不做演示了.</p>
+<p>接着我们把他们删除, 顺便过一遍删除操作:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -d -t 172.16.100.9:80 -r 192.168.20.7:80</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -d -t 172.16.100.9:80 -r 192.168.20.8:80</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -D -t 172.16.100.9:80</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -Ln</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br></pre></td></tr></table></figure>
+
+<p>除了-n参数是不进行解析之外, 还有这些选项:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L --stats -n</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port               Conns   InPkts  OutPkts  InBytes OutBytes</span><br><span class="line">  -&gt; RemoteAddress:Port</span><br><span class="line">TCP  172.16.100.9:80                  1002     5008     5004   358432   568724</span><br><span class="line">  -&gt; 192.168.20.7:80                   501     2504     2502   179216   285612</span><br><span class="line">  -&gt; 192.168.20.8:80                   501     2504     2502   179216   283112</span><br></pre></td></tr></table></figure>
+
+<p>以及显示连接:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L -n -c</span></span><br><span class="line">IPVS connection entries</span><br><span class="line">pro expire state       <span class="built_in">source</span>             virtual            destination</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>还可以使用–rates显示速率:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -L -n --rate</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port                 CPS    InPPS   OutPPS    InBPS   OutBPS</span><br><span class="line">  -&gt; RemoteAddress:Port</span><br><span class="line">TCP  172.16.100.9:80                     1        4        3      241      333</span><br><span class="line">  -&gt; 192.168.20.7:80                     0        1        1       96      140</span><br><span class="line">  -&gt; 192.168.20.8:80                     0        2        2      145      193</span><br></pre></td></tr></table></figure>
+
+<p>这里补充一个https负载均衡的小提示:</p>
+<blockquote>
+<p>如果在这个情况下使用https的话, 要确保后面的Web server的证书是同一个, 私钥也是同一个.</p>
+</blockquote>
+<h3 id="DR模型"><a href="#DR模型" class="headerlink" title="DR模型"></a>DR模型</h3><p>下面就来看一下DR模型的实现吧. 会比我们的LB模型复杂一些, 在展示我们的实验拓扑图之前, 我们先来看一下, 之前提到的内核参数:</p>
+<ul>
+<li>arp_announce: 该选项改变内核对于arp分组的请求, 通告</li>
+<li>arp_ignore: 该选项改变内核对于arp分组的接受</li>
+</ul>
+<p>arp_announce这个选项有三个值: 0, 1, 2. 默认值是0, 表示将自己所有的IP进行通告.  显然我们不能使用这个值. 1表示尽量避免不把本机除了接口网段以外的网络进行通告, 但是这是<strong>尽量</strong>. 所以也不启用. 最后是2这个值, 意味, 始终使用最佳本地地址. 这才是我们所使用的, 不将自己的lo上的IP通告出去.</p>
+<p>arp_ignore有很多值, 我们来看看. 首先还是默认值0, 就是如果接收到自己本地的IP的查询就提供. 接着是1, 只有询问到的地址正是自己配置在这个接口上的地址的时候, 才进行回应. 这正是我们所需要的. 还有2-8,  不过既然都找到了合适的值, 就略了.</p>
+<p>最终, 我们需要: arp_ignore &#x3D; 1, arp_announce &#x3D; 2.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_dr_lab.png" alt="lvs_dr_lab"></p>
+<p>还是惯例, 我现在先去配置环境啦~ 这里关于虚拟接口的设定在之前的网络配置中也是说过的.</p>
+<p>但是这里要插一句, 我们是应该先配置real server的lo接口的IP地址呢? 还是先进行参数配置呢? 当然是先配置参数啦. 原因很简单的.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># echo 1 &gt; /proc/sys/net/ipv4/conf/all/arp_ignore </span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># echo 2 &gt; /proc/sys/net/ipv4/conf/all/arp_announce </span></span><br></pre></td></tr></table></figure>
+
+<p>配置完成了之后, 找一台位于同于网络的主机( 如果你桥接的话, 就使用物理机就行了. ), 分别去ping一下director的vip和dip. 不出意外的话, 查看arp表的时候, MAC应该是一样的:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_arp.png" alt="lvs_arp"></p>
+<p>接下来就可以开启Web服务了, 并且这里要使用rip才行.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># curl http://192.168.206.21</span></span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># curl http://192.168.206.22</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>接下来就简单了, 和之前差不多了, 但是部分参数改一下就好了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -A -t 192.168.206.10:80 -s rr</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -a -t 192.168.206.10:80 -r 192.168.206.21:80 -g</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -a -t 192.168.206.10:80 -r 192.168.206.22:80 -g</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -Ln</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  192.168.206.10:80 rr</span><br><span class="line">  -&gt; 192.168.206.21:80            Route   1      0          0         </span><br><span class="line">  -&gt; 192.168.206.22:80            Route   1      0          0 </span><br></pre></td></tr></table></figure>
+
+<p>接着就可以测试了:</p>
+<p>接着…你就会发现, 奇怪, 怎么会连接不到服务器?</p>
+<p>原因很简单, 因为响应报文没有经过lo接口啊~所以要加上路由:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># route add -host 192.168.206.10/32 dev lo:0</span></span><br><span class="line">[root@VM-node3 ~]<span class="comment"># route add -host 192.168.206.10/32 dev lo:0</span></span><br></pre></td></tr></table></figure>
+
+<p>接着就可以了: ( 注意iptables )</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvs_dr_res.png" alt="lvs_dr_res"></p>
+<h2 id="LVS的防火墙标记和Session绑定"><a href="#LVS的防火墙标记和Session绑定" class="headerlink" title="LVS的防火墙标记和Session绑定"></a>LVS的防火墙标记和Session绑定</h2><p>我们之前是不是漏了一个-f参数呀? 当时说这个是叫做防火墙标记的东西. 其实在我们的数据包到达LVS之前, 他还是经过了PREROUTING的. 而且我们还说过, LVS是工作在INPUT上的, 所以也就是说, LVS发生在PREROUTING之后, 这样我们还可以通过在PREROUTING上对某个特定的数据包进行mangle, 也就是拆开之后打上标记再安装回去, 这个标记就是防火墙标记.  在iptables的扩展TARGET中, 有一个就叫做<code>MARK</code> 该扩展能用来实现对报文加上标记从而实现诸多辨识功能.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">MARK</span><br><span class="line">    This target is used to <span class="built_in">set</span> the Netfilter mark value associated with the packet.  It can, <span class="keyword">for</span> example, be used <span class="keyword">in</span>  conjunction  with  routing  based  on  fwmark</span><br><span class="line">    (needs iproute2). If you plan on doing so, note that the mark needs to be <span class="built_in">set</span> <span class="keyword">in</span> the PREROUTING chain of the mangle table to affect routing.  The mark field is</span><br><span class="line">    32 bits wide.</span><br><span class="line"></span><br><span class="line">    --set-xmark value[/mask]</span><br><span class="line">           Zeroes out the bits given by mask and XORs value into the packet mark (<span class="string">&quot;nfmark&quot;</span>). If mask is omitted, 0xFFFFFFFF is assumed.</span><br><span class="line"></span><br><span class="line">    --set-mark value[/mask]</span><br><span class="line">           Zeroes out the bits given by mask and ORs value into the packet mark. If mask is omitted, 0xFFFFFFFF is assumed.</span><br></pre></td></tr></table></figure>
+
+<p>这样的话, 我们在定义规则的时候就可以更加灵活, 而且有的时候还可以进行规则的合并, 比如: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PREROUTING:</span><br><span class="line"> -j MARK --set-mark 10</span><br><span class="line">ipvs:</span><br><span class="line"> -A -f 10</span><br></pre></td></tr></table></figure>
+
+<p>当我们把http(80)和https(443)都打上10的标记的时候, 我们就可以一起来写规则, 而不需要一次是vip:80, 一次是vip:443了.</p>
+<p>做一下这个小实验吧~ 接着在观察结果时会出现新的问题:</p>
+<p><strong>Session保持的问题</strong>, 怎么会说到这个? 因为我们</p>
+<p>使用SH调度算法的时候, 你会发现在访问http和https的时候还是不会绑定在一个real server的. </p>
+<p>那么现在就来解决这个问题, 我们可以使用<strong>LVS的持久连接功能</strong>来解决, 对于多个共享同一组RS的服务器, 我们进行Session绑定.</p>
+<p>这个持久连接功能, 可以确保在一段特定的时间内, 不论使用什么调度算法, 都可以使得同一个客户端访问到第一次被定向的RS上. 与iptables类似, 这个功能也需要一个持久连接模板, 该模板独立于算法本身 ,像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">srcIP	rs	timer</span><br></pre></td></tr></table></figure>
+
+<p>如果该模板中没有记录就直接带入算法. 如果能够查看到记录存在, 就会直接调度至该RS.</p>
+<p>声明一个持久连接很简单, 直接加上一个-p参数就行了: [ 后面指定时长, 如果不指定就是默认的360s ]</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -A -t 192.168.206.10:80 -s rr -p 30</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -a -t 192.168.206.10:80 -r 192.168.206.21 -g</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -a -t 192.168.206.10:80 -r 192.168.206.22 -g</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ipvsadm -Ln</span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  192.168.206.10:80 rr persistent 30</span><br><span class="line">  -&gt; 192.168.206.21:80            Route   1      0          0         </span><br><span class="line">  -&gt; 192.168.206.22:80            Route   1      0          0         </span><br></pre></td></tr></table></figure>
+
+<p>实施之后的效果:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.10</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.10</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.10</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">[root@node2 ~]<span class="comment"># </span></span><br><span class="line">[root@node2 ~]<span class="comment"># # After 30 seconds</span></span><br><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.10</span></span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.10</span></span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.10</span></span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>对于这个持久连接, 我们有多种实现方式:</p>
+<ul>
+<li>每端口持久, PPC, 单服务持久调度</li>
+<li>每FWM持久, PFWMC, 防火墙标记持久: 只要你的标记一样 那么就是统一调度的</li>
+<li>每客户端持久: PCC, 单客户端持久调度<ul>
+<li>director会将用户的任何请求都识别成集群服务, 并且向RS中进行调度.</li>
+</ul>
+</li>
+</ul>
+<p>最后一个其实最好实现, 只要把一开始的端口设置成0就行了, 也就是所有服务之意. 每端口持久已经在之前演示过了, 那么现在还剩一个FWM持久. 其实就是在定义规则的时候指定标记,并且加上-p参数指明要进行持久化就行了.</p>
+<h2 id="LVS的HA解决方案"><a href="#LVS的HA解决方案" class="headerlink" title="LVS的HA解决方案"></a>LVS的HA解决方案</h2><p>接下来我们再来聊聊LVS集群的高可用解决方案.</p>
+<p>事实上, 通过之前的几次实验, 我们也可以看出来, LVS的隐患之一就是我们的director是SPOF, 也就是 单点故障所在(Single Point Of Failure). 当然了, 现在的所谓解决方案只是简单的说说一说, 以后会多次聊这个话题. 毕竟现在也快要万字了, 再扯下去也不太合适了. 所以就简单的介绍下:</p>
+<p>首先从我们的director来看, 他是整个系统的关键. 首先我们为了做高可用, 说白了也就是做冗余. 首先就想到双份, 当然这是要花价钱的. 除了这个, 还有一种就是缩短平均修复时间, 但是这样需要一个技能过硬的运维攻城狮才行, 而且使用人来做这样的事情其实是不明智的, 我们应该选择自动化的方式进行. 这是前端主机.</p>
+<p>另外, 如果我们的后端real server出现问题, 首先还是做双份, 但是这样就会变成整个的双份. 还可以再开一只主机, 同来充当冗余, 只要有主机宕掉, 就用它来顶替. 但是这样是需要考虑数据的存储问题. 还可以考虑director进行后端主机的健康状态检查, 只要发现有主机出现问题, 告警并且将该主机从调度列表中剔除, 完成自动的上下线. 那么, 如何进行健康状态检查呢?  首先我们想到了ping, 但是这样不能说明服务是OK的, 那么就考虑进行端口扫描, 比如使用nmap这样的来扫描, 但是端口响应了, 也不能说资源是OK的, 所以干脆直接对资源进行请求好了, 由此, 我们可以从IP层, 传输层, 应用层进行检查. 检查层次越高, 消耗越大, 但是精度也越高, 这个就要根据具体的业务来说了.</p>
+<p>除了检查的方式 我们还需要考虑检查的频度以及状态判断. 多少时间检查一次呢? 如何才会判定一个主机是宕机了呢? 会出现误判断呢?</p>
+<p>就先这样啦.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/MindMap/Cluster1_mind.png" alt="MindMap/Cluster1_mind.png"></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4-Cluster"><span class="toc-number">1.</span> <span class="toc-text">集群 Cluster</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">集群的类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS%E9%9B%86%E7%BE%A4%E7%9A%84%E5%AE%9E%E7%8E%B0-%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">LVS集群的实现(概述)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6"><span class="toc-number">2.0.1.</span> <span class="toc-text">硬件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6"><span class="toc-number">2.0.2.</span> <span class="toc-text">软件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS"><span class="toc-number">3.</span> <span class="toc-text">LVS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LVS%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.1.</span> <span class="toc-text">LVS的类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-nat"><span class="toc-number">3.1.1.</span> <span class="toc-text">lvs-nat</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-dr"><span class="toc-number">3.1.2.</span> <span class="toc-text">lvs-dr</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-tun"><span class="toc-number">3.1.3.</span> <span class="toc-text">lvs-tun</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lvs-fullnat"><span class="toc-number">3.1.4.</span> <span class="toc-text">lvs_fullnat</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#session%E4%BF%9D%E6%8C%81"><span class="toc-number">3.2.</span> <span class="toc-text">session保持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LVS-%E8%B0%83%E5%BA%A6%E5%99%A8-Scheduler"><span class="toc-number">3.3.</span> <span class="toc-text">LVS 调度器(Scheduler)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LVS%E7%9A%84%E8%B0%83%E5%BA%A6"><span class="toc-number">3.4.</span> <span class="toc-text">LVS的调度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E5%BB%BALVS%E9%9B%86%E7%BE%A4"><span class="toc-number">4.</span> <span class="toc-text">构建LVS集群</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NAT%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.1.</span> <span class="toc-text">NAT模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DR%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.2.</span> <span class="toc-text">DR模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS%E7%9A%84%E9%98%B2%E7%81%AB%E5%A2%99%E6%A0%87%E8%AE%B0%E5%92%8CSession%E7%BB%91%E5%AE%9A"><span class="toc-number">5.</span> <span class="toc-text">LVS的防火墙标记和Session绑定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVS%E7%9A%84HA%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">6.</span> <span class="toc-text">LVS的HA解决方案</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&text=Linux集群系统基础和调度方法"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&is_video=false&description=Linux集群系统基础和调度方法"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux集群系统基础和调度方法&body=Check out this article: https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&title=Linux集群系统基础和调度方法"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&name=Linux集群系统基础和调度方法&description=&lt;p&gt;从今天开始学习Linux集群知识 !&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/&t=Linux集群系统基础和调度方法"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

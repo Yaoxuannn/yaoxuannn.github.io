@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="现在让我们一起来看看这只企鹅到底是个什么吧">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核管理和编译初步">
+<meta property="og:url" content="https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="现在让我们一起来看看这只企鹅到底是个什么吧">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/Kernel_config.png">
+<meta property="article:published_time" content="2017-07-16T22:26:29.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:40:11.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta property="article:tag" content="Kernel">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/Kernel_config.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux内核管理和编译初步</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/07/14/BootLoader-GRUB/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&text=Linux内核管理和编译初步"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&is_video=false&description=Linux内核管理和编译初步"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux内核管理和编译初步&body=Check out this article: https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&name=Linux内核管理和编译初步&description=&lt;p&gt;现在让我们一起来看看这只企鹅到底是个什么吧&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&t=Linux内核管理和编译初步"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%88%9D%E6%AD%A5"><span class="toc-number">1.</span> <span class="toc-text">内核管理初步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#x2F-sys"><span class="toc-number">2.</span> <span class="toc-text">&#x2F;sys</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8"><span class="toc-number">3.</span> <span class="toc-text">编译内核</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83"><span class="toc-number">3.1.</span> <span class="toc-text">准备开发环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%A1%AC%E4%BB%B6%E4%BF%A1%E6%81%AF"><span class="toc-number">3.2.</span> <span class="toc-text">获取硬件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF"><span class="toc-number">3.3.</span> <span class="toc-text">获取系统信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%86%85%E6%A0%B8%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="toc-number">3.4.</span> <span class="toc-text">获取内核源代码</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux内核管理和编译初步
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-07-16T22:26:29.000Z" class="dt-published" itemprop="datePublished">2017-07-16</time>
+        
+        (Updated: <time datetime="2020-11-30T01:40:11.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Kernel/" rel="tag">Kernel</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>现在让我们一起来看看这只企鹅到底是个什么吧</p>
+<span id="more"></span>
+
+<h2 id="内核管理初步"><a href="#内核管理初步" class="headerlink" title="内核管理初步"></a>内核管理初步</h2><p>之前的Linux系统基本原理我们说过, Linux是单内核体系设计, 但它充分借鉴了微内核体系的优点, 引入了模块化的机制. </p>
+<p>内核的组成部分有这些:</p>
+<ul>
+<li>kernel: 内核核心, 一般为bzImage的映像文件, 放在&#x2F;boot下, 名称为vmlinuz;</li>
+<li>kernel object: 内核对象, 一般放置与&#x2F;lib&#x2F;mudule&#x2F;VERSION-RELEASE&#x2F;下</li>
+</ul>
+<p>对于内核对象我们有三种选择:</p>
+<ul>
+<li><p><code>[ ]</code>: 不选择此功能</p>
+</li>
+<li><p><code>[M]</code>: 编译成模块</p>
+</li>
+<li><p><code>[*]</code>: 编译进内核核心</p>
+</li>
+</ul>
+<p>要注意的是, 不是所有的内核代码都可以抽成模块的, 正常情况下, 内核核心自己有自己的框架结构, 压缩之后大小应该为1M左右, 而CentOS默认的内核已经有4M了, 这就说明已经将一些功能编译进了内核. 同样有些东西是不支持的模块化的, 对于这些功能来说就只有两种结果: 编译进内核和不编译进去.</p>
+<p>为了内核能够在启动时加载真正的根文件系统我们 还需要一些辅助的文件: ramdisk. (分成两种格式: initrd, initramfs) 这些是我们站在静态的角度看到的情况.</p>
+<p>而在系统运行起来的时候, 我们正在运行的内核是已经被加载到内存中的, 相当于是才能够磁盘上的文件复制的一个副本. 此时如果查看版本,就使用那个<code>uname</code>或者直接<code>cat /proc/version</code>就行.这个地方了解的仅仅是内核核心, 而我们更关注的应该是内核的模块:</p>
+<p> 之前说过一个命令可以列出已经装载使用哪些模块, 这个就是<code>lsmod</code>指令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ lsmod</span><br><span class="line">Module                  Size  Used by</span><br><span class="line">autofs4                26888  3 </span><br><span class="line">sunrpc                243758  1 </span><br><span class="line">bnx2fc                120526  0 </span><br><span class="line">cnic                   53443  1 bnx2fc</span><br><span class="line">uio                    10974  1 cnic</span><br><span class="line">fcoe                   20748  0 </span><br><span class="line">libfcoe                39661  2 bnx2fc,fcoe</span><br><span class="line">libfc                 105924  3 bnx2fc,fcoe,libfcoe</span><br><span class="line">scsi_transport_fc      52241  3 bnx2fc,fcoe,libfc</span><br><span class="line">scsi_tgt               12173  1 scsi_transport_fc</span><br><span class="line">8021q                  23575  0 </span><br><span class="line">garp                    7344  1 8021q</span><br><span class="line">stp                     2173  1 garp</span><br><span class="line">llc                     5642  2 garp,stp</span><br><span class="line">ipt_REJECT              2383  2 </span><br><span class="line">nf_conntrack_ipv4       9506  2 </span><br><span class="line">nf_defrag_ipv4          1483  1 nf_conntrack_ipv4</span><br><span class="line">iptable_filter          2793  1 </span><br><span class="line">ip_tables              17831  1 iptable_filter</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>这个命令其实读取的是<code>/proc/modules</code>这个文件的内容. 这不过可读性太差了所以对结果进行了封装.</p>
+<p>单独查看某一个模块的详细信息使用<code>modinfo</code>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ modinfo ext4</span><br><span class="line">filename:       /lib/modules/2.6.32-220.el6.x86_64/kernel/fs/ext4/ext4.ko</span><br><span class="line">license:        GPL</span><br><span class="line">description:    Fourth Extended Filesystem</span><br><span class="line">author:         Remy Card, Stephen Tweedie, Andrew Morton, Andreas Dilger, Theodore Ts<span class="string">&#x27;o and others</span></span><br><span class="line"><span class="string">srcversion:     A80608676B83D55514B450E</span></span><br><span class="line"><span class="string">depends:        mbcache,jbd2</span></span><br><span class="line"><span class="string">vermagic:       2.6.32-220.el6.x86_64 SMP mod_unload modversions </span></span><br></pre></td></tr></table></figure>
+
+<p>modinfo除了查看已经加载使用的内核外, 也支持查看还没有使用的内核(当然前提是你已经安装了).</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ lsmod | grep xfs</span><br><span class="line">[root@WWW ~]$ modinfo xfs</span><br><span class="line">filename:       /lib/modules/2.6.32-220.el6.x86_64/kernel/fs/xfs/xfs.ko</span><br><span class="line">license:        GPL</span><br><span class="line">description:    SGI XFS with ACLs, security attributes, large block/inode numbers, no debug enabled</span><br><span class="line">author:         Silicon Graphics, Inc.</span><br><span class="line">srcversion:     004A543AFBA52F9C2C6AF51</span><br><span class="line">depends:        exportfs</span><br><span class="line">vermagic:       2.6.32-220.el6.x86_64 SMP mod_unload modversions</span><br><span class="line"><span class="comment"># 一般我们不需要这么多信息, 更多其实是路径比较重要</span></span><br><span class="line"><span class="comment"># 所以可以加上 -n 参数, 让modinfo仅输出路径</span></span><br><span class="line">[root@WWW ~]$ modinfo -n xfs</span><br><span class="line">/lib/modules/2.6.32-220.el6.x86_64/kernel/fs/xfs/xfs.ko</span><br></pre></td></tr></table></figure>
+
+<p>之所以能查到, 并且速度这么快显然不是访问的磁盘, 其实modinfo是访问的数据库.</p>
+<p>我们说过Linux是支持模块的动态改变的, 所以我们卸载和加载.<strong>Warning:: 一定不要把正在使用的模块或者一些基础模块给卸载了否则会出大麻烦的.</strong></p>
+<p>支持的命令是: <code>modprobe</code> </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ modprobe [ modulename ] [ module parameters... ] <span class="comment"># 加载模块, 还可以带上参数</span></span><br><span class="line">[root@WWW ~]$ modprobe [ -r ] [ -n ] [ modulename... ]</span><br><span class="line">-r remove 移除一个模块</span><br><span class="line">-n --dry-run 测试运行</span><br><span class="line">-q quiet</span><br><span class="line">-v verbose</span><br></pre></td></tr></table></figure>
+
+<p>默认不加参数的时候, 会自动从<code>/etc/modprobe.conf</code>读取获得.先来做个实验:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]$ lsmod | grep xfs</span><br><span class="line">[root@localhost ~]$ modprobe -v xfs</span><br><span class="line">insmod /lib/modules/2.6.32-220.el6.x86_64/kernel/fs/exportfs/exportfs.ko </span><br><span class="line">insmod /lib/modules/2.6.32-220.el6.x86_64/kernel/fs/xfs/xfs.ko </span><br><span class="line">[root@localhost ~]$ lsmod | grep xfs</span><br><span class="line">xfs                  1042093  0 </span><br><span class="line">exportfs                4236  1 xfs</span><br><span class="line">[root@localhost ~]$ modprobe -rv xfs</span><br><span class="line">rmmod /lib/modules/2.6.32-220.el6.x86_64/kernel/fs/xfs/xfs.ko</span><br><span class="line">rmmod /lib/modules/2.6.32-220.el6.x86_64/kernel/fs/exportfs/exportfs.ko</span><br><span class="line">[root@localhost ~]$ lsmod | grep xfs</span><br></pre></td></tr></table></figure>
+
+<p>很容易吧.</p>
+<p>我们说过在模块之间是存在依赖关系的, 这些都被存在modules.dep里面, 但是我们几乎不会使用到他, 更多的是使用的已经编译之后的二进制文件 – <code>modules.dep.bin</code>. 这个文件损坏了也没关系, 会有工具来帮我们生成回来.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost 2.6.32-220.el6.x86_64]$ <span class="built_in">ls</span> -l</span><br><span class="line">...(omitted)</span><br><span class="line">-rw-r--r--.  1 root root 191785 Jul 11 17:08 modules.dep</span><br><span class="line">-rw-r--r--.  1 root root 280509 Jul 11 17:08 modules.dep.bin</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p><code>depmod</code> 这个命令不仅可以帮我们生成module.dep还可以生成我们在说grub中见到的<code>System.map-2.6.32-220.el6.x86_64</code>这样的文件. 说的标准点, depmod是内核模块依赖关系文件及系统信息映射文件的生成工具.在大多数情况下, 我们都无需手动调用.</p>
+<p>不知道你有没有注意到, 在上面进行modprobe的试验演示的时候, 分别出现了<code>insmod</code>和<code>rmmod</code>.</p>
+<p>这个其实才是真正的加载模块和卸载模块的命令, 不同的地方在于, 这两个命令仅仅在乎加载和卸载, 而不在意依赖关系, 这些命令的关系就有点类似是yum&#x2F;apt和rpm&#x2F;dpkg的关系. 不仅如此, 你也注意到了吧, 在执行insmod和rmmod的时候 后面跟上的参数是完整的绝对路径文件名. 其实也只有加载的时候麻烦点. 卸载时可以直接写模块名, 但是依然的, 不能解决依赖问题.</p>
+<p>&#x2F;proc目录是内核的状态映射输出, 内核有很多状态信息和可设置的参数, 这些就通过这么一个伪文件系统.有关&#x2F;proc的信息在<a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Linux系统-服务管理学习笔记</a>中提到了一些. </p>
+<p>内核的参数分成两种: 只读的和可写的. 只读的也就是那些输出的状态信息, 而可写的就是提供了设置参数, 来实现对内核某功能或特性的配置.</p>
+<p>一个控制的重要命令就是<code>sysctl</code>. 可用来查看和设定&#x2F;proc下的诸多参数(内核参数) 我们不能通过直接修改文件的方式来进行修改, 但是还可以通过<code>echo</code>重定向来修改大部分参数的值.</p>
+<p>当我们想要进行某个属性修改的时候, 就: <code>sysctl -w path.to.parameter</code> 或者 <code>echo &quot;VALUE&quot; &gt; path/to/parameter</code> 在使用<code>sysctl -w</code> 路径的开头就直接是<code>/proc/sys/</code>了.</p>
+<p> 还是举个例子吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">uname</span> -n</span><br><span class="line">WWW</span><br><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> <span class="string">&quot;TestHost&quot;</span> &gt; /proc/sys/kernel/hostname</span><br><span class="line">[root@WWW ~]$ hostname</span><br><span class="line">TestHost</span><br><span class="line">[root@WWW ~]$ sysctl -w kernel.hostname=Test</span><br><span class="line">kernel.hostname = Test</span><br><span class="line">[root@WWW ~]$ hostname</span><br><span class="line">Test</span><br><span class="line">[root@WWW ~]$ sysctl kernel.hostname <span class="comment"># 直接加上Key就可以查看对应的Value了</span></span><br></pre></td></tr></table></figure>
+
+<p>那么现在我想知道一共有哪些可以配置的选项怎么办?直接使用<code>sysctl -a</code>就行 :</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sysctl -a</span><br><span class="line">kernel.printk_ratelimit_burst = 10</span><br><span class="line">...</span><br><span class="line">kernel.hung_task_timeout_secs = 120</span><br><span class="line">kernel.keys.maxbytes = 20000</span><br><span class="line">...</span><br><span class="line">kernel.shmmni = 4096</span><br><span class="line">kernel.msgmax = 65536</span><br><span class="line">kernel.msgmni = 1985</span><br><span class="line">kernel.msgmnb = 65536</span><br><span class="line">kernel.sem = 250	32000	32	128</span><br><span class="line">(....)</span><br><span class="line">vm.hugepages_treat_as_movable = 0</span><br><span class="line">vm.nr_overcommit_hugepages = 0</span><br><span class="line">vm.lowmem_reserve_ratio = 256	256	32</span><br><span class="line">vm.drop_caches = 0</span><br><span class="line">(....)</span><br><span class="line">fs.inode-nr = 27355	31</span><br><span class="line">fs.inode-state = 27355	31	0	0	0	0	0</span><br><span class="line">fs.file-nr = 928	0	98253</span><br><span class="line">fs.file-max = 98253</span><br><span class="line">(....)</span><br><span class="line">fs.suid_dumpable = 0</span><br><span class="line">fs.binfmt_misc.status = enabled</span><br><span class="line">fs.quota.reads = 0</span><br><span class="line">fs.quota.writes = 0</span><br><span class="line">(...)</span><br><span class="line">dev.raid.speed_limit_max = 200000</span><br><span class="line">dev.hpet.max-user-freq = 64</span><br><span class="line">dev.mac_hid.mouse_button_emulation = 0</span><br><span class="line">(...)</span><br><span class="line">dev.cdrom.autoeject = 0</span><br><span class="line">dev.cdrom.debug = 0</span><br><span class="line">dev.cdrom.lock = 1</span><br><span class="line">dev.cdrom.check_media = 0</span><br><span class="line">net.netfilter.nf_log.0 = NONE</span><br><span class="line">(...)</span><br><span class="line">net.netfilter.nf_conntrack_max = 31900</span><br><span class="line">net.netfilter.nf_conntrack_log_invalid = 0</span><br><span class="line">net.netfilter.nf_conntrack_expect_max = 128</span><br><span class="line">(....)</span><br><span class="line">net.core.rps_sock_flow_entries = 0</span><br><span class="line">net.core.netdev_budget = 300</span><br><span class="line">net.core.warnings = 1</span><br><span class="line">net.ipv4.route.gc_thresh = 32768</span><br><span class="line">net.ipv4.route.max_size = 524288</span><br><span class="line">(....)</span><br><span class="line">net.ipv4.ip_forward = 0</span><br><span class="line">net.ipv4.xfrm4_gc_thresh = 262144</span><br><span class="line">net.ipv4.ipfrag_high_thresh = 262144</span><br><span class="line">(....)</span><br><span class="line">net.ipv4.icmp_ratelimit = 1000</span><br><span class="line">net.ipv4.icmp_ratemask = 6168</span><br><span class="line">net.ipv6.neigh.default.mcast_solicit = 3</span><br><span class="line">net.ipv6.neigh.default.ucast_solicit = 3</span><br><span class="line">(....)</span><br><span class="line">net.ipv6.neigh.lo.mcast_solicit = 3</span><br><span class="line">net.ipv6.neigh.lo.ucast_solicit = 3</span><br><span class="line">net.ipv6.neigh.lo.app_solicit = 0</span><br><span class="line">(....)</span><br><span class="line">net.ipv6.bindv6only = 0</span><br><span class="line">net.ipv6.ip6frag_secret_interval = 600</span><br><span class="line">net.ipv6.mld_max_msf = 64</span><br><span class="line">net.nf_conntrack_max = 31900</span><br><span class="line">net.unix.max_dgram_qlen = 10</span><br><span class="line">abi.vsyscall32 = 1</span><br><span class="line">crypto.fips_enabled = 0</span><br><span class="line">(....)</span><br><span class="line">sunrpc.min_resvport = 665</span><br><span class="line">sunrpc.max_resvport = 1023</span><br><span class="line">sunrpc.tcp_fin_timeout = 15</span><br></pre></td></tr></table></figure>
+
+<p>好多, 我们直接wc来看一下吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sysctl -a | <span class="built_in">wc</span> -l</span><br><span class="line">696</span><br></pre></td></tr></table></figure>
+
+<p><code>sysctl</code>有个配置文件, 就是<code>/etc/sysctl.conf</code> 通过这个配置文件也可来进行内核参数的修改. 说道这里就要提一句了, 用之前的方式(sysctl -w和echo都是进行的当前修改, 一旦重新启动就会sysctl<strong>重新读取配置文件</strong>, 之前所作的修改就没有了), 那么使得修改持久化的方式显然易见: 修改配置文件.</p>
+<p>直接进入配置文件修改值之后要主带调用一次<code>sysctl -p</code>, 才可以读取 .(这个地方可以联想bash的配置, 修改后不会立即向生效而是要调用一次source&#x2F;.)</p>
+<p>e.g: 配置内核中的路由转发</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 路由转发的功能就是net.ipv4.ip_forward这个Key, 现在编辑sysctl.conf来把它开启吧</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">head</span> -3 /etc/sysctl.conf</span><br><span class="line"><span class="comment"># Kernel sysctl configuration file for Red Hat Linux</span></span><br><span class="line"><span class="comment"># Controls IP packet forwarding</span></span><br><span class="line">net.ipv4.ip_forward = 0</span><br><span class="line"><span class="comment"># vim编辑保存之后</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">head</span> -3 /etc/sysctl.conf</span><br><span class="line"><span class="comment"># Kernel sysctl configuration file for Red Hat Linux</span></span><br><span class="line"><span class="comment"># Controls IP packet forwarding</span></span><br><span class="line">net.ipv4.ip_forward = 1</span><br><span class="line">[root@WWW ~]$ sysctl net.ipv4.ip_forward</span><br><span class="line">net.ipv4.ip_forward = 0</span><br><span class="line"><span class="comment"># 没有变化?重新读取一次配置文件!</span></span><br><span class="line">[root@WWW ~]$ sysctl -p</span><br><span class="line">net.ipv4.ip_forward = 1 <span class="comment"># 值得到了更新!</span></span><br><span class="line">[root@WWW ~]$ sysctl net.ipv4.ip_forward</span><br><span class="line">net.ipv4.ip_forward = 1</span><br></pre></td></tr></table></figure>
+
+<p>再举一个例子咯, 我们都知道Linux使用内存来吃充当缓存和缓冲, 这个也是可以关掉的.</p>
+<p>位置就在<code>vm.drop_cache</code>这个地方, 将他的值设置成1就行了. 接着在使用<code>free</code>就会发现<code>buffer</code>的值已经是<code>0</code>了.</p>
+<p>先前介绍过了&#x2F;proc&#x2F;*, 现在再让我们来看看&#x2F;sys这个虚拟目录.</p>
+<h2 id="x2F-sys"><a href="#x2F-sys" class="headerlink" title="&#x2F;sys"></a>&#x2F;sys</h2><p>不同于&#x2F;proc, &#x2F;sys用来输出硬件相关参数, 包括生产厂商信息, ROM大小, 序列号等等… 也有内核对硬件特性的设定信息, 有些参数可以进行修改, 用于调整硬件的工作特性.  </p>
+<p>现在我们先说点东西: 我们都知道&#x2F;dev是用来输出设备文件的对吗, 那么我们当前主机是怎么知道怎么创建那些设备文件呢? 内核启动时, 从各个硬件的IO端口 以及这些硬件自己的电压输出的信息就能知道. 这是内核, 但是内核是不可能创建设备文件, 他<strong>根本就不需要</strong>这些东西哇, 内核读取硬件可以直接访问, 只有用户空间需要借助这些设备文件, 仅此而已. 这意味着内核根本不会创建这些设备文件.在原先的2.4版的内核上, 这个&#x2F;dev&#x2F;内的设备文件是实现存在的, 无论你是否使用. 这个版本的&#x2F;dev下有<strong>近两万个文件</strong>. 但实际上我们使用到的, 也不过区区几十个. 所以后来内核就使用一种更精巧的方式: <strong>使用&#x2F;sys目录</strong>. </p>
+<p>在2.6版本的内核上 , 我们的设备文件是这样创建的: 内核启动时探测硬件设备, 探测完之后该启动的启动, 当用户空间需要调用某个硬件的时候, 就会触发一个内建机制通知内核探测一遍,并且将探测完的结果输出到sys目录(这个时候用户空间 已经是存在的, 在内核第一次探测硬件的时候用户空间并没有启动输出也不知道往哪里输出) 这样当我们想要创建设备文件的时候, 就会通过udev这样的命令去读取sys内的内容来按需创建&#x2F;dev&#x2F;*.</p>
+<p>通过sys下的输出信息来动态的对各设备创建所需要的设备文件, udev是运行在用户空间的程序, 所以也不会直接和内核打交道.他也不能自己产生硬件, 内核扫描一遍之后就停止了, 所以只能再次探测一遍.</p>
+<p>udev在进行设备文件的时候, 创建的设备文件实际上是这个设备的驱动, 而驱动的名字是根据创建规则来新建的.这些规则文件一般在: <code>/etc/udev/rules.d &amp;&amp; /usr/lib/udev/rules.d</code> (但是我找了半天试了Ubuntu&#x2F;CentOS&#x2F;VMWare&amp;VM Box 都没有发现类似重命名网卡规则的规则文件, 以后再研究.)</p>
+<p>那么现在就说一下ramdisk的制作, 在说grub的时候我们就说过了这个东西. 使用的指令依然是二次封装过后的.但他很好用:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ mkinitrd /boot/initramfs-$(<span class="built_in">uname</span> -r).img $(<span class="built_in">uname</span> -r)</span><br></pre></td></tr></table></figure>
+
+<p>如果你的&#x2F;boot下已经有同名的文件了, 那么就会收到一个提示, 和一个广播:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Will not override existing initramfs (/boot/initramfs-3.10.0-514.el7.x86_64.img) without --force</span><br><span class="line"></span><br><span class="line">Broadcast message from systemd-journald@localhost.localdomain (Thu 2017-07-13 13:41:11 EDT):</span><br><span class="line">dracut[2420]: Will not override existing initramfs (/boot/initramfs-3.10.0-514.el7.x86_64.img) without --force</span><br></pre></td></tr></table></figure>
+
+<p>这个<code>mkinitrd</code> 封装的操作就是使用了<code>dracut</code>命令.</p>
+<p>这个命令有很多参数但是同样, 我们并不会用到他们 可以直接将<code>mklinitrd</code>换成<code>dracut</code> 基本上效果是一样的.必要的时候也就是使用了with-module这样的功能, 不过真的不多.</p>
+<p>现在我们来仔细看一下initramfs这个img的真实内容吧!</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]$ file initramfs-3.10.0-514.el7.x86_64.img </span><br><span class="line">initramfs-3.10.0-514.el7.x86_64.img: ASCII cpio archive (SVR4 with no CRC)</span><br></pre></td></tr></table></figure>
+
+<p>是一个cpio的文档, 那么现在就把它解开来看一下:</p>
+<blockquote>
+<p>CPIO的使用:</p>
+<p>CPIO是一个近乎全能的备份工具., 因为他可以备份所有的文件, 包括这个&#x2F;dev下的任何设备文件.使用起来有三种模式, 分别是压缩(备份), 还原, 查看. 下面简单的介绍一下:</p>
+<p>**压缩:<code>cpio -ovcB &gt; [file|device]</code> ** </p>
+<p><strong>还原:<code>cpio -ivcdu &lt; [file|device] </code></strong> </p>
+<p><strong>查看:<code>cpio -ivct &lt; [file|device] </code></strong> </p>
+<p>参数太多记不住吗? 其实这些组合都已经是套装了. 可以直接使用…不过还是要了解下各个参数是什么意思吧. 首先要明确的是使用cpio必须出现这四个参数中的其中一个: <code>o i p t </code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-o 将数据 cOpy 到文件或者硬盘上</span><br><span class="line">-i 将数据自文件或设备复制到系统当中</span><br><span class="line">-p copy-pass模式</span><br><span class="line">-t 配合-i参数, 查看新建的文件或设备内容</span><br><span class="line">-c 使用较新的portable format方式存储</span><br><span class="line">-B 可以使得大文件的速度加快, 因为这个选项将block的大小512 -&gt; 5120</span><br><span class="line">-d 自动新建目录</span><br><span class="line">-u 使用较新的文件覆盖旧的</span><br><span class="line">-v verbose, 不用说了</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>使用CPIO来进行还原:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ cpio -ivcd &lt; initramfs-2.6.32-220.el6.x86_64.img</span><br><span class="line">...(omitted)</span><br><span class="line">[root@WWW ~]$ <span class="built_in">ls</span> -l</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 bin</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 cmdline</span><br><span class="line">drwxr-xr-x. 3 root root     4096 Jul 14 00:00 dev</span><br><span class="line">-rw-r--r--. 1 root root       19 Jul 14 00:00 dracut-004-256.el6</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 emergency</span><br><span class="line">drwxr-xr-x. 7 root root     4096 Jul 14 00:00 etc</span><br><span class="line">-rwxr-xr-x. 1 root root     8874 Jul 14 00:00 init</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 initqueue</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 initqueue-finished</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 initqueue-settled</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 initqueue-timeout</span><br><span class="line">-rw-r--r--. 1 root root 45508096 Jul 13 23:57 initramfs-2.6.32-220.el6.x86_64.img</span><br><span class="line">drwxr-xr-x. 7 root root     4096 Jul 14 00:00 lib</span><br><span class="line">drwxr-xr-x. 4 root root     4096 Jul 14 00:00 lib64</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 mount</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 pre-pivot</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 pre-trigger</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 pre-udev</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 proc</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 sbin</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 sys</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 sysroot</span><br><span class="line">drwxr-xr-x. 2 root root     4096 Jul 14 00:00 tmp</span><br><span class="line">drwxr-xr-x. 7 root root     4096 Jul 14 00:00 usr</span><br><span class="line">drwxr-xr-x. 4 root root     4096 Jul 14 00:00 var</span><br></pre></td></tr></table></figure>
+
+<p>目录文件是否很熟悉呢?这些就是熟悉的根目录fs.在sbin里也都是最基本需要的程序.像lvm和raid的支持也在这里呀~这里面还有一个叫<code>switch_root</code> 这个就是在帮助我们做根切换的!</p>
+<h2 id="编译内核"><a href="#编译内核" class="headerlink" title="编译内核"></a>编译内核</h2><p>编译内核的步骤分这么几步:</p>
+<ul>
+<li>准备开发环境</li>
+<li>获取主机的硬件设备相关信息</li>
+<li>获取到主机上系统功能的相关信息(要启用的文件系统等等)</li>
+<li>获取内核源代码包</li>
+</ul>
+<p>一步一步的来说吧:</p>
+<h3 id="准备开发环境"><a href="#准备开发环境" class="headerlink" title="准备开发环境"></a>准备开发环境</h3><p>在说yum的时候, 我们提到过包组的概念, 由一些专门负责系统开发的库, 就CentOS6而言, 有:</p>
+<ul>
+<li>Server Platform Development</li>
+<li>Development tools</li>
+</ul>
+<h3 id="获取硬件信息"><a href="#获取硬件信息" class="headerlink" title="获取硬件信息"></a>获取硬件信息</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1.获取CPU信息</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> /proc/cpuinfo</span><br><span class="line">[root@WWW ~]$ lscpu</span><br><span class="line"><span class="comment"># 2. 获取PCI设备</span></span><br><span class="line">[root@WWW ~]$ lspci <span class="comment"># 查看PCI桥</span></span><br><span class="line">    -v verbose</span><br><span class="line">    -vv more verbose</span><br><span class="line">[root@WWW ~]$ lsusb <span class="comment"># 查看USB</span></span><br><span class="line">    -v verbose</span><br><span class="line">    -vv more verbose</span><br><span class="line">[root@WWW ~]$ lsblk <span class="comment"># 查看块设备</span></span><br></pre></td></tr></table></figure>
+
+<p>有一个可以用来查看所有的硬件, 这个命令就是<code>hal-device</code> .</p>
+<h3 id="获取系统信息"><a href="#获取系统信息" class="headerlink" title="获取系统信息"></a>获取系统信息</h3><p>&#x2F;boot&#x2F;下有叫做<code>config-VERSION</code>的文件, 这个就是一个系统信息的模板, 在这里也推荐使用模板, 当然模板也是有兼容性的. 也即是后面的版本号.怎么进行修改, 等到我们获取到内核源代码之后再说.</p>
+<h3 id="获取内核源代码"><a href="#获取内核源代码" class="headerlink" title="获取内核源代码"></a>获取内核源代码</h3><p>内核的源码包的官方下载地址就是<code>kernel.org</code> , 在这上面直接Down想要的版本内核就行了, 注意如果使用wget下载, 需要跳过证书验证.</p>
+<p>好了, 现在就可以开始编译内核了!</p>
+<p>我们把内核的源码包进行解压, 解压到.&#x2F;usr&#x2F;src下, 接着就可以进去看一下了, 首先我们说过要加入配置对嘛, 所以: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cp</span> -a /boot/config-2.6.32-220.el6.x86_64  .config</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是执行第一步, 开始进行配置(config), 刚刚说过了我们不能直接就拿来用还是要调用内核源码提供的接口进行配置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ make menuconfig</span><br></pre></td></tr></table></figure>
+
+<p>在执行这一步的时候, 会先尝试从当前目录寻找<code>.config</code>文件, 这个就是通过这个命令配置的产物, 如果没有找到, 会尝试从&#x2F;boot&#x2F;下找config-VERSION, 如果找到了就会加载它作为默认的配置. 如果还是没有, 就会根据当前系统的架构尝试从自己的<code>arch</code>下寻找相配的默认配置. 但现在我们把这个配置文件已经加载进来了.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/Kernel_config.png" alt="Kernel_config"></p>
+<p>根据具体需求来进行配置之后就可以开始进行安装啦! 但是, 先别急着安装! 想一个问题先, 在我们安装时, 网络会断开 那么我们session断掉了, 整个安装进程也就直接结束了. 那岂不是就陷入了死循环了吗. 所以我们可以考虑使用screen这么一个工具. 他可以创建一个虚拟的屏幕, 使得任务只要虚拟机不关机, 就不会终止.</p>
+<p>好了! 开始编译吧! 编译的时候可以根据自己机器的情况加上<code>-j</code>参数来加快速度.</p>
+<blockquote>
+<p>编译了两个多小时…大家注意啊..(当然也许和我的电脑配置有关…) 如果不是必要的话就不要加进去这么多功能啊…10G的硬盘, 光编译个内核就6个G了,我都没怎么选就进行make了, 所以说在进行上面的配置的时候要多花点时间来筛选啊.</p>
+</blockquote>
+<p>(编译到大半夜开始继续码字的我) 编译结束之后就可以开始安装了, 在执行常规的<code>make install</code>之前 要先将内核进行模块的安装.</p>
+<p>模块安装以及系统安装(会自动写入GRUB引导文件)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ make modules_install</span><br><span class="line">[root@WWW ~]$ make install</span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%88%9D%E6%AD%A5"><span class="toc-number">1.</span> <span class="toc-text">内核管理初步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#x2F-sys"><span class="toc-number">2.</span> <span class="toc-text">&#x2F;sys</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8"><span class="toc-number">3.</span> <span class="toc-text">编译内核</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83"><span class="toc-number">3.1.</span> <span class="toc-text">准备开发环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%A1%AC%E4%BB%B6%E4%BF%A1%E6%81%AF"><span class="toc-number">3.2.</span> <span class="toc-text">获取硬件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF"><span class="toc-number">3.3.</span> <span class="toc-text">获取系统信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%86%85%E6%A0%B8%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="toc-number">3.4.</span> <span class="toc-text">获取内核源代码</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&text=Linux内核管理和编译初步"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&is_video=false&description=Linux内核管理和编译初步"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux内核管理和编译初步&body=Check out this article: https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&title=Linux内核管理和编译初步"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&name=Linux内核管理和编译初步&description=&lt;p&gt;现在让我们一起来看看这只企鹅到底是个什么吧&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/&t=Linux内核管理和编译初步"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

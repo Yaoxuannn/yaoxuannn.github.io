@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="systemd是CentOS7所使用的全新的init程序. Systemd:  POST -&gt; Boot Sequence -&gt; Bootloader -&gt; kernel + initramfs(initrd) -&gt; rootfs -&gt; &#x2F;sbin&#x2F;init  systemd的架构图:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS7-systemd">
+<meta property="og:url" content="https://19971122.xyz/2017/07/21/CentOS7-systemd/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="systemd是CentOS7所使用的全新的init程序. Systemd:  POST -&gt; Boot Sequence -&gt; Bootloader -&gt; kernel + initramfs(initrd) -&gt; rootfs -&gt; &#x2F;sbin&#x2F;init  systemd的架构图:">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.ruanyifeng.com/blogimg/asset/2016/bg2016030703.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/Unit.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/dependencies.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/rd.break.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/rd.start.png">
+<meta property="article:published_time" content="2017-07-21T18:01:43.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:32:01.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.ruanyifeng.com/blogimg/asset/2016/bg2016030703.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>CentOS7-systemd</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/05/bootloader-GRUB2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/21/CentOS7-systemd/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&text=CentOS7-systemd"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&is_video=false&description=CentOS7-systemd"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CentOS7-systemd&body=Check out this article: https://19971122.xyz/2017/07/21/CentOS7-systemd/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&name=CentOS7-systemd&description=&lt;p&gt;systemd是CentOS7所使用的全新的init程序.&lt;/p&gt;
+&lt;p&gt;Systemd:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;POST -&amp;gt; Boot Sequence -&amp;gt; Bootloader -&amp;gt; kernel + initramfs(initrd) -&amp;gt; rootfs -&amp;gt; &amp;#x2F;sbin&amp;#x2F;init&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;systemd的架构图:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.ruanyifeng.com/blogimg/asset/2016/bg2016030703.png&#34; alt=&#34;systemd&#34;&gt;&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/21/CentOS7-systemd/&t=CentOS7-systemd"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Systemd"><span class="toc-number">1.</span> <span class="toc-text">Systemd</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Unit%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">Unit的类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#systemd%E7%9A%84%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-number">1.2.</span> <span class="toc-text">systemd的关键特性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Esocket%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">基于socket的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Ebus%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">基于bus的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8EDevice%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.3.</span> <span class="toc-text">基于Device的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8EPath%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.4.</span> <span class="toc-text">基于Path的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%BF%AB%E7%85%A7"><span class="toc-number">1.2.5.</span> <span class="toc-text">系统快照</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%91%E5%90%8E%E5%85%BC%E5%AE%B9sysV-init%E8%84%9A%E6%9C%AC"><span class="toc-number">1.2.6.</span> <span class="toc-text">向后兼容sysV init脚本</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.3.</span> <span class="toc-text">管理系统服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unit%E8%AE%BE%E5%AE%9A%E6%96%87%E4%BB%B6%E5%8F%8A%E8%87%AA%E5%AE%9A%E4%B9%89"><span class="toc-number">1.4.</span> <span class="toc-text">Unit设定文件及自定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">1.5.</span> <span class="toc-text">其他</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        CentOS7-systemd
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-07-21T18:01:43.000Z" class="dt-published" itemprop="datePublished">2017-07-21</time>
+        
+        (Updated: <time datetime="2020-11-30T01:32:01.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>systemd是CentOS7所使用的全新的init程序.</p>
+<p>Systemd:</p>
+<blockquote>
+<p>POST -&gt; Boot Sequence -&gt; Bootloader -&gt; kernel + initramfs(initrd) -&gt; rootfs -&gt; &#x2F;sbin&#x2F;init</p>
+</blockquote>
+<p>systemd的架构图:</p>
+<p><img src="http://www.ruanyifeng.com/blogimg/asset/2016/bg2016030703.png" alt="systemd"></p>
+<span id="more"></span>
+
+<h2 id="Systemd"><a href="#Systemd" class="headerlink" title="Systemd"></a>Systemd</h2><p>之前就已经说过, CnetOS5,6上的<strong>运行级别</strong>这个概念在systemd上已经失去了意义.但是systemd依然可以兼容之前的SysV init脚本, 但是即使不使用脚本, systemd仍然可以进行服务的启动.但是, 当然, 使用脚本的启动速度是很慢的.</p>
+<p>接下来说一下Systemd的新特性有哪些:</p>
+<ul>
+<li>实现系统引导的时候服务的并行启动</li>
+<li>可以实现按需激活进程, 也就是说在需要这个进程的时候才去激活它, 这样就比较节省资源</li>
+<li>支持系统状态快照 ( 蛤?这也可以?没用过呢…)</li>
+<li>基于依赖关系来定义服务控制逻辑</li>
+</ul>
+<p>因此到了CentOS7上, systemd已经完全取代了之前的init. </p>
+<blockquote>
+<p>这么说来, CentOS6所使用的Startup init是十分短命的, 而当时Systemd的开发者就已经建议RH使用Systemd instead of StartUp了, 然而我们都知道RH以安全著称, 因此并没有使用. 当时的新版Fedora就使用了(小白鼠).</p>
+</blockquote>
+<p>对于Systemd而言有一个核心概念 – <strong>unit</strong> 也就是<strong>单元</strong></p>
+<p>而这个unit的配置主要是依靠其配置文件进行标示和配置: 文件主要包括了系统服务,监听的套接字, 保存的系统快照以及其他和init相关的信息. 每一个unit都有一个配置文件. 这些配置文件都保存在这些位置:</p>
+<p><code>/usr/lib/systemd/system</code> &amp;&amp; <code>/run/systemd/system</code>&amp;&amp;<code>/etc/systemd/system</code> </p>
+<p>目前我们可以简单的把unit当做之前的一个一个服务脚本, 负责进行服务的启动, 重载, 终止, 重启等等… 但要明确的是, 决不能把unit和这些服务脚本画上等号. 这是因为, unit除了进行这些服务的管理之外还有别的功能.归根结底: <strong>unit是有类型的</strong></p>
+<h3 id="Unit的类型"><a href="#Unit的类型" class="headerlink" title="Unit的类型"></a>Unit的类型</h3><p>其中最多最重要的就是这个服务类型的unit,叫做<code>Service Unit</code>  这些文件的扩展名就是<code>*.service</code> 比如: <code>httpd.service sshd.service crond.service</code> 等等</p>
+<p>在之前说init的时候, 我们可以在<code>/etc/rc.d/init.d/</code>里面看到许许多多的的服务脚本 而在systemd来看这些类似的东西都放在<code>/usr/lib/systemd/system</code> 里面, 这个目录里还有很多其他扩展名的东西: path target wants …</p>
+<p>而且如你所见, 这些文件不需要执行权限 因为他们仅仅是systemd的配置文件.</p>
+<p>除开service, 第二重要的配置文件就是target类型的, 叫做目标单元. 主要用于模拟实现”运行级别”</p>
+<p>第三种叫做device unit, 文件扩展名就是device, 这个文件主要用来负责定义内核识别的设备.</p>
+<p>接着还有进行文件系统挂载的mount unit, 也就是用来定义文件系统挂载点</p>
+<p>还有socket unit, 后缀名.socket, 用来标识进程间进行通信的socket文件.</p>
+<p>另外, 还有snapshot unit, 后缀名就叫做.snapshot, 用于管理系统快照.</p>
+<p>下一个swap unit, 后缀.swap, 用来干什么也很容易就知道了: 表示和管理swap设备.</p>
+<p>最后还有两项, 一个后缀是叫.automount, 用来定义文件系统的自动挂载点, 以及Path unit, 后缀名就是.path, 用来定义文件系统中与一个文件或者一个目录. 仅在某些特定的场景下才会使用.</p>
+<p>以上这些就是unit的类型, 用一张图来说明就是:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/Unit.png" alt="Unit"></p>
+<h3 id="systemd的关键特性"><a href="#systemd的关键特性" class="headerlink" title="systemd的关键特性"></a>systemd的关键特性</h3><h4 id="基于socket的激活机制"><a href="#基于socket的激活机制" class="headerlink" title="基于socket的激活机制"></a>基于socket的激活机制</h4><p>在系统引导的时候systemd对所有支持这种模式的服务, 分别创建需要监听的套接字, 并在服务启动之后, 立即将这个套接字传递给它.</p>
+<p>这样做的好处是: 可以实现多个服务的并行启动, 而且如果用不到这个服务的时候我就不启动, 反正套接字创建好了(我不关心服务的启动与否),这样当有人访问套接字, systemd就会收到, 接着就可以去激活相应的进程服务, 也就是按需激活.  这就像CentOS5,6上的超级守护进程和瞬时启动进程.</p>
+<blockquote>
+<p>其实也就是: 1. socket和服务程序分离, 由一个统一的systemd来进行启动. 2. 只要我套接字建立完毕,那么其他依赖服务都可以进行启动(因为认定已经启动), 从而实现并行启动.</p>
+</blockquote>
+<h4 id="基于bus的激活机制"><a href="#基于bus的激活机制" class="headerlink" title="基于bus的激活机制"></a>基于bus的激活机制</h4><p>D-bus是一个最早见于Linux的IPC实现, 用于桌面. 其实就是一个用于桌面应用的消息系统&#x2F;通讯机制.</p>
+<p>systemd可以使得所有使用D-Bus的服务在第一次访问的时候按需激活.</p>
+<h4 id="基于Device的激活机制"><a href="#基于Device的激活机制" class="headerlink" title="基于Device的激活机制"></a>基于Device的激活机制</h4><p>就像是在Windows上插入U盘之后就会有相应的进程被激活一样, 这一机制使得当我们有硬件上的更新(可用)的时候有systemd有能力激活相应服务.(就比如说automount)</p>
+<h4 id="基于Path的激活机制"><a href="#基于Path的激活机制" class="headerlink" title="基于Path的激活机制"></a>基于Path的激活机制</h4><p>也就是某个目录下文件发生变动的时候, 激活相应的程序.说白了就是特定文件路径的监控从而激活.</p>
+<h4 id="系统快照"><a href="#系统快照" class="headerlink" title="系统快照"></a>系统快照</h4><p>就像我们所使用的vmware等虚拟化应用的暂停功能一样. systemd能够将当前系统的各个unit的临时数据(当前状态信息)进行持久化(写入磁盘..), 说白了就是保存状态. 然后再下次开机的时候载入这些文件从而使得系统恢复之前的状态.</p>
+<h4 id="向后兼容sysV-init脚本"><a href="#向后兼容sysV-init脚本" class="headerlink" title="向后兼容sysV init脚本"></a>向后兼容sysV init脚本</h4><p>这个大家再熟悉不过了, 最起码systemd可以完美兼容<code>start, stop, status, restart</code>这样的操作脚本. 而CentOS7 也保留了这种风格.</p>
+<p>以上就是systemd的关键特性, 现在我们说说他和sysV不兼容(不同)的地方以及一些point</p>
+<ul>
+<li>systemd对之前sysV的系统运行级别的模拟和兼容是有限的, <strong>0,6,3,5</strong>, 事实上systemd用不到这个东西, 他只是通过target unit来进行模拟.</li>
+<li>target unit和之前的运行级别是不能做对等的, 因为target unit有十几个之多.</li>
+<li>systemd使用systemctl来进行服务操作的命令, 其支持的子命令不仅仅是上述4个. 在sysV时代, 用户可以进行拓展和自定义脚本, 但在systemd中, 子命令是固定不变的.</li>
+<li>systemd只能与systemd相通信的应用通信, 也就是说非systemd的应用他没法管.(比如service启动的)</li>
+<li>我们知道在init的时候, 当我们进行运行级别的切换的时候, 会执行&#x2F;etc&#x2F;rcX.d&#x2F;init.d&#x2F;对应级别的脚本, 所有K开头的都会执行stop操作, 而S的进行start操作. 但是这样存在的问题就是, 如果我的服务没有启动,还是会执行一遍stop操作, 这就是多余操作. 因此systemd就不会这样了, systemd会动态进行关闭操作, 仅关闭需要关闭以及当前正在运行的服务和程序.同理,S开头的也是.</li>
+<li>系统服务不会读取来自标准输入的数据,systemd启动时不会和标准输入进行交互,他自行控制着所以服务的管理.</li>
+<li>我们的系统服务不会从用户那里继承任何信息, 包括PATH等环境变量等等. 因此建议在使用应用程序使用绝对路径 这样每个服务都会在最纯净的运行环境中, 而和用户没有任何关系.</li>
+<li>每个服务operation的timeout都设置成5min</li>
+</ul>
+<h3 id="管理系统服务"><a href="#管理系统服务" class="headerlink" title="管理系统服务"></a>管理系统服务</h3><p>使用service unit, 也可以兼容早期的运行脚本. 运行的命令叫做: <strong>systemctl</strong> 完整的一个命令是: <strong>systemctl COMMAND name.service</strong> </p>
+<p>比如我们现在以久负盛名,大名鼎鼎的httpd.service来做个实验:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpm -q httpd</span></span><br><span class="line">httpd-2.4.6-45.el7.centos.4.x86_64 <span class="comment"># 系统已经安装此软件包</span></span><br><span class="line"><span class="comment"># 默认可以省略.service, 也就是说 你可以直接写应用的名字</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl status httpd</span></span><br><span class="line">● httpd.service - The Apache HTTP Server</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; vendor preset: disabled)</span><br><span class="line">   Active: inactive (dead)</span><br><span class="line">     Docs: man:httpd(8)</span><br><span class="line">           man:apachectl(8)</span><br><span class="line"><span class="comment"># 显然此时服务是非激活的, 也就是未启动.</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl start httpd</span></span><br><span class="line"><span class="comment"># 启动服务了, 现在来看一下当前服务的状态</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl status httpd</span></span><br><span class="line">● httpd.service - The Apache HTTP Server</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; vendor preset: disabled) <span class="comment"># disabled 表示该服务不会随着开机启动</span></span><br><span class="line">   Active: active (running) since Sun 2017-09-03 08:42:26 EDT; 2s ago</span><br><span class="line">     Docs: man:httpd(8)</span><br><span class="line">           man:apachectl(8)</span><br><span class="line"> Main PID: 2553 (httpd)</span><br><span class="line">   Status: <span class="string">&quot;Processing requests...&quot;</span></span><br><span class="line">   <span class="comment"># 刚启动的状态, 处理请求</span></span><br><span class="line">   CGroup: /system.slice/httpd.service</span><br><span class="line">           ├─2553 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2554 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2555 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2556 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2557 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           └─2558 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"></span><br><span class="line">Sep 03 08:42:26 WWW systemd[1]: Starting The Apache HTTP Server...</span><br><span class="line">Sep 03 08:42:26 WWW httpd[2553]: AH00558: httpd: Could not reliably determine the server<span class="string">&#x27;s fully qualified domain name, using 192.168.56.101. Set the &#x27;</span>ServerNa...his message</span><br><span class="line">Sep 03 08:42:26 WWW systemd[1]: Started The Apache HTTP Server.</span><br><span class="line">Hint: Some lines were ellipsized, use -l to show <span class="keyword">in</span> full.</span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl status httpd</span></span><br><span class="line">● httpd.service - The Apache HTTP Server</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; vendor preset: disabled)</span><br><span class="line">   Active: active (running) since Sun 2017-09-03 08:42:26 EDT; 6min ago</span><br><span class="line">     Docs: man:httpd(8)</span><br><span class="line">           man:apachectl(8)</span><br><span class="line"> Main PID: 2553 (httpd)</span><br><span class="line">   Status: <span class="string">&quot;Total requests: 0; Current requests/sec: 0; Current traffic:   0 B/sec&quot;</span></span><br><span class="line">   <span class="comment"># 状态出现了更新, 没有请求, 流量为0</span></span><br><span class="line">   CGroup: /system.slice/httpd.service</span><br><span class="line">           ├─2553 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2554 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2555 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2556 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2557 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           └─2558 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"></span><br><span class="line">Sep 03 08:42:26 WWW systemd[1]: Starting The Apache HTTP Server...</span><br><span class="line">Sep 03 08:42:26 WWW httpd[2553]: AH00558: httpd: Could not reliably determine the server<span class="string">&#x27;s fully qualified domain name, using 192.168.56.101. Set the &#x27;</span>ServerNa...his message</span><br><span class="line">Sep 03 08:42:26 WWW systemd[1]: Started The Apache HTTP Server.</span><br><span class="line">Hint: Some lines were ellipsized, use -l to show <span class="keyword">in</span> full.</span><br><span class="line"><span class="comment"># 现在停止服务</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl stop httpd</span></span><br></pre></td></tr></table></figure>
+
+<p>在旧的sysV时代, 我们的status只有一句干巴巴的说明, 服务已经启动&#x2F;服务没有启动.. 现在的systemd可以提供非常详细的信息来让我们进行debug或者查看相关信息.</p>
+<p>现在我们来列举一下systemctl</p>
+<ul>
+<li>启动: systemctl start name.service &#x3D;&#x3D; service name start</li>
+<li>停止: systemctl stop name.service &#x3D;&#x3D; service name stop</li>
+<li>重启: systemctl restart name.service &#x3D;&#x3D; service name restart</li>
+<li>状态: systemctl status name.service &#x3D;&#x3D; service name status</li>
+<li>条件式重启: systemctl try-restart name.service &#x3D;&#x3D; service name condrestart # 条件式重启是指: 如果这个服务启动了, 那么就停掉他再进行启动操作, 如果没有启动就不作操作.</li>
+<li>查看某服务当前是否激活: systemctl is-active name.service</li>
+<li>查看所有已经激活的服务: systemctl list-units<ul>
+<li>查看所有的 在后面加上 –all, 可以组合</li>
+<li>查看特定的类型的 在后面加上 –type&#x3D;{target,service…}, 可以组合.</li>
+</ul>
+</li>
+</ul>
+<p>与chkconfig的对应关系:</p>
+<p>设定某服务开机自启&#x2F;关闭: chkconfig name on&#x2F;off &#x3D;&#x3D;&gt; systemctl enable&#x2F;disable name.service</p>
+<p>比disable更强大的禁止自启是: systemctl mask name.service 这将会连接到&#x2F;dev&#x2F;null, 从而使启动这些变成不可能. 翻过来就是systemctl umask name.service 可以取消mask的效果.</p>
+<p>为了查看服务是否开机自启, 上面也已经展示了, 使用systemctl status name.service就可以了.</p>
+<p>如果要查看所有开机自启的服务, 在chkconfig时代, 还是使用: chkconfig –list</p>
+<p>但是systemctl就提供了非常清晰的信息:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># systemctl list-unit-files --type=service</span></span><br><span class="line"><span class="comment"># 这样展示的是所有的unit, 其中有disabled的, 有enabled的, 有static的</span></span><br><span class="line"><span class="comment"># 如果仅仅想要列出特定STATE的, 就在后面加上筛选条件就行了</span></span><br><span class="line">UNIT FILE                                     STATE   </span><br><span class="line">arp-ethers.service                            disabled</span><br><span class="line">atd.service                                   enabled </span><br><span class="line">auditd.service                                enabled </span><br><span class="line">autovt@.service                               enabled </span><br><span class="line">blk-availability.service                      disabled</span><br><span class="line">brandbot.service                              static  </span><br><span class="line">chrony-dnssrv@.service                        static  </span><br><span class="line">...(omitted)</span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl list-unit-files --type=service --state=enabled</span></span><br><span class="line"><span class="comment"># 别忘了要加d</span></span><br><span class="line">UNIT FILE                                   STATE  </span><br><span class="line">atd.service                                 enabled</span><br><span class="line">auditd.service                              enabled</span><br><span class="line">autovt@.service                             enabled</span><br><span class="line">chronyd.service                             enabled</span><br><span class="line">crond.service                               enabled</span><br><span class="line">dbus-org.fedoraproject.FirewallD1.service   enabled</span><br><span class="line">dbus-org.freedesktop.NetworkManager.service enabled</span><br><span class="line">dbus-org.freedesktop.nm-dispatcher.service  enabled</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>现在我们就来谈谈这个<strong>target unit</strong>.</p>
+<p>我们说过这个是用来实现运行级别的模拟的. 因此所有以target结尾的文件就是用来将需要启动的服务定义在一起, 使得他们能够一起启动.</p>
+<p>在<code>/usr/lib/systemd/system</code>这个目录下, 我们可以看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">lrwxrwxrwx. 1 root root  15 Jun 25 08:38 runlevel0.target -&gt; poweroff.target</span><br><span class="line">lrwxrwxrwx. 1 root root  13 Jun 25 08:38 runlevel1.target -&gt; rescue.target</span><br><span class="line">lrwxrwxrwx. 1 root root  17 Jun 25 08:38 runlevel2.target -&gt; multi-user.target</span><br><span class="line">lrwxrwxrwx. 1 root root  17 Jun 25 08:38 runlevel3.target -&gt; multi-user.target</span><br><span class="line">lrwxrwxrwx. 1 root root  17 Jun 25 08:38 runlevel4.target -&gt; multi-user.target</span><br><span class="line">lrwxrwxrwx. 1 root root  16 Jun 25 08:38 runlevel5.target -&gt; graphical.target</span><br><span class="line">lrwxrwxrwx. 1 root root  13 Jun 25 08:38 runlevel6.target -&gt; reboot.target</span><br></pre></td></tr></table></figure>
+
+<p>这些就是在模拟不同的运行级别, 可以很清晰的看到2,3,4都是一样的. 我们在使用init的时候, 切换运行等级的命令是init N. 而在systemd中使用的是以子命令的形式: <strong>systemctl isolate name.target</strong> 另外建议在使用systemd的机器上就不再要用<code>runlevel</code>来查看运行等级了, 因为意义不大.当然使用也是可以使用的. 那么应该使用什么命令来查看. 在上面已经说过了!其实就是<code>systemctl list-units --type target</code> 这会展示当前已经加载的unit. 如果是获取默认的运行级别, 在过去使用的&#x2F;etc&#x2F;inittab, 现在使用的命令是<strong>systemctl get-default</strong> 如果是修改默认的运行级别呢? 过去我们要修改iinittab这个文件, 但是现在封装的更友好, 我们直接使用<strong>systemctl set-default name.target</strong>就行了. 其实这一步骤做的操作就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW system]<span class="comment"># systemctl get-default</span></span><br><span class="line">multi-user.target</span><br><span class="line">[root@WWW system]<span class="comment"># systemctl set-default multi-user.target</span></span><br><span class="line">Removed symlink /etc/systemd/system/default.target. <span class="comment"># 删除符号链接</span></span><br><span class="line">Created symlink from /etc/systemd/system/default.target to /usr/lib/systemd/system/multi-user.target. <span class="comment"># 创建一个新的符号链接</span></span><br></pre></td></tr></table></figure>
+
+<p>所以默认的target就取决于这个软链接的指向. </p>
+<p>systemd可以非常快速的切换到救急模式和紧急模式, 命令如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># systemctl emergency</span></span><br><span class="line">PolicyKit daemon disconnected from the bus.</span><br><span class="line">We are no longer a registered authentication agent.</span><br><span class="line"></span><br><span class="line">Broadcast message from root@WWW on pts/0 (Mon 2017-09-04 07:51:33 EDT):</span><br><span class="line"></span><br><span class="line">The system is going down to emergency mode NOW!</span><br><span class="line"><span class="comment"># 会有一个广播, 告知正在使用这台机器的用户.</span></span><br><span class="line"><span class="comment"># 来看一下现在机器的状态.</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl list-units --type target</span></span><br><span class="line">UNIT             LOAD   ACTIVE SUB    DESCRIPTION</span><br><span class="line">emergency.target loaded active active Emergency Mode</span><br><span class="line"></span><br><span class="line">LOAD   = Reflects whether the unit definition was properly loaded.</span><br><span class="line">ACTIVE = The high-level unit activation state, i.e. generalization of SUB.</span><br><span class="line">SUB    = The low-level unit activation state, values depend on unit <span class="built_in">type</span>.</span><br><span class="line"></span><br><span class="line">1 loaded units listed. Pass --all to see loaded but inactive units, too.</span><br><span class="line">To show all installed unit files use <span class="string">&#x27;systemctl list-unit-files&#x27;</span>.</span><br><span class="line"><span class="comment"># 仅仅只载入了一个target文件</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl rescue</span></span><br><span class="line">Error getting authority: Error initializing authority: Could not connect: Connection refused (g-io-error-quark, 39)</span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl list-units --type target</span></span><br><span class="line">UNIT                LOAD   ACTIVE SUB    DESCRIPTION</span><br><span class="line">cryptsetup.target   loaded active active Encrypted Volumes</span><br><span class="line">local-fs-pre.target loaded active active Local File Systems (Pre)</span><br><span class="line">local-fs.target     loaded active active Local File Systems</span><br><span class="line">rescue.target       loaded active active Rescue Mode</span><br><span class="line">swap.target         loaded active active Swap</span><br><span class="line">sysinit.target      loaded active active System Initialization</span><br><span class="line"></span><br><span class="line">LOAD   = Reflects whether the unit definition was properly loaded.</span><br><span class="line">ACTIVE = The high-level unit activation state, i.e. generalization of SUB.</span><br><span class="line">SUB    = The low-level unit activation state, values depend on unit <span class="built_in">type</span>.</span><br><span class="line"></span><br><span class="line">6 loaded units listed. Pass --all to see loaded but inactive units, too.</span><br><span class="line">To show all installed unit files use <span class="string">&#x27;systemctl list-unit-files&#x27;</span>.</span><br><span class="line"><span class="comment"># 进入了rescue模式</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl isolate multi-user.target</span></span><br><span class="line">Error getting authority: Error initializing authority: Could not connect: Connection refused (g-io-error-quark, 39)</span><br><span class="line"><span class="comment"># 现在就切换回来吧</span></span><br></pre></td></tr></table></figure>
+
+<p>那么emergency和rescue的区别是什么呢? 从加载的target模块就可以看出来了. emergency更加彻底.</p>
+<p>在CentOS6上, 我们也可以使用emergency模式, 只需要在grub的e 编辑模式下, 传递emergency这个参数就可以了.</p>
+<p>最后我们再来说一下其他的常用命令:</p>
+<p>关机, hhh没有想到这个我也会说吧~ 熟知的shutdown当然也可以使用, 但是你也可以使用<code>systemct halt</code>. 同时也可以使用<code>systemctl poweroff</code> 重启就是<code>systemctl restart</code> 我们还可以挂起系统: 使用<code>systemctl suspend</code> 如果你是虚拟机在实验, 那么这个暂停我是不知道怎么恢复..如果你知道还请告知.使用<code>systemctl hibernate</code> 来使得机器休眠. 其实这个休眠就是systemd的快照功能, 他可以保持当前的工作状态, 当你回头重启的时候还可以继续下去. 当然, 如果不是仅仅做个快照, 还同时挂起, 就使用<code>systemdctl hybrid-sleep</code> 简单的说就是一个是重启, 一个是关闭啦 需要注意的是, 你的登录状态会保留, 所以还是要小心使用.</p>
+<p>如果你的服务不能正常启动是因为依赖的话, 那么你可以使用systemctl的子命令来查看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># systemctl list-dependencies httpd</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/dependencies.png" alt="dependencies"></p>
+<p>所依赖的会使用树形结构表示出来, 还会注明当前的激活情况.</p>
+<blockquote>
+<p>systemd的子命令实在是太多了. 在启用之初曾被人说, 违背了UNIX的simple原则. 当然他确实强大 方便.</p>
+</blockquote>
+<h3 id="Unit设定文件及自定义"><a href="#Unit设定文件及自定义" class="headerlink" title="Unit设定文件及自定义"></a>Unit设定文件及自定义</h3><p>关于此项, 暂时忽略. 后续补充.</p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>我们知道在Linux下找回密码只要能够进入并且挂载&#x2F;, 再重新设定root的密码就可以了. 以前我们使用rescue模式&#x2F;单用户来操作.但在systemd上这就没有用了.</p>
+<p>在新版的systemd 的管理机制中，预设的rescue 模式是无法直接取得root 权限的！还是得要使用root 的密码才能够登入rescure 环境！所以我们透过一个名为<strong>rd.break</strong>的核心参数来处理！只是需要注意的是， rd.break 是在Ram Disk 里面的作业系统状态，因此你不能直接取得原本的linux 系统操作环境。所以，还需要chroot 的支援. 更由于SELinux 的问题，你可能还得要加上某些特殊的流程才能顺利的搞定root 密码的重新设置. 这样说有些不清楚. 我们来走一个流程.</p>
+<p>首先在grub界面使用e进入编辑模式, 在标有linux16的那一行的最后加上<code>rd.break</code>这个核心参数.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/rd.break.png" alt="rd"></p>
+<p>之后就可以执行了,使用ctrl+x,这时开机你会看到这样的界面</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/rd.start.png" alt="rd"></p>
+<p>这个时候我们不需要输入密码就可以进入系统! 但是注意这个时候我们进入的位置是&#x2F;sysroot 并且使用mount查看当前挂载情况的时候, 你会发现当前的系统挂载了&#x2F;sysroot这个目录,并且是仅仅可读不可写的.所以我们要先把他重新挂载成可读写.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">switch_root:/<span class="comment"># mount -o remount, rw /sysroot</span></span><br></pre></td></tr></table></figure>
+
+<p>接着我们进行根切换, 注意这是<strong>暂时</strong>切换. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">switch_root:/<span class="comment"># chroot /sysroot</span></span><br><span class="line">sh-4.2<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>接着就可以进行密码更改了. 你会发现这时的&#x2F;sys &#x2F;proc都是空的.</p>
+<p>更改完毕后, 别忘了要先退出这个根. 然后在重新启动就可以了.</p>
+<p>关于这些的原理和其他的一些, 在后面的GRUB2中会说明. 后面的GRUB2中会说明.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Systemd"><span class="toc-number">1.</span> <span class="toc-text">Systemd</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Unit%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">Unit的类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#systemd%E7%9A%84%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-number">1.2.</span> <span class="toc-text">systemd的关键特性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Esocket%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">基于socket的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Ebus%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">基于bus的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8EDevice%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.3.</span> <span class="toc-text">基于Device的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8EPath%E7%9A%84%E6%BF%80%E6%B4%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.4.</span> <span class="toc-text">基于Path的激活机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%BF%AB%E7%85%A7"><span class="toc-number">1.2.5.</span> <span class="toc-text">系统快照</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%91%E5%90%8E%E5%85%BC%E5%AE%B9sysV-init%E8%84%9A%E6%9C%AC"><span class="toc-number">1.2.6.</span> <span class="toc-text">向后兼容sysV init脚本</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.3.</span> <span class="toc-text">管理系统服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unit%E8%AE%BE%E5%AE%9A%E6%96%87%E4%BB%B6%E5%8F%8A%E8%87%AA%E5%AE%9A%E4%B9%89"><span class="toc-number">1.4.</span> <span class="toc-text">Unit设定文件及自定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">1.5.</span> <span class="toc-text">其他</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/21/CentOS7-systemd/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&text=CentOS7-systemd"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&is_video=false&description=CentOS7-systemd"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CentOS7-systemd&body=Check out this article: https://19971122.xyz/2017/07/21/CentOS7-systemd/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&title=CentOS7-systemd"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/21/CentOS7-systemd/&name=CentOS7-systemd&description=&lt;p&gt;systemd是CentOS7所使用的全新的init程序.&lt;/p&gt;
+&lt;p&gt;Systemd:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;POST -&amp;gt; Boot Sequence -&amp;gt; Bootloader -&amp;gt; kernel + initramfs(initrd) -&amp;gt; rootfs -&amp;gt; &amp;#x2F;sbin&amp;#x2F;init&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;systemd的架构图:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.ruanyifeng.com/blogimg/asset/2016/bg2016030703.png&#34; alt=&#34;systemd&#34;&gt;&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/21/CentOS7-systemd/&t=CentOS7-systemd"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

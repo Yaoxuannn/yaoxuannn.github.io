@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="一直都在使用OpenSSH这个玩意儿连接我们的Linux, 该仔细看一看他噜~">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenSSH和其配置">
+<meta property="og:url" content="https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="一直都在使用OpenSSH这个玩意儿连接我们的Linux, 该仔细看一看他噜~">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-09-13T17:07:58.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:45:27.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OpenSSH">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>OpenSSH和其配置</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/22/CCNA%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E9%AA%8C-updating/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/11/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A73/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&text=OpenSSH和其配置"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&is_video=false&description=OpenSSH和其配置"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=OpenSSH和其配置&body=Check out this article: https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&name=OpenSSH和其配置&description=&lt;p&gt;一直都在使用OpenSSH这个玩意儿连接我们的Linux, 该仔细看一看他噜~&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&t=OpenSSH和其配置"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#SSH%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">SSH概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSH%E5%91%BD%E4%BB%A4%E5%92%8C%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">SSH命令和配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SSH%E5%91%BD%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">SSH命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSH%E9%85%8D%E7%BD%AE"><span class="toc-number">2.2.</span> <span class="toc-text">SSH配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSH%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">3.</span> <span class="toc-text">SSH服务的最佳实践</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        OpenSSH和其配置
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-13T17:07:58.000Z" class="dt-published" itemprop="datePublished">2017-09-13</time>
+        
+        (Updated: <time datetime="2020-11-30T01:45:27.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OpenSSH/" rel="tag">OpenSSH</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>一直都在使用OpenSSH这个玩意儿连接我们的Linux, 该仔细看一看他噜~</p>
+<span id="more"></span>
+
+<h2 id="SSH概述"><a href="#SSH概述" class="headerlink" title="SSH概述"></a>SSH概述</h2><p>首先我们知道, SSH(secure shell)是一个协议, 也就是一个规范. 默认监听在22&#x2F;tcp端口, 提供安全的远程登录功能, 而OpenSSH就是一个开源实现.</p>
+<p>在机房几百几千台服务器, 我们不可能一个一个都去配置上显示器, 所以就想办法通过网络来进行连接. 这里我们所连接上的就是远程终端. 要把对方显示的结果显示到我们本地的显示器上, 并且通过本地键盘键入命令, 获得远程执行的结果. 包括我们在登录时输入的账号和密码, 都需要通过网络来传输. 因此默认情况下, 原本本地的终端使用<code>mingetty</code>来附加上一个<code>login</code>程序, 来让用户登录. BUT! mingetty并没有能使得远程管理的功能. 因此我们就需要在服务器(远程终端)执行一个服务端程序来将本地的基于终端的请求通过某种特定的协议映射到需要交换的对象上. 这也是C&#x2F;S架构的一个应用. </p>
+<p>早期, 上述的实现是使用的telnet. 两地终端通过telnet协议进行通信. telnet同样使用tcp, 但它监听在23端口. telnet没有涉及任何加密, 所以所有的数据都是明文传输, 这是相当于不安全的. 于是telnet的后继者ssh就出现了. 并且解决了除了远程登录的诸多功能.</p>
+<p>在一台CentOS6的机器上实验, 注意, 这个telnet服务属于是<strong>超级守护进程的瞬时激活进程</strong> (不知道这样说对不对?) 也就是由xinetd统一管理的进程之一, xinetd有点像我们之前说的systemd的socket激活机制, 按需激活的机制. 所以我们只要启动xinetd服务即可.</p>
+<p>有关SSH安全机制在 <a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/#%E8%A1%A5%E5%85%85-SSH-Secure-Shell-%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B">补充-SSH-Secure-Shell-的原理和处理过程</a> 说过一点.</p>
+<p>OpenSSH也是C&#x2F;S架构的, 我们的服务器端就叫做: sshd, 而对于客户端则直接叫做: ssh, 并且还有scp这样的工具, 还有sftp这样的子系统.</p>
+<h2 id="SSH命令和配置"><a href="#SSH命令和配置" class="headerlink" title="SSH命令和配置"></a>SSH命令和配置</h2><h3 id="SSH命令"><a href="#SSH命令" class="headerlink" title="SSH命令"></a>SSH命令</h3><p>直接man一下ssh, 其实支持的功能还是蛮多的. 最简单的方法就直接在后面加上主机名就行了. 用户名是可以省略的, 会使用当前系统登录的用户作为默认用户来登录. 除了默认的user@hostname, 也可以使用**-l**来指定user, 也就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -l root 192.168.100.10 <span class="comment"># 就等价于ssh root@192.168.100.10</span></span><br></pre></td></tr></table></figure>
+
+<p>另外一个很重要的属性是**-p**, 后面指定port. 这个属性通常很有用, 因为作为ssh的安全措施之一就是不使用ssh的默认22号端口. (为什么?因为这不是一个公开服务.)  其他的就不多了.</p>
+<p>但是这里再说一个有意思, 使用SSH进行<strong>隧道建立</strong>以及<strong>内网穿透</strong>.</p>
+<p>首先我们说几个有用的参数:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-f 需要和下面的-N进行连用, 意思是说让ssh在后台运行</span><br><span class="line">-N 如果没有加上-f参数会堵塞终端(在前台滞留)</span><br><span class="line">-g 加上这个参数表示允许外部主机进行连接, 否则只允许localhost</span><br><span class="line">-C 压缩数据传输 </span><br><span class="line">-L 本地转发到远端, 可以用来越过防火墙.</span><br><span class="line">-R 远端转发到本地, 可以用于内网的穿透</span><br></pre></td></tr></table></figure>
+
+<p>比如, 下面的这个例子. 主机A(139.199.XX.130)这个IP是一个公网IP, 小明在寝室使用实验室的代理主机B(59.68.XX.126)连接互联网, 但是由于校园网的防火墙配置使得小明无法使用ssh,ping等访问到校园网以外的网络. 于是小明原来可以先登录到代理主机B, 接着在代理主机B上进行操作登录到主机A. 但是这样很麻烦, 于是小明在主机B上使用:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -CfNg -L 10022:localhost:1022 root@139.199.XX.130 -p 1022</span><br></pre></td></tr></table></figure>
+
+<p> 搭建了一条SSH转发隧道. 也就是当ssh连接主机B的10022端口的时候, 会被转发到目标主机的1022端口上. 意思就是说在代理主机B上创建了一个端口为10022的套接字, 当有ssh连接请求到这个套接字的时候, 就会将接下来的请求转发到位于主机A的1022那个端口上(说到这里你也就知道了, 都能够进行端口转发了. 其实还有别的用处, 比如说进行穿透的ftp服务访问等等..)</p>
+<p>另外, 小红在实验室遇到了一个问题, 他想让小明远程连接过来帮他解决, 但是实验室内网没有建立VPN, 由于小红能够访问到处在公网的小明. 所以小红就想到使用ssh建立一条隧道, 使得小明能够直接连接进来. 这样该怎么做呢? 反过来建立的方法是这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -CfNg -R 10022:localhost:1022 root@139.199.XX.130 -p 1022</span><br></pre></td></tr></table></figure>
+
+<p>唯一的区别就在于那个参数的改变, 使得监听套接字的创建换成了另外一台主机.</p>
+<p><strong>注意: 这个实验成功的一个注意点是你的iptables设定. 另外直接这么开着一条隧道是一件十分危险的事情! 请务必把他关闭, 或者添加安全措施(增加专用用户等等)</strong></p>
+<h3 id="SSH配置"><a href="#SSH配置" class="headerlink" title="SSH配置"></a>SSH配置</h3><p>客户端的ssh配置文件在<code>/etc/ssh/ssh_config</code>上 而服务器端的就在同一目录下的<code>sshd_config</code>里. 首先我们看一下客户端的咯. </p>
+<p>文件中定义了对于一个特定的Host使用什么样的配置, 而默认的*就是所有主机. 基本上默认的值我们无需进行定制. 其中有一个叫<code>StrictHostKeyChecking</code>的配置, 意思是说是否进行严格主机密钥检查. 如果将该值从ask改为no, 就不会出现询问是否添加RSAkey的消息了, 会直接进行写入. 另外一个常用的值就是port了, 这样在换端口了之后就不需要再每次连接的时候加上-p参数了.</p>
+<blockquote>
+<p><strong>基于密钥的SSH登录</strong> </p>
+<p>每次输入密码有点麻烦, 所以我们不如配个公私钥来免密码登录.</p>
+<p>首先我们需要在本地生成密钥:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ssh-keygen -t rsa -P &quot;&quot; -f &quot;/root/.ssh/id_rsa&quot;</span></span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">Your identification has been saved <span class="keyword">in</span> /root/.ssh/id_rsa.</span><br><span class="line">Your public key has been saved <span class="keyword">in</span> /root/.ssh/id_rsa.pub.</span><br><span class="line">The key fingerprint is:</span><br><span class="line"><span class="built_in">fc</span>:14:0a:bb:22:81:f7:74:21:2c:2a:c7:f4:a5:19:25 root@WWW</span><br><span class="line">The key<span class="string">&#x27;s randomart image is:</span></span><br><span class="line"><span class="string">+--[ RSA 2048]----+</span></span><br><span class="line"><span class="string">|    E .          |</span></span><br><span class="line"><span class="string">|   . o           |</span></span><br><span class="line"><span class="string">|  o + +   .      |</span></span><br><span class="line"><span class="string">| = o * = . .     |</span></span><br><span class="line"><span class="string">|+ = = o S .      |</span></span><br><span class="line"><span class="string">|.o + . . o       |</span></span><br><span class="line"><span class="string">|  . o .   .      |</span></span><br><span class="line"><span class="string">|   . .           |</span></span><br><span class="line"><span class="string">|                 |</span></span><br><span class="line"><span class="string">+-----------------+</span></span><br><span class="line"><span class="string"># 如果希望得到交互式的结果,可以直接敲ssh-keygen就行了(不过还是建议起码加上-t rsa)</span></span><br></pre></td></tr></table></figure>
+<p>得到了这一对密钥就可以继续. 我们把公钥发送出去. 怎么发送呢? OpenSSH提供了<code>ssh-copy-id</code>的工具帮助我们方便进行公钥的发送, 用法如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id [-n] [-i [identity_file]] [-p port] [-o ssh_option] [user@]hostname</span><br></pre></td></tr></table></figure>
+<p>一般我们只需要指定-i就行了, 这个identity文件的寻找和默认的是不一样的,所以这个参数几乎是必须要加的.<br>添加过后会出现:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ssh-copy-id -i .ssh/id_rsa.pub root@192.168.56.101</span></span><br><span class="line">/usr/bin/ssh-copy-id: INFO: attempting to <span class="built_in">log</span> <span class="keyword">in</span> with the new key(s), to filter out any that are already installed</span><br><span class="line">/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- <span class="keyword">if</span> you are prompted now it is to install the new keys</span><br><span class="line">root@192.168.56.101<span class="string">&#x27;s password: </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Number of key(s) added: 1</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now try logging into the machine, with:   &quot;ssh &#x27;</span>root@192.168.56.101<span class="string">&#x27;&quot;</span></span><br><span class="line"><span class="string">and check to make sure that only the key(s) you wanted were added.</span></span><br></pre></td></tr></table></figure>
+<p>接着就可以直接进行免密登陆了.</p>
+</blockquote>
+<p>接着我们再插着所以下之前提到的SCP命令. 这个SCP的意思其实就是secure copy, 也就是说基于SSH进行跨主机的文件传输, 其有两种模式: PULL和PUSH.(和你git的那两个差不多) </p>
+<p>使用起来也很简单:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp [options] SRC... DEST/</span><br></pre></td></tr></table></figure>
+
+<p>存在两种情形所以命令是不一样的, 如果是PULL(拉取服务器数据保存到本地) :</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp [options] [user@]host:/PATH/FROM/FILE /PATH/TO/SOMEWHERE</span><br></pre></td></tr></table></figure>
+
+<p>而PUSH(将本地的文件推送到远端主机上)呢?</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp [options] /PATH/TO/FILE [user@]host:/PATH/TO/SOMEWHERE</span><br></pre></td></tr></table></figure>
+
+<p>常用的选项有这些:</p>
+<ul>
+<li><strong>-r</strong>: 递归复制</li>
+<li><strong>-p</strong>: 保持源文件的属性信息</li>
+<li><strong>-q</strong>: 静默模式</li>
+<li><strong>-P port</strong>: 远端主机监听的port</li>
+</ul>
+<p>更厉害的是我们的<code>sftp</code> , 他甚至可以像在自己机器上面一样可以做各种各种的事情(当然前提是有权限), 包括制作连接, 进行权限设定啥的.</p>
+<p>OK, 现在就来说一说服务器端的配置文件吧. 这个文件的价值个人觉得是很大的.</p>
+<p>和一般的配置文件相同, 井号开头不加空格的就是可启用的配置项, 加空格的就是注释. </p>
+<p>看一下有哪些配置项吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Port 20022 <span class="comment"># 一般为了安全我们不会使用默认的22端口</span></span><br><span class="line"><span class="comment">#AddressFamily any # 表示监听IPv4还是IPv6, 还是都监听.</span></span><br><span class="line">ListenAddress 192.168.56.101 <span class="comment"># 由于是服务器, 所以可能会有多网卡多地址, 一般这里都会设置成内网监听</span></span><br><span class="line"><span class="comment">#ListenAddress ::</span></span><br><span class="line">SyslogFacility AUTHPRIV <span class="comment"># 这个就是我们之前说过的, 日志记录</span></span><br><span class="line">LoginGraceTime 2m <span class="comment"># 登录的宽限时间, 也就是一直不输入密码结果就断开连接的那个时间间隔</span></span><br><span class="line">PermitRootLogin no <span class="comment"># 是否允许root用户直接登录, 一般改成no比较安全</span></span><br><span class="line">MaxAuthTries 6 <span class="comment"># 最大的尝试次数, 一定程度上可以防止暴力破解</span></span><br><span class="line">MaxSessions 10 <span class="comment"># 最大的并行登录</span></span><br><span class="line">PubkeyAuthentication <span class="built_in">yes</span> <span class="comment"># 是否允许使用公钥验证, 当然是允许的啦</span></span><br><span class="line">AuthorizedKeysFile      .ssh/authorized_keys <span class="comment"># 这个就是在定义我们的生成的公钥的放置地方</span></span><br><span class="line">PasswordAuthentication <span class="built_in">yes</span> <span class="comment"># 是否允许密码登录</span></span><br><span class="line">X11Forwarding <span class="built_in">yes</span> <span class="comment"># 是否支持X11转发, 是否允许在远端进行图像化</span></span><br><span class="line">Subsystem       sftp    /usr/libexec/openssh/sftp-server <span class="comment"># 是否启动sftp的子系统</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>在实验中请把SELINUX的状态改成Permissive或者直接关闭, 否则端口改变会失效.</strong></p>
+<p>值得一提的是, ssh服务端的一个配置项: <code>UseDNS yes</code> 意思是说是否使用DNS反向解析, 默认是打开的, 这会消耗巨量的时间. 短则几十秒, 长则几分钟 因此我们应该将这个关闭.</p>
+<h2 id="SSH服务的最佳实践"><a href="#SSH服务的最佳实践" class="headerlink" title="SSH服务的最佳实践"></a>SSH服务的最佳实践</h2><ul>
+<li><p>不使用默认的端口</p>
+</li>
+<li><p>禁止使用protocol version 1</p>
+</li>
+<li><p>限制可登录用户</p>
+</li>
+<li><p>有两个属性叫做AllowUsers和AllowGroups可以用来做白名单, 反之还有黑名单. <strong>注意, 当你两个都设置的时候, ssh会取两者的交集(就是说:当你允许root和用户test登录, 但是只允许root组登录的时候, test依旧会被拒绝.)</strong></p>
+</li>
+<li><p>设定空闲会话超时时长</p>
+</li>
+<li><p>利用防火墙设置ssh的访问策略</p>
+</li>
+<li><p>仅监听特定的IP地址</p>
+</li>
+<li><p>基于口令认证的时候, 使用强密码策略 ( 一个生成随机数密码的小技巧 )</p>
+<ul>
+<li><pre><code class="bash">tr -cd a-zA-Z0-9_ &lt; /dev/urandom | head -c 30 | xargs
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">*  使用基于密钥的验证</span><br><span class="line"></span><br><span class="line">*  禁止使用空密码</span><br><span class="line"></span><br><span class="line">*  禁止root用户直接登录</span><br><span class="line"></span><br><span class="line">*  限制ssh的访问频度, 和同并发数量限制</span><br><span class="line"></span><br><span class="line">*  做好日志记录, 保存在日志服务器上</span><br><span class="line"></span><br><span class="line">*  经常分析记录</span><br><span class="line"></span><br><span class="line">## OpenSSL和CA相关</span><br><span class="line"></span><br><span class="line">我们之前已经说了好大一会openssl这个东西了, 但是当时就草草的随意提了下关于证书的种种. 今天就在这里详细说一下关于CA和证书的事情.</span><br><span class="line"></span><br><span class="line">[OpenSSL初识](https://yaoxuannn.com/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/)</span><br><span class="line"></span><br><span class="line">我们之前提到过 有一个实现现代互联网安全使得最根本的保证, 叫做PKI, 全称是Public Key Infrastructure. 也就是公钥基础设施. 主要有下面几个成分组成, 也就是CA(发证机构), RA(注册机构), CRL(吊销列表), 证书存取库. 其中CA是非常重要的, 而注册机构也是需要发给CA, 然后由CA做签名的.  但是总不能一直都支付那么高的费用, 例如, 日后我需要建立VPN来连接机构组织的内网, 由于这个VPN需要验证而且他本身就是用在我们这个组织内部的, 所以我们可以使用**内部证书**, 或者说**私有证书**, 这种感觉就好像是银行所使用的某某盾, 某某通行证啥的, 这些东西只有在银行内部才能够使用 如果每一个客户的支付通行证都是购买的证书的话, 那开销也太大了.</span><br><span class="line"></span><br><span class="line">建立私有CA, 已经可以满足我们的需要了. 建立私有CA, 有很多专门的工具来做到, 其中由一个非常著名的实现叫做OpenCA, 但是过于复杂和专业, 所以我们使用openssl来实现. 其实OpenCA就是对openssl的高度抽象来实现更多强大的功能. 下面就来说怎么建立私有CA.</span><br><span class="line"></span><br><span class="line">首先就要先了解一下我们的证书申请和签署步骤:</span><br><span class="line"></span><br><span class="line">* 生成申请请求: 提供主机名以及一些唯一标识, 如果是主机间通信的话, 还应该有主机所属的组织, 邮箱地址等等. 这些信息RA会进行核验, 所以一定要写真实的.</span><br><span class="line">* 接着就是RA的核验</span><br><span class="line">* 接着交给CA做签署</span><br><span class="line">* 最后获取证书</span><br><span class="line"></span><br><span class="line">如何创建私有证书? openssl自己就可以进行证书的签署以及吊销他们. 我们来看看如何操作的:</span><br><span class="line"></span><br><span class="line">他的配置文件在: `/etc/pki/tls/openssl.cnf` 这是作为CA时用到的默认配置文件.  其中我们只要先关注CA的部分就行:</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line">[ CA_default ]</span><br><span class="line"></span><br><span class="line">dir             = /etc/pki/CA           # Where everything is kept</span><br><span class="line">certs           = $dir/certs            # Where the issued certs are kept 已签署的证书</span><br><span class="line">crl_dir         = $dir/crl              # Where the issued crl are kept 吊销列表</span><br><span class="line">database        = $dir/index.txt        # database index file. 索引文件, 已签署的</span><br><span class="line">#unique_subject = no                    # Set to &#x27;no&#x27; to allow creation of 证书的信息是否可一致</span><br><span class="line">                                        # several ctificates with same subject.</span><br><span class="line">new_certs_dir   = $dir/newcerts         # default place for new certs. 签署过程中的存放位置</span><br><span class="line">certificate     = $dir/cacert.pem       # The CA certificate CA自己的证书</span><br><span class="line">serial          = $dir/serial           # The current serial number 序列号</span><br><span class="line">crlnumber       = $dir/crlnumber        # the current crl number</span><br><span class="line">                                        # must be commented out to leave a V1 CRL</span><br><span class="line">crl             = $dir/crl.pem          # The current CRL</span><br><span class="line">private_key     = $dir/private/cakey.pem# The private key</span><br><span class="line">RANDFILE        = $dir/private/.rand    # private random number file</span><br><span class="line">...(omitted)</span><br><span class="line">default_days    = 365                   # how long to certify for 证书的有效期</span><br><span class="line">default_crl_days= 30                    # how long before next CRL 吊销列表的有效期限</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<p>后面的注释写的也很清楚了. 这里定义了很多工作目录的位置, 比如说第一个cert就是存放已经签署过的证书所在地. 而总的dir在最一开始进行定义: &#x2F;<code>/etc/pki/CA</code> 我们进去看一看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW CA]<span class="comment"># ls</span></span><br><span class="line">certs  crl  newcerts  private</span><br></pre></td></tr></table></figure>
+
+<p>缺少了很多东西, 所以第一步我们就需要<strong>创建所需要的文件和准备序列号</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW CA]<span class="comment"># touch index.txt</span></span><br><span class="line">[root@WWW CA]<span class="comment"># echo &quot;01&quot; &gt; serial</span></span><br></pre></td></tr></table></figure>
+
+<p>第二步, 我们先要给CA签署证书, 也就是<strong>自签</strong>.  要想得到证书, 我们就要先生成密钥对. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW CA]<span class="comment"># (umask 077; openssl genrsa -out private/cakey.pem 2048)</span></span><br><span class="line">Generating RSA private key, 2048 bit long modulus</span><br><span class="line">............................+++</span><br><span class="line">...........................+++</span><br><span class="line">e is 65537 (0x10001)</span><br><span class="line">[root@WWW CA]<span class="comment"># ls -l private/</span></span><br><span class="line">total 4</span><br><span class="line">-rw------- 1 root root 1675 Sep 14 03:45 cakey.pem</span><br></pre></td></tr></table></figure>
+
+<p>这样就生成了私钥, 接着就应该提取公钥了, 但是现在我们可以不使用pubout了, 可以直接使用openssl提供的req工具. 使用下面的命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW CA]<span class="comment"># openssl req -new -x509 -key private/cakey.pem -days 7300 -out cacert.pem</span></span><br><span class="line"><span class="comment"># 这里的-x509只有在进行自签的时候才会用到.</span></span><br><span class="line"><span class="comment"># -new 生成新证书的意思啦</span></span><br><span class="line"><span class="comment"># -days 可用的天数</span></span><br><span class="line"><span class="comment"># -out 输出的证书文件保存路径</span></span><br></pre></td></tr></table></figure>
+
+<p>接着就是第三步了, <strong>发证</strong></p>
+<p>其中也需要几个小步骤: 首先需要用到证书的主机发出生成证书请求. 把请求文件传输给CA. CA确认没有问题之后就直接签署证书发还给请求者.</p>
+<p>所以现在我们的主机已经是一台CA了. 那么现在我们启动另外一台主机, 像我们这台主机发起证书请求.</p>
+<p>就以httpd来做这个实验:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># cd /etc/httpd/</span></span><br><span class="line">[root@WWW httpd]<span class="comment"># mkdir ssl</span></span><br><span class="line">[root@WWW httpd]<span class="comment"># cd ssl/</span></span><br><span class="line">[root@WWW ssl]<span class="comment"># (umask 077; openssl genrsa -out httpd.key 2048)</span></span><br><span class="line">Generating RSA private key, 2048 bit long modulus</span><br><span class="line">.................................................+++</span><br><span class="line">...............................................................................+++</span><br><span class="line">e is 65537 (0x10001)</span><br><span class="line">[root@WWW ssl]<span class="comment"># ls</span></span><br><span class="line">httpd.key</span><br><span class="line">[root@WWW ssl]<span class="comment"># openssl req -new -key httpd.key -days 3650 -out httpd.csr</span></span><br><span class="line">[root@WWW ssl]<span class="comment"># ls</span></span><br><span class="line">httpd.csr  httpd.key</span><br><span class="line">[root@WWW ssl]<span class="comment"># scp httpd.csr root@192.168.56.101:/tmp/</span></span><br><span class="line">httpd.csr                  100% 1009     1.0KB/s   00:00    </span><br></pre></td></tr></table></figure>
+
+<p>好了现在, 我们就已经将证书请求发送到目标CA了, 接着回到目标CA所在的主机:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW tmp]<span class="comment"># openssl ca -in httpd.csr -out httpd.crt -days 3650</span></span><br><span class="line">Using configuration from /etc/pki/tls/openssl.cnf</span><br><span class="line">Check that the request matches the signature</span><br><span class="line">Signature ok</span><br><span class="line">Certificate Details:</span><br><span class="line">        Serial Number: 1 (0x1)</span><br><span class="line">        Validity</span><br><span class="line">            Not Before: Sep 14 08:25:28 2017 GMT</span><br><span class="line">            Not After : Sep 12 08:25:28 2027 GMT</span><br><span class="line">        Subject:</span><br><span class="line">            countryName               = CN</span><br><span class="line">            stateOrProvinceName       = Hubei</span><br><span class="line">            organizationName          = Default Company Ltd</span><br><span class="line">            commonName                = WWW</span><br><span class="line">        X509v3 extensions:</span><br><span class="line">            X509v3 Basic Constraints: </span><br><span class="line">                CA:FALSE</span><br><span class="line">            Netscape Comment: </span><br><span class="line">                OpenSSL Generated Certificate</span><br><span class="line">            X509v3 Subject Key Identifier: </span><br><span class="line">                0C:7B:43:97:E2:92:A8:A4:82:DF:4F:C0:DC:A0:CE:E4:9B:6B:A3:FD</span><br><span class="line">            X509v3 Authority Key Identifier: </span><br><span class="line">                keyid:72:62:EE:58:34:DA:FA:35:BC:DE:53:54:79:E4:25:17:B7:E4:69:CC</span><br><span class="line"></span><br><span class="line">Certificate is to be certified <span class="keyword">until</span> Sep 12 08:25:28 2027 GMT (3650 days)</span><br><span class="line">Sign the certificate? [y/n]:y</span><br><span class="line"></span><br><span class="line">1 out of 1 certificate requests certified, commit? [y/n]y</span><br><span class="line">Write out database with 1 new entries</span><br><span class="line">Data Base Updated</span><br></pre></td></tr></table></figure>
+
+<p>这样就签署完成了, 并且生成了证书文件. 同时我们注意到最后一行: 数据库更新. 那么来看一下index.txt吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW tmp]<span class="comment"># cat /etc/pki/CA/index.txt</span></span><br><span class="line">V	270912082528Z		01	unknown	/C=CN/ST=Hubei/O=Default Company Ltd/CN=WWW</span><br></pre></td></tr></table></figure>
+
+<p>01号签署证书, 后面还有各种记录. 而新生成的证书就保存了一份到newcerts目录. 其实就是和我们out出来的httpd.crt同一个文件.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW newcerts]<span class="comment"># cd /etc/pki/CA/newcerts/</span></span><br><span class="line">[root@WWW newcerts]<span class="comment"># ls</span></span><br><span class="line">01.pem</span><br><span class="line">[root@WWW newcerts]<span class="comment"># diff 01.pem /tmp/httpd.crt</span></span><br><span class="line">[root@WWW newcerts]<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>接下来我们把证书发还给客户端.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW newcerts]<span class="comment"># scp /tmp/httpd.crt root@192.168.56.103:/etc/httpd/ssl/</span></span><br><span class="line">httpd.crt                           100% 4401     4.3KB/s   00:00 </span><br></pre></td></tr></table></figure>
+
+<p>完成了, 以后搭建https的时候就可以直接使用了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW tmp]<span class="comment"># cd /etc/httpd/ssl/</span></span><br><span class="line">[root@WWW ssl]<span class="comment"># ls</span></span><br><span class="line">httpd.crt  httpd.csr  httpd.key</span><br></pre></td></tr></table></figure>
+
+<p>发证的过程就是这样. 如果日后忘记了可以使用x509来查看. x509就是专门用来进行证书管理的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ssl]<span class="comment"># openssl x509 -in httpd.crt -text</span></span><br><span class="line">Certificate:</span><br><span class="line">    Data:</span><br><span class="line">        Version: 3 (0x2)</span><br><span class="line">        Serial Number: 1 (0x1)</span><br><span class="line">    Signature Algorithm: sha256WithRSAEncryption</span><br><span class="line">        Issuer: C=CN, ST=Hubei, L=Wuhan, O=Default Company Ltd, CN=WWW</span><br><span class="line">        Validity</span><br><span class="line">            Not Before: Sep 14 08:25:28 2017 GMT</span><br><span class="line">            Not After : Sep 12 08:25:28 2027 GMT</span><br><span class="line">        Subject: C=CN, ST=Hubei, O=Default Company Ltd, CN=WWW</span><br><span class="line">        Subject Public Key Info:</span><br><span class="line">            Public Key Algorithm: rsaEncryption</span><br><span class="line">                Public-Key: (2048 bit)</span><br><span class="line">                Modulus:</span><br><span class="line">                    00:c5:46:f7:0a:5d:be:21:7d:93:44:9c:bb:b4:d6:</span><br><span class="line">                    40:30:a2:be:f6:0d:f7:47:1f:ab:d8:57:9c:d0:4e:</span><br><span class="line">                    d5:31:ed:3a:d4:b6:2a:a2:b4:43:e8:04:21:13:24:</span><br><span class="line">                    <span class="built_in">fc</span>:14:75:04:6e:43:f9:10:15:08:a4:28:9c:c5:6c:</span><br><span class="line">                    a4:a9:1f:57:c4:e4:c5:a5:66:d9:3d:86:06:d3:0d:</span><br><span class="line">                    50:18:60:5e:e8:39:7f:97:e5:8d:33:4d:c7:f8:5f:</span><br><span class="line">                    2f:e6:99:<span class="built_in">fc</span>:a2:e6:80:5a:83:26:d0:0c:94:1a:f6:</span><br><span class="line">                    bb:6e:9a:0b:a8:19:74:39:54:22:58:d7:f8:48:66:</span><br><span class="line">                    35:60:07:e0:91:38:e3:67:7a:a5:e3:b3:9b:6f:61:</span><br><span class="line">                    48:26:af:18:74:51:19:b8:77:11:02:a7:fb:e6:33:</span><br><span class="line">                    b2:e6:95:d2:6b:db:eb:94:b1:b7:57:de:18:fb:bc:</span><br><span class="line">                    d0:1f:76:65:78:ad:e1:15:4f:36:50:e0:a5:8f:8f:</span><br><span class="line">                    61:b9:be:3c:17:5c:<span class="built_in">df</span>:71:d0:48:90:26:6c:59:bb:</span><br><span class="line">                    3a:bf:77:b5:d0:12:b6:f0:33:dc:0c:d8:84:70:7f:</span><br><span class="line">                    ad:6f:f3:5e:ea:8a:93:47:ce:22:56:87:e0:1a:9f:</span><br><span class="line">                    aa:fd:29:ea:45:05:46:27:c8:6d:b9:f3:57:44:d5:</span><br><span class="line">                    e2:ea:a6:00:b3:31:40:b6:1b:83:09:e7:7b:57:63:</span><br><span class="line">                    88:9b</span><br><span class="line">                Exponent: 65537 (0x10001)</span><br><span class="line">        X509v3 extensions:</span><br><span class="line">            X509v3 Basic Constraints: </span><br><span class="line">                CA:FALSE</span><br><span class="line">            Netscape Comment: </span><br><span class="line">                OpenSSL Generated Certificate</span><br><span class="line">            X509v3 Subject Key Identifier: </span><br><span class="line">                0C:7B:43:97:E2:92:A8:A4:82:DF:4F:C0:DC:A0:CE:E4:9B:6B:A3:FD</span><br><span class="line">            X509v3 Authority Key Identifier: </span><br><span class="line">                keyid:72:62:EE:58:34:DA:FA:35:BC:DE:53:54:79:E4:25:17:B7:E4:69:CC</span><br><span class="line"></span><br><span class="line">    Signature Algorithm: sha256WithRSAEncryption</span><br><span class="line">         65:e3:15:f0:bc:06:16:b5:e9:67:ca:48:bc:22:f7:78:bd:48:</span><br><span class="line">         ee:0b:9f:a2:4e:86:11:fb:83:08:21:4d:2a:53:8f:6c:4a:<span class="built_in">fc</span>:</span><br><span class="line">         87:00:af:21:6d:6f:8f:14:b9:0b:cf:c0:78:9b:0c:0c:8f:4f:</span><br><span class="line">         7b:11:f8:d3:83:e0:ba:c1:86:9a:d6:91:d0:c4:45:8c:6c:9a:</span><br><span class="line">         15:d1:72:76:9e:2b:16:ff:37:ae:44:37:f7:16:23:c5:6b:00:</span><br><span class="line">         28:ca:e8:da:72:b8:b9:4a:22:63:8b:29:42:b8:f5:3c:27:cf:</span><br><span class="line">         2d:f7:b2:16:6a:93:a9:f5:89:8a:3d:37:37:7a:fb:46:c4:27:</span><br><span class="line">         81:a5:82:07:44:bc:95:b6:d5:79:fd:74:75:83:b5:a8:fd:93:</span><br><span class="line">         a0:5c:37:42:b3:b8:<span class="built_in">fc</span>:74:ab:13:cf:28:d6:11:33:72:81:7e:</span><br><span class="line">         6a:0f:d9:c4:22:fb:c1:5f:27:b4:9b:47:b8:d1:86:ca:ce:8d:</span><br><span class="line">         87:19:e4:8e:5f:de:55:fd:7e:78:d6:68:a1:<span class="built_in">df</span>:59:77:6f:56:</span><br><span class="line">         a2:8d:da:54:d0:fd:a7:29:<span class="built_in">cd</span>:7c:84:d9:5a:be:2f:f6:72:24:</span><br><span class="line">         63:48:db:2d:d9:5d:7c:0f:01:dc:6c:c4:c0:82:ed:bd:bc:8b:</span><br><span class="line">         1c:b0:e4:77:19:67:a1:2d:34:37:86:e6:b9:eb:b7:9d:e7:c4:</span><br><span class="line">         0d:27:7b:92</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">MIIDmDCCAoCgAwIBAgIBATANBgkqhkiG9w0BAQsFADBZMQswCQYDVQQGEwJDTjEO</span><br><span class="line">MAwGA1UECAwFSHViZWkxDjAMBgNVBAcMBVd1aGFuMRwwGgYDVQQKDBNEZWZhdWx0</span><br><span class="line">IENvbXBhbnkgTHRkMQwwCgYDVQQDDANXV1cwHhcNMTcwOTE0MDgyNTI4WhcNMjcw</span><br><span class="line">OTEyMDgyNTI4WjBJMQswCQYDVQQGEwJDTjEOMAwGA1UECAwFSHViZWkxHDAaBgNV</span><br><span class="line">BAoME0RlZmF1bHQgQ29tcGFueSBMdGQxDDAKBgNVBAMMA1dXVzCCASIwDQYJKoZI</span><br><span class="line">hvcNAQEBBQADggEPADCCAQoCggEBAMVG9wpdviF9k0Scu7TWQDCivvYN90cfq9hX</span><br><span class="line">nNBO1THtOtS2KqK0Q+gEIRMk/BR1BG5D+RAVCKQonMVspKkfV8TkxaVm2T2GBtMN</span><br><span class="line">UBhgXug5f5fljTNNx/hfL+aZ/KLmgFqDJtAMlBr2u26aC6gZdDlUIljX+EhmNWAH</span><br><span class="line">4JE442d6peOzm29hSCavGHRRGbh3EQKn++YzsuaV0mvb65Sxt1feGPu80B92ZXit</span><br><span class="line">4RVPNlDgpY+PYbm+PBdc33HQSJAmbFm7Or93tdAStvAz3AzYhHB/rW/zXuqKk0fO</span><br><span class="line">IlaH4Bqfqv0p6kUFRifIbbnzV0TV4uqmALMxQLYbgwnne1djiJsCAwEAAaN7MHkw</span><br><span class="line">CQYDVR0TBAIwADAsBglghkgBhvhCAQ0EHxYdT3BlblNTTCBHZW5lcmF0ZWQgQ2Vy</span><br><span class="line">dGlmaWNhdGUwHQYDVR0OBBYEFAx7Q5fikqikgt9PwNygzuSba6P9MB8GA1UdIwQY</span><br><span class="line">MBaAFHJi7lg02vo1vN5TVHnkJRe35GnMMA0GCSqGSIb3DQEBCwUAA4IBAQBl4xXw</span><br><span class="line">vAYWtelnyki8Ivd4vUjuC5+iToYR+4MIIU0qU49sSvyHAK8hbW+PFLkLz8B4mwwM</span><br><span class="line">j097EfjTg+C6wYaa1pHQxEWMbJoV0XJ2nisW/zeuRDf3FiPFawAoyujacri5SiJj</span><br><span class="line">iylCuPU8J88t97IWapOp9YmKPTc3evtGxCeBpYIHRLyVttV5/XR1g7Wo/ZOgXDdC</span><br><span class="line">s7j8dKsTzyjWETNygX5qD9nEIvvBXye0m0e40YbKzo2HGeSOX95V/X541mih31l3</span><br><span class="line">b1aijdpU0P2nKc18hNlavi/2ciRjSNst2V18DwHcbMTAgu29vIscsOR3GWehLTQ3</span><br><span class="line">hua567ed58QNJ3uS</span><br><span class="line">-----END CERTIFICATE-----</span><br></pre></td></tr></table></figure>
+
+<p>OK, 最后我们再来说一说如何去吊销证书.(虽然可能用的机会不多)</p>
+<p>首先我们要获取要吊销证书的serial号码, 怎么获取呢?很简单就是用上面的x509子命令, 将-text改成-serial就好了. 接着CA要根据客户提交的信息(serial, subject)和数据库(index.txt)中的信息是否一致. 接着就可以进行证书吊销了.</p>
+<p>怎么做? 还是使用ca子命令, 加上-revoke参数就可以了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW newcerts]<span class="comment"># openssl ca -revoke 01.pem </span></span><br><span class="line">Using configuration from /etc/pki/tls/openssl.cnf</span><br><span class="line">Revoking Certificate 01.</span><br><span class="line">Data Base Updated</span><br></pre></td></tr></table></figure>
+
+<p>接着生成吊销证书标号就可以了. 如果是第一次进行吊销, 要先在<code>/etc/pki/CA/crlnumber</code>中加上01., 也就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW newcerts]<span class="comment"># echo 01 &gt; /etc/pki/CA/crlnumber</span></span><br></pre></td></tr></table></figure>
+
+<p>最后一步, 更新证书吊销列表:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW newcerts]<span class="comment"># openssl ca -gencrl -out /etc/pki/CA/crl/httpd.crl</span></span><br><span class="line">Using configuration from /etc/pki/tls/openssl.cnf</span><br></pre></td></tr></table></figure>
+
+<p>以上.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#SSH%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">SSH概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSH%E5%91%BD%E4%BB%A4%E5%92%8C%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">SSH命令和配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SSH%E5%91%BD%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">SSH命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSH%E9%85%8D%E7%BD%AE"><span class="toc-number">2.2.</span> <span class="toc-text">SSH配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSH%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">3.</span> <span class="toc-text">SSH服务的最佳实践</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&text=OpenSSH和其配置"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&is_video=false&description=OpenSSH和其配置"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=OpenSSH和其配置&body=Check out this article: https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&title=OpenSSH和其配置"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&name=OpenSSH和其配置&description=&lt;p&gt;一直都在使用OpenSSH这个玩意儿连接我们的Linux, 该仔细看一看他噜~&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/13/OpenSSH%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/&t=OpenSSH和其配置"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

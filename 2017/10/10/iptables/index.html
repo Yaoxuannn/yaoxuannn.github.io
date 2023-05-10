@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Linux的防火墙 – iptables.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iptables">
+<meta property="og:url" content="https://19971122.xyz/2017/10/10/iptables/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Linux的防火墙 – iptables.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://images.cnitblog.com/blog2015/569491/201503/071933304925554.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/iptables6.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/iptables7.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/iptables0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/jianghaha.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/iptables_mind.png">
+<meta property="article:published_time" content="2017-10-10T22:57:47.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:36:07.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="iptables">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://images.cnitblog.com/blog2015/569491/201503/071933304925554.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>iptables</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/10/iptables/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/10/iptables/&text=iptables"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/10/iptables/&is_video=false&description=iptables"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=iptables&body=Check out this article: https://19971122.xyz/2017/10/10/iptables/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/10/iptables/&name=iptables&description=&lt;p&gt;Linux的防火墙 – iptables.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/10/iptables/&t=iptables"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-number">1.</span> <span class="toc-text">防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iptables"><span class="toc-number">2.</span> <span class="toc-text">iptables</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#iptables-%E7%9A%84%E6%B3%95%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">iptables 的法则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iptables%E5%91%BD%E4%BB%A4"><span class="toc-number">3.</span> <span class="toc-text">iptables命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iptables%E7%9A%84%E5%8C%B9%E9%85%8D%E5%92%8C%E8%A7%84%E5%88%99"><span class="toc-number">4.</span> <span class="toc-text">iptables的匹配和规则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E5%8C%B9%E9%85%8D"><span class="toc-number">4.1.</span> <span class="toc-text">基本匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87"><span class="toc-number">4.2.</span> <span class="toc-text">目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E5%8C%B9%E9%85%8D"><span class="toc-number">4.3.</span> <span class="toc-text">扩展匹配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#firewalld"><span class="toc-number">5.</span> <span class="toc-text">firewalld</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E9%98%B2%E7%81%AB%E5%A2%99%E5%92%8Cnat%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.</span> <span class="toc-text">网络防火墙和nat实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TCP-wrapper"><span class="toc-number">7.</span> <span class="toc-text">TCP_wrapper</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        iptables
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-10T22:57:47.000Z" class="dt-published" itemprop="datePublished">2017-10-10</time>
+        
+        (Updated: <time datetime="2020-11-30T01:36:07.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/iptables/" rel="tag">iptables</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Linux的防火墙 – iptables.</p>
+<span id="more"></span>
+
+<h2 id="防火墙"><a href="#防火墙" class="headerlink" title="防火墙"></a>防火墙</h2><p>说道iptables, 自然就会想到这个词 – <strong>Firewall</strong>. 那么自然就会有一个疑问, 什么是防火墙? 类比我们商场里的防火卷帘门, 防火墙就是起到隔离的作用的.</p>
+<p>既然是隔离作用, 那么自然防火墙就会工作在主机或者网络的边缘 这样才可以对进出的网络报文进行检查, 接着而按照使用者指定的规则做响应的决策. 这个防火墙不一定非要是软件, 也有可能是硬件或者两者综合.</p>
+<p>在Linux中, 网络功能由内核提供, 所以自然这个防火墙就是工作在内核空间的. </p>
+<p>那么, 防火墙是由网卡驱动程序提供的吗? 或者说网卡驱动程序能够提供防火墙的功能吗? 肯定是不能的, 原因很简单, 所谓驱动程序本身是没有理解报文的能力的, 而且作为驱动, 同时提供隔离匹配(这要求理解协议), 这显然是不合设计的. 这样, TCP&#x2F;IP协议栈十分庞大, 我们到底应该把防火墙的位置放到哪里呢?</p>
+<p>我们来顺一遍网络上发向本机的报文是怎么走的: 首先发送到网卡, 接着顺着协议栈经过内核到达<strong>注册在某端口上的某应用程序上.</strong> 除了这个, 还可能会有目标不是本机, 但是我们负责转发的一种(也就是核心转发). 这也要求经过拆包查看目的地址, 区别在于, 这种情况没有经过用户空间.</p>
+<p>反过来, 我们也是可以访问别人的. 这就是发出去的报文, 同样会经过TCP&#x2F;IP协议栈.</p>
+<p>情形很多, 所以我们就不得不在<strong>入口, 出口, 转发通道</strong>上都做检查. 这样也就构成了一个防火墙的<strong>框架</strong>. 并不是一个单独的软件. </p>
+<p>也即是说: 防火墙是设计者在TCP&#x2F;IP协议栈中精心选择多个地方放置了一些<strong>钩子函数</strong>.</p>
+<p>回到正题, iptables是什么?  我们能够使用iptables命令, 这就说明iptables是工作在用户空间的. 我们所说的iptables其实是两个部分构成的:</p>
+<ul>
+<li>一个是内核中的钩子, 也就是netfilter</li>
+<li>另外一个就是负责管理规则的工具iptables</li>
+</ul>
+<p>真正实现拦截检测的框架是netfilter, 但是没有规则, 这些钩子一点用处都没有. 所以他们两个缺谁都不行.</p>
+<p>另外, 我们申明一个很重要的点: <strong>iptables不是服务, 他没有在你的主机上运行任何进程! 只不过是在开机的时候, 你的配置文件被重新读取了一遍, 规则被重新加载了一遍罢了. 一个在内核中实现的功能, 根本不需要进程和服务!</strong></p>
+<h2 id="iptables"><a href="#iptables" class="headerlink" title="iptables"></a>iptables</h2><p>现在回到正题, 我们来说说今天的主角. 早期的Linux版本, 内核中是没有这个神奇的小玩意的 而著名的BSD中有一个版本, 号称最安全的BSD发行版中, 存在一个防火墙. 这个时期, Linux刚刚诞生, 所以也模仿着这个做了一个ipfw, 过一段时间之后, 大家发现这个ipfw过于简陋, 也是开始添加一些规则, 规则多了之后就形成了一条条的链子, 因此改名叫做ipchains. 再后来, 为了扩展防火墙的功能, 能使每一个钩子的用法更加多元化.(过滤,转换.) 这样就使得每一个钩子上既有链(行), 又有一条条不同的规则(列). 即形成了一张行列交错的表. 这就是iptables的由来.</p>
+<p>之所以叫table, 就是因为他可以过滤(filter), 转换(nat), 拆分重组(mangle), 关闭连接追踪(raw, 不过用的不多,因为连接追踪是防火墙一个很重要的功能, 但是对于前端大并发的负载均衡服务器上,应该关闭此功能), 这些就是我们说的4表.(其实还以一个security功能, 但不常用)</p>
+<p>接下来就来说说很多人都听说过的内置的5链:</p>
+<p><strong>PREROUTING</strong><br><strong>INPUT</strong><br><strong>FORWARD</strong><br><strong>OUTPUT</strong><br><strong>POSTROUTING</strong> </p>
+<p>我们报文的状态有以下三种: 流入, 流出, 转发. 其中转发的报文有流出也有流入的. 所有流入的报文都会经过PREROUTING –&gt; INPUT, 而流出的报文会经过OUTPUT –&gt; POSTROUTING, 最后, 转发的报文的状态是PREROUTING –&gt; FORWARD –&gt; POSTROUTING. 这就是对链的说明.</p>
+<p>而结合这些链, 对于表的功能, 我们做如下的说明: filter, 过滤的适用范围一般只有INPUT, FORWARD, OUTPUT这些, 对于剩下的两个, 由于有点远, 所以尽量就不做设定. nat仅在PREROUTING, OUTPUT, POSTROUTING这些时刻做设定, raw从功能看, 也仅仅作用在PREROUTING和OUTPUT.</p>
+<p>我们用一张图来说明: ( 不知道为什么我在网上找的图都是raw可用于POSTROUTING, 可是实验表明不能, 很疑惑, 可能是版本问题? )</p>
+<p><img src="http://images.cnitblog.com/blog2015/569491/201503/071933304925554.png" alt="img"></p>
+<blockquote>
+<p>附: 实验结果:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/iptables6.png" alt="iptables6"></p>
+<p>和CentOS7的:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/iptables7.png" alt="iptables7"></p>
+</blockquote>
+<p>其实在这些过程中, 最令人产生疑惑的地方就是: <strong>路由发生的时刻</strong> 就这个问题, 我们来看看:</p>
+<p>当报文进入本机的时候, 我们要判断目标主机; 在报文发出之前, 我们要判断经过哪个接口送往下一跳.</p>
+<p>这样就对整个报文的流经过程很清晰了, 但是现在遗漏了一个重要的问题: iptables的规则检查机制.</p>
+<h3 id="iptables-的法则"><a href="#iptables-的法则" class="headerlink" title="iptables 的法则"></a>iptables 的法则</h3><p>链: 链上的规则次序, 即使检查的次序, 因此隐含一定的法则</p>
+<p><strong>(1)</strong> 同类规则, 匹配范围小的放下面; 比如说: 172.16.0.0&#x2F;16:ssh ACCEPT 172.16.0.1&#x2F;16:ssh REJECT. 这个时候就会优先匹配1那一台主机的, 但是如果是172.16.0.2:http ACCEPT就和这些一点关系都没有. 因为不是同类.</p>
+<p><strong>(2)</strong> 不同类规则, 频率大的报文放上面(优先)</p>
+<p><strong>(3)</strong> 设置默认策略, 如果没有规则, 则使用默认规则. 有两种: 白名单和黑名单. <em>白名单也不一定就是放行规则</em> </p>
+<p>如同路由聚合一样, 我们也可以将多个规则合并成一个. 这样更快, 更整洁.</p>
+<p>还是马哥的图好:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/iptables0.png" alt="iptables0"></p>
+<p>接下来的一个匹配规则就是表级的, 对于一个一个表来说, 有很多链, 这些链的优先级如上图所示, 用文字表示就是:</p>
+<blockquote>
+<p>**<code>raw --&gt; mangle --&gt; nat --&gt; filter</code> ** </p>
+</blockquote>
+<p>除了iptables和netfilter, 我们需要手写规则, 这些规则是特定的组成部分的, 首先最必要的就是报文的匹配条件, 说白了就是协议报文的特征指定, 最根本的就是源IP, 源端口,目标IP,目标端口, 这些称作基本匹配. 严格一点的, 我可以进行连接追踪, 状态追踪, MAC探查,甚至硬件特性等, 这些就是扩展匹配.</p>
+<p>匹配完毕之后就是处理机制: DROP, REJECT, ACCEPT 这些是内建处理机制, 还有自定义(也就是自定义链)机制. 由于我们的自定义链不能出现在报文流经的地方, 所以仅仅只能通过引用来生效.</p>
+<p>iptables能够使我们编辑规则, 接着即时生效, 所以叫做规则管理工具嘛~ 包括添加, 修改, 删除, 显示. 他还可以进行规则编写的语法检查.</p>
+<p>有意思的是, 我们的规则和链是有计数器的, 还有两种, 一种就是按照包的个数计数的, 一种就是按照报文大小之和计数的.</p>
+<p>OK, 接下来就进入正题.</p>
+<h2 id="iptables命令"><a href="#iptables命令" class="headerlink" title="iptables命令"></a>iptables命令</h2><p>命令格式很好记:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -h</span></span><br><span class="line">iptables v1.4.21</span><br><span class="line"></span><br><span class="line">Usage: iptables -[ACD] chain rule-specification [options]</span><br><span class="line">       iptables -I chain [rulenum] rule-specification [options]</span><br><span class="line">       iptables -R chain rulenum rule-specification [options]</span><br><span class="line">       iptables -D chain rulenum [options]</span><br><span class="line">       iptables -[LS] [chain [rulenum]] [options]</span><br><span class="line">       iptables -[FZ] [chain] [options]</span><br><span class="line">       iptables -[NX] chain</span><br><span class="line">       iptables -E old-chain-name new-chain-name</span><br><span class="line">       iptables -P chain target [options]</span><br><span class="line">       iptables -h (<span class="built_in">print</span> this <span class="built_in">help</span> information)</span><br></pre></td></tr></table></figure>
+
+<p>都是一个大写字母跟着一个链名, 把上面的结果抽象一下就是:</p>
+<blockquote>
+<p><strong><code>iptables SUBCOMMAND CHAIN CRETERIA -j TARGET</code></strong></p>
+</blockquote>
+<p>现在我们就根据这些主要的子命令来作说明吧 主要分成两类: 链管理和规则管理 (这里先列一下, 后再实验和实例)</p>
+<p><strong>链管理</strong> : -F flush 清空规则链, 可以在后面指定哪个链甚至还可以在链后面指定标号, 不指定即清空全表.</p>
+<p>-Z zero 置零规则计数器.</p>
+<p>-N new 自定义规则链, 创建一条新的规则链.</p>
+<p>-X drop 删除用户自定义链, 要求是空链.</p>
+<p>-P policy, 为指定的链设定默认策略</p>
+<p>-E rename, 重命名自定义链(看参数也能知道是干嘛的hh), 但是计数器不是0的自定义链, 不能改名, 也没法删除.</p>
+<p>以上就是<strong>链管理</strong>, 接下来就是<strong>规则管理</strong>:</p>
+<p>-A append 将规则插入到尾部</p>
+<p>-I insert 将规则插入到指定位置, 如果不指定位置就是首部</p>
+<p>-D delete 删除特定规则, 可以指定匹配条件, 要么通过规则序号, 要么通过指定具体规则.</p>
+<p>-R replace 替换指定规则. 通过序号+新规则来实现</p>
+<p>除了这些, 还有一些其他的命令:</p>
+<p>-L list 列出指定链的所有规则.  其中可以使用-n要求不进行反解, 	也支持-v和-vv显示详细信息. 如果不想自己数, 也可以加上–list-numbers来显示规则编号. 还有一个显示计数器计数结果的精确值的选项, 就是-x啦.</p>
+<p>举个例子:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># iptables -t filter -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED </span><br><span class="line">ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0           state NEW tcp dpt:22 </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -t filter -N IN_PUBLIC</span></span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -t filter -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED </span><br><span class="line">ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0           state NEW tcp dpt:22 </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain IN_PUBLIC (0 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination   </span><br></pre></td></tr></table></figure>
+
+<p>我们在filter表中新建了一个自定义的链 – IN_PUBLIC, 可以很清晰的看到, 只要是自定义的链上面写的都是引用数量, 而凡是内置的几个链上写的都是POLICY. 接下来试试改名和删除:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># iptables -t filter -E IN_PUBLIC OUT_PUBLIC</span></span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -t filter -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED </span><br><span class="line">ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0           state NEW tcp dpt:22 </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUT_PUBLIC (0 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -t filter -X OUT_PUBLIC</span></span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -t filter -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED </span><br><span class="line">ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0           state NEW tcp dpt:22 </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination</span><br></pre></td></tr></table></figure>
+
+<p>如果在-X后面不加参数, 他是会清空所有的自定义链的. 比如我们的CentOS7由一个firewalld服务, 这个会再重启的时候去自动加载一些iptables的规则, 也就是说:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -F</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -X</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl restart firewalld</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED</span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">INPUT_direct  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">INPUT_ZONES_SOURCE  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">INPUT_ZONES  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">DROP       all  --  0.0.0.0/0            0.0.0.0/0            ctstate INVALID</span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited</span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED</span><br><span class="line">ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FORWARD_direct  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FORWARD_IN_ZONES_SOURCE  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FORWARD_IN_ZONES  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FORWARD_OUT_ZONES_SOURCE  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FORWARD_OUT_ZONES  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">DROP       all  --  0.0.0.0/0            0.0.0.0/0            ctstate INVALID</span><br><span class="line">REJECT     all  --  0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited</span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">OUTPUT_direct  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line"></span><br><span class="line">Chain FORWARD_IN_ZONES (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">FWDI_public  all  --  0.0.0.0/0            0.0.0.0/0           [goto] </span><br><span class="line"></span><br><span class="line">Chain FORWARD_IN_ZONES_SOURCE (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FORWARD_OUT_ZONES (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">FWDO_public  all  --  0.0.0.0/0            0.0.0.0/0           [goto] </span><br><span class="line"></span><br><span class="line">Chain FORWARD_OUT_ZONES_SOURCE (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FORWARD_direct (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FWDI_public (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">FWDI_public_log  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FWDI_public_deny  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FWDI_public_allow  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line"></span><br><span class="line">Chain FWDI_public_allow (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FWDI_public_deny (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FWDI_public_log (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FWDO_public (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">FWDO_public_log  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FWDO_public_deny  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">FWDO_public_allow  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line"></span><br><span class="line">Chain FWDO_public_allow (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FWDO_public_deny (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FWDO_public_log (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain INPUT_ZONES (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">IN_public  all  --  0.0.0.0/0            0.0.0.0/0           [goto] </span><br><span class="line"></span><br><span class="line">Chain INPUT_ZONES_SOURCE (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain INPUT_direct (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain IN_public (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">IN_public_log  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">IN_public_deny  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">IN_public_allow  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line"></span><br><span class="line">Chain IN_public_allow (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:22 ctstate NEW</span><br><span class="line"></span><br><span class="line">Chain IN_public_deny (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain IN_public_log (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT_direct (1 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br></pre></td></tr></table></figure>
+
+<p>说了这么多, 我们还不知道iptables上面的是什么意思:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -nL -v</span></span><br><span class="line">Chain INPUT (policy ACCEPT 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  158 12536 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED</span><br><span class="line">    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">    3   740 INPUT_direct  all  --  *      *       0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">    3   740 INPUT_ZONES_SOURCE  all  --  *      *       0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">    3   740 INPUT_ZONES  all  --  *      *       0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">    0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate INVALID</span><br><span class="line">    2   636 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited</span><br><span class="line">    ...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>加了-v参数之后, 我们可以看到计数器了, pkts就是报文数量, bytes就是报文大小, target就是处理方法, 有基本的ACCEPT, DROP, REJECT还有引用特定的自定义链的, 接着prot就是协议, 一般有三种:tcp, udp, icmp. 接着opt就是选项了, 后面两个星其实就是在说接口, 接着就是来源地址和目的地址了, 有的后面还有一段话, 关于这段话的相关 我们在后面再说.</p>
+<p>现在发现所有的默认链的默认策略都是ACCEPT, 我们来试着修改一下:</p>
+<p><strong>注意: 清空之后 别改INPUT和OUTPUT, 如果你是用SSH在连接的话.</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P FORWARD DROP</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P FORWARD ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来就差一个删除操作了, 我们重启firewalld服务, 来删除一条规则吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># systemctl restart firewalld </span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL --line-numbers</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">num  target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">1    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED</span><br><span class="line">2    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">3    INPUT_direct  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">4    INPUT_ZONES_SOURCE  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">5    INPUT_ZONES  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">6    DROP       all  --  0.0.0.0/0            0.0.0.0/0            ctstate INVALID</span><br><span class="line">7    REJECT     all  --  0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited</span><br><span class="line">...(omitted)</span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -D INPUT 7</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL --line-numbers</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">num  target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">1    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED</span><br><span class="line">2    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">3    INPUT_direct  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">4    INPUT_ZONES_SOURCE  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">5    INPUT_ZONES  all  --  0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">6    DROP       all  --  0.0.0.0/0            0.0.0.0/0            ctstate INVALID</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<h2 id="iptables的匹配和规则"><a href="#iptables的匹配和规则" class="headerlink" title="iptables的匹配和规则"></a>iptables的匹配和规则</h2><h3 id="基本匹配"><a href="#基本匹配" class="headerlink" title="基本匹配"></a>基本匹配</h3><p>[!] -s, –src, –source IP|Netaddr: 检查报文中的源IP地址, 加上!来进行取反.</p>
+<p>[!] -d. –dst, –destination IP|Netaddr: 检查报文中的目的IP地址, 加上!来进行取反.</p>
+<p>-p –protocol {tcp|udp|icmp} 检查报文中的协议, 是说IP首部中protocol所指明的那个.</p>
+<p>-i –in-interface IFACE: 数据报文的流入接口. 仅用于PREROUTING, INPUT, FORWARD.</p>
+<p>-o –out-interface IFACE: 数据报文的流出接口, 仅用于FORWARD, OUTPUT, POSTROUTING.</p>
+<h3 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h3><p>使用-j TARGET来指明(jump的意思): ACCEPT接受, DROP丢弃, REJECT拒绝, RETURN返回调用链, REDIRECT端口重定向, LOG记录日志, MARK做防火墙标记, DNAT目标地址转换, SNAT源地址转换, MASQUERADE地址伪装, 还有自定义链..</p>
+<p><strong>至此, 我们就可以开始写简单的规则了.</strong> 下面就来试试: (  先清空所有规则和自定义链 )</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -t filter -A INPUT -p tcp -d 192.168.56.103 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -t filter -A OUTPUT -p tcp -s 192.168.56.103 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P INPUT DROP</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P OUTPUT DROP</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P FORWARD DROP</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL -v</span></span><br><span class="line">Chain INPUT (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  378 30392 ACCEPT     tcp  --  *      *       0.0.0.0/0            192.168.56.103      </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  111 11776 ACCEPT     tcp  --  *      *       192.168.56.103       0.0.0.0/0           </span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL -v</span></span><br><span class="line">Chain INPUT (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  382 30720 ACCEPT     tcp  --  *      *       0.0.0.0/0            192.168.56.103      </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  114 12728 ACCEPT     tcp  --  *      *       192.168.56.103       0.0.0.0/0     </span><br></pre></td></tr></table></figure>
+
+<p>会发现第二次的包数量和大小增大了, 显然SSH也是符合这些规则的, 这个时候PING这台机器就不会通了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[c:\~]$ ping 192.168.56.103</span><br><span class="line"></span><br><span class="line">Pinging 192.168.56.103 with 32 bytes of data:</span><br><span class="line">Request timed out.</span><br><span class="line">Request timed out.</span><br><span class="line">Request timed out.</span><br><span class="line">Request timed out.</span><br><span class="line"></span><br><span class="line">Ping statistics <span class="keyword">for</span> 192.168.56.103:</span><br><span class="line">    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)</span><br></pre></td></tr></table></figure>
+
+<p>此时回到主机, 会发现:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -nL -v</span></span><br><span class="line">Chain INPUT (policy DROP 4 packets, 240 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  405 32656 ACCEPT     tcp  --  *      *       0.0.0.0/0            192.168.56.103      </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy DROP 1 packets, 76 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  134 17152 ACCEPT     tcp  --  *      *       192.168.56.103       0.0.0.0/0 </span><br></pre></td></tr></table></figure>
+
+<p>DROP了4个包, 其实就是我们的ICMP包.</p>
+<p>接着如果想要让PING能显示主机可达怎么办? 添加一条规则! 如果你是这么想的就错了, 比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -t filter -A INPUT -p icmp -d 192.168.56.103 -j ACCEPT</span></span><br><span class="line"><span class="comment"># 5s后</span></span><br><span class="line">[c:\~]$ ping 192.168.56.103</span><br><span class="line"></span><br><span class="line">Pinging 192.168.56.103 with 32 bytes of data:</span><br><span class="line">Request timed out.</span><br><span class="line">Request timed out.</span><br><span class="line">Request timed out.</span><br><span class="line">Request timed out.</span><br><span class="line"></span><br><span class="line">Ping statistics <span class="keyword">for</span> 192.168.56.103:</span><br><span class="line">    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)</span><br></pre></td></tr></table></figure>
+
+<p>为什么? 原因很简单啊, 在之前的CCNA实验中这个其实就已经说明过了, 因为我们发送的响应报文出不去, 所我们需要:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -t filter -A OUTPUT -p icmp -s 192.168.56.103 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以通信了. 这样的规则虽然有用但是没有不灵活, 所以现在我们来说说<strong>扩展匹配</strong>.</p>
+<h3 id="扩展匹配"><a href="#扩展匹配" class="headerlink" title="扩展匹配"></a>扩展匹配</h3><p>扩展匹配分成两种: 隐式扩展和显示扩展. iptables有很多扩展模块:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpm -ql iptables</span></span><br><span class="line">...(omitted)</span><br><span class="line">/usr/lib64/xtables/libipt_CLUSTERIP.so</span><br><span class="line">/usr/lib64/xtables/libipt_DNAT.so</span><br><span class="line">/usr/lib64/xtables/libipt_ECN.so</span><br><span class="line">/usr/lib64/xtables/libipt_LOG.so</span><br><span class="line">/usr/lib64/xtables/libipt_MASQUERADE.so</span><br><span class="line">/usr/lib64/xtables/libipt_MIRROR.so</span><br><span class="line">/usr/lib64/xtables/libipt_NETMAP.so</span><br><span class="line">/usr/lib64/xtables/libipt_REDIRECT.so</span><br><span class="line">/usr/lib64/xtables/libipt_REJECT.so</span><br><span class="line">/usr/lib64/xtables/libipt_SAME.so</span><br><span class="line">/usr/lib64/xtables/libipt_SNAT.so</span><br><span class="line">/usr/lib64/xtables/libipt_TTL.so</span><br><span class="line">/usr/lib64/xtables/libipt_ULOG.so</span><br><span class="line">/usr/lib64/xtables/libipt_ah.so</span><br><span class="line">/usr/lib64/xtables/libipt_icmp.so</span><br><span class="line">/usr/lib64/xtables/libipt_realm.so</span><br><span class="line">/usr/lib64/xtables/libipt_ttl.so</span><br><span class="line">/usr/lib64/xtables/libipt_unclean.so</span><br><span class="line">/usr/lib64/xtables/libxt_AUDIT.so</span><br><span class="line">/usr/lib64/xtables/libxt_CHECKSUM.so</span><br><span class="line">/usr/lib64/xtables/libxt_CLASSIFY.so</span><br><span class="line">/usr/lib64/xtables/libxt_CONNMARK.so</span><br><span class="line">/usr/lib64/xtables/libxt_CONNSECMARK.so</span><br><span class="line">/usr/lib64/xtables/libxt_CT.so</span><br><span class="line">/usr/lib64/xtables/libxt_DSCP.so</span><br><span class="line">/usr/lib64/xtables/libxt_HMARK.so</span><br><span class="line">/usr/lib64/xtables/libxt_IDLETIMER.so</span><br><span class="line">/usr/lib64/xtables/libxt_LED.so</span><br><span class="line">/usr/lib64/xtables/libxt_MARK.so</span><br><span class="line">/usr/lib64/xtables/libxt_NFLOG.so</span><br><span class="line">/usr/lib64/xtables/libxt_NFQUEUE.so</span><br><span class="line">/usr/lib64/xtables/libxt_NOTRACK.so</span><br><span class="line">/usr/lib64/xtables/libxt_RATEEST.so</span><br><span class="line">/usr/lib64/xtables/libxt_SECMARK.so</span><br><span class="line">/usr/lib64/xtables/libxt_SET.so</span><br><span class="line">/usr/lib64/xtables/libxt_SYNPROXY.so</span><br><span class="line">/usr/lib64/xtables/libxt_TCPMSS.so</span><br><span class="line">/usr/lib64/xtables/libxt_TCPOPTSTRIP.so</span><br><span class="line">/usr/lib64/xtables/libxt_TEE.so</span><br><span class="line">/usr/lib64/xtables/libxt_TOS.so</span><br><span class="line">/usr/lib64/xtables/libxt_TPROXY.so</span><br><span class="line">/usr/lib64/xtables/libxt_TRACE.so</span><br><span class="line">/usr/lib64/xtables/libxt_addrtype.so</span><br><span class="line">/usr/lib64/xtables/libxt_bpf.so</span><br><span class="line">/usr/lib64/xtables/libxt_cgroup.so</span><br><span class="line">/usr/lib64/xtables/libxt_cluster.so</span><br><span class="line">/usr/lib64/xtables/libxt_comment.so</span><br><span class="line">/usr/lib64/xtables/libxt_connbytes.so</span><br><span class="line">/usr/lib64/xtables/libxt_connlabel.so</span><br><span class="line">/usr/lib64/xtables/libxt_connlimit.so</span><br><span class="line">/usr/lib64/xtables/libxt_connmark.so</span><br><span class="line">/usr/lib64/xtables/libxt_conntrack.so</span><br><span class="line">/usr/lib64/xtables/libxt_cpu.so</span><br><span class="line">/usr/lib64/xtables/libxt_dccp.so</span><br><span class="line">/usr/lib64/xtables/libxt_devgroup.so</span><br><span class="line">/usr/lib64/xtables/libxt_dscp.so</span><br><span class="line">/usr/lib64/xtables/libxt_ecn.so</span><br><span class="line">/usr/lib64/xtables/libxt_esp.so</span><br><span class="line">/usr/lib64/xtables/libxt_hashlimit.so</span><br><span class="line">/usr/lib64/xtables/libxt_helper.so</span><br><span class="line">/usr/lib64/xtables/libxt_iprange.so</span><br><span class="line">/usr/lib64/xtables/libxt_ipvs.so</span><br><span class="line">/usr/lib64/xtables/libxt_length.so</span><br><span class="line">/usr/lib64/xtables/libxt_limit.so</span><br><span class="line">/usr/lib64/xtables/libxt_mac.so</span><br><span class="line">/usr/lib64/xtables/libxt_mark.so</span><br><span class="line">/usr/lib64/xtables/libxt_multiport.so</span><br><span class="line">/usr/lib64/xtables/libxt_nfacct.so</span><br><span class="line">/usr/lib64/xtables/libxt_osf.so</span><br><span class="line">/usr/lib64/xtables/libxt_owner.so</span><br><span class="line">/usr/lib64/xtables/libxt_physdev.so</span><br><span class="line">/usr/lib64/xtables/libxt_pkttype.so</span><br><span class="line">/usr/lib64/xtables/libxt_policy.so</span><br><span class="line">/usr/lib64/xtables/libxt_quota.so</span><br><span class="line">/usr/lib64/xtables/libxt_rateest.so</span><br><span class="line">/usr/lib64/xtables/libxt_recent.so</span><br><span class="line">/usr/lib64/xtables/libxt_rpfilter.so</span><br><span class="line">/usr/lib64/xtables/libxt_sctp.so</span><br><span class="line">/usr/lib64/xtables/libxt_set.so</span><br><span class="line">/usr/lib64/xtables/libxt_socket.so</span><br><span class="line">/usr/lib64/xtables/libxt_standard.so</span><br><span class="line">/usr/lib64/xtables/libxt_state.so</span><br><span class="line">/usr/lib64/xtables/libxt_statistic.so</span><br><span class="line">/usr/lib64/xtables/libxt_string.so</span><br><span class="line">/usr/lib64/xtables/libxt_tcp.so</span><br><span class="line">/usr/lib64/xtables/libxt_tcpmss.so</span><br><span class="line">/usr/lib64/xtables/libxt_time.so</span><br><span class="line">/usr/lib64/xtables/libxt_tos.so</span><br><span class="line">/usr/lib64/xtables/libxt_u32.so</span><br><span class="line">/usr/lib64/xtables/libxt_udp.so</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>其中, 大写的都是TARGET, 小写的都是匹配条件. 上面就可以清晰的看到udp和tcp啦 就在这个文字的上面.</p>
+<p>如果想要使用扩展匹配, 就需要先指定**-m**在后面加上你的match_name, 接着就是各个扩展的专用选项了. 几乎每个拓展都是这样使用的. 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-m tcp --dport 22</span><br></pre></td></tr></table></figure>
+
+<p>但是, 如果你之前已经指定了-p tcp协议, 那么-m参数是可以不用写的, 这就叫做<strong>隐式扩展</strong>啦  而<strong>显式扩展</strong>就是必须通过-m参数来指定的扩展.</p>
+<p>那么我们现在就要挨个来说这些扩展的选项了.</p>
+<p>首先是tcp的扩展. 最常用的就是端口匹配, 其中使用–dport和–sport来分别制定目的和源端口, 后面可以跟上单独的一个端口号, 也可以使用-PORT来说明一段<strong>连续</strong>的端口.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -d 192.168.56.103 -p tcp --dport 22 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -s 192.168.56.103 -p tcp --sport 22 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>接着就可以把原来的删除掉了. 现在的状态就是只有22端口开放了, 于是我们现在开启http服务:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># systemctl start httpd</span></span><br></pre></td></tr></table></figure>
+
+<p>现在访问显然是不能访问的. 因为我们没有开启80端口的访问权限.</p>
+<p>添加下面的规则:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -d 192.168.56.103 -p tcp --dport 80 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -s 192.168.56.103 -p tcp --sport 80 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以看到了.</p>
+<p>这两个选项是最多人都知道的烂大街选项, 接下来说一个大家没怎么见过的选项: 也就是–tcp-flag, 也就是ACK, SYNC, RST, FIN, PSH, URG这些, 即匹配标识字段. 这个选项的格式是这样:</p>
+<p><code>--tcp-flag LIST1 LIST2</code></p>
+<p>意义是这样, 检查LIST1中所指明的所有标志位, <strong>且这其中</strong>, LIST2所表示出的所有标志位必须为1, 其他必须为0, LIST1中没有列出的, <strong>不做检查</strong> </p>
+<p>实例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--tcp-flags SYN,ACK,FIN,RST SYN</span><br></pre></td></tr></table></figure>
+
+<p>这是什么意思啊, 这就是匹配TCP三次握手的第一个包.(请求建立连接的那个)</p>
+<p>上述实例 其实有一个简写: <code>--syn</code>.</p>
+<p>接下来看看icmp的一个扩展选项, –icmp-type 在后面可以指定数字来表示类型, 最常见的就是0和8, 一个回送报文, 一个是请求报文.</p>
+<p>通过这个选项, 我们就可以实现<strong>只允许我们主机去Ping别的主机, 别的主机不能Ping我们:</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -p icmp -d 192.168.56.103 --icmp-type 0 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -p icmp -s 192.168.56.103 --icmp-type 8 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>上面就是常见的隐式扩展, 而另一个显式扩展就要复杂一点了, 我们来看看.</p>
+<p>不过这么多拓展我们用到的也不是全部, 就从其中找一些最常使用的扩展来说吧:</p>
+<p><strong>multiport</strong> </p>
+<p>我们在上面指定端口的时候, 说过只能指定连续的一段或者一个特定的端口, 这个扩展就是为了实现指定离散端口的, 使用方法如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[!] --source-ports,--sports port[,port|,port:port]...</span><br><span class="line">[!] --destination-ports,--dports port[,port|,port:port]...</span><br><span class="line">[!] --ports port[,port|,port:port]...</span><br></pre></td></tr></table></figure>
+
+<p>使用逗号来进行分割不同的端口, 使用冒号来进行端口范围声明. 我们现在所加载的规则允许Web服务和SSH服务, 但是他们是分开的, 现在加一条两者都说明的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -d 192.168.56.103 -s 192.168.56.0/24 -p tcp -m multiport --dports 22,80 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -s 192.168.56.103 -d 192.168.56.0/24 -p tcp -m multiport --sports 22,80 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>删除旧规则, 于是我们的iptables就会变成这个样子:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -nL</span></span><br><span class="line">Chain INPUT (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     tcp  --  192.168.56.0/24      192.168.56.103       multiport dports 22,80</span><br><span class="line">ACCEPT     icmp --  0.0.0.0/0            192.168.56.103       icmptype 0</span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     tcp  --  192.168.56.103       192.168.56.0/24      multiport sports 22,80</span><br><span class="line">ACCEPT     icmp --  192.168.56.103       0.0.0.0/0            icmptype 8</span><br></pre></td></tr></table></figure>
+
+<p>这样就好看多了.</p>
+<p><strong>iprange</strong></p>
+<p>这也是一个常用拓展, 听名字也知道是干嘛的了, 一般我们只能指定网段, 但是如果遇到不是一个网段的情况就不行了, 这个时候我们就可以使用iprange来声明一段连续IP地址.</p>
+<p>用法也很简单:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[!] --src-range from[-to]</span><br><span class="line">[!] --dst-range from[-to]</span><br></pre></td></tr></table></figure>
+
+<p>实例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -d 192.168.56.103 -p tcp -m multiport --dports 22:23,80 -m iprange --src-range 192.168.56.1-192.168.56.10 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -s 192.168.56.103 -p tcp -m multiport --sports 22:23,80 -m iprange --dst-range 192.168.56.1-192.168.56.10 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就只允许前10台主机进行访问了. 很简单吧.</p>
+<p><strong>string</strong></p>
+<p>这个string扩展可以用来检查报文中出现的字符,就是说如果你没有进行加密, 那么一般来说所有的数据传输对于网络上的所有主机来说都是可以查看的, 因为所有数据包封装只是在源数据的最前面附上了一段协议头部而已. 使用这个string扩展, 我们就可以对进出的数据包进行审查, 寻找匹配我们指定的字符的数据.</p>
+<p>使用方法就像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">--algo &#123;bm|kmp&#125;</span><br><span class="line">[!] --string pattern</span><br><span class="line"></span><br><span class="line">Examples:</span><br><span class="line"><span class="comment"># The string pattern can be used for simple text characters.</span></span><br><span class="line">iptables -A INPUT -p tcp --dport 80 -m string --algo bm --string <span class="string">&#x27;GET /index.html&#x27;</span> -j LOG</span><br></pre></td></tr></table></figure>
+
+<p>其实还有很多选项, 只不过使用的不多. 其中算法是必须要指定的.</p>
+<p>我们来做个实验, 在Web服务器中加上一个页面:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># echo &quot;haha&quot; &gt; /var/www/html/jiang.html</span></span><br></pre></td></tr></table></figure>
+
+<p>接着尝试访问:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/jianghaha.png" alt="jianghaha"></p>
+<p>没有问题, 接着我们加上这样的规则:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -m string --algo kmp --string &#x27;haha&#x27; -j REJECT</span></span><br></pre></td></tr></table></figure>
+
+<p>接着我们<strong>强行刷新</strong>, 或者更换浏览器或者打开开发者模式强行不请求缓存. 你会发现被拒绝了.</p>
+<p>但是:</p>
+<p>![itworks](<a target="_blank" rel="noopener" href="http://hexopic.s3-ap-northeast-1.amazonaws.com/">http://hexopic.s3-ap-northeast-1.amazonaws.com/</a>	itworks.png)</p>
+<p>没有haha的就可以正常访问.</p>
+<p><strong>time</strong></p>
+<p>什么是time扩展呢~简单的一个应用就是可以在一定的时间内开启数据传输, 其他时间不行. 可以匹配标准时间(包括年月日小时分钟秒钟), 仅仅匹配时间, 仅仅匹配星期, 可以组合使用.</p>
+<p>这个拓展支持的选项很多:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">--datestart YYYY[-MM[-DD[Thh[:mm[:ss]]]]]</span><br><span class="line">--datestop YYYY[-MM[-DD[Thh[:mm[:ss]]]]] <span class="comment">#注意这里需要加一个T才行</span></span><br><span class="line">--timestart hh:mm[:ss]</span><br><span class="line">--timestop hh:mm[:ss]</span><br><span class="line">[!] --monthdays day[,day...]</span><br><span class="line">[!] --weekdays day[,day...]</span><br><span class="line">--kerneltz <span class="comment"># 不使用UTC而是使用内核所在使用的时区</span></span><br></pre></td></tr></table></figure>
+
+<p>现在就来试试, 不过我们先把之前的那个haha删掉, 接着添加规则:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -R INPUT 1 -d 192.168.56.103 -p tcp --dport 80 -m time --timestart 23:00 --timestop 23:35 --kerneltz -j REJECT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL</span></span><br><span class="line">Chain INPUT (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">REJECT     tcp  --  0.0.0.0/0            192.168.56.103       tcp dpt:80 TIME from 23:00:00 to 23:35:00 reject-with icmp-port-unreachable</span><br><span class="line">ACCEPT     tcp  --  0.0.0.0/0            192.168.56.103       multiport dports 22:23,80 <span class="built_in">source</span> IP range 192.168.56.1-192.168.56.10</span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">ACCEPT     tcp  --  192.168.56.103       0.0.0.0/0            multiport sports 22:23,80 destination IP range 192.168.56.1-192.168.56.10</span><br><span class="line">[root@WWW ~]<span class="comment"># date</span></span><br><span class="line">Tue Oct 10 23:31:27 CST 2017</span><br></pre></td></tr></table></figure>
+
+<p>于是现在测试显然是不能访问的, 但是35之后就可以了. 这个可以自己测试.</p>
+<p><strong>connlimit</strong></p>
+<p>连接限制扩展, 可以对单个IP的并发访问限制. 使用方法也很简单.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--connlimit-upto n</span><br><span class="line">--connlimit-above n</span><br></pre></td></tr></table></figure>
+
+<p>upto就是&lt;&#x3D;, above就是&gt;. 这样就允许不同的访问控制机制, 一般都是upto放行, above拒绝.</p>
+<p>我们可以这样做一个实验, 在当前22端口放行的规则之前加一条, 只允许单IP最大2条连接:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -d 192.168.56.103 -s 192.168.56.1 -p tcp --dport 22 -m connlimit --connlimit-above 2 -j REJECT</span></span><br></pre></td></tr></table></figure>
+
+<p>接着我们进行连接:(在已有一条连接的基础上)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Connecting to 192.168.56.103:22...</span><br><span class="line">Connection established.</span><br></pre></td></tr></table></figure>
+
+<p>成功! 接着再来一条:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Connecting to 192.168.56.103:22...</span><br><span class="line">Could not connect to <span class="string">&#x27;192.168.56.103&#x27;</span> (port 22): Connection failed.</span><br></pre></td></tr></table></figure>
+
+<p>被拒绝.</p>
+<p><strong>limit</strong></p>
+<p>这个扩展更加常用, 是对收发报文的速率做匹配.而connlimit是对连接数做匹配. 它基于令牌桶过滤器.</p>
+<blockquote>
+<p>令牌桶是个什么玩意? </p>
+<p>可以把它理解成是看3D小电影的时候, 每个人会发一个塑料片, 当塑料片发完了之后, 就不能再入场了(因为没有塑料片了就看不了了), 只有当前面的人看完了, 把塑料片还回来的时候才可以继续入场. 这里,每一个塑料片就是令牌. 而所有的塑料片就是令牌桶.</p>
+</blockquote>
+<p>对于速率的控制还是挺灵活的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--<span class="built_in">limit</span> rate[/second|/minute|/hour|/day]</span><br><span class="line">--limit-burst number</span><br></pre></td></tr></table></figure>
+
+<p>上面的好说, 关于这个burst, 可以理解成是一种容忍, 一开始我不做限制, 但是当你一直在挑战底线的时候, 我就做限制. 做做实验就明白了.</p>
+<p>我们现在试试进行Ping速率的限制, 限制到2s一个, 峰值设置成5</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -A INPUT -d 192.168.56.103 -p icmp --icmp-type 8 -m limit --limit 30/minute --limit-burst 5 -j ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -A OUTPUT -s 192.168.56.103 -p icmp --icmp-type 0 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来用另外一台主机做个测试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># ping 192.168.56.103</span></span><br><span class="line">PING 192.168.56.103 (192.168.56.103) 56(84) bytes of data.</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=1 ttl=64 time=1.48 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=2 ttl=64 time=1.21 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=3 ttl=64 time=1.16 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=4 ttl=64 time=1.63 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=5 ttl=64 time=1.34 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=6 ttl=64 time=1.25 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=7 ttl=64 time=2.42 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=8 ttl=64 time=2.71 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=9 ttl=64 time=1.31 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=11 ttl=64 time=1.71 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=13 ttl=64 time=3.82 ms</span><br><span class="line">64 bytes from 192.168.56.103: icmp_seq=15 ttl=64 time=1.42 ms</span><br></pre></td></tr></table></figure>
+
+<p>我们来分析一下结果, 首先前9个包很正常, 这是因为其中有2s一个的包(4个)加上我允许的5个包, 也就是4+5&#x3D;9. 后面就可以理解了.</p>
+<p><strong>state</strong></p>
+<p>这个扩展是一个至关重要的扩展, 根据连接追踪机制, 可以检查连接状态. 这个追踪和TCP的挥手状态不一样, 他是iptables在内核中的一块空间, 会记录每一个连接的来源,状态和计时器. 当计时器归零的时候就会删除这个记录. 但是想想啊, 这一块记录是存在内核的内存空间的, 如果来了几百万个连接都进行记录, 一下就把内核的内存空间占掉了, 那就是个大麻烦了. 所以对于繁忙的服务器来说, 连接追踪这个功能不应该开放, 如果非要使用, 那就一定要把内核参数<code>nd_conntrack_max</code>调整的大一些, 否则, 一旦这一块爆了, 会造成很多严重的后果.</p>
+<p>先来看看这个值的默认:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># cat /proc/sys/net/nf_conntrack_max </span></span><br><span class="line">65536</span><br></pre></td></tr></table></figure>
+
+<p>如果我想要知道当前在追踪哪些连接可以:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># cat /proc/net/nf_conntrack</span></span><br><span class="line">ipv4     2 tcp      6 299 ESTABLISHED src=192.168.56.1 dst=192.168.56.103 sport=9058 dport=22 src=192.168.56.103 dst=192.168.56.1 sport=22 dport=9058 [ASSURED] mark=0 zone=0 use=2</span><br></pre></td></tr></table></figure>
+
+<p>如果你没有关闭SELINUX, 你应该还可以看到其他相关信息.</p>
+<p>那么我们可以追踪那些状态呢?</p>
+<p><strong>NEW</strong>:新发出的请求, 在连接追踪模板中没有的会被认作NEW</p>
+<p><strong>ESTABLISHED</strong>: 连接追踪模板中失效之前的状态</p>
+<p><strong>RELATED</strong>: 相关的连接. 例如: ftp的命令连接和数据连接, 他们互相独立但是存在相关性.</p>
+<p><strong>INVALID</strong>: 无法识别的连接.</p>
+<p>关于连接追踪, 有一种很简单的用法就是防范反弹木马, 我们22,80端口肯定是只能被动的出数据,不应该主动发出请求的, 所以我们可以做这样的规则:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -d 192.168.56.103 -p tcp -m multiport --dports 22,80 -m state --state NEW,ESTABLISHED -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>而出口:</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -s 192.168.56.103 -p tcp -m multiport --sports 22,80 -m state --state ESTABLISHED -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>确定无误之后删除原来的规则.</p>
+<p>于是变成了这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -nL -v</span></span><br><span class="line">Chain INPUT (policy DROP 8 packets, 1168 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  865 72596 ACCEPT     tcp  --  *      *       0.0.0.0/0            192.168.56.103       multiport dports 22,80 state NEW,ESTABLISHED</span><br><span class="line">    3   176 REJECT     tcp  --  *      *       192.168.56.1         192.168.56.103       tcp dpt:22 <span class="comment">#conn src/32 &gt; 2 reject-with icmp-port-unreachable</span></span><br><span class="line">  144 11208 ACCEPT     icmp --  *      *       0.0.0.0/0            192.168.56.103       icmptype 8 <span class="built_in">limit</span>: avg 30/min burst 5</span><br><span class="line">    2   168 ACCEPT     icmp --  *      *       0.0.0.0/0            192.168.56.103       icmptype 0</span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy DROP 4 packets, 1312 bytes)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">  125 15888 ACCEPT     tcp  --  *      *       192.168.56.103       0.0.0.0/0            multiport sports 22,80 state ESTABLISHED</span><br><span class="line">  251 20028 ACCEPT     icmp --  *      *       192.168.56.103       0.0.0.0/0            icmptype 0</span><br><span class="line">    2   168 ACCEPT     icmp --  *      *       192.168.56.103       0.0.0.0/0            icmptype 8</span><br></pre></td></tr></table></figure>
+
+<p>现在访问Web服务试试吧. 也是可以的.</p>
+<p>但是仔细看看iptables, 是不是可以优化一下呢? 其实对于出站请求而言, 只要是可以入站的, 应该是都允许放行的, 那么我们可以用一条简单的规则来覆盖上述三条:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I OUTPUT -m state --state ESTABLISHED -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>这就是连接追踪机制的好处, 同理, 只要是ESTABLISHED的连接, 我也可以在INPUT的开头加上, 这样就不用一直向下匹配了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -I INPUT -m state --state ESTABLISHED -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>但是现在还是有一些问题的, 例如: 各个协议的不同等待时间是不一样的啊, 比如http的时间肯定是比tcp的时间短的. 关于此, 可以从<code>/proc/sys/net/netfilter/</code>这个目录下看到关于各种设置的选项. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ls /proc/sys/net/netfilter/nf_</span></span><br><span class="line">nf_conntrack_acct                        nf_conntrack_frag6_timeout               nf_conntrack_tcp_max_retrans             nf_conntrack_tcp_timeout_time_wait</span><br><span class="line">nf_conntrack_buckets                     nf_conntrack_generic_timeout             nf_conntrack_tcp_timeout_close           nf_conntrack_tcp_timeout_unacknowledged</span><br><span class="line">nf_conntrack_checksum                    nf_conntrack_helper                      nf_conntrack_tcp_timeout_close_wait      nf_conntrack_timestamp</span><br><span class="line">nf_conntrack_count                       nf_conntrack_icmp_timeout                nf_conntrack_tcp_timeout_established     nf_conntrack_udp_timeout</span><br><span class="line">nf_conntrack_events                      nf_conntrack_icmpv6_timeout              nf_conntrack_tcp_timeout_fin_wait        nf_conntrack_udp_timeout_stream</span><br><span class="line">nf_conntrack_events_retry_timeout        nf_conntrack_log_invalid                 nf_conntrack_tcp_timeout_last_ack        nf_log/</span><br><span class="line">nf_conntrack_expect_max                  nf_conntrack_max                         nf_conntrack_tcp_timeout_max_retrans     </span><br><span class="line">nf_conntrack_frag6_high_thresh           nf_conntrack_tcp_be_liberal              nf_conntrack_tcp_timeout_syn_recv        </span><br><span class="line">nf_conntrack_frag6_low_thresh            nf_conntrack_tcp_loose                   nf_conntrack_tcp_timeout_syn_sent        </span><br></pre></td></tr></table></figure>
+
+<p>这个问题解决了, 那新的问题又来了. 怎么进行被动模式下FTP服务的防火墙设置?</p>
+<p>我们知道, 被动模式的FTP是说服务端随机开放端口. 肯定不能去对特定的端口进行匹配.</p>
+<p>其实啊, 对于FTP服务的连接追踪,显然是使用RELATED状态, 而且这个其实由一个专门的模块来做:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ls /lib/modules/3.10.0-514.el7.x86_64/kernel/net/netfilter/</span></span><br><span class="line">nf_conntrack_ftp.ko</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>这个模块就是专门用来做ftp连接追踪的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># modinfo nf_conntrack_ftp</span></span><br><span class="line">filename:       /lib/modules/3.10.0-514.26.2.el7.x86_64/kernel/net/netfilter/nf_conntrack_ftp.ko</span><br><span class="line"><span class="built_in">alias</span>:          nfct-helper-ftp</span><br><span class="line"><span class="built_in">alias</span>:          ip_conntrack_ftp</span><br><span class="line">description:    ftp connection tracking helper</span><br><span class="line">author:         Rusty Russell &lt;rusty@rustcorp.com.au&gt;</span><br><span class="line">license:        GPL</span><br><span class="line">rhelversion:    7.3</span><br><span class="line">srcversion:     D43BF56A22E3D137BA1227B</span><br><span class="line">depends:        nf_conntrack</span><br><span class="line">intree:         Y</span><br><span class="line">vermagic:       3.10.0-514.26.2.el7.x86_64 SMP mod_unload modversions </span><br><span class="line">signer:         CentOS Linux kernel signing key</span><br><span class="line">sig_key:        61:8F:5D:DF:77:2E:4B:E8:25:FB:1B:B0:95:91:86:27:24:ED:1E:97</span><br><span class="line">sig_hashalgo:   sha256</span><br><span class="line">parm:           ports:array of ushort</span><br><span class="line">parm:           loose:bool</span><br></pre></td></tr></table></figure>
+
+<p>可能, 我是说可能, 你会需要手动装载模块:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># modprobe nf_conntrack_ftp</span></span><br></pre></td></tr></table></figure>
+
+<p>好了, 接下来开始做这个实验.</p>
+<p>首先我们试试在没有防火墙的时候状态怎么样, 但是这个时候我们之前写的那些规则怎么办? 可以先把他们存起来, 这样做:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables-save &gt; /root/iptable.1</span></span><br><span class="line">[root@WWW ~]<span class="comment"># </span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P INPUT ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P OUTPUT ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -P FORWARD ACCEPT</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -F</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -nL</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination  </span><br></pre></td></tr></table></figure>
+
+<p>好了,启动vsftpd服务, 尝试访问.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># ftp 192.168.56.103</span></span><br><span class="line">Connected to 192.168.56.103 (192.168.56.103).</span><br><span class="line">220 Welcome to blah FTP service.</span><br><span class="line">Name (192.168.56.103:root): ftp</span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; <span class="built_in">cd</span> upload</span><br><span class="line">250 Directory successfully changed.</span><br><span class="line">ftp&gt; <span class="built_in">ls</span></span><br><span class="line">227 Entering Passive Mode (192,168,56,103,174,187).</span><br><span class="line">150 Here comes the directory listing.</span><br><span class="line">-rw-rw-rw-    1 0        0               0 Sep 29 06:41 <span class="built_in">test</span></span><br><span class="line">226 Directory send OK.</span><br><span class="line">ftp&gt; get <span class="built_in">test</span></span><br><span class="line"><span class="built_in">local</span>: <span class="built_in">test</span> remote: <span class="built_in">test</span></span><br><span class="line">227 Entering Passive Mode (192,168,56,103,132,29).</span><br><span class="line">150 Opening BINARY mode data connection <span class="keyword">for</span> <span class="built_in">test</span> (0 bytes).</span><br><span class="line">226 Transfer complete.</span><br></pre></td></tr></table></figure>
+
+<p>没有任何问题.</p>
+<p>那么, 现在我们还原规则, 并且修改规则使得命令连接可以进入:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables-restore &lt; /root/iptable.1</span></span><br><span class="line">[root@WWW ~]<span class="comment"># iptables -R INPUT 2 -d 192.168.56.103 -p tcp -m multiport --dports 21,22,80 -m state --state NEW -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>接着, 只要把数据连接放行就行了, 修改第一条:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># iptables -R INPUT 1 -m state --state ESTABLISHED,RELATED -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># ftp 192.168.56.103</span></span><br><span class="line">Connected to 192.168.56.103 (192.168.56.103).</span><br><span class="line">220 Welcome to blah FTP service.</span><br><span class="line">Name (192.168.56.103:root): ftp</span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; <span class="built_in">cd</span> upload</span><br><span class="line">250 Directory successfully changed.</span><br><span class="line">ftp&gt; get <span class="built_in">test</span></span><br><span class="line"><span class="built_in">local</span>: <span class="built_in">test</span> remote: <span class="built_in">test</span></span><br><span class="line">227 Entering Passive Mode (192,168,56,103,69,254).</span><br><span class="line">150 Opening BINARY mode data connection <span class="keyword">for</span> <span class="built_in">test</span> (0 bytes).</span><br><span class="line">226 Transfer complete.</span><br></pre></td></tr></table></figure>
+
+<p>没问题了.</p>
+<p>刚刚我们不仅设置了ftp的放行规则, 而且还把保存和恢复过了一遍, 其实保存和恢复就是使用的输出重定向的方式, 那么到底输出了什么内容? 这个直接cat一下就可以了, 其实就是封装了一层的规则罢了.</p>
+<h2 id="firewalld"><a href="#firewalld" class="headerlink" title="firewalld"></a>firewalld</h2><p>对于CentOS7, 使用了一个新的iptables的前端管理服务工具. 有基于图形的, 有基于命令行的. 这个玩意引入了一些新的机制, 面向Docker, Openstack等等一些云环境的新概念. 如果只是本机. 倒不是那么需要, 所以还是使用iptables先.</p>
+<p>关于firewalld的相关信息, 可参考 <a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/linux/1507_caojh/">firewalld_ibm</a> </p>
+<h2 id="网络防火墙和nat实现"><a href="#网络防火墙和nat实现" class="headerlink" title="网络防火墙和nat实现"></a>网络防火墙和nat实现</h2><p>上面的都是在说主机防火墙, 那么现在再试着搭建一个网络防火墙试试?? 我们打开三台虚拟机, 其中一台充当网关, 另外两台处于网关服务器另一个内网网卡的子网中, 且默认网关设置成为这一台.</p>
+<p>现在的我的网络情况是这样:</p>
+<p>外网: CentOS6 (node2)– 外网IP: 192.168.206.131</p>
+<p>网关: CentOS7 (localhost)– 外网IP: 192.168.206.137  内网IP: 172.16.100.254&#x2F;24</p>
+<p>内网: CentOS6 (node1)– 内网IP: 172.16.100.254</p>
+<p>重要: <strong>网关开启了核心转发功能, 且外网服务器加入了到内网IP的路由.</strong> </p>
+<p>现在内网和外网主机可以随意互相访问. 如果没有请检查路由表和是否开启<code>net.ipv4.ip_forward</code></p>
+<p>接着我们在内网服务器开启http服务, 尝试用外网访问:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># curl 172.16.100.10</span></span><br><span class="line">&lt;h1&gt;It works!&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>好, 这很显然.  那么回到我们的主题: iptables. 我现在不希望外部主机能够进行ping我们内网的主机, 但是它能够访问Web服务.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># iptables -P FORWARD DROP</span></span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -I FORWARD -s 172.16.100.10 -p tcp --sport 80 -j ACCEPT</span></span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -I FORWARD -d 172.16.100.10 -p tcp --dport 80 -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就好了 一进一出:</p>
+<p>测试一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># ping 172.16.100.10 -w 5</span></span><br><span class="line">PING 172.16.100.10 (172.16.100.10) 56(84) bytes of data.</span><br><span class="line"></span><br><span class="line">--- 172.16.100.10 ping statistics ---</span><br><span class="line">5 packets transmitted, 0 received, 100% packet loss, time 5001ms</span><br><span class="line"></span><br><span class="line">[root@node2 ~]<span class="comment"># curl 172.16.100.10</span></span><br><span class="line">&lt;h1&gt;It works!&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这只是在做实验, 实际上一个网络防火墙是这样的功能才对:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># iptables -I FORWARD -m state --state ESTABLISHED -j ACCEPT       </span></span><br><span class="line">[root@localhost ~]<span class="comment"># iptables -A FORWARD -d 172.16.100.10 -p tcp -m multiport --dports 22,80 -m state --state NEW -j ACCEPT</span></span><br></pre></td></tr></table></figure>
+
+<p>这就是一个比较标准的防火墙应用啦~. 其他的设定就和之前其实是很相似的, 所以可以举一反三的哦.</p>
+<p>但是现在的配置是个有问题的配置, 我们假设外网服务器是个公网IP, 而且中间的路由器有可能很多可能是公网路由. 这样我们的内网主机是无法获得外网的响应的, 因为公网服务器得到的报文源地址是个私有地址, 路由往哪里走啊?</p>
+<p>那么为了解决这个问题, 有什么好办法吗? 对了, 我们想到了nat和proxy. 其中, nat其实是为了隐藏本地网络的主机的(最早), 而proxy一般是在应用层实现不同于nat在网络层和传输层实现. 现在我们先说说nat.</p>
+<p>NAT就是网络地址转换了, 现在主要有地址转换[SNAT, DNAT]和端口转换两种, SNAT和DNAT两种其实是相互对应的. 一般情况下, 我们内网的主机发起对外网的通信请求, 这些请求都会先到达网关, 这个网关服务器现在扮演的角色就是nat server. 他不监听在任何一个套接字上, 也不是一个服务或者进程, 而是内核中的一些转发规则的实现. </p>
+<p>当报文发送到网关的时候, 源地址被改成网关的外网通信IP, 目的地址不变, 接着外网服务器的响应报文将携带着目的地址为网关服务器的外网通信IP发送回来, 于是该响应报文再次被修改成目的地址为内网IP从内网接口被发送出去.</p>
+<p>那么问题来了, 网关服务器或者说nat server怎么知道这个报文是发给谁的? 如果内网中有很多台主机的话, 决定报文流向的机制其实就是我们说过的<strong>连接追踪机制</strong> 因为这个报文是内网主机先发送的, 所以内核中是存在追踪记录的话, 就好办了. 这样也就造成一个非常难办的问题: <strong>IP协议变成了不公平的协议.</strong> 只有内网主机才可以主动发送请求.</p>
+<p>显然, DNAT只能运行在PREROUTING上, 而SNAT也只能运行在POSTROUTING上. </p>
+<p>简单的说一下proxy吧. 刚刚说过了proxy是运行在应用层的, 因为网关服务器需要理解客户请求的协议到底是什么协议的, 所以报文会径直到达网关的用户空间的代理进程, 接着重新封装发向目的地址. 注意啦 这里的请求发出者就是网关, 所以不存在什么转换的问题. 接着同样服务器也会把响应报文径直发向代理服务器(网关服务器), 接着代理进程重新封装报文发送给客户. 就是这样的过程.</p>
+<p>现在切入正题, 来使用iptables实现nat功能. 我们在外网服务器开启httpd服务, 清空三台主机所有的iptables规则, 并且在内网主机配置默认路由, 设置网关. 现在我想做的事情是在网关服务器配置一条nat规则, 将内网的主机源地址转换成为网关的IP地址.</p>
+<p>在做这个事情之前我们先在外网服务器加上一条能够到达内网服务器的路由:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># route add -net 172.16.100.0/24 gw 192.168.206.137 dev eth2</span></span><br></pre></td></tr></table></figure>
+
+<p>接着内网请求Web服务:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># curl http://192.168.206.131</span></span><br><span class="line">&lt;h1&gt;Test&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>于是我们可以在外网的访问日志中看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">172.16.100.10 - - [12/Oct/2017:14:04:15 +0800] <span class="string">&quot;GET / HTTP/1.1&quot;</span> 200 14 <span class="string">&quot;-&quot;</span> <span class="string">&quot;curl/7.19.7 (x86_64-unknown-linux-gnu) libcurl/7.19.7 NSS/3.12.7.0 zlib/1.2.3 libidn/1.18 libssh2/1.2.2&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>来源IP是172.16.100.10, 好的. 删除刚才添加的路由. 这个时候就不能互相通信了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># route del -net 172.16.100.0/24 dev eth2</span></span><br></pre></td></tr></table></figure>
+
+<p>那么, 现在就来进行转换:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># iptables -t nat -I POSTROUTING -s 172.16.100.0/24 ! -d 172.16.100.0/24 -j SNAT --to-source 192.168.206.137</span></span><br></pre></td></tr></table></figure>
+
+<p>简单的说明一下吧, SNAT就是target了, 后面的参数就是将源地址改成192.168.206.137的意思了.</p>
+<p>现在再进行访问:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># curl http://192.168.206.131</span></span><br><span class="line">&lt;h1&gt;Test&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>同时我们检查日志:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">192.168.206.137 - - [12/Oct/2017:14:34:39 +0800] <span class="string">&quot;GET / HTTP/1.1&quot;</span> 200 14 <span class="string">&quot;-&quot;</span> <span class="string">&quot;curl/7.19.7 (x86_64-unknown-linux-gnu) libcurl/7.19.7 NSS/3.12.7.0 zlib/1.2.3 libidn/1.18 libssh2/1.2.2&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>来自192.168.206.137的访问记录~成功了. 那么现在再来玩一个, 我们把他们翻转过来, 内网服务器开Web服务, 然后外网服务器去访问, 由于内网IP是私有的, 所以对于外网服务器而言, 他只能去访问网关的那个公网IP, 但是我们知道网关是没有开启80端口的. 那么我们就需要将发往网关服务器的80端口的请求转换成访问内网的IP这样的一个操作.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># iptables -t nat -I PREROUTING -d 192.168.206.137 -p tcp --dport 80 -j DNAT --to-destination 172.16.100.10:80</span></span><br></pre></td></tr></table></figure>
+
+<p>在添加此条规则之前:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.137</span></span><br><span class="line">curl: (7) couldn<span class="string">&#x27;t connect to host</span></span><br></pre></td></tr></table></figure>
+
+<p>在添加之后我们就可以看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># curl 192.168.206.137</span></span><br><span class="line">&lt;h1&gt;It works!&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>需要再次说明的是, 137上没有开启httpd服务, 80端口也没有进程在监听.</p>
+<p>同理, 我们也可以进行端口映射, 如果内网Web服务的监听端口不在80, 就映射到那个端口就好了. 很简单了.</p>
+<p>DNAT没什么了, 回到SNAT, 考虑这样的一个问题. 有些网关的网络地址并不一定是固定的, 他有可能随着拨号的不同会有不同的IP, 面对这样的情况难道我们要每一次修改一次–to-source吗? 显然不能, 这个时候就需要进行来源地址伪装, 即<strong>MASQUERADE</strong> </p>
+<p>假设现在我们的网关地址变了, 那么内网主机就不能访问外网服务器了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># ip addr del 192.168.206.137/24 dev ens37</span></span><br><span class="line">[root@localhost ~]<span class="comment"># ip addr add 192.168.206.133/24 dev ens37</span></span><br></pre></td></tr></table></figure>
+
+<p>在这种情况下, 由于配置了下面的项目:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># iptables -t nat -I POSTROUTING -s 172.16.100.0/24 ! -d 172.16.100.0/24 -j MASQUERADE</span></span><br></pre></td></tr></table></figure>
+
+<p>我们的内网主机依然可以访问外网Web服务.</p>
+<h2 id="TCP-wrapper"><a href="#TCP-wrapper" class="headerlink" title="TCP_wrapper"></a>TCP_wrapper</h2><p>最后我们再简单说说TCP_wrapper这个玩意. 这是一个基于tcp协议开发并提供服务的应用程序, 提供一层访问控制的工具, 基于库调用实现功能. – <strong>libwrap</strong></p>
+<p>那么我们怎么知道哪些服务可以用tcp_wrapper实现控制呢?</p>
+<p>我们知道在编译的时候, 如果使用到共享库, 那么有两种方式: 一种是进行链接, 一种是进行静态编译,即编译进程序. 对于动态的好办,直接ldd就行了. 而静态的就稍微麻烦一点: 我们要使用strings查看应用程序, 如果出现hosts.allow和hosts.deny就是可以的.</p>
+<p>比如现在试试sshd和vsftpd:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># ldd `which sshd`</span></span><br><span class="line">	linux-vdso.so.1 =&gt;  (0x00007fff325a1000)</span><br><span class="line">	libfipscheck.so.1 =&gt; /lib64/libfipscheck.so.1 (0x00007ff6d2088000)</span><br><span class="line">	libwrap.so.0 =&gt; /lib64/libwrap.so.0 (0x00007ff6d1e7d000)</span><br><span class="line">	...(omitted)</span><br><span class="line">[root@localhost ~]<span class="comment"># ldd `which vsftpd`</span></span><br><span class="line">	linux-vdso.so.1 =&gt;  (0x00007fffb97ca000)</span><br><span class="line">	libssl.so.10 =&gt; /lib64/libssl.so.10 (0x00007ff14f6c7000)</span><br><span class="line">	libwrap.so.0 =&gt; /lib64/libwrap.so.0 (0x00007ff14f4bc000)</span><br><span class="line">	...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>而httpd就不可以. </p>
+<p>使用tcp_wrapper来做访问控制要比iptables简单多了, 只要编辑&#x2F;etc&#x2F;hosts.deny和&#x2F;etc&#x2F;hosts.allow就可以了.</p>
+<p>配置文件的语法格式就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">daemon_list: client_list [:options]</span><br></pre></td></tr></table></figure>
+
+<p>听名字也知道allow就是白名单, deny就是黑名单. 那么如果我两个文件里都写了, 怎么样呢? 其实是有匹配次序的, 优先匹配allow, 如果有则直接放行, 如果没有则匹配deny, 如果有则拒绝, 没有则默认策略放行.</p>
+<p>这里的daemon_list一定是文件名称, 不能是服务名, 多个可以使用逗号分隔:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sshd, vsftpd: 172.16.0.0/255.255.0.0|ALL|KNOWN|UNKNOWN|PARANOID</span><br></pre></td></tr></table></figure>
+
+<p>另外, 对于client_list, 可以在后面加上EXCEPT关键字:</p>
+<blockquote>
+<p>EXCEPT: 除了. 这个选项还可以连续使用两次 双重否定 &#x3D; 肯定</p>
+</blockquote>
+<p>现在就直接试试吧:</p>
+<p>先用另外一台主机访问sshd服务:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># ssh 192.168.206.133</span></span><br><span class="line">root@192.168.206.133<span class="string">&#x27;s password: </span></span><br><span class="line"><span class="string">Last login: Thu Oct 12 15:49:50 2017 from 192.168.206.131</span></span><br><span class="line"><span class="string">[root@localhost ~]# logout</span></span><br><span class="line"><span class="string">Connection to 192.168.206.133 closed.</span></span><br></pre></td></tr></table></figure>
+
+<p>接着编辑:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># vim /etc/hosts.deny </span></span><br><span class="line">sshd: 192.168.206.131</span><br></pre></td></tr></table></figure>
+
+<p>接着:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]<span class="comment"># ssh 192.168.206.133</span></span><br><span class="line">ssh_exchange_identification: Connection closed by remote host</span><br></pre></td></tr></table></figure>
+
+<p>很简单吧.</p>
+<p>接着我们看一下后面的选项有哪些:</p>
+<blockquote>
+<p>deny: 在allow中使用</p>
+<p>allow: 在deny中使用.</p>
+<p>spawn: 启动额外程序, 例如</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># hosts.deny</span></span><br><span class="line">vsftpd: ALL :spawn /bin/echo `<span class="built_in">date</span>` login attempt from %c to %s ,%d &gt;&gt; /var/log/vsftpd.deny.log</span><br></pre></td></tr></table></figure>
+
+<p>这里的%c: client IP;  %s: server IP;  %d: daemon name</p>
+</blockquote>
+<p><strong>17-10-13的更新:</strong></p>
+<p>在书上看到了关于iptables的案例, 在这里说一说: 案例是说用户使用公网传输文件正常, 但是使用自建GRE VPN大内网只能传输2Kb大小文件, 停止iptables之后可以传输大文件. 而且在开启iptables之后的10分钟内, 可以继续传输大文件, 10分钟后传输被卡住.</p>
+<p>通过抓包, 发现出现了下面的情况: <code>ICMP Destination unreachable (Fragmentation needed)</code></p>
+<p>而iptables对ICMP的设定和我们之前设定的是一样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT</span><br><span class="line">iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT</span><br></pre></td></tr></table></figure>
+
+<p>所以说, GRE封装的24字节(GRE报文+IP包头)在默认的1500中减去, 网关的MTU应该是1476才对. 但是这个案例中网络管理员将路由器的MTU设置成为了1400, 而协商MTU的ICMP报文又无法到达, 导致协商失败.</p>
+<p>为什么10分钟之内可以呢? 因为存在一个叫做PMTU的东西, 这个叫做两台通信主机之间最小的MTU, 即路径MTU. 默认的老化时间就是10分钟.</p>
+<p>之前所说的ICMP协商MTU, 这个被叫做路径最大传输单元发现, PMTUD.</p>
+<p>为了解决问题, 添加规则:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -A INPUT -p icmp --icmp-type fragmentation-needed -j ACCEPT</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/iptables_mind.png" alt="iptables_mind"></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-number">1.</span> <span class="toc-text">防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iptables"><span class="toc-number">2.</span> <span class="toc-text">iptables</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#iptables-%E7%9A%84%E6%B3%95%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">iptables 的法则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iptables%E5%91%BD%E4%BB%A4"><span class="toc-number">3.</span> <span class="toc-text">iptables命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iptables%E7%9A%84%E5%8C%B9%E9%85%8D%E5%92%8C%E8%A7%84%E5%88%99"><span class="toc-number">4.</span> <span class="toc-text">iptables的匹配和规则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E5%8C%B9%E9%85%8D"><span class="toc-number">4.1.</span> <span class="toc-text">基本匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87"><span class="toc-number">4.2.</span> <span class="toc-text">目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E5%8C%B9%E9%85%8D"><span class="toc-number">4.3.</span> <span class="toc-text">扩展匹配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#firewalld"><span class="toc-number">5.</span> <span class="toc-text">firewalld</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E9%98%B2%E7%81%AB%E5%A2%99%E5%92%8Cnat%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.</span> <span class="toc-text">网络防火墙和nat实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TCP-wrapper"><span class="toc-number">7.</span> <span class="toc-text">TCP_wrapper</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/10/iptables/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/10/iptables/&text=iptables"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/10/iptables/&is_video=false&description=iptables"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=iptables&body=Check out this article: https://19971122.xyz/2017/10/10/iptables/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/10/iptables/&title=iptables"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/10/iptables/&name=iptables&description=&lt;p&gt;Linux的防火墙 – iptables.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/10/iptables/&t=iptables"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

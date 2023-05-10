@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="**Engine-X  not  en-jinks. **">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx初识和Web服务配置">
+<meta property="og:url" content="https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="**Engine-X  not  en-jinks. **">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig01.gif">
+<meta property="og:image" content="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig02.gif">
+<meta property="og:image" content="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig03.gif">
+<meta property="og:image" content="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig04.gif">
+<meta property="og:image" content="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig05.gif">
+<meta property="og:image" content="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig06.gif">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/nginx.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/MindMap/Nginx_mind.png">
+<meta property="article:published_time" content="2017-10-12T22:01:32.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:45:05.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Nginx">
+<meta property="article:tag" content="http">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig01.gif">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Nginx初识和Web服务配置</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/10/iptables/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&text=Nginx初识和Web服务配置"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&is_video=false&description=Nginx初识和Web服务配置"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Nginx初识和Web服务配置&body=Check out this article: https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&name=Nginx初识和Web服务配置&description=&lt;p&gt;**&lt;code&gt;Engine-X&lt;/code&gt;  not  &lt;a href=&#34;https://www.nginx.com/resources/wiki/community/faq/#how-do-you-pronounce-nginx&#34;&gt;&lt;code&gt;en-jinks&lt;/code&gt;&lt;/a&gt;. ** &lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&t=Nginx初识和Web服务配置"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%9F%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">废话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#I-x2F-O%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">I&#x2F;O模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx"><span class="toc-number">3.</span> <span class="toc-text">Nginx</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Nginx%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-number">3.1.</span> <span class="toc-text">Nginx的安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Nginx%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">3.2.</span> <span class="toc-text">Nginx的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#listen"><span class="toc-number">3.2.1.</span> <span class="toc-text">listen</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#server-name"><span class="toc-number">3.2.2.</span> <span class="toc-text">server_name</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#location"><span class="toc-number">3.2.3.</span> <span class="toc-text">location</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#alias"><span class="toc-number">3.2.4.</span> <span class="toc-text">alias</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#index"><span class="toc-number">3.2.5.</span> <span class="toc-text">index</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#error-page"><span class="toc-number">3.2.6.</span> <span class="toc-text">error_page</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-number">3.2.7.</span> <span class="toc-text">访问控制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ssl"><span class="toc-number">3.2.8.</span> <span class="toc-text">ssl</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rewrite"><span class="toc-number">3.2.9.</span> <span class="toc-text">rewrite</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#if"><span class="toc-number">3.2.10.</span> <span class="toc-text">if</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B2%E7%9B%97%E9%93%BE"><span class="toc-number">3.2.11.</span> <span class="toc-text">防盗链</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E5%88%B6%E6%97%A5%E5%BF%97%E6%A0%BC%E5%BC%8F"><span class="toc-number">3.2.12.</span> <span class="toc-text">定制日志格式</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Nginx初识和Web服务配置
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-12T22:01:32.000Z" class="dt-published" itemprop="datePublished">2017-10-12</time>
+        
+        (Updated: <time datetime="2020-11-30T01:45:05.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/Nginx/" rel="tag">Nginx</a>, <a class="p-category" href="/tags/http/" rel="tag">http</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>**<code>Engine-X</code>  not  <a target="_blank" rel="noopener" href="https://www.nginx.com/resources/wiki/community/faq/#how-do-you-pronounce-nginx"><code>en-jinks</code></a>. ** </p>
+<span id="more"></span>
+
+<h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>Nginx, 我们可以说是一个Web Server, 不仅如此, 他还可以作为web reverse proxy. 关于反向代理以及一些缓存功能, 这里先不做涉及, 留在后面说. 不管怎么说, 我们还是先把HTTP协议复习一遍?</p>
+<p><a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/">HTTP协议</a></p>
+<p>我们说过, HTTP Wed服务能够进行认证, 其中有基于IP的, 有基于用户的, 而这又分为基本认证(basic)和摘要认证(digest). 除了这个, 还有资源映射, 我们说过有Alias和DocumentRoot的映射. 另外,在现在各大站点的访问分析中, 一定会有PV和UV这两个重要的指标. PV就是指Page  View, 而UV就是User View了. 值得注意的是, 一个页面中肯定有很多资源, 我们说过浏览器会开启多线程去请求这些资源, 但是对于一个域名的线程上限是存在的. 正因为此, 有些网站为了提高用户的浏览速度, 就会把资源放在不同域名的服务器上, 这样浏览器就会对每一个域名开启多线程, 对于整个网站来说相当于是数倍的速度提升.</p>
+<p>在说Apache httpd的时候, 我们说过有一个叫做MPM的模块. 三种: prefork, worker, event.</p>
+<p>现在来看一下web I&#x2F;O模型相关.</p>
+<h2 id="I-x2F-O模型"><a href="#I-x2F-O模型" class="headerlink" title="I&#x2F;O模型"></a>I&#x2F;O模型</h2><p>显然, 我们先这样划分: 同步和异步 以及 阻塞和非阻塞(synchronous and asynchronous, block and nonblock)</p>
+<p>对于异步IO, 他更多的关注的消息通知机制. 其实所谓IO, 就是存在一个调用方和一个提供服务方, 而调用方向服务方请求调用一个资源就是IO了. 主要是, 被调用方需要在自己的一方进行处理, 之后才会将结果返回到调用方, 那么问题就是, 调用方怎么知道他请求的资源已经被处理结束了呢? 所以这就是同步和异步的两种模式的区别, 同步就<strong>被调用方不会立即返回结果, 但是只要返回, 返回的就是最终结果</strong>; 而异步就不一样了, 被调用方<strong>会立即返回结果, 但是返回的结果只是消息, 不是最终结果. 当被调用方结束处理之后, 会通过状态, 通知机制来通知调用者, 或者通过回调函数的方式来处理结果</strong>.</p>
+<p>接着我们再说说阻塞和非阻塞这两个家伙. 他们关注的东西其实是<strong>调用者等待被调用者返回调用结果的状态</strong>. 所谓阻塞, 调用者在结果返回之前, 会被挂起; 而这个时候调用者进入了一种<strong>不可中断的睡眠态</strong>, 只有当等到结果之后才能继续. 而非阻塞就相反了, 他不会被挂起, 也就是说调用不会阻塞自己.</p>
+<p>要特别加一句: <strong>阻塞非阻塞和同步异步关注的点根本就不是一个, 所以他们之间其实没有什么必然的关系.</strong></p>
+<p>这样的话, 我们就可以把IO模型分成5种:</p>
+<ul>
+<li>阻塞IO</li>
+<li>非阻塞IO</li>
+<li>IO多路复用</li>
+<li>(信号|事件)驱动IO</li>
+<li>异步IO</li>
+</ul>
+<p>接下来来解释一下他们. 以磁盘IO为例: <strong>read()操作</strong></p>
+<p>用户空间是没有权限读取磁盘的对不? 所以应用程序发起IO请求的时候, 分成两步骤: ①请求内核但是内核没有数据, 所以内核加载内容到内核内存中, ②可是进程无法读取内核内存, 所以再次将数据复制到进程内存中. 这里被称作IO的过程是第二步.</p>
+<p>首先是阻塞IO:</p>
+<p><img src="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig01.gif" alt="graphics/06fig01.gif"></p>
+<p>在这种模型下, 进程挂起, 等到最终结果好了之后才继续. 很好理解, 接着来看非阻塞IO:</p>
+<p><img src="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig02.gif" alt="graphics/06fig02.gif"></p>
+<p>在这种模式下, 进程虽然不会挂起, 但是会进入到一种忙等待的状态, 被调用方不会进行通知, 为了知道结果是否处理完成, 进程会进行长轮询, 这样的状态其实也是很消耗资源的, <strong>非阻塞不一定有阻塞的效率高</strong>. 根据情况, 这个时候可能阻塞了更好. 而且不仅如此, 看第二个阶段,其实还是阻塞的.</p>
+<p>上面的两种都很好理解, 而且他们都很古老. 接着来看复用型IO.</p>
+<p><img src="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig03.gif" alt="graphics/06fig03.gif"></p>
+<p>这个IO模型是一个比较稳定的IO模型, 很多应用都是基于这种模式构建的. 到底什么叫多路复用? 可以这么理解: 前两种模型都是把请求发给内核, 但是现在我们在内核和调用者之间加进了一个<em>代理</em> 这个代理,能够将用户的请求发给内核, 这样的好处是, 用户进程如果有多个请求, 他可以在代理发送结束之后, 将请求发送过去, 尽管内核是阻塞的, 但是我们却可以通过这个代理实现多路的请求. 不太明白吗? 我们来看一段代码:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"><span class="keyword">import</span> select</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">from</span> queue <span class="keyword">import</span> Queue</span><br><span class="line"></span><br><span class="line"><span class="comment"># 首先我们创建好套接字</span></span><br><span class="line">server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">server.setblocking(<span class="literal">False</span>)</span><br><span class="line">server.bind((<span class="string">&quot;localhost&quot;</span>, <span class="number">44444</span>))</span><br><span class="line"><span class="comment"># 接着声明三个list, 也就是注册在select上的读写异常事件</span></span><br><span class="line">inputs = [server]</span><br><span class="line">outputs = []</span><br><span class="line">exceptions = []</span><br><span class="line"><span class="comment"># 用作socket的消息队列</span></span><br><span class="line">msg_queue = &#123;&#125;</span><br><span class="line">server.listen()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Server listening on 127.0.0.1:44444&quot;</span>)</span><br><span class="line"><span class="comment"># 开始循环</span></span><br><span class="line"><span class="keyword">while</span> inputs:</span><br><span class="line">    readable, writable, exceptional = select.select(inputs, outputs, exceptions)</span><br><span class="line">    <span class="keyword">for</span> sock <span class="keyword">in</span> readable:</span><br><span class="line">        <span class="keyword">if</span> sock <span class="keyword">is</span> server:</span><br><span class="line">            conn, addr = sock.accept()</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;Connect from %s&quot;</span> % conn.getsockname()[<span class="number">0</span>])</span><br><span class="line">            conn.setblocking(<span class="literal">False</span>)</span><br><span class="line">            inputs.append(conn)</span><br><span class="line">            msg_queue[conn] = Queue()</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            data = sock.recv(<span class="number">2048</span>)</span><br><span class="line">            <span class="keyword">if</span> data:</span><br><span class="line">                msg_queue[sock].put(data)</span><br><span class="line">                <span class="keyword">if</span> sock <span class="keyword">not</span> <span class="keyword">in</span> outputs:</span><br><span class="line">                    outputs.append(sock)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&quot;recv empty data, close&quot;</span>)</span><br><span class="line">                <span class="keyword">if</span> sock <span class="keyword">in</span> outputs:</span><br><span class="line">                    outputs.remove(sock)</span><br><span class="line">                inputs.remove(sock)</span><br><span class="line">                sock.close()</span><br><span class="line">                <span class="keyword">del</span> msg_queue[sock]</span><br><span class="line">    <span class="keyword">for</span> sock <span class="keyword">in</span> writable:</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> msg_queue[sock].empty():</span><br><span class="line">            sock.send(msg_queue[sock].get_nowait())</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            outputs.remove(sock)</span><br><span class="line">    <span class="keyword">for</span> sock <span class="keyword">in</span> exceptional:</span><br><span class="line">        <span class="keyword">if</span> sock <span class="keyword">in</span> outputs:</span><br><span class="line">            outputs.remove(sock)</span><br><span class="line">        inputs.remove(sock)</span><br><span class="line">        sock.close()</span><br><span class="line">        <span class="keyword">del</span> msg_queue[sock]</span><br></pre></td></tr></table></figure>
+
+<p>这里我们使用的select做的演示. select是最早的一个多路复用系统调用, 我们注册想要获得响应的socket&#x2F;IO请求. 这个最早使用BSD实现的, 后来SysV模仿着搞出来了poll(), 他们两个其实没有什么太大的区别. select的最大限制1024个并发.</p>
+<p>接着再来看看事件驱动式的IO:</p>
+<p><img src="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig04.gif" alt="graphics/06fig04.gif"></p>
+<p>这个也好理解, 就是当第一阶段OK了, 发送一个信号就行了,当然了第二阶段还是阻塞的. 看看图就能理解了.</p>
+<p>但是事件驱动IO有一个显而易见的问题: 当内核向进程发送第二个请求的通知的时候, 如果进程此时堵塞在第一个请求的第二个阶段. 那么会怎么样? 对于这样的情况, 有这样的解决方法, 我们提出两种通知机制:</p>
+<ul>
+<li>水平触发: 一直通知, 直到接受为止</li>
+<li>边缘触发: 只通知一次, 如果没有回应, 就使用回调或者让调用者自己去取结果.</li>
+</ul>
+<p>我们今天的主角(?) – Nginx就是用了事件驱动IO和下面的异步IO.</p>
+<p>为了解决阻塞的问题, 最后一种:</p>
+<p><img src="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig05.gif" alt="graphics/06fig05.gif"></p>
+<p>异步IO. 用户进程只需要发出请求, 等到内核悄悄的根据进程的要求把一切都完成了之后, 发出信号通知就好了.</p>
+<p>最后总结一下:</p>
+<p><img src="http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/files/06fig06.gif" alt="graphics/06fig06.gif"></p>
+<h2 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h2><p>Nginx是个俄罗斯人搞出来的, 这个程序使用了当时最新的网络编程技术, 所以使得它在一开始就很受欢迎, 直到现在也依然是全球前三的Web服务器.</p>
+<p>Nginx依靠一个高性能的网络编程库 – libevent, 其中调用的就是epoll().</p>
+<p>现在就先来聊聊Nginx的特性:</p>
+<p>模块化设计(非DSO), 较好的扩展性.</p>
+<p>有着高可靠的应用, 使用一个主进程(master), 该进程不接受任何请求, 要做的是读取配置文件生成子进程(工作进程worker) 这些worker进程有多个用途: 缓存 反代, …</p>
+<p>低内存消耗: 10000+keep-alive模式的connection, Nginx仅仅需要2.5M内存来维持.</p>
+<p>支持热部署: 不停机使得配置文件更新, 日志文件滚动, 甚至支持<strong>版本</strong>平滑升级</p>
+<p>支持事件驱动, 支持async, 支持内存映射机制.</p>
+<p>缓存打开的fd文件描述符</p>
+<p>http,smtp,pop3协议的反向代理服务器</p>
+<blockquote>
+<p><strong>反向代理</strong>是什么?</p>
+<p>原先我们访问服务器, 是直接访问. 这样有很多缺点, 比如服务器的压力会变的很大, 而且不是那么安全. 于是我们就想到在服务器和用户之间加上一个隔离层, 这个隔离自己也有Web服务, 但是却不提供任何内容, 他会将请求重新构建报文发向后面的真正的Web服务器, 同时对静态内容作缓存, 使得下次访问更快速, 这个缓存一般都是以键值对的形式存储在内存中, 所以很快. </p>
+</blockquote>
+<p>支持缓存加速和负载均衡机制</p>
+<p>支持fastcgi(fpm,LNMP), uWSGI(python)</p>
+<p>过滤器, 图像大小调整, SSI.</p>
+<p>支持url, rewrite, 路径别名, 基于IP和用户的访问控制</p>
+<p>支持速率限制, 支持并发限制</p>
+<p>来看看Nginx的架构特性:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/nginx.png" alt="nginx"></p>
+<p>一个Master进程生成多个Worker进程. 下层可以看到缓存manger和loader.</p>
+<p>之前说过了Nginx是基于模块的, 那么核心模块是什么? </p>
+<p>核心模块被叫做<strong>Standard HTTP modules</strong>, 除了核心模块, 还有Optional HTTP modules, Mail modules以及3rd party modules.</p>
+<h3 id="Nginx的安装"><a href="#Nginx的安装" class="headerlink" title="Nginx的安装"></a>Nginx的安装</h3><p>nginx在epel源中可以找到, 直接yum install就行. </p>
+<blockquote>
+<p>在这里扯一句..不知道为什么, 阿里的yum源教育网总是很慢?? 反而是Fedora官方的源稳定速度快..</p>
+</blockquote>
+<p>也可以使用rpm包, 也可以使用源码编译~ 这里我们来试试源码编译.</p>
+<p>首先要确保开发环境包组已经安装, 接着nginx依靠一个<code>pcre-devel</code>, 所以需要先把这个装了.</p>
+<p>首先我们还是添加nginx用户和组:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 ~]<span class="comment"># groupadd -r nginx</span></span><br><span class="line">[root@VM-CentOS7 ~]<span class="comment"># useradd -g nginx -r nginx</span></span><br><span class="line">[root@VM-CentOS7 ~]<span class="comment"># id nginx</span></span><br><span class="line">uid=997(nginx) gid=995(nginx) <span class="built_in">groups</span>=995(nginx)</span><br></pre></td></tr></table></figure>
+
+<p>接下来就开始配置了, 关于选项可以查看<code>./configure --help</code>获得.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 nginx-1.12.1]<span class="comment"># ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --user=nginx --group=nginx --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx/nginx.pid --lock-path=/var/lock/nginx.lock --with-http_ssl_module --with-http_stub_status_module --with-http_gzip_static_module --with-http_flv_module --with-http_mp4_module --http-client-body-temp-path=/var/tmp/nginx/client --http-proxy-temp-path=/var/tmp/nginx/proxy --http-fastcgi-temp-path=/var/tmp/nginx/fastcgi --http-uwsgi-temp-path=/var/tmp/nginx/uwsgi</span></span><br></pre></td></tr></table></figure>
+
+<p>这里我们开启流媒体支持, ssl支持, 指定临时文件目录等等…</p>
+<p>接着就是<code>make &amp;&amp; make install</code>了. 完成了之后我们需要手动创建那些临时目录:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 nginx-1.12.1]<span class="comment"># mkdir -pv /var/tmp/nginx/&#123;fastcgi,uwcgi,proxy&#125;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/var/tmp/nginx’</span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/var/tmp/nginx/fastcgi’</span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/var/tmp/nginx/uwcgi’</span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/var/tmp/nginx/proxy’</span><br></pre></td></tr></table></figure>
+
+<p>接着启动nginx~</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 nginx-1.12.1]<span class="comment"># PATH=/usr/local/nginx/sbin:$PATH</span></span><br><span class="line">[root@VM-CentOS7 nginx-1.12.1]<span class="comment"># nginx</span></span><br><span class="line">[root@VM-CentOS7 nginx-1.12.1]<span class="comment"># ps aux | grep nginx</span></span><br><span class="line">root      29262  0.0  0.1  45912  1128 ?        Ss   20:07   0:00 nginx: master process nginx</span><br><span class="line">nginx     29263  0.0  0.1  46360  1904 ?        S    20:07   0:00 nginx: worker process</span><br></pre></td></tr></table></figure>
+
+<p>可以看到有启动了两个进程, 一个主进程, 一个工作进程. 而且, 工作进程的用户是nginx, 只有主进程的用户才是root.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 nginx-1.12.1]<span class="comment"># curl -I http://192.168.206.138</span></span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Server: nginx/1.13.6</span><br><span class="line">Date: Fri, 13 Oct 2017 12:13:25 GMT</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 612</span><br><span class="line">Last-Modified: Fri, 13 Oct 2017 12:04:37 GMT</span><br><span class="line">Connection: keep-alive</span><br><span class="line">ETag: <span class="string">&quot;59e0abd5-264&quot;</span></span><br><span class="line">Accept-Ranges: bytes</span><br></pre></td></tr></table></figure>
+
+<p>就是这么简单~ 接下来按照惯例, 我们来看看配置文件吧:</p>
+<p>nginx的配置文件主要有下面的几个部分构成:</p>
+<ul>
+<li>main配置: 全局配置</li>
+<li>event配置: 定义event工作模型的相关特性</li>
+<li>http {}: 定义http协议的相关设定</li>
+</ul>
+<p>要注意的是: nginx的配置指令需要使用分号作为结尾:</p>
+<p><code>derective value1 [value2...]</code></p>
+<p>配置同样支持使用变量: 首先会有很多内置变量, 接着还可以使用set指令进行自定义变量的声明.</p>
+<p><code>set var_name value</code> </p>
+<p>我们先从主配置段开始, 主要分成四类:</p>
+<p><strong>用于调试,定位问题的, 正常运行的必备配置, 优化性能的配置, 事件相关的配置</strong></p>
+<h3 id="Nginx的配置"><a href="#Nginx的配置" class="headerlink" title="Nginx的配置"></a>Nginx的配置</h3><p>首先来看主配置段的设置, </p>
+<p>| Syntax:  | <strong><code>user</code></strong> <em>user</em> [<em>group</em>]; |<br>| Default: | <code>user nobody nobody;</code>        |</p>
+<p>声明启动用户, 用户组可选. 由于我们在配置的时候已经指明了, 所以这个选项在我们的配置文件中已经被注释掉了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#user  nobody;</span></span><br></pre></td></tr></table></figure>
+
+<p>| Syntax:  | <strong>pid</strong> <em>file</em>;  |<br>| Default: | <code>pid nginx.pid;</code> |</p>
+<p>声明nginx守护进程的pid文件. 很好理解</p>
+<p>| Syntax:  | <strong>worker_rlimit_nofile</strong> <em>number</em>; |<br>| Default: | —                                  |</p>
+<p>就是所有worker进程的最大文件句柄数, 默认是1024来着. 用户能打开的(ulimit -n)</p>
+<p>与此相关的还有一个:</p>
+<p>| Syntax:  | <strong>worker_rlimit_core</strong> <em>size</em>; |<br>| Default: | —                              |</p>
+<p>这个是在说打开的文件大小峰值, 不过一般都不需要调整.</p>
+<p>以上是我们说的<strong>正常运行的必备配置</strong>. 接着来看一下<strong>性能优化相关</strong></p>
+<p>| Syntax:  | <strong>worker_processes</strong> <em>number</em> | auto; |<br>| Default: | <code>worker_processes 1;</code>                  |</p>
+<p>worker进程的数量, 通常 这个值略少于物理CPU的核心数.</p>
+<p>| Syntax:  | <strong>worker_cpu_affinity</strong> <em>cpumask</em>; <strong>worker_cpu_affinity</strong> auto [<em>cpumask</em>]; |</p>
+<p>整个选项主要是为了将一个Nginx的进程绑定到某个CPU上, 这样的好处是, 可以提升命中该CPU的cache的命中率.而不会随着CPU切换导致缓存丢失</p>
+<p>什么是cpumask啊, 如果你有三颗CPU, 那么他们的掩码就是<code>00000001</code>, <code>00000010</code>, <code>00000100</code>, 如果还有第四颗那就是<code>00001000</code>. </p>
+<p>| Syntax:  | <strong>timer_resolution</strong> <em>interval</em>; |<br>| Default: | —                                |</p>
+<p>这个是说调整进程的计时器解析度, 什么玩意? 其实就是发起<code>gettimeofday()</code>这么一个系统调用的频率, 我们知道发起系统调用就一定伴随着软中断. 通过降低这个, 就可以达到优化性能的要求.</p>
+<p>| Syntax:  | <strong>worker_priority</strong> <em>number</em>; |<br>| Default: | <code>worker_priority 0;</code>          |</p>
+<p>听名字就知道是干什么的, 其实这个选项就是NICE值, 我们之前说过nice这个命令, 从-20到20.</p>
+<p>接着我们看一下<strong>事件相关的设定</strong></p>
+<p>| Syntax:  | <strong>accept_mutex</strong> on | off; |<br>| Default: | <code>accept_mutex off;</code>         |</p>
+<p>mutex叫做互斥锁(?), 简单的说, 如果开启, worker就会进行轮流的响应, 也就是master调度用户请求负载均衡的到每一个worker上, workers序列化的响应. 但是如果你的系统支持 <code>EPOLLEXCLUSIVE</code> (Linux 4.5, glibc 2.24) 就不需要开启这个选项了.</p>
+<p>| Syntax:  | <strong>accept_mutex_delay</strong> <em>time</em>; |<br>| Default: | <code>accept_mutex_delay 500ms;</code>    |</p>
+<p>如果上面的互斥锁开启了, 那么这个选项指定的就是当请求轮到下一个worker, 但是该worker正忙,等到多少时间的选项, 如果超时选择下一个. 不是那么关键了</p>
+<p>| Syntax:  | <strong>lock_file</strong> <em>file</em>;        |<br>| Default: | <code>lock_file logs/nginx.lock;</code> |</p>
+<p>这个就是上面的那个锁文件的路径.</p>
+<p>| Syntax:  | <strong>use</strong> <em>method</em>; |<br>| Default: | —                 |</p>
+<p>用来指定使用的事件模型. 不过这个选项不推荐手动执行, 因为Nginx会选择最优化最有效的机制.</p>
+<p>| Syntax:  | <strong>worker_connections</strong> <em>number</em>; |<br>| Default: | <code>worker_connections 512;</code>        |</p>
+<p>单个worker能处理的最大连接数.  这也是一个很重要的参数.</p>
+<p>接着来看看<strong>用于调试, 定位问题</strong>的选项:</p>
+<p>这个调试不是说调就调的, 首先你需要在编译的时候加上选项才可以:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 nginx-1.12.1]<span class="comment"># ./configure --help | grep debug</span></span><br><span class="line">  --with-debug                       <span class="built_in">enable</span> debug logging</span><br></pre></td></tr></table></figure>
+
+<p>| Syntax:  | <strong>daemon</strong> on | off; |<br>| Default: | <code>daemon on;</code>          |</p>
+<p>很好理解了, 就是说是否作为后台进程. 有点像很多进程的-D -d区别. 反正就是前台后台了</p>
+<p>| Syntax:  | <strong>master_process</strong> on | off; |<br>| Default: | <code>master_process on;</code>          |</p>
+<p>是否使用master-worker进程模型.</p>
+<p>| Syntax:  | <strong>error_log</strong> <em>file</em> [<em>level</em>];   |<br>| Default: | <code>error_log logs/error.log error;</code> |</p>
+<p>配置错误日志功能. 如果想要获得debug的级别, 需要在编译的时候加上–with-debug的选项.</p>
+<p>接着我们稍微做一下修改:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">worker_processes  2;</span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  10240;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着就是要使得nginx能够重读配置文件了, 这里我们可以向nginx发送信号:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 ~]<span class="comment"># nginx -s reload</span></span><br></pre></td></tr></table></figure>
+
+<p>接着查看ps aux:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 ~]<span class="comment"># ps aux | grep nginx</span></span><br><span class="line">root      32061  0.0  0.1  45944  1952 ?        Ss   Oct13   0:00 nginx: master process nginx</span><br><span class="line">nginx     33065  0.0  0.5  50196  5724 ?        S    02:35   0:00 nginx: worker process</span><br><span class="line">nginx     33066  0.1  0.5  50196  5724 ?        S    02:35   0:00 nginx: worker process</span><br></pre></td></tr></table></figure>
+
+<p>worker多了一个吧~</p>
+<blockquote>
+<p>如果你提示nginx: command not found. 原因很简单了, 我们编译安装的嘛~所以需要添加到PATH里哦.</p>
+</blockquote>
+<p>除了reload, 还有 quit, stop, reopen这些.</p>
+<p>现在我们说说Nginx作为Web服务器的相关配置:</p>
+<p>所有的相关配置都在http {}中(我们把他叫做上下文), 由http的核心模块 – <code>ngx_http_core_module</code>引入. 这个模块的选项特别多, 而且引入了很多内嵌变量.</p>
+<p>上下文里面还可以添加上下文, http其中会出现server这么个上下文,  而在server上下文中又会出现	location上下文, 一个server上下文有点类似httpd中的<code>&lt;VirtualHost&gt;</code>, 这里的location类似httpd的<code>&lt;Location&gt;</code>, 用于定义URL与本地文件系统的映射关系. 而localtion也可以不只有一个, 并且还可以搭配if条件判断语句使用.</p>
+<p>我们来整体看一下配置框架 :</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">  upstream &#123;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  server &#123;</span><br><span class="line">    location URL &#123;</span><br><span class="line">      root <span class="string">&quot;/path/to/somedir&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">    location URL &#123;</span><br><span class="line">      <span class="keyword">if</span> ... &#123;</span><br><span class="line">        ...</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  server &#123;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>框架就是这样了, 现在就这个框架看看常见的配置项目. 我们直接把默认的配置贴着说:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    server_name  localhost;</span><br><span class="line"></span><br><span class="line">    <span class="comment">#charset koi8-r;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#access_log  logs/host.access.log  main;</span></span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        root   html;</span><br><span class="line">        index  index.html index.htm;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">#error_page  404              /404.html;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># redirect server error pages to the static page /50x.html</span></span><br><span class="line">    <span class="comment">#</span></span><br><span class="line">    error_page   500 502 503 504  /50x.html;</span><br><span class="line">    location = /50x.html &#123;</span><br><span class="line">        root   html;</span><br><span class="line">    &#125;</span><br><span class="line">    ...(omitted)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们在后面加上一个最小化的server:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 8080;</span><br><span class="line">    server_name www.yaoxuannn.com;</span><br><span class="line">    root <span class="string">&quot;/vhost/web1&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着我们创建一下目录和index文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 ~]<span class="comment"># mkdir -pv /vhost/web1/</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/vhost’</span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/vhost/web1/’</span><br><span class="line">[root@VM-CentOS7 ~]<span class="comment"># echo &quot;&lt;h1&gt;It works WEB1&lt;/h1&gt;&quot; &gt; /vhost/web1/index.html</span></span><br></pre></td></tr></table></figure>
+
+<p>这个时候, 我们可以在重新载入文件之前检查一下配置, 没有问题的话就重启吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 ~]<span class="comment"># nginx -t</span></span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br><span class="line">[root@VM-CentOS7 ~]<span class="comment"># nginx -s reload</span></span><br></pre></td></tr></table></figure>
+
+<p>这么简单的一个虚拟主机就建好了, 是不是超简单. 但是回过头来, 其实这些选项都很有说头:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 8080;</span><br><span class="line">    server_name www.yaoxuannn.com;</span><br><span class="line">    root <span class="string">&quot;/vhost/web1&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="listen"><a href="#listen" class="headerlink" title="listen"></a>listen</h4><p>首先: listen, 这里可以跟地址(加端口, 不加默认80), 也可以直接端口, 也可以直接写上Unix套接字. 不仅如此, 后面可以跟上超多的选项, 但是..应该用的不多吧.</p>
+<h4 id="server-name"><a href="#server-name" class="headerlink" title="server_name"></a>server_name</h4><p>接着: server_name, 这个选项可以使用多个值, 也可以使用通配符, 甚至可以使用正则表达式, 但是要写上<code>~</code>来说明后面跟着正则表达式. 而匹配的顺序就是先做精确匹配, 接着做左侧通配符检查, 然后是右侧通配符检查, 再然后是正则表达式匹配检查, 最后使用default server, 没有的话就用第一个.</p>
+<h4 id="location"><a href="#location" class="headerlink" title="location"></a>location</h4><p>接下来我们说说**<code>location</code>**这个是一个很重要的属性, 而且有些难以理解:</p>
+<p>location其实有两种用法, 但是一般都只是用第一个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">location [ = | ~ | ~* | ^~ ] uri &#123; ... &#125;</span><br><span class="line">location @name &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<p>location可以根据用户的请求URL的不同来匹配不同的配置项. 一个server中有多个location, 每一个location块客户已实现访问控制等等诸多功能. 由于可以存在多个, 他也有自己的优先级. </p>
+<p>可以看到后面有很多不同的符号, 这些符号的意义不一. <code>=</code>表示请求匹配检查, 一个字符不一样就不匹配. <code>~</code>正则表达式匹配, 区分大小写. <code>~*</code>正则表达式匹配, 不区分大小写. <code>^~</code>: URI的前半部分匹配, 不检查正则.</p>
+<p>优先级最高的就是精确匹配(&#x3D;), 接着依次是<code>^~</code>, <code>~</code>, <code>~*</code>,以及最后的不携带符号的.</p>
+<h4 id="alias"><a href="#alias" class="headerlink" title="alias"></a>alias</h4><p>接着我们说一说别名(alias),  这个玩意同样是为了实现路径映射的. 这里我们对root和alias做一个对比你就知道是区别是什么了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">location /image &#123;</span><br><span class="line">  root <span class="string">&quot;/web/static&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">request: http://localhost/image/pic.png --&gt; <span class="string">&quot;/web/static/image/pic.png&quot;</span></span><br><span class="line"></span><br><span class="line">location /image/ &#123;</span><br><span class="line">  <span class="built_in">alias</span> <span class="string">&quot;/web/static/&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">request: http://locahost/image/pic.png --&gt; <span class="string">&quot;/web/static/pic.png&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>注意到我在写alias的时候在右边加上了&#x2F;. 这就是alias所替换的地方, 而root替换的是左边的根.</p>
+<h4 id="index"><a href="#index" class="headerlink" title="index"></a>index</h4><p>在httpd的时候, 我们使用index来指定哪一个做默认主页, 但是在Nginx中, 这个事情有一个专门的模块在负责.</p>
+<p>来看一下 <a target="_blank" rel="noopener" href="http://nginx.org/en/docs/http/ngx_http_index_module.html">http_index_module</a> 其实很简单:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = / &#123;</span><br><span class="line">    index index.html index.php;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>先搜索左边的, 没有的话就继续找后面的.</p>
+<h4 id="error-page"><a href="#error-page" class="headerlink" title="error_page"></a>error_page</h4><p>接着再说说错误页面, 也很简单:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">error_page 404             /404.html;</span><br><span class="line">error_page 500 502 503 504 /50x.html;</span><br></pre></td></tr></table></figure>
+
+<p>通过错误码和位置就可以了. 同时, 我们也可以重定向到别的位置. 不仅如此, 我们还可以覆盖状态码, 在状态码和位置的中加上<code>=code</code>就行了(但是要求必须是自定义404页面才可以), 我们试一试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">error_page  404              /404.html;</span><br><span class="line"><span class="comment"># 这是默认的配置</span></span><br><span class="line"><span class="comment"># 接着我们访问一下</span></span><br><span class="line">[root@VM-CentOS7 ~]<span class="comment"># curl -I http://192.168.206.138/non-exist.html</span></span><br><span class="line">HTTP/1.1 404 Not Found</span><br><span class="line">Server: nginx/1.12.1</span><br><span class="line">Date: Fri, 13 Oct 2017 20:45:30 GMT</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 169</span><br><span class="line">Connection: keep-alive</span><br><span class="line"><span class="comment"># 404状态码, 接着我们修改配置</span></span><br><span class="line">error_page  404     =200         /404.html;</span><br><span class="line">[root@VM-CentOS7 ~]<span class="comment"># curl -I http://192.168.206.138/non-exist.html</span></span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Server: nginx/1.12.1</span><br><span class="line">Date: Fri, 13 Oct 2017 20:51:55 GMT</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 3</span><br><span class="line">Last-Modified: Fri, 13 Oct 2017 20:51:16 GMT</span><br><span class="line">Connection: keep-alive</span><br><span class="line">ETag: <span class="string">&quot;59e12744-3&quot;</span></span><br><span class="line">Accept-Ranges: bytes</span><br></pre></td></tr></table></figure>
+
+<p>于是就变成200了.</p>
+<h4 id="访问控制"><a href="#访问控制" class="headerlink" title="访问控制"></a>访问控制</h4><p>接着我们扯扯 <strong>访问控制</strong>.</p>
+<p>首先是基于IP的访问控制, 很简单的两个指令. allow和deny.我们只要在后面加上{主机IP|网络地址|ALL}就可以实现了. 这就是基于IP的访问控制. 接着看看基于用户的访问控制, 和httpd一样, Nginx也支持basic和digest两种形式的认证. 有趣的是, basic的密码文件建议使用htpasswd来创建. 对于basic认证, 需要指明两个选项:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auth_basic <span class="string">&quot;Only for admin.&quot;</span>;</span><br><span class="line">auth_basic_user_file /etc/nginx/users/.htpasswd;</span><br></pre></td></tr></table></figure>
+
+<p>我们使用htpasswd来创建那个密码文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 <span class="built_in">users</span>]<span class="comment"># htpasswd -c -m /etc/nginx/users/.htpasswd justin</span></span><br><span class="line">New password: </span><br><span class="line">Re-<span class="built_in">type</span> new password: </span><br><span class="line">Adding password <span class="keyword">for</span> user justin</span><br><span class="line">[root@VM-CentOS7 <span class="built_in">users</span>]<span class="comment"># nginx -t</span></span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br><span class="line">[root@VM-CentOS7 <span class="built_in">users</span>]<span class="comment"># nginx -s reload</span></span><br></pre></td></tr></table></figure>
+
+<p>接着再次访问就可以了.</p>
+<h4 id="ssl"><a href="#ssl" class="headerlink" title="ssl"></a>ssl</h4><p>接着我们再试试把nginx设置成为ssl. 已经搞过好几次了, 这次还是直接走流程:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 ~]<span class="comment"># cd /etc/pki/CA/</span></span><br><span class="line">[root@VM-CentOS7 CA]<span class="comment"># (umask 077; openssl genrsa -out ./private/cakey.pem 2048)</span></span><br><span class="line">Generating RSA private key, 2048 bit long modulus</span><br><span class="line">.............+++</span><br><span class="line">..................................................+++</span><br><span class="line">e is 65537 (0x10001)</span><br><span class="line">[root@VM-CentOS7 CA]<span class="comment"># openssl req -x509 -new -key private/cakey.pem -out cacert.pem -days 3650</span></span><br><span class="line">You are about to be asked to enter information that will be incorporated</span><br><span class="line">into your certificate request.</span><br><span class="line">What you are about to enter is what is called a Distinguished Name or a DN.</span><br><span class="line">There are quite a few fields but you can leave some blank</span><br><span class="line">For some fields there will be a default value,</span><br><span class="line">If you enter <span class="string">&#x27;.&#x27;</span>, the field will be left blank.</span><br><span class="line">-----</span><br><span class="line">Country Name (2 letter code) [XX]:CN</span><br><span class="line">State or Province Name (full name) []:HB</span><br><span class="line">Locality Name (eg, city) [Default City]:WH</span><br><span class="line">Organization Name (eg, company) [Default Company Ltd]:NetCool</span><br><span class="line">Organizational Unit Name (eg, section) []:Ops</span><br><span class="line">Common Name (eg, your name or your server<span class="string">&#x27;s hostname) []:ca.yaoxuannn.com</span></span><br><span class="line"><span class="string">Email Address []:admin@yaoxuannn.com    </span></span><br><span class="line"><span class="string">[root@VM-CentOS7 CA]# echo 01 &gt; serial </span></span><br><span class="line"><span class="string">[root@VM-CentOS7 CA]# touch index.txt</span></span><br></pre></td></tr></table></figure>
+
+<p>自签证书创建完成. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-CentOS7 CA]<span class="comment"># cd /etc/nginx/</span></span><br><span class="line">[root@VM-CentOS7 nginx]<span class="comment"># mkdir ssl</span></span><br><span class="line">[root@VM-CentOS7 nginx]<span class="comment"># cd ssl/</span></span><br><span class="line">[root@VM-CentOS7 ssl]<span class="comment"># (umask 077; openssl genrsa -out nginx.key 1024)</span></span><br><span class="line">Generating RSA private key, 1024 bit long modulus</span><br><span class="line">..............++++++</span><br><span class="line">..............++++++</span><br><span class="line">e is 65537 (0x10001)</span><br><span class="line">[root@VM-CentOS7 ssl]<span class="comment"># openssl req -new -key nginx.key -out nginx.csr</span></span><br><span class="line">You are about to be asked to enter information that will be incorporated</span><br><span class="line">into your certificate request.</span><br><span class="line">What you are about to enter is what is called a Distinguished Name or a DN.</span><br><span class="line">There are quite a few fields but you can leave some blank</span><br><span class="line">For some fields there will be a default value,</span><br><span class="line">If you enter <span class="string">&#x27;.&#x27;</span>, the field will be left blank.</span><br><span class="line">-----</span><br><span class="line">Country Name (2 letter code) [XX]:CN</span><br><span class="line">State or Province Name (full name) []:HB</span><br><span class="line">Locality Name (eg, city) [Default City]:WH    </span><br><span class="line">Organization Name (eg, company) [Default Company Ltd]:NetCool</span><br><span class="line">Organizational Unit Name (eg, section) []:Ops</span><br><span class="line">Common Name (eg, your name or your server<span class="string">&#x27;s hostname) []:yaoxuannn.com</span></span><br><span class="line"><span class="string">Email Address []:admin@yaoxuannn.com</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Please enter the following &#x27;</span>extra<span class="string">&#x27; attributes</span></span><br><span class="line"><span class="string">to be sent with your certificate request</span></span><br><span class="line"><span class="string">A challenge password []:</span></span><br><span class="line"><span class="string">An optional company name []:</span></span><br><span class="line"><span class="string">[root@VM-CentOS7 ssl]# openssl ca -in nginx.csr -out nginx.crt -days 3650</span></span><br><span class="line"><span class="string">Using configuration from /etc/pki/tls/openssl.cnf</span></span><br><span class="line"><span class="string">Check that the request matches the signature</span></span><br><span class="line"><span class="string">Signature ok</span></span><br><span class="line"><span class="string">Certificate Details:</span></span><br><span class="line"><span class="string">        Serial Number: 1 (0x1)</span></span><br><span class="line"><span class="string">        Validity</span></span><br><span class="line"><span class="string">            Not Before: Oct 14 04:27:39 2017 GMT</span></span><br><span class="line"><span class="string">            Not After : Oct 12 04:27:39 2027 GMT</span></span><br><span class="line"><span class="string">        Subject:</span></span><br><span class="line"><span class="string">            countryName               = CN</span></span><br><span class="line"><span class="string">            stateOrProvinceName       = HB</span></span><br><span class="line"><span class="string">            organizationName          = NetCool</span></span><br><span class="line"><span class="string">            organizationalUnitName    = Ops</span></span><br><span class="line"><span class="string">            commonName                = yaoxuannn.com</span></span><br><span class="line"><span class="string">            emailAddress              = admin@yaoxuannn.com</span></span><br><span class="line"><span class="string">        X509v3 extensions:</span></span><br><span class="line"><span class="string">            X509v3 Basic Constraints: </span></span><br><span class="line"><span class="string">                CA:FALSE</span></span><br><span class="line"><span class="string">            Netscape Comment: </span></span><br><span class="line"><span class="string">                OpenSSL Generated Certificate</span></span><br><span class="line"><span class="string">            X509v3 Subject Key Identifier: </span></span><br><span class="line"><span class="string">                89:29:C1:01:5D:B9:B6:07:00:53:16:A0:49:3C:D2:D9:FB:50:49:0F</span></span><br><span class="line"><span class="string">            X509v3 Authority Key Identifier: </span></span><br><span class="line"><span class="string">                keyid:CE:97:5A:DC:80:5A:A0:A1:F9:3A:8E:76:0E:89:5E:F7:29:62:4E:65</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Certificate is to be certified until Oct 12 04:27:39 2027 GMT (3650 days)</span></span><br><span class="line"><span class="string">Sign the certificate? [y/n]:y</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">1 out of 1 certificate requests certified, commit? [y/n]y</span></span><br><span class="line"><span class="string">Write out database with 1 new entries</span></span><br><span class="line"><span class="string">Data Base Updated</span></span><br></pre></td></tr></table></figure>
+
+<p>证书签署完成. 接下来就是配置nginx了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       443 ssl;</span><br><span class="line">    server_name  yaoxuannn.com;</span><br><span class="line"></span><br><span class="line">    ssl_certificate      /etc/nginx/ssl/nginx.crt;</span><br><span class="line">    ssl_certificate_key  /etc/nginx/ssl/nginx.key;</span><br><span class="line"></span><br><span class="line">    ssl_session_cache    shared:SSL:1m;</span><br><span class="line">    ssl_session_timeout  5m;</span><br><span class="line"></span><br><span class="line">    ssl_ciphers  HIGH:!aNULL:!MD5;</span><br><span class="line">    ssl_prefer_server_ciphers  on;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        root   /usr/share/nginx/html;</span><br><span class="line">        index  index.html index.htm;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>验证配置接着重载配置就行了 ( 当然了, 这是自签的. 所以浏览器肯定会提示不安全. 你也可以选择把自己加入进去~ )</p>
+<h4 id="rewrite"><a href="#rewrite" class="headerlink" title="rewrite"></a>rewrite</h4><p>没有问题了, 接着来看看rewrite, 这个指令可以URL重写, 来看一个示例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rewrite ^/image/(.*\.jpg)$ /img/<span class="variable">$1</span> <span class="built_in">break</span>;</span><br></pre></td></tr></table></figure>
+
+<p>这个指令会将: XXXX.com&#x2F;image&#x2F;1.jpg &#x3D;&#x3D;&gt; XXXX.com&#x2F;img&#x2F;1.jpg</p>
+<p>这种操作对于用户而言是透明的, 也就是说用户并不能发觉自己访问的地方是另外一个位置, 服务器悄悄的更换了URL.</p>
+<p>前面的好说, 就是查找替换嘛, 主要说说最后面的那个flag.</p>
+<ul>
+<li>last : 就是说在更换了之后, 不再进行后面的规则匹配, 接着User Agent重发请求, 在从头开始执行前面的过程, <strong>有可能会进入死循环</strong>. </li>
+<li>break : 一旦此规则重写完成就不会再被任何重写规则进行检查, 新请求也不会被当前location中的任何规则检查.</li>
+<li>redirect : 以302响应码返回新的URL.</li>
+<li>permanent : 以301响应码进行永久重定向.</li>
+</ul>
+<p> 一般情况下, redirect和permanent用的不多, 他们会直接改变用户请求的URL, 因为30X状态码嘛~</p>
+<h4 id="if"><a href="#if" class="headerlink" title="if"></a>if</h4><p>接着我们再来说说if条件判断, 可以在server和location中使用. 语法是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (condition) &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<p>先来看一下condition有哪些: </p>
+<ul>
+<li>变量名, 空值和0起始的(包括0)认定为False, 否则均为True</li>
+<li>以变量为操作数的比较表达式, 可以使用 &#x3D;, !&#x3D;类似的比较操作符</li>
+<li>以正则表达式的模式匹配, 还是那两个 <code>~</code> 和 <code>~*</code> .也可以在前面加上<code>!</code>取反. </li>
+<li>测试指定路径是否为文件, -f和!-f</li>
+<li>测试指定路径是否为目录, -d和!-d</li>
+<li>测试文件存在性, -e和!-e</li>
+<li>检查文件是否有执行权限, -x和!-x</li>
+</ul>
+<p>一个典型应用就像这样: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$http_user_agent</span> ~* IE) &#123;</span><br><span class="line">    rewrite ^(.*)$ /msie/<span class="variable">$1</span> <span class="built_in">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="防盗链"><a href="#防盗链" class="headerlink" title="防盗链"></a>防盗链</h4><p>如何为站点加上防盗链呢? 其实防盗的原理就是根据请求的referer判断的, 因此我们只需要设定允许访问的来源就好了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location ~*(gif|jpeg|png|jpg)$ &#123;</span><br><span class="line">  valid_referer none blocked yaoxuannn.com;</span><br><span class="line">  <span class="keyword">if</span> (<span class="variable">$invalid_referer</span>) &#123;</span><br><span class="line">    rewrite ^/ http://yaoxuannn.com/403.html</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="定制日志格式"><a href="#定制日志格式" class="headerlink" title="定制日志格式"></a>定制日志格式</h4><p>回过头来有说到了日志格式, 在httpd的时候我们说使用%符来说明, 但是现在我们使用的就是nginx的各个内建变量了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">log_format  main  <span class="string">&#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span></span><br><span class="line">                  <span class="string">&#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span></span><br><span class="line">                  <span class="string">&#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;</span>;</span><br><span class="line">access_log  logs/access.log  main;</span><br></pre></td></tr></table></figure>
+
+<p><strong>以上就是对http相关的一些基本的设定选项了. 除了http, 还有一些关于连接的设定也很重要</strong></p>
+<p>(我知道我写的很乱…但是都试一试就行了~)</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">keepalive_timeout</span> <span class="comment">#; # 长连接的超时时长</span></span><br><span class="line">keepalive_requests <span class="comment">#; # 一个长连接上所能够允许的请求的</span></span><br><span class="line">keepalive_disable [msie6|safari|<span class="literal">none</span>]; <span class="comment"># 为指定类型的UserAgent禁用长连接</span></span><br><span class="line"><span class="attribute">tcp_nodelay</span> <span class="literal">on</span>|<span class="literal">off</span>; <span class="comment"># 是否对长连接使用TCP_NODELAY选项</span></span><br><span class="line"><span class="attribute">client_header_timeout</span> <span class="comment">#; # 读取http请求报文首部的超时时长</span></span><br><span class="line">client_body_timeout <span class="comment">#; # 读取http请求报文主体的超时时长</span></span><br><span class="line">send_timeout <span class="comment">#; 发送响应报文的超时</span></span><br></pre></td></tr></table></figure>
+
+<p>更多的选项以后再说道反向代理的时候再说.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/MindMap/Nginx_mind.png" alt="MindMap/Nginx_mind.png"></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%9F%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">废话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#I-x2F-O%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">I&#x2F;O模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx"><span class="toc-number">3.</span> <span class="toc-text">Nginx</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Nginx%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-number">3.1.</span> <span class="toc-text">Nginx的安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Nginx%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">3.2.</span> <span class="toc-text">Nginx的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#listen"><span class="toc-number">3.2.1.</span> <span class="toc-text">listen</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#server-name"><span class="toc-number">3.2.2.</span> <span class="toc-text">server_name</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#location"><span class="toc-number">3.2.3.</span> <span class="toc-text">location</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#alias"><span class="toc-number">3.2.4.</span> <span class="toc-text">alias</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#index"><span class="toc-number">3.2.5.</span> <span class="toc-text">index</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#error-page"><span class="toc-number">3.2.6.</span> <span class="toc-text">error_page</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-number">3.2.7.</span> <span class="toc-text">访问控制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ssl"><span class="toc-number">3.2.8.</span> <span class="toc-text">ssl</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rewrite"><span class="toc-number">3.2.9.</span> <span class="toc-text">rewrite</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#if"><span class="toc-number">3.2.10.</span> <span class="toc-text">if</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B2%E7%9B%97%E9%93%BE"><span class="toc-number">3.2.11.</span> <span class="toc-text">防盗链</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E5%88%B6%E6%97%A5%E5%BF%97%E6%A0%BC%E5%BC%8F"><span class="toc-number">3.2.12.</span> <span class="toc-text">定制日志格式</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&text=Nginx初识和Web服务配置"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&is_video=false&description=Nginx初识和Web服务配置"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Nginx初识和Web服务配置&body=Check out this article: https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&title=Nginx初识和Web服务配置"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&name=Nginx初识和Web服务配置&description=&lt;p&gt;**&lt;code&gt;Engine-X&lt;/code&gt;  not  &lt;a href=&#34;https://www.nginx.com/resources/wiki/community/faq/#how-do-you-pronounce-nginx&#34;&gt;&lt;code&gt;en-jinks&lt;/code&gt;&lt;/a&gt;. ** &lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/12/Nginx%E5%88%9D%E8%AF%86%E5%92%8CWeb%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/&t=Nginx初识和Web服务配置"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

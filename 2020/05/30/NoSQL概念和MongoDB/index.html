@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="NoSQL  NoSQL  &#x3D;&gt; NOT ONLY SQL  现在我们来了解一下NoSQL的概念. 为了引入NoSQL, 我们先从现在的大数据来说说. 互联网公司每分钟甚至每秒都产生巨大的数据量. 并且数据量的增长速度还在越来越快, 因此, 数据的存储, 处理分析都会出现各种各样问题. 因此, 衍生出的数据库系统, 我们有:  并行数据库: 水平切分, 分区查询 NoSQL数据">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NoSQL概念和MongoDB">
+<meta property="og:url" content="https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="NoSQL  NoSQL  &#x3D;&gt; NOT ONLY SQL  现在我们来了解一下NoSQL的概念. 为了引入NoSQL, 我们先从现在的大数据来说说. 互联网公司每分钟甚至每秒都产生巨大的数据量. 并且数据量的增长速度还在越来越快, 因此, 数据的存储, 处理分析都会出现各种各样问题. 因此, 衍生出的数据库系统, 我们有:  并行数据库: 水平切分, 分区查询 NoSQL数据">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://docs.mongodb.com/manual/_images/sharded-cluster-production-architecture.bakedsvg.svg">
+<meta property="og:image" content="https://docs.mongodb.com/manual/_images/sharding-range-based.bakedsvg.svg">
+<meta property="og:image" content="https://docs.mongodb.com/manual/_images/sharding-hash-based.bakedsvg.svg">
+<meta property="article:published_time" content="2020-05-30T20:40:20.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="NoSQL">
+<meta property="article:tag" content="MongoDB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://docs.mongodb.com/manual/_images/sharded-cluster-production-architecture.bakedsvg.svg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>NoSQL概念和MongoDB</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/05/09/MySQL%E7%9A%84%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E6%9E%B6%E6%9E%84/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&text=NoSQL概念和MongoDB"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&is_video=false&description=NoSQL概念和MongoDB"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=NoSQL概念和MongoDB&body=Check out this article: https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&name=NoSQL概念和MongoDB&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&t=NoSQL概念和MongoDB"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NoSQL"><span class="toc-number">1.</span> <span class="toc-text">NoSQL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MongoDB"><span class="toc-number">2.</span> <span class="toc-text">MongoDB</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MongoDB%E7%9A%84%E5%A4%8D%E5%88%B6%E5%8A%9F%E8%83%BD"><span class="toc-number">2.1.</span> <span class="toc-text">MongoDB的复制功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MongoDB%E7%9A%84%E5%88%86%E7%89%87%E5%8A%9F%E8%83%BD"><span class="toc-number">2.2.</span> <span class="toc-text">MongoDB的分片功能</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        NoSQL概念和MongoDB
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-05-30T20:40:20.000Z" class="dt-published" itemprop="datePublished">2020-05-30</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/MongoDB/" rel="tag">MongoDB</a>, <a class="p-category" href="/tags/NoSQL/" rel="tag">NoSQL</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <span id="more"></span>
+
+<h2 id="NoSQL"><a href="#NoSQL" class="headerlink" title="NoSQL"></a>NoSQL</h2><blockquote>
+<p> NoSQL  &#x3D;&gt; <strong>N</strong>OT <strong>O</strong>NLY <strong>SQL</strong></p>
+</blockquote>
+<p>现在我们来了解一下NoSQL的概念. 为了引入NoSQL, 我们先从现在的大数据来说说. 互联网公司每分钟甚至每秒都产生巨大的数据量. 并且数据量的增长速度还在越来越快, 因此, 数据的存储, 处理分析都会出现各种各样问题.</p>
+<p>因此, 衍生出的数据库系统, 我们有:</p>
+<ul>
+<li>并行数据库: 水平切分, 分区查询</li>
+<li>NoSQL数据库管理系统: 非关系模型, 分布式, 可能不支持ACID数据库设计范式<ul>
+<li>数据模型简单</li>
+<li>弱一致性 (分布式通用概念)</li>
+<li>元数据和数据分离</li>
+<li>高吞吐量</li>
+<li>水平扩展能力和低端硬件集群</li>
+</ul>
+</li>
+<li>NewSQL数据库管理系统 (Combination of ACID and scalability of NoSQL)<ul>
+<li>Azure Cosmos DB</li>
+</ul>
+</li>
+<li>云数据管理系统</li>
+</ul>
+<p>我们现在很流行的大数据分析处理方案就是MapReduce, 例如Hadoop. 而Hadoop的数据库软件, HBase也是一个NoSQL数据库系统.</p>
+<p>典型NoSQL数据存储模型有这些:</p>
+<ul>
+<li>列式存储: 以”列”为中心进行存储, 将同一列数据存储在一起<ul>
+<li>应用场景: 在分布式文件系统上提供支持随机读写的分布式数据存储</li>
+<li>典型产品: HBase, Cassandra</li>
+<li>优点: 快速查询, 高扩展性, 易于实现分布式扩展.</li>
+</ul>
+</li>
+<li>文档数据: 键值模型, 但是存储为文档<ul>
+<li>应用场景: 非强事务需求的Web应用. </li>
+<li>典型产品: MongoDB, Elastic</li>
+<li>优点: 数据模型无需事先定义.</li>
+</ul>
+</li>
+<li>键值数据: 基于哈希表实现的K-V<ul>
+<li>应用场景: 内容缓存, 用于大量并行数据访问的高负载场景</li>
+<li>典型产品: Redis</li>
+<li>优点: 查询迅速</li>
+</ul>
+</li>
+<li>图式数据: 图式结构<ul>
+<li>应用场景: 社交网络, 推荐系统, 关系图谱</li>
+<li>典型数据: Neo4j</li>
+<li>优点: 图式计算</li>
+</ul>
+</li>
+</ul>
+<h2 id="MongoDB"><a href="#MongoDB" class="headerlink" title="MongoDB"></a>MongoDB</h2><p>接下来我们就来说说MongoDB, 今天的主角.</p>
+<p>MongoDB, 刚刚也已经提到, 是一个文档数据模型的NoSQL数据库. 在我们的epel源中就有mongodb的包 但是版本是2.6, 如果需要新版本就还是使用mongodb官方提供的yum仓库就好.</p>
+<p>官方的文档写的很详细了, 熟悉一下CRUD操作直接来一遍就行. 这里做一个简单总结</p>
+<p>插入操作:<br><code>db.coll.insert()</code></p>
+<p>查找操作:</p>
+<p><code>db.coll.find(cond, specified field)</code> -&gt; <code>cond: &#123; field: &#123;operator&#125;, ... &#125;</code> </p>
+<p>其中, 比较操作使用<code>$gt $gte $lt $lte $ne $in $nin</code> 逻辑操作使用: <code>$or $and $not</code></p>
+<p>存在性判断使用<code>$exists</code> 值类型判断<code>$type</code></p>
+<p>MongoDB的查询语法还是很有意思的, 都是使用<code>&#123;&#125;</code>来描述一个操作, 通过<code>operator: value</code>来指明.</p>
+<p>接下来我们再来说说说谈到数据库的时候, 就一定绕不开的一个话题, 那就是<strong>索引</strong>.</p>
+<p>对于特别大的数据集, 索引就十分重要了. 索引会对一个特定字段来实现, 这个字段一般都是查找的条件. 我们将这些查找条件抽取出来, 放在一个专门的数据结构, 然后进行排序. 索引也是需要增删查改的, 当我们的原始数据的数据发生变化, 索引也需要发生变化. 因此我们说索引加速的查询操作, 但是加重了IO操作. 不过对于大量数据而言, 索引还是利远远大于弊的.</p>
+<p>我们知道索引可以降序也可以升序. 另外, 根据索引查找的结果不是直接结果, 而是一个指向结果的位置. 索引是个数据结构, 因此也有不同的类型, 其中对于MySQL我们之前说过是B+ Tree. MongoDB同样, 也是使用的B+ Tree.</p>
+<p>另外一种索引就是哈希索引. 哈希索引把对应字段每一个值当做键, 构建哈希, 使用这个哈希值来查找. 一般来说, 哈希索引会构建哈希桶, 现检索哈希桶, 再在桶里面查找对应的值.</p>
+<p>另外还有空间索引和全文索引.</p>
+<p>对于MongoDB而言, 它支持多种索引形式. </p>
+<ul>
+<li>单字段索引</li>
+<li>组合索引(多字段索引)</li>
+<li>多键索引 - 用于数组</li>
+<li>基于位置的索引, 空间索引</li>
+<li>对于文本的搜索, 全文索引</li>
+<li>哈希索引</li>
+</ul>
+<p>MongoDB创建索引很简单, 直接对应的collection中使用<code>createIndex</code>就可以了. 这个过程我们也可以理解成是一个排序过程, MongoDB使用<code>1</code>来表示升序, <code>-1</code>表示降序. 创建各种索引的方式也很简单:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">addresses</span>.<span class="title function_">createIndex</span>( &#123; <span class="string">&quot;xmpp_id&quot;</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">sparse</span>: <span class="literal">true</span> &#125; ) <span class="comment">// 创建一个稀疏索引</span></span><br><span class="line">db.<span class="property">members</span>.<span class="title function_">createIndex</span>( &#123; <span class="string">&quot;user_id&quot;</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">unique</span>: <span class="literal">true</span> &#125; ) <span class="comment">// 创建一个unique约束</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来我们回到服务端程序, mongod. 来看一下它的一些常用选项吧.</p>
+<p><code>fork=&#123;true|false&#125;</code> mongod是否运行到后台</p>
+<p><code>bind_ip=IP</code> 监听地址</p>
+<p><code>port=PORT</code> 指定监听的端口</p>
+<p><code>maxConns</code> 最大连接数</p>
+<p><code>logPath</code> &#x2F; <code>syslog</code> 可以指定是mongo自己来管理日志或者交给rsyslog来管理日志.</p>
+<p>等等等…</p>
+<h3 id="MongoDB的复制功能"><a href="#MongoDB的复制功能" class="headerlink" title="MongoDB的复制功能"></a>MongoDB的复制功能</h3><p>和MySQL一样, MongoDB也需要在某一个数据服务器离线之后, 仍然需要通过冗余继续提供数据服务. 因此需要复制功能. MongoDB有两种类型的复制功能, 其一就是主从复制<code>master/slave</code>, 另一个就是<code>replica set</code>复制集. 更常用的, 是复制集.</p>
+<p>我们可以把replica set理解成是服务于同一个数据集的多个mongodb实例. 在MySQL中, 我们是使用的二进制日志来实现复制, 从节点去获取主节点的日志来进行重放. 而MongoDB的主节点将数据修改操作保存到了oplog中.</p>
+<p>对于mongodb来讲, 当主节点不可用的时候, 两个从节点会对主节点进行心跳检测, 当一段时间内收不到心跳回复后, 这两个从节点就会触发选举操作, 谁的优先级高, 谁就会自动成为主节点. 这种模式下, 最好是存在一个第三节点, 用来参与<strong>仲裁</strong>过程. 这样当从节点联系不到主节点的时候, 就会去联系仲裁节点. 这个仲裁节点甚至可以是一个web服务, 只要安装mongodb服务即可, 并不需要参与到操作日志的保存和数据操作. 因此对于mongodb的复制过程, 应该至少三个节点, 且应该是奇数个节点.</p>
+<p>在复制集中, 节点有这些分类:</p>
+<p>第一种, 0优先级的节点, 冷备节点, 不会被选举成为主节点, 但可以参与选举.</p>
+<p>基于这一种, 我们有被隐藏的从节点, 它也是一个0优先级的从节点, 且对客户端不可见.</p>
+<p>第三种, 延迟复制的从节点, 同样, 也是一个0优先级的从节点, 且复制时间落后于主节点一个固定时长(数据一直是过期数据)</p>
+<p>还有就是我们说过的仲裁节点.</p>
+<p>说完这些节点, 我们就来说下MongoDB的复制架构, 一个就是oplog, 另一个是heartbeat.</p>
+<p>我们先来说这个oplog, 他是一个大小固定的文件. 通常这个文件位置在local数据库中.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; use local</span><br><span class="line">switched to db local</span><br><span class="line">&gt; show collections</span><br><span class="line">startup_log</span><br></pre></td></tr></table></figure>
+
+<p>我们说过这个大小是固定的, 因此在一开始的时候, 这个空间(5%)就会预留出来了. (最小是990MB, 最大是50G, 当然这个大小是可以修改的) 另外, 这个日志文件是幂等性的. 不过当然, 既然大小是固定的, 我们就不能从一开始进行存储数据.</p>
+<p>那么如何应用这个文件呢. 我们的从节点一般有这些方式来应用:</p>
+<ul>
+<li>初始同步</li>
+<li>回滚后追赶</li>
+<li>切片块迁移</li>
+</ul>
+<p>local数据库存放了副本集的所有元数据和oplog.</p>
+<p>当从节点联系不到主节点的时候, 就会触发选举, 除此之外, 还有这些事件可以触发选举机制:</p>
+<ul>
+<li>新副本集初始化时</li>
+<li>主节点收到stepDown()命令时</li>
+<li>某从节点有更高的优先级且已经满足成为主节点的其他所有条件</li>
+<li>主节点无法联系到副本集的”多数方”</li>
+</ul>
+<h3 id="MongoDB的分片功能"><a href="#MongoDB的分片功能" class="headerlink" title="MongoDB的分片功能"></a>MongoDB的分片功能</h3><p>随着我们业务发展, 数据量会越来越大. 渐渐地, 单机资源CPU. MEM…会不够, 为了扩展MongoDB, 我们就可以将数据进行切片. MongoDB可以自己做分片, 而MySQL就需要使用额外的分片框架来实现了.<br><img src="https://docs.mongodb.com/manual/_images/sharded-cluster-production-architecture.bakedsvg.svg" alt="Diagram of a sample sharded cluster for production purposes.  Contains exactly 3 config servers, 2 or more ``mongos`` query routers, and at least 2 shards. The shards are replica sets."></p>
+<p>在MongoDB内部, 有三个组件:</p>
+<ul>
+<li>mongos: 这是一个router, 接受用户的查询请求, 相当于代理</li>
+<li>config server: router需要知道查询的数据在哪一个分片上, 需要一个元数据服务器, 存放了索引的mapping</li>
+<li>shard: 数据分片, 也成为mongod实例</li>
+</ul>
+<p>当我们的sharding有节点挂掉了的时候, 就会出现数据不完整的情况, 因此, 我们需要做replica, 同样的, 作为元数据服务器, 如果它挂掉了, 整个集群就完蛋了, 所以这个也需要做复制冗余.</p>
+<p>接下来我们来看一下分片的策略, 显然每一个分片应该保证尽量平均才行, MongoDB使用<code>shard key</code>来进行集合中文档的分片分布. 这个<code>shard key</code>是一个被索引的域, 也就是说, MongoDB通过索引排序来进行分片的划分.</p>
+<p>当我们进行分片操作的时候, 我们可以选择<code>shard key</code>, 文档中的这个<code>shard key</code>的值就会决定它在不同分片中的分布. 我们之前说过, 索引十分类型的对不, 所以同理, 不同类型的索引, 也会决定不同类型的分片.</p>
+<p>首先第一种是基于范围的切片:</p>
+<p><img src="https://docs.mongodb.com/manual/_images/sharding-range-based.bakedsvg.svg" alt="Diagram of the shard key value space segmented into smaller ranges or chunks."></p>
+<p>此时我们的分片是连续的, 在这种分片模式下, shard key越接近的文档就越有可能会被分在同样的chunk或者shard中. 这种分片模式是默认的.</p>
+<p>另一种是基于哈希的分片:</p>
+<p><img src="https://docs.mongodb.com/manual/_images/sharding-hash-based.bakedsvg.svg" alt="Diagram of the hashed based segmentation."></p>
+<p>显然, 哈希所以不存在排序, 但是在这种模式下, 我们可以使得数据写操作更分散.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NoSQL"><span class="toc-number">1.</span> <span class="toc-text">NoSQL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MongoDB"><span class="toc-number">2.</span> <span class="toc-text">MongoDB</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MongoDB%E7%9A%84%E5%A4%8D%E5%88%B6%E5%8A%9F%E8%83%BD"><span class="toc-number">2.1.</span> <span class="toc-text">MongoDB的复制功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MongoDB%E7%9A%84%E5%88%86%E7%89%87%E5%8A%9F%E8%83%BD"><span class="toc-number">2.2.</span> <span class="toc-text">MongoDB的分片功能</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&text=NoSQL概念和MongoDB"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&is_video=false&description=NoSQL概念和MongoDB"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=NoSQL概念和MongoDB&body=Check out this article: https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&title=NoSQL概念和MongoDB"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&name=NoSQL概念和MongoDB&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/&t=NoSQL概念和MongoDB"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

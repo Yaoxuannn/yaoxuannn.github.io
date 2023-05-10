@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="让我们继续聊聊架构和Nginx吧.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx反向代理和缓存及其他应用">
+<meta property="og:url" content="https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="让我们继续聊聊架构和Nginx吧.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/MindMap/Nginx_LB_mind.png">
+<meta property="article:published_time" content="2017-10-18T16:42:53.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:45:15.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Nginx">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/MindMap/Nginx_LB_mind.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Nginx反向代理和缓存及其他应用</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/14/Linux%E9%9B%86%E7%BE%A4%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E5%92%8C%E8%B0%83%E5%BA%A6%E6%96%B9%E6%B3%95/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&text=Nginx反向代理和缓存及其他应用"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&is_video=false&description=Nginx反向代理和缓存及其他应用"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Nginx反向代理和缓存及其他应用&body=Check out this article: https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&name=Nginx反向代理和缓存及其他应用&description=&lt;p&gt;让我们继续聊聊架构和Nginx吧.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&t=Nginx反向代理和缓存及其他应用"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Web%E7%AB%99%E7%82%B9%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">Web站点架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx%E7%9A%84%E4%BB%A3%E7%90%86%E5%8A%9F%E8%83%BD"><span class="toc-number">2.</span> <span class="toc-text">Nginx的代理功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx%E7%9A%84%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98"><span class="toc-number">3.</span> <span class="toc-text">Nginx的代理缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#upstream"><span class="toc-number">4.</span> <span class="toc-text">upstream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastcgi"><span class="toc-number">5.</span> <span class="toc-text">fastcgi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE-2016"><span class="toc-number">6.</span> <span class="toc-text">生产环境配置(2016)</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Nginx反向代理和缓存及其他应用
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-18T16:42:53.000Z" class="dt-published" itemprop="datePublished">2017-10-18</time>
+        
+        (Updated: <time datetime="2020-11-30T01:45:15.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/Nginx/" rel="tag">Nginx</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>让我们继续聊聊架构和Nginx吧.</p>
+<span id="more"></span>
+
+<h2 id="Web站点架构"><a href="#Web站点架构" class="headerlink" title="Web站点架构"></a>Web站点架构</h2><p>首先还是来从大的方面来说说. 我们之前其实是说过的, LVS是工作在传输层的, 所以对应用层的协议报文是没有什么处理能力, 而Nginx是工作在应用层的, 所以和LVS相比拥有更加高层的能力. 而且不仅如此, 我们的LVS仅仅是一个调度器, 最终和客户端进行通信的主机还是我们的后端主机, 也就是那些real server. 但是Nginx是不一样的, 之前也提到过, Nginx会自己做请求, 将资源抓取到自己的本地, 接着在组装响应报文发送给客户端.  这个就是我们说的<strong>反向代理</strong>. 对于Nginx而言, 后端的那些服务器都被称为upstream server, 也就是<strong>上游服务器</strong>.  </p>
+<p>而且不仅如此, 我们说过存在动态和静态的资源, 这样Nginx还可以将我们对于静态的动态的资源分开, <strong>分别</strong>进行调度. 对于静态内容的服务器集群, 我们还可以省去考虑session保持的问题. 仅仅使用最简单的轮询算法都是OK的.</p>
+<p>另外, 我们之前还说过, 现代互联网系统是相当依赖于缓存的. 而Nginx也是拥有缓存功能的, 因为将资源赚取过来之后, 在一点时间内只要还有请求, 且请求同一资源, 那么就可以不需要进行后端的请求, 而可以直接进行响应. 这对于硬盘而言是个很大的减负了, 有的时候还可以使得响应数量翻倍. 但是同样对于这么一个缓存节点而言, 一旦他挂了, 那么整个系统也就相继崩掉了. 这个就是<strong>雪崩效应</strong> </p>
+<p>但是这个缓存的存储要比后端更快速, 因为存储的方式是经过hash计算的, 然后以K-V方式存储的. 而从upstream server取数据的时候, 由于资源存储在文件系统上, 会进行树的检索, 显然没有K-V方式的快.</p>
+<p>显然, 这个前端的Nginx负载均衡节点是个高压力的节点.  所以一般都会对这么一个节点做高可用. 而且,我们还可以结合DNS进行内容分发来减少压力. 如果还是不行, 那么就可以考虑在前端再加上一个LVS来抗压力, 当然这么一个LVS还是要做冗余备份. 这么算来节点的数量已经非常多了. 所以在系统变的越来越大的时候, 就要先考虑如何将我们的功能该进行拆分, 要不然系统的一个节点会导致全局不可用. 所以可以根据不同的功能来进行拆分.</p>
+<p>而且, 考虑一个电商网站. 他需要存储大量的图片资源(几十万+), 这些图片我们还需要进行<strong>分布式的存储</strong>. 而结构化的数据, 我们需要存储到数据库中, 这个时候我们还要做<strong>主从复制, 读写分离</strong>等.这些都是后话了.</p>
+<h2 id="Nginx的代理功能"><a href="#Nginx的代理功能" class="headerlink" title="Nginx的代理功能"></a>Nginx的代理功能</h2><p>Nginx的代理功能依靠一个模块:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ngx_http_proxy_module</span><br></pre></td></tr></table></figure>
+
+<p>我们之前说定义location里面加上了<code>root</code>来指定从本地的文件系统取得哪些资源, 但是如果不是从本地取资源的话, 也可以转交给后端的server来应付, 这个指令就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">  proxy_pass http://192.168.206.100:8080;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除了可以直接这样转发出去 ,我们还可以自行来改变HTTP报文的头部信息. 我们提到过nginx是自行再次封装报文进行的反向代理. 比如, 我们后台响应的服务器是需要进行日志记录的, 但是来源IP显然是我们的负载均衡衡器nginx. 显然是没有意义的, 这个时候, 第一种方法就是让Nginx去记录日志, 另一种就是添加自定义的头部, 从而使后端服务器了解到真是的客户端IP是多少.</p>
+<p>官网的doc给了一个例子:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_pass       http://localhost:8000;</span><br><span class="line">    proxy_set_header Host      <span class="variable">$host</span>;</span><br><span class="line">    proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二个选项有时也是一个很重要的头部信息, 因为说不定我们的后端会开多个虚拟主机呢. 如果使用IP, 就访问不到了. 现在我们就简单的试一下:</p>
+<p>后端主机开启httpd:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 html]<span class="comment"># ls</span></span><br><span class="line">forum  index.html</span><br><span class="line">[root@VM-node2 html]<span class="comment"># ls forum/</span></span><br><span class="line">index.html</span><br><span class="line">[root@VM-node2 html]<span class="comment"># systemctl start httpd</span></span><br></pre></td></tr></table></figure>
+
+<p>在前端Nginx主机配置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    rewrite ^/bbs/(.*)$ /forum/<span class="variable">$1</span> <span class="built_in">break</span>;</span><br><span class="line">    proxy_pass http://192.168.206.21;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果在代理至上游服务器的时候也进行了URL重写的话, 发送给后面的请求就是已经重写之后的. 我们来验证一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/bbs/</span><br><span class="line">&lt;h1&gt;Forum&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/forum/</span><br><span class="line">&lt;h1&gt;Forum&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这个是直接写location的URL, 但是如果改成模式匹配就不能这么写了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ~* \.txt$ &#123;</span><br><span class="line">    proxy_pass http://192.168.206.21/forum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果在验证的时候:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># nginx -t</span></span><br><span class="line">nginx: [emerg] <span class="string">&quot;proxy_pass&quot;</span> cannot have URI part <span class="keyword">in</span> location given by regular expression, or inside named location, or inside <span class="string">&quot;if&quot;</span> statement, or inside <span class="string">&quot;limit_except&quot;</span> block <span class="keyword">in</span> /etc/nginx/nginx.conf:58</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> failed</span><br></pre></td></tr></table></figure>
+
+<p>这个时候, 仅仅只能写upstream server的地址了. </p>
+<p>现在查看一下日志, 所有的来源IP都是我们的前端代理主机, 这样是没有什么信息的, 所有我们使用内嵌的变量来加上自定义的HTTP头部:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location ~* \.txt$ &#123;</span><br><span class="line">    proxy_pass http://192.168.206.21;</span><br><span class="line">    proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个时候记录还是没有变化的, 因为我们还需要修改一下httpd的日志记录:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LogFormat <span class="string">&quot;%&#123;X-Real-IP&#125;i %l %u %t \&quot;%r\&quot; %&gt;s %b \&quot;%&#123;Referer&#125;i\&quot; \&quot;%&#123;User-Agent&#125;i\&quot;&quot;</span> combined</span><br></pre></td></tr></table></figure>
+
+<p>这个时候访问:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">192.168.206.9 - - [19/Oct/2017:03:06:46 +0800] <span class="string">&quot;GET /test.txt HTTP/1.0&quot;</span> 304 - <span class="string">&quot;-&quot;</span> <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36&quot;</span></span><br><span class="line">192.168.206.1 - - [19/Oct/2017:03:08:01 +0800] <span class="string">&quot;GET /test.txt HTTP/1.0&quot;</span> 304 - <span class="string">&quot;-&quot;</span> <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>就改变了.</p>
+<p>如果我们的后端服务器迟迟不给回应, 怎么办? 我们由一个超时时长超过了就不再等待了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxy_connect_timeout time;</span><br></pre></td></tr></table></figure>
+
+<p>默认的值是60s.</p>
+<p>另外, 我们还可以隐藏头部:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxy_hide_header field;</span><br></pre></td></tr></table></figure>
+
+<p>而且, 我们还可以对于返回响应的头部报文, 还可以自定义添加头部:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    rewrite ^/bbs/(.*)$ /forum/<span class="variable">$1</span> <span class="built_in">break</span>;</span><br><span class="line">    proxy_pass http://http;</span><br><span class="line">    add_header X-Via <span class="string">&quot;Justin13&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样受到的报文就会带上我们的自定义头:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/ -I</span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Server: nginx/1.12.1</span><br><span class="line">Date: Wed, 18 Oct 2017 15:24:52 GMT</span><br><span class="line">Content-Type: text/html; charset=UTF-8</span><br><span class="line">Content-Length: 32</span><br><span class="line">Connection: keep-alive</span><br><span class="line">Last-Modified: Mon, 16 Oct 2017 11:20:12 GMT</span><br><span class="line">ETag: <span class="string">&quot;7f47-20-55ba830a82afc&quot;</span></span><br><span class="line">Accept-Ranges: bytes</span><br><span class="line">X-Via: Justin13</span><br></pre></td></tr></table></figure>
+
+
+
+<p>很简单吧, 这其实就是nginx对于代理转发的基本指令和注意点了.</p>
+<h2 id="Nginx的代理缓存"><a href="#Nginx的代理缓存" class="headerlink" title="Nginx的代理缓存"></a>Nginx的代理缓存</h2><p>之前说过的Nginx除了能够把资源从后端请求过来, 还可以进行本地的缓存, 从而加速下一次的访问, 关于代理缓存的设定现在就来看一下吧.</p>
+<p>先来看看几个重要的选项,</p>
+<p><strong>proxy_cache <code>zone | off</code>;</strong> </p>
+<p>这个选项就是用来定义是否开启缓存的, 这里的zone就是在后面要定义的路径中必须携带的参数, 其实就是一段命名空间用来存放你的缓存的.</p>
+<p><strong>proxy_cache_methods <code>GET | HEAD | POST ...</code>;</strong> </p>
+<p>指明什么样的请求方法才会进行缓存, 默认是GET和HEAD.</p>
+<p><strong>proxy_cache_min_uses <code>number</code>;</strong> </p>
+<p>意思就是说当资源比请求多少次之后才会进行缓存, 默认就是一次.</p>
+<p><strong>proxy_cache_path <code>path [levels=levels] [use_temp_path=on|off] keys_zone=name:size [inactive=time] [max_size=size] [manager_files=number] [manager_sleep=time] [manager_threshold=time] [loader_files=number] [loader_sleep=time] [loader_threshold=time] [purger=on|off] [purger_files=number] [purger_sleep=time] [purger_threshold=time]</code>;</strong> </p>
+<p>这应该是最重要的选项了(?) 指明缓存存储的路径, 挨? 不是说是键值对存储吗? 其实缓存最终还是存储在磁盘上的啊, 但是他的目录层级非常少, 所以寻找起来不会这么费时, 这个层级一般都是2层, 当然1层和3层的也有, 就在选项中的levels中定义. 一个示例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxy_cache_path /data/nginx/cache levels=1:2 keys_zone=one:10m;</span><br></pre></td></tr></table></figure>
+
+<p>这样的话, 存储的结果就像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/data/nginx/cache/c/29/b7f54b2df7773722d382f4809d65029c</span><br></pre></td></tr></table></figure>
+
+<p>来看一下, 里面的levels写法, 每一个冒号就是开启一个新目录层级的意思, 数字就是该目录的长度. 其实就是想之前我们说过的哈希桶那样了. 最后的那个文件其实就是URL的MD5摘要.</p>
+<p><strong>这个选项只能使用在server中.</strong></p>
+<p><strong>proxy_cache_purge <code>string ...</code>;</strong></p>
+<p>该选项是为了<strong>手动清理缓存</strong>存在的, 因为nginx在缓存尚未失效前都不会删除Cache. 除非是缓存过期或者说到达最大值, 这个时候Cache Manager会进行LRU清理. 这个时候如果后端更新了资源, 但是用户访问的时候得到的还是旧的资源. 所以我们可以使用该选项定义一个修剪方法, 该方法请求的资源都会被从缓存中删除.</p>
+<p>一个示例是这样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">proxy_cache_path /data/nginx/cache keys_zone=cache_zone:10m;</span><br><span class="line"></span><br><span class="line">map <span class="variable">$request_method</span> <span class="variable">$purge_method</span> &#123;</span><br><span class="line">    PURGE   1;</span><br><span class="line">    default 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    ...</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://backend;</span><br><span class="line">        proxy_cache cache_zone;</span><br><span class="line">        proxy_cache_key <span class="variable">$uri</span>;</span><br><span class="line">        proxy_cache_purge <span class="variable">$purge_method</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>proxy_cache_revalidate <code>on | off</code>;</strong></p>
+<p>该选项挺有用的. 在缓存有效期到期的时候, Manager没有删除掉缓存. 如果用户请求该资源, 明知道有效期到期, Nginx用不用呢? 要知道, 这些资源不一定是真的<strong>过期了</strong>, 因为有可能后端没有更新. 这个时候就会需要这个选项了, 如果开启, Nginx就会去询问后端, 资源是否更新过? 这样就可以达到节省后端的带宽的目的. 如果请求中携带了: “If-Modified-Since” 和“If-None-Match” 这样的, 也会进行验证.</p>
+<p><strong>proxy_cache_use_stale <code>error | timeout | invalid_header | updating | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | http_429 | off ...</code>;</strong></p>
+<p>这个选项就是在缓存已经过期, 但是这个时候后端的上游服务器出毛病了, 这个时候用不用呢 ? 怎么返回给客户端呢?</p>
+<p><strong>proxy_cache_valid <code>[code ...] time</code>;</strong></p>
+<p>缓存的时间由后端的服务器决定, 但是我们也可以不遵从他的指示, 你说你的图片缓存10分钟, 可以哪有这么快就会改变啊, 所以我偏偏缓存10天. 这个时候就可以使用该选项了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">proxy_cache_valid 200 302 10m;</span><br><span class="line">proxy_cache_valid 404      1m;</span><br></pre></td></tr></table></figure>
+
+<p>如果后端返回了200或者302, 我就保存10min 如果是404, 我就缓存1min.</p>
+<p>选项就这么多, 接下来我们就实际跑一个试试就知道了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_cache mycache;</span><br><span class="line">    proxy_cache_valid 200 30m;</span><br><span class="line">    proxy_cache_valid 301 302 10m;</span><br><span class="line">    proxy_cache_valid any 1m;</span><br><span class="line">    proxy_cache_use_stale error <span class="built_in">timeout</span> http_500 http_502 http_503 http_504;</span><br><span class="line">    rewrite ^/bbs/(.*)$ /forum/<span class="variable">$1</span> <span class="built_in">break</span>;</span><br><span class="line">    proxy_pass http://192.168.206.21;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着在http中定义:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxy_cache_path /cache/nginx levels=1:1 keys_zone=mycache:36m;</span><br></pre></td></tr></table></figure>
+
+<p>我们创建目录, 并且改变属组. 因为这个目录的缓存写入是Worker进程定义的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># mkdir -pv /cache/nginx</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/cache’</span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/cache/nginx’</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># chown -R nginx:nginx /cache/</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># nginx -s reload</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># cd /cache/nginx/</span></span><br><span class="line">[root@VM-node1 nginx]<span class="comment"># ls</span></span><br><span class="line">[root@VM-node1 nginx]<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>显然这个目录是空的.</p>
+<p>接着我们随便的访问一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 nginx]<span class="comment"># ls</span></span><br><span class="line">2  4  6  a  b</span><br><span class="line">[root@VM-node1 nginx]<span class="comment"># du .</span></span><br><span class="line">4	./4/4</span><br><span class="line">4	./4</span><br><span class="line">4	./6/0</span><br><span class="line">4	./6</span><br><span class="line">4	./2/5</span><br><span class="line">4	./2</span><br><span class="line">4	./a/a</span><br><span class="line">4	./a</span><br><span class="line">4	./b/7</span><br><span class="line">4	./b</span><br><span class="line">20	.</span><br></pre></td></tr></table></figure>
+
+<p>看, 缓存已经建立了. ‘接着我们修改后端的资源:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 html]<span class="comment"># echo &quot;&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;&quot; &gt; /var/www/html/index.html </span></span><br></pre></td></tr></table></figure>
+
+<p>再次访问:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;It works! (From node2)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>访问的就是缓存了. 你可以尝试着把缓存删除掉, 结果就会发生改变. 但是这不是好的建议.</p>
+<blockquote>
+<p>出去玩了一会, 回来的时候试了一下, 页面得到了刷新.</p>
+</blockquote>
+<h2 id="upstream"><a href="#upstream" class="headerlink" title="upstream"></a>upstream</h2><p>我们说过Nginx可以进行负载均衡, 支持多种调度方法. 现在就是应用的时候了, 如果我们把之前的特定的<code>proxy_pass</code>主机搞成一个集群, 不就可以实现动态调度了吗? 这就是upstream指令所定义的.</p>
+<p>upstream可以把诸多主机定义在一起, 但是该选项只能用在http中. 在upstream中使用server指令来定义主机, 还可以传递参数. 现在我们一边搭建一边介绍好了.</p>
+<p>首先为了负载均衡的效果, 我们需要把缓存功能关闭. 接着开启第三台主机充当后端的上游服务器.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> upstream http &#123;</span><br><span class="line">     server 192.168.206.21;</span><br><span class="line">     server 192.168.206.22;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">...(omitted)</span><br><span class="line"></span><br><span class="line">location / &#123;</span><br><span class="line">    rewrite ^/bbs/(.*)$ /forum/<span class="variable">$1</span> <span class="built_in">break</span>;</span><br><span class="line">    proxy_pass http://http;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接着重载配置, 访问试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们还可以为特定的上游服务器加上权重, 比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">upstream http &#123;</span><br><span class="line">  server 192.168.206.21 weight=2;</span><br><span class="line">  server 192.168.206.22;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着效果就会发生改变:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo                   </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;   </span><br><span class="line">                                  </span><br><span class="line">C:\Users\lenovo                   </span><br><span class="line">C:\Users\lenovo  2.168.206.9/     </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;       </span><br><span class="line">                                  </span><br><span class="line">C:\Users\lenovo                   </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;       </span><br><span class="line">                                  </span><br><span class="line">C:\Users\lenovo                   </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;   </span><br><span class="line">                                  </span><br><span class="line">C:\Users\lenovo                   </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;   </span><br><span class="line">                                  </span><br><span class="line">C:\Users\lenovo                   </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;       </span><br><span class="line">                                  </span><br><span class="line">C:\Users\lenovo                   </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;       </span><br><span class="line">                                  </span><br><span class="line">C:\Users\lenovo                   </span><br><span class="line">λ curl http://192.168.206.9/      </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;   </span><br></pre></td></tr></table></figure>
+
+<p>由此可见, 默认使用的调度算法是rr. 其实这个我们也是可以改的呀, 只要在upstream的头部加上算法就行了, 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">upstream http &#123;</span><br><span class="line">    ip_hash;</span><br><span class="line"></span><br><span class="line">    server 192.168.206.21 weight=2;</span><br><span class="line">    server 192.168.206.22;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>源地址哈希, 这样的话就会变成:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo                </span><br><span class="line">λ curl http://192.168.206.9/   </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">                               </span><br><span class="line">C:\Users\lenovo                </span><br><span class="line">λ curl http://192.168.206.9/   </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">                               </span><br><span class="line">C:\Users\lenovo                </span><br><span class="line">λ curl http://192.168.206.9/   </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">                               </span><br><span class="line">C:\Users\lenovo                </span><br><span class="line">λ curl http://192.168.206.9/   </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">                               </span><br><span class="line">C:\Users\lenovo                </span><br><span class="line">λ curl http://192.168.206.9/   </span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>除此之外, server后面还可以跟上很多参数, 例如:</p>
+<blockquote>
+<p>**weight: ** 权重.</p>
+<p>**max_failure: ** 最大的失败尝试次数, 默认是1次.</p>
+<p>**fail_timeout: ** 最大的失败超时时长, 默认是10s</p>
+<p>**backup: ** 带这个标记的服务器被认定为备用服务器, 只有当主服务器宕机才会被调度.</p>
+<p><strong>down:</strong> 带有这个标记的服务器不会得到调度.</p>
+</blockquote>
+<p>upstream同样可以定义我们之前说过的Session绑定. Nginx位于应用层, 于是能够识别请求, Session的绑定的原理是Cookie, 所以我们只要能够绑定Cookie, 就能够建立session了. 是这样用的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">upstream backend &#123;</span><br><span class="line">    server backend1.example.com;</span><br><span class="line">    server backend2.example.com;</span><br><span class="line"></span><br><span class="line">    sticky cookie srv_id expires=1h domain=.example.com path=/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>sticky</code>指令第一种应用: 能够实现Cookie的绑定. </p>
+<p>第二种就是路由携带:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">map <span class="variable">$cookie_jsessionid</span> <span class="variable">$route_cookie</span> &#123;</span><br><span class="line">    ~.+\.(?P&lt;route&gt;\w+)$ <span class="variable">$route</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">map <span class="variable">$request_uri</span> <span class="variable">$route_uri</span> &#123;</span><br><span class="line">    ~jsessionid=.+\.(?P&lt;route&gt;\w+)$ <span class="variable">$route</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">upstream backend &#123;</span><br><span class="line">    server backend1.example.com route=a;</span><br><span class="line">    server backend2.example.com route=b;</span><br><span class="line"></span><br><span class="line">    sticky route <span class="variable">$route_cookie</span> <span class="variable">$route_uri</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除了这两种, 还有一个炒鸡厉害的 – learn 学习:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">upstream backend &#123;</span><br><span class="line">   server backend1.example.com:8080;</span><br><span class="line">   server backend2.example.com:8081;</span><br><span class="line"></span><br><span class="line">   sticky learn</span><br><span class="line">          create=<span class="variable">$upstream_cookie_examplecookie</span></span><br><span class="line">          lookup=<span class="variable">$cookie_examplecookie</span></span><br><span class="line">          zone=client_sessions:1m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Nginx可以通过分析客户端和上游服务器数据传输来维护一个session表.</p>
+<p>接着Nginx还可以和后端的主机实现持久连接进行保活, 使用<code>keepalive</code>关键字 </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">upstream memcached_backend &#123;</span><br><span class="line">    server 127.0.0.1:11211;</span><br><span class="line">    server 10.0.0.2:11211;</span><br><span class="line"></span><br><span class="line">    keepalive 32;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    ...</span><br><span class="line">    location /memcached/ &#123;</span><br><span class="line">        <span class="built_in">set</span> <span class="variable">$memcached_key</span> <span class="variable">$uri</span>;</span><br><span class="line">        memcached_pass memcached_backend;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不过, 一般情况下, 我们不会对http做持久连接. 这样有可能会影响我们的并发性能. 一般都是数据查询这样的会选择长连接.</p>
+<p>我们之前还说过, nginx支持应用层的健康状态检查, 也就是<code>health_check</code> :</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_pass http://backend;</span><br><span class="line">    health_check;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一般, 我们要单独建立一个location用来执行健康状态检查, 而且, 要明确的把日志记录关闭. </p>
+<p>health_check也支持很多选项:</p>
+<blockquote>
+<p><strong>interval</strong>: 检查间隔</p>
+<p><strong>fails</strong>: 几次认定是不健康</p>
+<p><strong>passes</strong>: 几次认定成是健康</p>
+<p><strong>uri</strong>: 请求哪些资源</p>
+<p><strong>match</strong>: 返回什么认定是健康.</p>
+</blockquote>
+<h2 id="fastcgi"><a href="#fastcgi" class="headerlink" title="fastcgi"></a>fastcgi</h2><p>关于fastcgi的相关不再赘述, 因为之前已经说过了. 现在就直接来进行Nginx和php-fpm的连接吧. </p>
+<p>首先, 这里的实验假定php-fpm和Nginx是一个主机了, 如果是不同的主机的话, 需要改变监听地址的哦. 默认是127.0.0.1:9000端口.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># systemctl start php-fpm</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ss -tnl</span></span><br><span class="line">State       Recv-Q Send-Q                                        Local Address:Port                                                       Peer Address:Port              </span><br><span class="line">LISTEN      0      128                                                       *:8080                                                                  *:*                  </span><br><span class="line">LISTEN      0      128                                                       *:80                                                                    *:*                  </span><br><span class="line">LISTEN      0      128                                                       *:22                                                                    *:*                  </span><br><span class="line">LISTEN      0      100                                               127.0.0.1:25                                                                    *:*                  </span><br><span class="line">LISTEN      0      128                                                       *:443                                                                   *:*                  </span><br><span class="line">LISTEN      0      128                                               127.0.0.1:9000                                                                  *:*                  </span><br><span class="line">LISTEN      0      128                                                      :::22                                                                   :::*                  </span><br><span class="line">LISTEN      0      100                                                     ::1:25                                                                   :::*                  </span><br></pre></td></tr></table></figure>
+
+<p>确定已经启动了, 接着就是主要的步骤了, 配置Nginx吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location ~ \.php$ &#123;</span><br><span class="line">    root           /usr/share/nginx/html;</span><br><span class="line">    fastcgi_pass   127.0.0.1:9000;</span><br><span class="line">    fastcgi_index  index.php;</span><br><span class="line">    fastcgi_param  SCRIPT_FILENAME  $document_root<span class="variable">$fastcgi_script_name</span>;</span><br><span class="line">    include        fastcgi_params;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个是默认的设置. 当然你需要改一下<code>fastcgi_param</code>的脚本路径. 这个是常识了, 就这样的带过去了.</p>
+<p>我们的fastcgi模块也提供了缓存功能, 基本上的关键字和之前说的那个没什么不同, 基本上是一样的.(只要把之前的proxy_换成fastcgi _就行了) </p>
+<h2 id="生产环境配置-2016"><a href="#生产环境配置-2016" class="headerlink" title="生产环境配置(2016)"></a>生产环境配置(2016)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br></pre></td><td class="code"><pre><span class="line">user                              nobody nobody;</span><br><span class="line">worker_processes                  4;</span><br><span class="line">worker_rlimit_nofile              51200;</span><br><span class="line"></span><br><span class="line">error_log                         logs/error.log  notice;</span><br><span class="line"></span><br><span class="line">pid                               /var/run/nginx.pid;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">  use                             epoll;</span><br><span class="line">  worker_connections              51200;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">  server_tokens                   off;</span><br><span class="line">  include                         mime.types;</span><br><span class="line"></span><br><span class="line">  proxy_redirect                off;</span><br><span class="line">  proxy_set_header              Host <span class="variable">$host</span>;</span><br><span class="line">  proxy_set_header              X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">  proxy_set_header              X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">  client_max_body_size          20m;</span><br><span class="line">  client_body_buffer_size       256k;</span><br><span class="line">  proxy_connect_timeout         90;</span><br><span class="line">  proxy_send_timeout            90;</span><br><span class="line">  proxy_read_timeout            90;</span><br><span class="line">  proxy_buffer_size             128k;</span><br><span class="line">  proxy_buffers                 4 64k;</span><br><span class="line">  proxy_busy_buffers_size       128k;</span><br><span class="line">  proxy_temp_file_write_size    128k;</span><br><span class="line"></span><br><span class="line">  default_type                    application/octet-stream;</span><br><span class="line">  charset                         utf-8;</span><br><span class="line">  </span><br><span class="line">  client_body_temp_path           /var/tmp/client_body_temp 1 2;</span><br><span class="line">  proxy_temp_path                 /var/tmp/proxy_temp 1 2;</span><br><span class="line">  fastcgi_temp_path               /var/tmp/fastcgi_temp 1 2;</span><br><span class="line">  uwsgi_temp_path                 /var/tmp/uwsgi_temp 1 2;</span><br><span class="line">  scgi_temp_path                  /var/tmp/scgi_temp 1 2;</span><br><span class="line"></span><br><span class="line">  ignore_invalid_headers          on;</span><br><span class="line">  server_names_hash_max_size      256;</span><br><span class="line">  server_names_hash_bucket_size   64;</span><br><span class="line">  client_header_buffer_size       8k;</span><br><span class="line">  large_client_header_buffers     4 32k;</span><br><span class="line">  connection_pool_size            256;</span><br><span class="line">  request_pool_size               64k;</span><br><span class="line"></span><br><span class="line">  output_buffers                  2 128k;</span><br><span class="line">  postpone_output                 1460;</span><br><span class="line"></span><br><span class="line">  client_header_timeout           1m;</span><br><span class="line">  client_body_timeout             3m;</span><br><span class="line">  send_timeout                    3m;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  log_format main                 <span class="string">&#x27;$server_addr $remote_addr [$time_local] $msec+$connection &#x27;</span></span><br><span class="line">                                  <span class="string">&#x27;&quot;$request&quot; $status $connection $request_time $body_bytes_sent &quot;$http_referer&quot; &#x27;</span></span><br><span class="line">                                  <span class="string">&#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;</span>;</span><br><span class="line"></span><br><span class="line">  open_log_file_cache               max=1000 inactive=20s min_uses=1 valid=1m;</span><br><span class="line"></span><br><span class="line">  access_log                      logs/access.log      main;</span><br><span class="line">  log_not_found                   on;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  sendfile                        on;</span><br><span class="line">  tcp_nodelay                     on;</span><br><span class="line">  tcp_nopush                      off;</span><br><span class="line"></span><br><span class="line">  reset_timedout_connection       on;</span><br><span class="line">  keepalive_timeout               10 5;</span><br><span class="line">  keepalive_requests              100;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  gzip                            on;</span><br><span class="line">  gzip_http_version               1.1;</span><br><span class="line">  gzip_vary                       on;</span><br><span class="line">  gzip_proxied                    any;</span><br><span class="line">  gzip_min_length                 1024;</span><br><span class="line">  gzip_comp_level                 6;</span><br><span class="line">  gzip_buffers                    16 8k;</span><br><span class="line">  gzip_proxied                    expired no-cache no-store private auth no_last_modified no_etag;</span><br><span class="line">  gzip_types                      text/plain application/x-javascript text/css application/xml application/json;</span><br><span class="line">  gzip_disable                    <span class="string">&quot;MSIE [1-6]\.(?!.*SV1)&quot;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  upstream tomcat8080 &#123;</span><br><span class="line">    ip_hash;</span><br><span class="line"></span><br><span class="line">    server                        172.16.100.103:8080 weight=1 max_fails=2;</span><br><span class="line">    server                        172.16.100.104:8080 weight=1 max_fails=2;</span><br><span class="line">    server                        172.16.100.105:8080 weight=1 max_fails=2;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  server &#123;</span><br><span class="line">    listen                        80;</span><br><span class="line">    server_name                   www.magedu.com;</span><br><span class="line">    <span class="comment"># config_apps_begin</span></span><br><span class="line">    root                          /data/webapps/htdocs;</span><br><span class="line">    access_log                    /var/logs/webapp.access.log     main;</span><br><span class="line">    error_log                     /var/logs/webapp.error.log      notice;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">    </span><br><span class="line">      location ~* ^.*/favicon.ico$ &#123;</span><br><span class="line">        root                      /data/webapps;</span><br><span class="line">        expires                   180d;</span><br><span class="line">        <span class="built_in">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    </span><br><span class="line">      <span class="keyword">if</span> ( !-f <span class="variable">$request_filename</span> ) &#123;</span><br><span class="line">        proxy_pass                http://tomcat8080;</span><br><span class="line">        <span class="built_in">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    error_page                    500 502 503 504  /50x.html;</span><br><span class="line">      location = /50x.html &#123;</span><br><span class="line">      root                        html;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  server &#123;</span><br><span class="line">    listen                        8088;</span><br><span class="line">    server_name                   nginx_status;</span><br><span class="line"></span><br><span class="line">      location / &#123;</span><br><span class="line">          access_log                  off;</span><br><span class="line">          deny                        all;</span><br><span class="line">          <span class="built_in">return</span>                      503;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      location /status &#123;</span><br><span class="line">          stub_status                 on;</span><br><span class="line">          access_log                  off;</span><br><span class="line">          allow                       127.0.0.1;</span><br><span class="line">          allow                       172.16.100.71;</span><br><span class="line">          deny                        all;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/MindMap/Nginx_LB_mind.png" alt="MindMap/Nginx_LB_mind.png"></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Web%E7%AB%99%E7%82%B9%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">Web站点架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx%E7%9A%84%E4%BB%A3%E7%90%86%E5%8A%9F%E8%83%BD"><span class="toc-number">2.</span> <span class="toc-text">Nginx的代理功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx%E7%9A%84%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98"><span class="toc-number">3.</span> <span class="toc-text">Nginx的代理缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#upstream"><span class="toc-number">4.</span> <span class="toc-text">upstream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastcgi"><span class="toc-number">5.</span> <span class="toc-text">fastcgi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE-2016"><span class="toc-number">6.</span> <span class="toc-text">生产环境配置(2016)</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&text=Nginx反向代理和缓存及其他应用"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&is_video=false&description=Nginx反向代理和缓存及其他应用"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Nginx反向代理和缓存及其他应用&body=Check out this article: https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&title=Nginx反向代理和缓存及其他应用"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&name=Nginx反向代理和缓存及其他应用&description=&lt;p&gt;让我们继续聊聊架构和Nginx吧.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/&t=Nginx反向代理和缓存及其他应用"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

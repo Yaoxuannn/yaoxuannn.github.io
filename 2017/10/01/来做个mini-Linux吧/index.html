@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="制作一只超 mini 的 Tux !!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="来做个mini-Linux吧!">
+<meta property="og:url" content="https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="制作一只超 mini 的 Tux !!">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/tux.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/64bit.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/multi-processing.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pci.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/scsi0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/mpt.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/mpt2.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/panic.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/fs.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/elf.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/noinit.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/exec.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/bash%21.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/keyboard.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/usb.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/bashNew.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/mountOK.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/maindevNew.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/new.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/build0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/static0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/makeInstall.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/welcom.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/active.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/suc1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/networkingsupport.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/tcpip.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/networkdriver.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ethernet0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/amd1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ifconfig0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ntel.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ins0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ins1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ins2.png">
+<meta property="article:published_time" content="2017-10-01T20:17:01.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:50:32.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/tux.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>来做个mini-Linux吧!</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/30/NFS%E5%92%8CSamba/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&text=来做个mini-Linux吧!"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&is_video=false&description=来做个mini-Linux吧!"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=来做个mini-Linux吧!&body=Check out this article: https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&name=来做个mini-Linux吧!&description=&lt;p&gt;制作一只超 mini 的 Tux !!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://hexopic.s3-ap-northeast-1.amazonaws.com/tux.png&#34; alt=&#34;tux&#34;&gt;&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&t=来做个mini-Linux吧!"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%B6%E4%BD%9C%E5%BC%80%E5%A7%8B"><span class="toc-number">1.</span> <span class="toc-text">制作开始</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A7%BB%E6%A4%8Dbash-shell"><span class="toc-number">2.</span> <span class="toc-text">移植bash shell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#busybox"><span class="toc-number">3.</span> <span class="toc-text">busybox</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%98%E8%85%BE%E4%B8%8D%E5%8A%A8%E4%BA%86-%E5%90%8E%E9%9D%A2%E6%9C%89%E7%A9%BA%E5%86%8D%E5%A1%AB%E5%9D%91-%E6%8B%9C%E6%8B%9C"><span class="toc-number">4.</span> <span class="toc-text">折腾不动了, 后面有空再填坑, 拜拜</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        来做个mini-Linux吧!
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-01T20:17:01.000Z" class="dt-published" itemprop="datePublished">2017-10-01</time>
+        
+        (Updated: <time datetime="2020-11-30T01:50:32.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>制作一只超 mini 的 Tux !!</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/tux.png" alt="tux"></p>
+<span id="more"></span>
+
+<p>在制作之前, 我们一定要熟悉Linux的启动路程啊, 这个部分我已经在不同的文章中重复了三次之多了, 在这里回顾一下Linux内核编译的一些步骤:</p>
+<p>首先我们拿到Linux kernel的源代码之后进行解压, 执行<code>make menuconfig</code> 除此之外, 我们还可以直接使用当前系统的.config模板 当然手写也是可以的, 只要确保语法没有什么错误. 接着就可以进行make了, 这里可以使用-j参数加快速度. 编译结束之后, 执行模块安装, 最后才执行整个系统的安装.</p>
+<p>但是, 今天不是这样的方式了, 我们要先编译一个非模块的方式, 这样就不需要initrd和ramdisk&#x2F;ramfs了 这就是内核空间了, 那么文件系统方面呢? 我们移植一个bash其实就可以, 但是这样并不能使用, 他只能用来测试. 所以我们使用<strong>busybox</strong>. 这是一个很神奇的程序, 他可以模拟你想要实现的基础二进制程序, 这个我们后面再说.</p>
+<p>这样就可以得到一个完整的OS了. 但为了能够引导系统, 我们还需要一个bootloader. OK, 现在就开始吧!</p>
+<p>我们使用CentOS6来做这个实验, 可以考虑做之前做个快照~</p>
+<h2 id="制作开始"><a href="#制作开始" class="headerlink" title="制作开始"></a>制作开始</h2><p>首先我们需要安装两个yum包组 – Development tools 和 Server Platform Development.  接着获取源代码.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum groupinstall <span class="string">&quot;Server Platform Development&quot;</span> <span class="string">&quot;Development Tools&quot;</span> -y</span><br><span class="line">wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.10.67.tar.xz --no-check-certificate</span><br></pre></td></tr></table></figure>
+
+<p>接着我们解压内核:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xf linux-3.10.67.tar.xz -C /usr/src</span><br></pre></td></tr></table></figure>
+
+<p>进入目录里, 当时在编译内核的时候我们是使用了一个系统既有的配置模板, 但是现在我们不一样了, 我们要重头制作一个最精简的内核啦, 所以查看一下make的选项: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost linux-3.10.67]<span class="comment"># make help</span></span><br><span class="line">...(omitted)</span><br><span class="line">Configuration targets:</span><br><span class="line">...(omitted)</span><br><span class="line">  allnoconfig	  - New config <span class="built_in">where</span> all options are answered with no</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>这个<code>allnoconfig</code>就是我们要使用的选项.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost linux-3.10.67]<span class="comment"># make allnoconfig</span></span><br><span class="line">  HOSTCC  scripts/basic/fixdep</span><br><span class="line">  HOSTCC  scripts/kconfig/conf.o</span><br><span class="line">  SHIPPED scripts/kconfig/zconf.tab.c</span><br><span class="line">  SHIPPED scripts/kconfig/zconf.lex.c</span><br><span class="line">  SHIPPED scripts/kconfig/zconf.hash.c</span><br><span class="line">  HOSTCC  scripts/kconfig/zconf.tab.o</span><br><span class="line">  HOSTLD  scripts/kconfig/conf</span><br><span class="line">scripts/kconfig/conf --allnoconfig Kconfig</span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># configuration written to .config</span></span><br><span class="line"><span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就得到了我们的.config模板文件. 但是这样只是得到了一份比较干净的模板, 我们接下来要做的就是根据自己的硬件状态按需启用功能. 打开配置菜单:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost linux-3.10.67]<span class="comment"># make menuconfig</span></span><br><span class="line">  HOSTCC  scripts/kconfig/lxdialog/checklist.o</span><br><span class="line">  HOSTCC  scripts/kconfig/lxdialog/inputbox.o</span><br><span class="line">  HOSTCC  scripts/kconfig/lxdialog/menubox.o</span><br><span class="line">  HOSTCC  scripts/kconfig/lxdialog/textbox.o</span><br><span class="line">  HOSTCC  scripts/kconfig/lxdialog/util.o</span><br><span class="line">  HOSTCC  scripts/kconfig/lxdialog/yesno.o</span><br><span class="line">  HOSTCC  scripts/kconfig/mconf.o</span><br><span class="line">  HOSTLD  scripts/kconfig/mconf</span><br><span class="line">scripts/kconfig/mconf Kconfig</span><br></pre></td></tr></table></figure>
+
+<p>在接下来的几个步骤中, 请注意<strong>一定要确保开启的选项是和你的实际硬件情况相符合的.</strong>  如果你是VMware虚拟机的话, 应该和我的硬件情况差不多, 但还是要注意看啊</p>
+<p>其实重点就在于位数, CPU和<strong>磁盘驱动</strong>, 最重要的就是磁盘驱动了, 接下来的选项如下:</p>
+<blockquote>
+<p>先贴一下我的硬件情况:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># lspci</span></span><br><span class="line">00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX Host bridge (rev 01)</span><br><span class="line">00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge (rev 01)</span><br><span class="line">00:07.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 08)</span><br><span class="line">00:07.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)</span><br><span class="line">00:07.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 08)</span><br><span class="line">00:07.7 System peripheral: VMware Virtual Machine Communication Interface (rev 10)</span><br><span class="line">00:0f.0 VGA compatible controller: VMware SVGA II Adapter</span><br><span class="line">00:10.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 01)</span><br><span class="line">00:11.0 PCI bridge: VMware PCI bridge (rev 02)</span><br><span class="line">00:15.0 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:15.1 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:15.2 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:15.3 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:15.4 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:15.5 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:15.6 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:15.7 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.0 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.1 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.2 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.3 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.4 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.5 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.6 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:16.7 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.0 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.1 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.2 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.3 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.4 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.5 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.6 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:17.7 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.0 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.1 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.2 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.3 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.4 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.5 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.6 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">00:18.7 PCI bridge: VMware PCI Express Root Port (rev 01)</span><br><span class="line">02:00.0 USB controller: VMware USB1.1 UHCI Controller</span><br><span class="line">02:01.0 Ethernet controller: Advanced Micro Devices [AMD] 79c970 [PCnet32 LANCE] (rev 10)</span><br><span class="line">02:02.0 Multimedia audio controller: Ensoniq ES1371 [AudioPCI-97] (rev 02)</span><br><span class="line">02:03.0 USB controller: VMware USB2 EHCI Controller</span><br><span class="line">02:05.0 Ethernet controller: Advanced Micro Devices [AMD] 79c970 [PCnet32 LANCE] (rev 10)</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/64bit.png" alt="64bit"></p>
+<p>打开64位支持. 接着进入处理器配置: ( Processor type and features )</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/multi-processing.png" alt="multi-processing"></p>
+<p>接着进入PCI总线的配置:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pci.png" alt="pci"></p>
+<p>打开支持. 其他都不用做.</p>
+<p>接着进入Device Drivers &gt; SCSI device support  (  这里是因为我的设备是SCSI啊  )</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/scsi0.png" alt="scsi0"></p>
+<p>打开SCSI的底层协议支持, 接着回到上级, 由于我是MPT协议所以打开支持:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/mpt.png" alt="mpt"></p>
+<p>进去之后就会看到SPI的驱动支持和MPT驱动以及日志, 编译进内核:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/mpt2.png" alt="mpt2"></p>
+<p>接着保存退出就可以了.</p>
+<p>接着就到了编译的时候了, 由于没有模块的参与, 所以直接编译一个内核就可以了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost linux-3.10.67]<span class="comment"># make -j 2 bzImage</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>其实我们可以新建一个硬盘加入进来, 安装引导, 将内核放进去.</strong></p>
+<p>如果这个时候你已经编译完了, 可以看一下报告:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Setup is 13628 bytes (padded to 13824 bytes).</span><br><span class="line">System is 1448 kB</span><br><span class="line">CRC 1c46d854</span><br><span class="line">Kernel: <span class="built_in">arch</span>/x86/boot/bzImage is ready  (<span class="comment">#1)</span></span><br></pre></td></tr></table></figure>
+
+<p>内核的大小是1448 kB 怎么样? 够小了吧. </p>
+<p>我添加了一块新的SCSI硬盘, 大小为10G, 其实2G都足够了.</p>
+<p>OK, 开始分区划分文件系统:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># fdisk /dev/sdb</span></span><br><span class="line">Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel</span><br><span class="line">Building a new DOS disklabel with disk identifier 0xc4f29f1a.</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, <span class="keyword">until</span> you decide to write them.</span><br><span class="line">After that, of course, the previous content won<span class="string">&#x27;t be recoverable.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">WARNING: DOS-compatible mode is deprecated. It&#x27;</span>s strongly recommended to</span><br><span class="line">         switch off the mode (<span class="built_in">command</span> <span class="string">&#x27;c&#x27;</span>) and change display units to</span><br><span class="line">         sectors (<span class="built_in">command</span> <span class="string">&#x27;u&#x27;</span>).</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n      </span><br><span class="line">Command action</span><br><span class="line">   e   extended</span><br><span class="line">   p   primary partition (1-4)</span><br><span class="line">p</span><br><span class="line">Partition number (1-4): 1</span><br><span class="line">First cylinder (1-1305, default 1): 1</span><br><span class="line">Last cylinder, +cylinders or +size&#123;K,M,G&#125; (1-1305, default 1305): +100M</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Command action</span><br><span class="line">   e   extended</span><br><span class="line">   p   primary partition (1-4)</span><br><span class="line">p</span><br><span class="line">Partition number (1-4): 2</span><br><span class="line">First cylinder (15-1305, default 15): </span><br><span class="line">Using default value 15</span><br><span class="line">Last cylinder, +cylinders or +size&#123;K,M,G&#125; (15-1305, default 1305): +2G</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered!</span><br><span class="line"></span><br><span class="line">Calling ioctl() to re-read partition table.</span><br><span class="line">Syncing disks.</span><br></pre></td></tr></table></figure>
+
+<p>100M用于内核, 2G用于根文件系统.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># mkfs.ext4 /dev/sdb1</span></span><br><span class="line">mke2fs 1.41.12 (17-May-2010)</span><br><span class="line">Filesystem label=</span><br><span class="line">OS <span class="built_in">type</span>: Linux</span><br><span class="line">Block size=1024 (<span class="built_in">log</span>=0)</span><br><span class="line">Fragment size=1024 (<span class="built_in">log</span>=0)</span><br><span class="line">Stride=0 blocks, Stripe width=0 blocks</span><br><span class="line">28112 inodes, 112420 blocks</span><br><span class="line">5621 blocks (5.00%) reserved <span class="keyword">for</span> the super user</span><br><span class="line">First data block=1</span><br><span class="line">Maximum filesystem blocks=67371008</span><br><span class="line">14 block <span class="built_in">groups</span></span><br><span class="line">8192 blocks per group, 8192 fragments per group</span><br><span class="line">2008 inodes per group</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">	8193, 24577, 40961, 57345, 73729</span><br><span class="line"></span><br><span class="line">Writing inode tables: <span class="keyword">done</span>                            </span><br><span class="line">Creating journal (4096 blocks): <span class="keyword">done</span></span><br><span class="line">Writing superblocks and filesystem accounting information: <span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">This filesystem will be automatically checked every 35 mounts or</span><br><span class="line">180 days, whichever comes first.  Use tune2fs -c or -i to override.</span><br><span class="line">[root@localhost ~]<span class="comment"># mkfs.ext4 /dev/sdb2</span></span><br><span class="line">mke2fs 1.41.12 (17-May-2010)</span><br><span class="line">Filesystem label=</span><br><span class="line">OS <span class="built_in">type</span>: Linux</span><br><span class="line">Block size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Fragment size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Stride=0 blocks, Stripe width=0 blocks</span><br><span class="line">131648 inodes, 526128 blocks</span><br><span class="line">26306 blocks (5.00%) reserved <span class="keyword">for</span> the super user</span><br><span class="line">First data block=0</span><br><span class="line">Maximum filesystem blocks=541065216</span><br><span class="line">17 block <span class="built_in">groups</span></span><br><span class="line">32768 blocks per group, 32768 fragments per group</span><br><span class="line">7744 inodes per group</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">	32768, 98304, 163840, 229376, 294912</span><br><span class="line"></span><br><span class="line">Writing inode tables: <span class="keyword">done</span>                            </span><br><span class="line">Creating journal (16384 blocks): <span class="keyword">done</span></span><br><span class="line">Writing superblocks and filesystem accounting information: <span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">This filesystem will be automatically checked every 35 mounts or</span><br><span class="line">180 days, whichever comes first.  Use tune2fs -c or -i to override.</span><br></pre></td></tr></table></figure>
+
+<p>文件系统也OK了, 这样就可以开始挂载了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># mkdir /mnt/&#123;boot,sysroot&#125;</span></span><br><span class="line">[root@localhost ~]<span class="comment"># mount /dev/sdb1 /mnt/boot/</span></span><br><span class="line">[root@localhost ~]<span class="comment"># grub-install --root-directory=/mnt /dev/sdb</span></span><br><span class="line">Probing devices to guess BIOS drives. This may take a long time.</span><br><span class="line">Installation finished. No error reported.</span><br><span class="line">This is the contents of the device map /mnt/boot/grub/device.map.</span><br><span class="line">Check <span class="keyword">if</span> this is correct or not. If any of the lines is incorrect,</span><br><span class="line">fix it and re-run the script `grub-install<span class="string">&#x27;.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">(fd0)	/dev/fd0</span></span><br><span class="line"><span class="string">(hd0)	/dev/sda</span></span><br><span class="line"><span class="string">(hd1)	/dev/sdb</span></span><br><span class="line"><span class="string">[root@localhost ~]# ls /mnt/boot/</span></span><br><span class="line"><span class="string">grub  lost+found</span></span><br><span class="line"><span class="string">[root@localhost ~]# mount /dev/sdb2 /mnt/sysroot/</span></span><br></pre></td></tr></table></figure>
+
+<p>建立引导完成. 我们现在把刚刚编译结束的内核拷贝过来:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># cp -av /usr/src/linux-3.10.67/arch/x86/boot/bzImage /mnt/boot/bzImage</span></span><br><span class="line">`/usr/src/linux-3.10.67/arch/x86/boot/bzImage<span class="string">&#x27; -&gt; `/mnt/boot/bzImage&#x27;</span></span><br><span class="line">[root@localhost ~]<span class="comment"># file /mnt/boot/bzImage </span></span><br><span class="line">/mnt/boot/bzImage: Linux kernel x86 boot executable bzImage, version 3.10.67 (root@localhost.localdo, RO-rootFS, swap_dev 0x1, Normal VGA</span><br></pre></td></tr></table></figure>
+
+<p>我们的这个mini内核能够驱动SCSI硬盘,所以我们不需要ramdisk了, 接下来编辑grub.conf配置使得引导内核就行了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">default=0</span><br><span class="line"><span class="built_in">timeout</span>=3</span><br><span class="line">title Mini Linux(3.10.67)</span><br><span class="line">        root (hd0,0)</span><br><span class="line">        kernel /bzImage ro root=/dev/sda2</span><br></pre></td></tr></table></figure>
+
+<p>上面就是我们的grub.conf. 好了, 使用<code>sync</code>写入到磁盘. <strong>挂起虚拟机!</strong></p>
+<p>接着, 新建虚拟机 –&gt; 不选择系统, 选择之前创建的那个虚拟SCSI硬盘, 配置完成. </p>
+<p>激动人心的时刻到来~ 开机~</p>
+<p>接着, 内核炸啦 ! ! !</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/panic.png" alt="panic"></p>
+<p>看一下panic信息: 没有文件系统可以挂载根. 原因很简单, 我们没法驱动文件系统….所以只能重新编译内核, 加入文件系统.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/fs.png" alt="fs"></p>
+<p>进入文件系统设置, 直接把ext家族都选进内核. 除此之外, 我们还要进入上级目录中的可执行文件格式, 打开ELF支持和#!支持.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/elf.png" alt="elf"></p>
+<p>退出并保存.</p>
+<p>好了, 编译吧.</p>
+<p>编译结束之后, 我们把新的覆盖掉. 还是要先同步数据接着挂起.</p>
+<p>重新启动小企鹅 ! ! !</p>
+<p>……</p>
+<p>啊 ! 内核又被我们吓死了!</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/noinit.png" alt="noinit"></p>
+<p>但是查看一些信息, 我们发现, 文件系统已经挂载上去了. 内核被吓死的原因其实是因为没有init程序. </p>
+<p>所以接下来, 就到了busybox登场的时候了!</p>
+<h2 id="移植bash-shell"><a href="#移植bash-shell" class="headerlink" title="移植bash shell"></a>移植bash shell</h2><p>首先我们先来了解一下主程序是什么玩意, 在源码的init目录下, 有个main.c文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># vim /usr/src/linux-3.10.67/init/main.c</span></span><br></pre></td></tr></table></figure>
+
+<p>840行左右有个:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/exec.png" alt="exec"></p>
+<p>这就是尝试加载的顺序. 可以看出来, 即使你只有个sh程序, 也是可以跑的.</p>
+<p>在使用busybox模拟之前, 我们先尝试移植一个bash shell过去好了</p>
+<p>先来手动模拟个根, 进入sysroot</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost sysroot]<span class="comment"># mkdir -pv bin dev etc home lib lib64 media mnt proc root sbin sys tmp usr/&#123;bin,sbin,lib,lib64&#125; var/&#123;log,run,lock&#125;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `bin<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `dev&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `etc<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `home&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `lib<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `lib64&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `media<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `mnt&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `proc<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `root&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `sbin<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `sys&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `tmp<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `usr&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `usr/bin<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `usr/sbin&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `usr/lib<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `usr/lib64&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `var<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `var/log&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `var/run<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `var/lock&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>为了方便移植, 我们写一个脚本, 贴在下面:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">target=/mnt/sysroot</span><br><span class="line">[ -d <span class="variable">$target</span> ] || <span class="built_in">mkdir</span> <span class="variable">$target</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">read</span> -p <span class="string">&#x27;A command: &#x27;</span> <span class="built_in">command</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">libcp</span></span>() &#123;</span><br><span class="line">    <span class="keyword">for</span> lib <span class="keyword">in</span> $(ldd <span class="variable">$1</span> | grep -o <span class="string">&quot;[^[:space:]]*/lib[^[:space:]]*&quot;</span>); <span class="keyword">do</span></span><br><span class="line">        libdir=$(<span class="built_in">dirname</span> <span class="variable">$lib</span>)</span><br><span class="line">        [ -d $target<span class="variable">$libdir</span> ] || <span class="built_in">mkdir</span> -p $target<span class="variable">$libdir</span></span><br><span class="line">        [ -f $target<span class="variable">$lib</span> ] || <span class="built_in">cp</span> <span class="variable">$lib</span> $target<span class="variable">$lib</span></span><br><span class="line">    <span class="keyword">done</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> [ <span class="string">&quot;<span class="variable">$command</span>&quot;</span> != <span class="string">&#x27;quit&#x27;</span> ]; <span class="keyword">do</span></span><br><span class="line">    <span class="keyword">if</span> ! <span class="built_in">which</span> <span class="variable">$command</span> &amp;&gt; /dev/null; <span class="keyword">then</span></span><br><span class="line">        <span class="built_in">read</span> -p <span class="string">&quot;No such command.enter again: &quot;</span> <span class="built_in">command</span></span><br><span class="line">        <span class="built_in">continue</span></span><br><span class="line">    <span class="keyword">fi</span></span><br><span class="line">    <span class="built_in">command</span>=$(<span class="built_in">which</span> --skip-alias <span class="variable">$command</span>)</span><br><span class="line">    cmddir=$(<span class="built_in">dirname</span> <span class="variable">$command</span>)</span><br><span class="line">    [ -d <span class="variable">$cmddir</span> ] || <span class="built_in">mkdir</span> -p $target<span class="variable">$cmddir</span></span><br><span class="line">    [ -d $target<span class="variable">$command</span> ] || <span class="built_in">cp</span> <span class="variable">$command</span> $target<span class="variable">$command</span></span><br><span class="line">    libcp <span class="variable">$command</span></span><br><span class="line">    <span class="built_in">read</span> -p <span class="string">&quot;Another command? (enter quit to exit) &quot;</span> <span class="built_in">command</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<p>使用这个脚本我们把bash和ls程序复制到了新的根里.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># tree /mnt/sysroot/</span></span><br><span class="line">/mnt/sysroot/</span><br><span class="line">├── bin</span><br><span class="line">│   ├── bash</span><br><span class="line">│   └── <span class="built_in">ls</span></span><br><span class="line">├── dev</span><br><span class="line">├── etc</span><br><span class="line">├── home</span><br><span class="line">├── lib</span><br><span class="line">├── lib64</span><br><span class="line">│   ├── ld-linux-x86-64.so.2</span><br><span class="line">│   ├── libacl.so.1</span><br><span class="line">│   ├── libattr.so.1</span><br><span class="line">│   ├── libcap.so.2</span><br><span class="line">│   ├── libc.so.6</span><br><span class="line">│   ├── libdl.so.2</span><br><span class="line">│   ├── libpthread.so.0</span><br><span class="line">│   ├── librt.so.1</span><br><span class="line">│   ├── libselinux.so.1</span><br><span class="line">│   └── libtinfo.so.5</span><br><span class="line">....(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>好了, 我们在 grub.conf 中加入 init&#x3D;&#x2F;bin&#x2F;bash 明确告诉内核如何启动. </p>
+<p>还是一样的步骤: 写入磁盘, 挂起, 重启小企鹅.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/bash%21.png" alt="bash!"></p>
+<p>终于! 内核没有恐慌啦. 但是你又发现, 怎么敲, 小企鹅也没反应. </p>
+<p>原因很简单, 没有键盘驱动. 那么再来一次吧…这次要把输入设备的驱动支持加入到内核中.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/keyboard.png" alt="keyboard"></p>
+<p>加入鼠标和键盘支持, 注意这里的鼠标是PS2的, 而VMware模拟的鼠标是USB驱动的, 所以还要开启USB驱动支持:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/usb.png" alt="usb"></p>
+<p>这里我把USB1.1, 2.0, 3.0的驱动都打开了.</p>
+<p>编译内核,拷贝,重复磁盘写入,挂起步骤.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/bashNew.png" alt="bashNew"></p>
+<p>小企鹅站起来啦!</p>
+<p>那么接下来, 我们使用脚本来模拟一下init程序, 在&#x2F;mnt&#x2F;sysroot&#x2F;sbin&#x2F;init中写上:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="built_in">echo</span> -e <span class="string">&quot;\tWelcome to \033[32mMini Linux\033[0m&quot;</span></span><br><span class="line">mount -n -t proc proc /proc</span><br><span class="line">mount -n -t sysfs sysfs /sys</span><br><span class="line">mount -n -o remount,rw /dev/sda2 /</span><br><span class="line">/bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>再给他加几个程序:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost sysroot]<span class="comment"># bash ~/cp.sh </span></span><br><span class="line">A <span class="built_in">command</span>:<span class="built_in">touch</span></span><br><span class="line">Another <span class="built_in">command</span>? (enter quit to <span class="built_in">exit</span>)  mount</span><br><span class="line">Another <span class="built_in">command</span>? (enter quit to <span class="built_in">exit</span>)  blkid</span><br><span class="line">Another <span class="built_in">command</span>? (enter quit to <span class="built_in">exit</span>)  top</span><br><span class="line">Another <span class="built_in">command</span>? (enter quit to <span class="built_in">exit</span>)  ps</span><br><span class="line">Another <span class="built_in">command</span>? (enter quit to <span class="built_in">exit</span>)  quit</span><br></pre></td></tr></table></figure>
+
+<p>再来!</p>
+<p>进去之后发现还是没有&#x2F;proc和&#x2F;sys…没关系, 手动再挂载一次. 这样就可以看到当前的挂载情况了:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/mountOK.png" alt="mountOK"></p>
+<p> 但是你会发现, 我们不能把磁盘挂载过来, 原因是&#x2F;dev下是空的. 这个我们之前也说过dev下的设备文件是由udev创建的 那怎么办? 没关系, 我们的内核提供了这个功能, 可以不依靠udev, 我们 回到宿主机重新打开menuconfig:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/maindevNew.png" alt="maindevNew"></p>
+<p>再来吧.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/new.png" alt="new"></p>
+<p> 这样我们的dev下就可以看到设备文件了. 这就是那个选项的功用.</p>
+<p>接着我们把sda2挂载到根目录下就好了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash-4.1<span class="comment"># mount -n -t ext4 -o remount,rw /dev/sda2 /</span></span><br></pre></td></tr></table></figure>
+
+<p>完成! 但是现在离我们的目标还差一个重要的部分, 还记得原本我们计划使用busybox来模拟用户空间的吗. 所以现在就要编译一个busybox给我们的小Tux使用啦</p>
+<h2 id="busybox"><a href="#busybox" class="headerlink" title="busybox"></a>busybox</h2><p>这里使用的busybox版本是1.22.1(Stable).</p>
+<p>首先获取 <a target="_blank" rel="noopener" href="http://busybox.net/downloads/busybox-1.22.1.tar.bz2">源代码</a> , 将其解压之后可以通过INSTALL文档来获得帮助.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># tar xf busybox-1.22.1.tar.bz2 </span></span><br><span class="line">[root@localhost ~]<span class="comment"># cd busybox-1.22.1</span></span><br><span class="line">[root@localhost busybox-1.22.1]<span class="comment"># less INSTALL </span></span><br></pre></td></tr></table></figure>
+
+<p>你会发现,busybox的构建方式和内核特别像.</p>
+<p>在编译之前, 显然我们的busybox应该编译成为一个单独的应用程序. 这就需要进行<strong>静态编译</strong> 也就是不使用共享的链接库, 我们的glibc提供了一个专门用于进行静态编译的包:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Installed Packages</span><br><span class="line">glibc.x86_64                                </span><br><span class="line">glibc-common.x86_64                         </span><br><span class="line">glibc-devel.x86_64                          </span><br><span class="line">glibc-headers.x86_64                        </span><br><span class="line">Available Packages</span><br><span class="line">glibc.i686                                  </span><br><span class="line">glibc-devel.i686                            </span><br><span class="line">glibc-static.i686                           </span><br><span class="line">glibc-static.x86_64                         </span><br><span class="line">glibc-utils.x86_64                          </span><br></pre></td></tr></table></figure>
+
+<p>就是那个static了, 如果没有安装devel的话还是要先安装这个的( 不过一般机器都是装过的吧</p>
+<p>接着就可以开始进行配置和编译了.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/build0.png" alt="build0"></p>
+<p>进去之后你会发现, 这个界面和我们编译内核的配置界面很相似, 这个就是tui嘛. 我们要注意的选项是Build Options,</p>
+<p>进去之后看到的第一项就是我们要勾选的:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/static0.png" alt="static0"></p>
+<p>接着回到上级, 我们进入make Install行为设置:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/makeInstall.png" alt="makeInstall"></p>
+<p>我们可以直接把安装的位置放到&#x2F;mnt&#x2F;sysroot目录下, 也可以不修改直接编译, 反正复制过去就可以了.</p>
+<p>那么接下来保存退出就好, 执行<code>make &amp;&amp; make install</code> </p>
+<p>既然使用了busybox, 我们就不需要原先手动创建的那些目录了, 将他们删除:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># cd /mnt/sysroot/</span></span><br><span class="line">[root@localhost sysroot]<span class="comment"># ls</span></span><br><span class="line">bin  dev  etc  home  lib  lib64  lost+found  media  mnt  proc  root  sbin  sys  tmp  usr  var</span><br><span class="line">[root@localhost sysroot]<span class="comment"># rm -rf ./*</span></span><br><span class="line">[root@localhost sysroot]<span class="comment"># ls</span></span><br><span class="line">[root@localhost sysroot]<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>编译完成了之后, 我们把所有的_install下的文件复制到&#x2F;mnt&#x2F;sysroot上去.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost busybox-1.22.1]<span class="comment"># cp -a ./_install/* /mnt/sysroot/</span></span><br></pre></td></tr></table></figure>
+
+<p>来确认一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost sysroot]<span class="comment"># ll</span></span><br><span class="line">total 12</span><br><span class="line">drwxr-xr-x. 2 root root 4096 Oct  2 11:51 bin</span><br><span class="line">lrwxrwxrwx. 1 root root   11 Oct  2 11:51 linuxrc -&gt; bin/busybox</span><br><span class="line">drwxr-xr-x. 2 root root 4096 Oct  2 11:51 sbin</span><br><span class="line">drwxr-xr-x. 4 root root 4096 Oct  2 11:51 usr</span><br></pre></td></tr></table></figure>
+
+<p>其中有个软链, 这个是在模拟init程序, 我们并不需要这个, 所以也把他删除吧. 因为我们有个init程序在sbin目录下: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost sysroot]<span class="comment"># ls sbin/ | grep init</span></span><br><span class="line">init</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以改写grub.conf文件, 将启动参数指向这个程序就行了. 不过为了保险起见, 我们还是把一些目录创建一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost sysroot]<span class="comment"># mkdir -pv tmp proc sys etc home root mnt media var lib lib64 dev boot</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `tmp<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `proc&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `sys<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `etc&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `home<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `root&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `mnt<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `media&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `var<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `lib&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `lib64<span class="string">&#x27;</span></span><br><span class="line"><span class="string">mkdir: created directory `dev&#x27;</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `boot<span class="string">&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>没完, 这个sbin&#x2F;init程序是需要读取etc&#x2F;inittab来工作的, 所以我们需要提供这样一个文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">::sysinit:/etc/rc.d/rc.sysinit</span><br><span class="line">console::respawn:-/bin/sh</span><br><span class="line">::ctrlaltdel:/sbin/reboot</span><br><span class="line">::shutdown:/bin/mount -a -r</span><br></pre></td></tr></table></figure>
+
+<p>但是现在也没有这个rc.sysinit脚本啊, 只好手写一个了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="built_in">echo</span> -e <span class="string">&quot;\tWelcome to \033[32mMini Linux\033[0m !&quot;</span></span><br><span class="line">mount -n -t proc proc /proc</span><br><span class="line">mount -n -t sysfs sysfs /sys</span><br><span class="line">mount -o remount,rw /dev/sda2 /</span><br></pre></td></tr></table></figure>
+
+<p>由于inittab已经开启了一个console了, 所以不需要再启动shell了. 赋予执行权限之后再来一次就好了.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/welcom.png" alt="welcom"></p>
+<p>看到那个提示语了么! 这就说明init成功了!</p>
+<p><strong>踩坑提示: sh不支持-n参数, 所以这个地方应该把脚本中的-n参数弄掉</strong></p>
+<p>我们来完善这个小企鹅, 加上fstab:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># vim /mnt/sysroot/etc/fstab</span></span><br><span class="line"></span><br><span class="line">proc            /proc   proc    defaults        0 0</span><br><span class="line">sysfs           /sys    sysfs   defaults        0 0</span><br><span class="line">/dev/sda1       /boot   ext4    defaults        0 0</span><br><span class="line">/dev/sda2       /       ext4    defaults        0 0</span><br></pre></td></tr></table></figure>
+
+<p>并且完善我们的启动脚本:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="built_in">echo</span> -e <span class="string">&quot;\tWelcome to \033[32mMini Linux\033[0m !&quot;</span></span><br><span class="line">mount -t proc proc /proc</span><br><span class="line">mount -t sysfs sysfs /sys</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;scan /sys and populate /dev...&quot;</span></span><br><span class="line">mdev -s</span><br><span class="line"></span><br><span class="line">mount -o remount,rw /dev/sda2 /</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;mounting all file systems...&quot;</span></span><br><span class="line">mount -a</span><br></pre></td></tr></table></figure>
+
+<p>其中有个mdev, 这个就是充当udev功能的.</p>
+<p>接着, 完善我们的启动终端:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">::sysinit:/etc/rc.d/rc.sysinit</span><br><span class="line">tty1::askfirst:/bin/sh</span><br><span class="line">tty2::askfirst:/bin/sh</span><br><span class="line">tty3::askfirst:/bin/sh</span><br><span class="line">::ctrlaltdel:/sbin/reboot</span><br><span class="line">::shutdown:/bin/mount -a -r</span><br></pre></td></tr></table></figure>
+
+<p>重启进入系统, 这个时候你如果使用Alt+f2来切换的话, 就会看到:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/active.png" alt="active"></p>
+<p>这就是askfirst的效果. 但是mount还是有问题. 考虑到busybox的Bug, 我们把系统上的mount复制过去.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost sysroot]<span class="comment"># cd bin/</span></span><br><span class="line">[root@localhost bin]<span class="comment"># ls</span></span><br><span class="line">ash      <span class="built_in">chgrp</span>   cttyhack       dumpkmap  fgrep   hostname  <span class="built_in">kill</span>     lsattr    more        netstat        <span class="built_in">printenv</span>   <span class="built_in">rmdir</span>         setserial  <span class="built_in">sync</span>    usleep</span><br><span class="line"><span class="built_in">base64</span>   <span class="built_in">chmod</span>   <span class="built_in">date</span>           <span class="built_in">echo</span>      fsync   hush      linux32  lzop      mount       <span class="built_in">nice</span>           ps         rpm           sh         tar     vi</span><br><span class="line">busybox  <span class="built_in">chown</span>   <span class="built_in">dd</span>             ed        getopt  ionice    linux64  makemime  mountpoint  pidof          <span class="built_in">pwd</span>        run-parts     <span class="built_in">sleep</span>      <span class="built_in">touch</span>   watch</span><br><span class="line"><span class="built_in">cat</span>      conspy  <span class="built_in">df</span>             egrep     grep    iostat    <span class="built_in">ln</span>       <span class="built_in">mkdir</span>     mpstat      ping           reformime  scriptreplay  <span class="built_in">stat</span>       <span class="literal">true</span>    zcat</span><br><span class="line">catv     <span class="built_in">cp</span>      dmesg          <span class="literal">false</span>     gunzip  ipcalc    login    <span class="built_in">mknod</span>     mt          ping6          rev        sed           <span class="built_in">stty</span>       umount</span><br><span class="line">chattr   cpio    dnsdomainname  fdflush   gzip    kbd_mode  <span class="built_in">ls</span>       <span class="built_in">mktemp</span>    <span class="built_in">mv</span>          pipe_progress  <span class="built_in">rm</span>         setarch       su         <span class="built_in">uname</span></span><br><span class="line">[root@localhost bin]<span class="comment"># mv mount mount.orig</span></span><br><span class="line">[root@localhost bin]<span class="comment"># bash ~/cp.sh </span></span><br><span class="line">A <span class="built_in">command</span>:mount</span><br><span class="line">Another <span class="built_in">command</span>? (enter quit to <span class="built_in">exit</span>)  bash</span><br><span class="line">Another <span class="built_in">command</span>? (enter quit to <span class="built_in">exit</span>)  quit</span><br><span class="line">[root@localhost bin]<span class="comment"># ls</span></span><br><span class="line">ash      chattr  cpio      dnsdomainname  fdflush  gzip      kbd_mode  <span class="built_in">ls</span>        <span class="built_in">mktemp</span>      mt       ping6          rev           sed        <span class="built_in">stty</span>   umount</span><br><span class="line"><span class="built_in">base64</span>   <span class="built_in">chgrp</span>   cttyhack  dumpkmap       fgrep    hostname  <span class="built_in">kill</span>      lsattr    more        <span class="built_in">mv</span>       pipe_progress  <span class="built_in">rm</span>            setarch    su     <span class="built_in">uname</span></span><br><span class="line">bash     <span class="built_in">chmod</span>   <span class="built_in">date</span>      <span class="built_in">echo</span>           fsync    hush      linux32   lzop      mount       netstat  <span class="built_in">printenv</span>       <span class="built_in">rmdir</span>         setserial  <span class="built_in">sync</span>   usleep</span><br><span class="line">busybox  <span class="built_in">chown</span>   <span class="built_in">dd</span>        ed             getopt   ionice    linux64   makemime  mount.orig  <span class="built_in">nice</span>     ps             rpm           sh         tar    vi</span><br><span class="line"><span class="built_in">cat</span>      conspy  <span class="built_in">df</span>        egrep          grep     iostat    <span class="built_in">ln</span>        <span class="built_in">mkdir</span>     mountpoint  pidof    <span class="built_in">pwd</span>            run-parts     <span class="built_in">sleep</span>      <span class="built_in">touch</span>  watch</span><br><span class="line">catv     <span class="built_in">cp</span>      dmesg     <span class="literal">false</span>          gunzip   ipcalc    login     <span class="built_in">mknod</span>   </span><br></pre></td></tr></table></figure>
+
+<p>行了, 再试一次吧.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/suc1.png" alt="suc1"></p>
+<p>这一次成功挂载! 一个较完整的小企鹅站起来啦! 但是作为Linux内核, 没有网络功能岂不是很讽刺 所以我们要给他加上网络功能</p>
+<p>( 其实这样折腾还蛮累的…. )</p>
+<p>首先打开网络支持:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/networkingsupport.png" alt="networkingsupport"></p>
+<p>接着进入选项打开TCP&#x2F;IP网络支持, 如果你有兴致也可以把多播和高级路由打开.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/tcpip.png" alt="tcpip"></p>
+<p>接着就是网卡驱动的支持:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/networkdriver.png" alt="networkdriver"></p>
+<p>具体到Ethernet网卡的驱动:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ethernet0.png" alt="ethernet0"></p>
+<p>这里面有很多无用的驱动, 都把他们关掉. 只要打开你自己网卡的支持就行了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># lspci</span></span><br><span class="line">00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX Host bridge (rev 01)</span><br><span class="line">00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge (rev 01)</span><br><span class="line">00:07.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 08)</span><br><span class="line">00:07.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)</span><br><span class="line">00:07.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 08)</span><br><span class="line">00:07.7 System peripheral: VMware Virtual Machine Communication Interface (rev 10)</span><br><span class="line">00:0f.0 VGA compatible controller: VMware SVGA II Adapter</span><br><span class="line">00:10.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 01)</span><br><span class="line">00:11.0 PCI bridge: VMware PCI bridge (rev 02)</span><br><span class="line">...(omitted)</span><br><span class="line">02:00.0 USB controller: VMware USB1.1 UHCI Controller</span><br><span class="line">02:01.0 Ethernet controller: Advanced Micro Devices [AMD] 79c970 [PCnet32 LANCE] (rev 10)</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/amd1.png" alt="amd1"></p>
+<p>这样就行了, 保存编译吧</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost linux-3.10.67]<span class="comment"># cp -av arch/x86/boot/bzImage /mnt/boot/</span></span><br><span class="line"><span class="built_in">cp</span>: overwrite `/mnt/boot/bzImage<span class="string">&#x27;? y</span></span><br><span class="line"><span class="string">`arch/x86/boot/bzImage&#x27;</span> -&gt; `/mnt/boot/bzImage<span class="string">&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>我被坑了. 我就纳闷明明物理机的网卡是Intel e1000怎么模拟了个AMD, 其实我是Intel的NIC啊,,,所以后来又重新编译了一次, 就不上图了…心累</p>
+</blockquote>
+<p>接着就会看到:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ifconfig0.png" alt="ifconfig0"></p>
+<p>配置上IP启用就可以正常的Ping了.</p>
+<p>再来折腾点新的玩意, 这一次我们把网络驱动编译成模块.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ntel.png" alt="ntel"></p>
+<p>接着正常编译, 但这次不同的是, 我们需要额外的编译一个单独的模块.</p>
+<p>这样来:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost linux-3.10.67]<span class="comment"># make M=drivers/net/ethernet/intel/e1000/</span></span><br><span class="line">  Building modules, stage 2.</span><br><span class="line">  MODPOST 1 modules</span><br><span class="line">  LD [M]  drivers/net/ethernet/intel/e1000/e1000.ko</span><br><span class="line">[root@localhost linux-3.10.67]<span class="comment"># mkdir /mnt/sysroot/lib/modules -pv</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory `/mnt/sysroot/lib/modules<span class="string">&#x27;</span></span><br><span class="line"><span class="string">[root@localhost linux-3.10.67]# cp drivers/net/ethernet/intel/e1000/e1000.ko /mnt/sysroot/lib/modules/</span></span><br><span class="line"><span class="string">[root@localhost linux-3.10.67]# </span></span><br></pre></td></tr></table></figure>
+
+<p>重新开机:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ins0.png" alt="ins0"></p>
+<p>果然, 没有了驱动, mini Tux无法认识他的新朋友Intel e1000网卡. 但是我们可以插一下模块, Tux就会认识了:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ins1.png" alt="ins1"></p>
+<p>现在就可以再次验证:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ins2.png" alt="ins2"></p>
+<p>大功告成. 这样我们就继续补充配置我们小企鹅了.</p>
+<p>在rc.sysinit中加入:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;loading Intel e1000...&quot;</span></span><br><span class="line">insmod lib/modules/e1000.ko</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Initializing NIC...&quot;</span></span><br><span class="line">ifconfig eth1 192.168.206.133 up</span><br><span class="line">ifconfig lo 127.0.0.1 up</span><br><span class="line"></span><br><span class="line">[ -f /etc/sysconfig/network ] &amp;&amp; . /etc/sysconfig/network</span><br><span class="line">[ -z <span class="string">&quot;<span class="variable">$HOSTNAME</span>&quot;</span> -o <span class="variable">$HOSTNAME</span> == <span class="string">&#x27;(none)&#x27;</span> ] &amp;&amp; HOSTNAME=<span class="string">&#x27;localhost&#x27;</span></span><br><span class="line">hostname <span class="variable">$HOSTNAME</span></span><br></pre></td></tr></table></figure>
+
+<p>接着创建&#x2F;etc&#x2F;sysconfig&#x2F;network, 向里面echo一句:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost sysroot]<span class="comment"># mkdir etc/sysconfig</span></span><br><span class="line">[root@localhost sysroot]<span class="comment"># echo &quot;HOSTNAME=miniTux.yaoxuannn.com&quot; &gt; etc/sysconfig/network </span></span><br></pre></td></tr></table></figure>
+
+<p>除了网络的初始化, 我们还想让这只小企鹅增加用户用户认证的功能, 怎么办?</p>
+<p>步骤如下:</p>
+<ul>
+<li>创建用户, 以及所需要的文件(passwd, group, shadow)</li>
+<li>修改inittab, 运行getty.</li>
+<li>最好使用简单的加密算法</li>
+</ul>
+<p>动手!</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># chroot /mnt/sysroot/ /bin/sh</span></span><br><span class="line">/ <span class="comment"># adduser root</span></span><br><span class="line">adduser: /etc/passwd: No such file or directory</span><br><span class="line">/ <span class="comment"># touch /etc/passwd /etc/shadow /etc/group</span></span><br><span class="line">/ <span class="comment"># adduser root</span></span><br><span class="line">passwd: unknown uid 0</span><br><span class="line">/ <span class="comment"># vim /etc/passwd</span></span><br><span class="line">/bin/sh: vim: not found</span><br><span class="line">/ <span class="comment"># vi /etc/passwd</span></span><br><span class="line">/ <span class="comment"># vi /etc/group</span></span><br><span class="line">/ <span class="comment"># # file shadow is a little difficult to handle...I choose to copy one line from the real root...</span></span><br><span class="line">/ <span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>( 真的心累…..</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># head -1 /etc/shadow &gt; /mnt/sysroot/etc/shadow</span></span><br><span class="line">[root@localhost ~]<span class="comment"># openssl passwd -1 -salt $(openssl rand -hex 4)</span></span><br><span class="line">Password: </span><br><span class="line">$1$e1f8a47b<span class="variable">$sdg4zhqqBfNE</span>..EMno.q60</span><br><span class="line">[root@localhost ~]<span class="comment"># vim /mnt/sysroot/etc/shadow</span></span><br><span class="line">[root@localhost ~]<span class="comment"># chmod 400 /mnt/sysroot/etc/shadow</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来就可以去搞我们的初始化脚本了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">::sysinit:/etc/rc.d/rc.sysinit</span><br><span class="line">::respawn:/sbin/getty 9600 tty1</span><br><span class="line">::respawn:/sbin/getty 9600 tty2</span><br><span class="line">::respawn:/sbin/getty 9600 tty3</span><br><span class="line">::ctrlaltdel:/sbin/reboot</span><br><span class="line">::shutdown:/bin/mount -a -r</span><br></pre></td></tr></table></figure>
+
+<p>挂起, 打开小企鹅!</p>
+<p>It works! 我们的脚本工作了, 但是一敲回车就进入sh了..所以还是不行, 看样子是哪里有问题. ( 难道是busybox的Bug?</p>
+<h2 id="折腾不动了-后面有空再填坑-拜拜"><a href="#折腾不动了-后面有空再填坑-拜拜" class="headerlink" title="折腾不动了, 后面有空再填坑, 拜拜"></a>折腾不动了, 后面有空再填坑, 拜拜</h2>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%B6%E4%BD%9C%E5%BC%80%E5%A7%8B"><span class="toc-number">1.</span> <span class="toc-text">制作开始</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A7%BB%E6%A4%8Dbash-shell"><span class="toc-number">2.</span> <span class="toc-text">移植bash shell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#busybox"><span class="toc-number">3.</span> <span class="toc-text">busybox</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%98%E8%85%BE%E4%B8%8D%E5%8A%A8%E4%BA%86-%E5%90%8E%E9%9D%A2%E6%9C%89%E7%A9%BA%E5%86%8D%E5%A1%AB%E5%9D%91-%E6%8B%9C%E6%8B%9C"><span class="toc-number">4.</span> <span class="toc-text">折腾不动了, 后面有空再填坑, 拜拜</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&text=来做个mini-Linux吧!"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&is_video=false&description=来做个mini-Linux吧!"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=来做个mini-Linux吧!&body=Check out this article: https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&title=来做个mini-Linux吧!"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&name=来做个mini-Linux吧!&description=&lt;p&gt;制作一只超 mini 的 Tux !!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://hexopic.s3-ap-northeast-1.amazonaws.com/tux.png&#34; alt=&#34;tux&#34;&gt;&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/&t=来做个mini-Linux吧!"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

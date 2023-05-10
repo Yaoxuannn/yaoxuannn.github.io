@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="学习了好多集群的概念和理论…要好好消化一下, 所以来个小插曲转移一下注意点啦~">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SCSI和iSCSI协议以及Linux IP SAN的实现">
+<meta property="og:url" content="https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="学习了好多集群的概念和理论…要好好消化一下, 所以来个小插曲转移一下注意点啦~">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://img.blog.csdn.net/20161108104700216">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/RHELstorage.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/SCSI.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/iSCSI.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/SANvsNAS.png">
+<meta property="article:published_time" content="2017-10-23T19:02:13.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:47:31.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="iSCSI">
+<meta property="article:tag" content="SAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20161108104700216">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>SCSI和iSCSI协议以及Linux IP SAN的实现</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/25/%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4%E4%B9%8BAnsible/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/21/%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E5%9F%BA%E7%A1%80%E5%92%8Cheartbeat/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&text=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&is_video=false&description=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=SCSI和iSCSI协议以及Linux IP SAN的实现&body=Check out this article: https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&name=SCSI和iSCSI协议以及Linux IP SAN的实现&description=&lt;p&gt;学习了好多集群的概念和理论…要好好消化一下, 所以来个小插曲转移一下注意点啦~&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&t=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.</span> <span class="toc-text">SCSI和iSCSI协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">Linux IP SAN的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Target%E7%AB%AF%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">Target端的配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Initiator%E7%AB%AF%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.2.</span> <span class="toc-text">Initiator端的配置</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        SCSI和iSCSI协议以及Linux IP SAN的实现
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-23T19:02:13.000Z" class="dt-published" itemprop="datePublished">2017-10-23</time>
+        
+        (Updated: <time datetime="2020-11-30T01:47:31.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/SAN/" rel="tag">SAN</a>, <a class="p-category" href="/tags/iSCSI/" rel="tag">iSCSI</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>学习了好多集群的概念和理论…要好好消化一下, 所以来个小插曲转移一下注意点啦~</p>
+<span id="more"></span>
+
+<h2 id="SCSI和iSCSI协议"><a href="#SCSI和iSCSI协议" class="headerlink" title="SCSI和iSCSI协议"></a>SCSI和iSCSI协议</h2><p>我们曾经在很远很远的时候说过简单的计算机硬件基础, 当时我们就已经说过了总线这东西, 离CPU较近的那一边就叫做北桥, 而较远的那就叫做南桥. 下面是一个简单的图示:</p>
+<p><img src="http://img.blog.csdn.net/20161108104700216" alt="总线"></p>
+<p>不过虽然是这样画的 现代的服务器的架构肯定是和这个有一些不同的, 不过大体上是一样的. CPU通过局部总线(Local Bus)连接上缓存和北桥控制器, 而控制器通过内存总线和内存进行连接, 中间的叫做PCI总线又接上了很多控制器, 例如SCSI控制器, USB控制器, 等等. </p>
+<p>我们之前在说存储类型的时候说过, DAS, NAS, 和SAN. DAS就好比我们直接把移动硬盘接进来, 这就是DAS, 即直接附加存储(Direct Attach Storage). 而NAS设备就是使用一些文件共享协议实现的文件服务器, 好比NFS, CIFS等. 有些NAS也可以使用应用层的HTTP协议进行文件传输. (RESTful). 还有就是SAN, 存储区域网络(Storage Area Network) 这些设备通过的网络, 就是SAN. SAN能够块级别的文件服务, 其实SAN主要就是做到对特定的物理层的解码和编码, 例如<code>FC SAN</code>就是为了光信号的文件传输的. 而IP层的就是可以提供IP层的协议报文的封装和解包.</p>
+<p>为了搞清楚这些玩意, 我们就要来看看Linux(RHEL)的存储模型是个什么样的, 或者说调用接口是怎么组织的:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/RHELstorage.png" alt="RHELstorage"></p>
+<p>首先我们从上层来看, 有存储数据或者读取数据的需求的显然是我们的应用程序, 接着我们的Linux为各种类型的文件系统抽象出统一的接口, 即上面的VFS. 接着的File System Driver就是我们的各种类型文件系统的具体实现了, 接着驱动实际的有存储能力的磁盘就是向下一层的Block Device Driver. 最后的Volume就不需要多说了.</p>
+<p>而为了要是需要操作基本的存储卷的话, 就需要将DAS接到总线上, 这些接口有这些: IDE, SCSI ( 这两个都是并行的 ), 串行的: SATA, SAS, USB, eSATA. 我们今天的主角就是SCSI了, SCSI的全称是小型计算机接口(Small Computer System Interface)</p>
+<p>刚刚也说了, SCSI是一种并行的IO技术, 并且规范了相关的协议. 对于SCSI而言, 他的数据传输是以块的方式进行的. SCSI有这些特点:</p>
+<ul>
+<li>设备无关性</li>
+<li>多设备并行</li>
+<li>高带宽 ( 和IDE相比较 )</li>
+<li>低系统开销 全能总线, 可以自行执行很多操作, 几乎不需要CPU的参与, 是IDE的1&#x2F;10</li>
+</ul>
+<p>接下来我们来说说SCSI控制器的工作模式:</p>
+<p>首先, 在逻辑上, 我们把SCSI控制器分为一个任务管理单元和多个逻辑管理单元. 对于每一个逻辑设备, 我们也为他们分配一个ID号码来辨识, 叫做LUN.</p>
+<p>SCSI的通信模型是一个C&#x2F;S架构的模型, 也就是我们常说的客户端,服务器端架构, 我们把客户端叫做Initiator, 而另外一端, 即Target端, 他们之间通过SCSI通道连接互相的SCSI port进行通信. 更有意思的是, 理解SCSI十分容易, 如果你对网络分层的理解不错的话, 因为他们之间的分层架构和我们的网络十分相像:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/SCSI.png" alt="SCSI"></p>
+<p>相信一看就能明白, 然而我想说的一点是, 现在的技术已经可以将物理层替换成其他的传输介质, 不一定非要是SCSI线缆. 也可以是FC光缆, 	iSCSI, IB什么的, 这样, 通过各种不同的组织方式, 我们就可以构建承载着存储协议SCSI的相关报文的网络, 这就是一个SAN了.</p>
+<p>每一个SCSI硬盘, 他的内部都有一个或者数个由逻辑单元,任务管理器,服务器构成的组件, 和一个任务分发器.</p>
+<p>为什么说这个呢?  我们来思考一个问题, 如果说不谈物理层面上那个具有存储能力的<em>磁盘</em>, 如果说我随便找一个磁盘, 但是我把它接到一个Linux主机上, 该主机实现了上面 我说的那些功能, 那么我说这个是一个SCSI盘也是没有什么毛病的.</p>
+<p>换言之, 我们通过软件是完全可以把一个IDE硬盘驱动成SCSI的. 这个其实就是iSCSI.</p>
+<p>来看下面的一个图:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/iSCSI.png" alt="iSCSI"></p>
+<p>这是iSCSI和SCSI&#x2F;FC的对比. SCSI&#x2F;FC很简单了, 只要有FC或者SCSI驱动,光卡和专用线缆就可以了, 主要是看看我们的iSCSI.</p>
+<p>首先, 为了封装得到SCSI报文, 我们需要SCSI驱动, 接着由iSCSI驱动承上启下转换成为TCP&#x2F;IP报文, 接着通过网卡传输到存储端, 而当然了, 存储端同样也是要求拥有网卡的. 也就是说我们要在原始的数据前面加上SCSI首部, iSCSI首部, TCP首部, IP首部, Ethernet首部. 这样多层封装的结果就是, 性能不会这么好.</p>
+<p>接下来我们就来看看SAN和NAS的对比吧:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/SANvsNAS.png" alt="SANvsNAS"></p>
+<p>主要的区别我们之前也都说过了, 向外输出的接口就是很不一样的, 一个是块级别的, 一个是文件级别.</p>
+<p>最后 iSCSI协议监听在tcp的3260端口上.</p>
+<h2 id="Linux-IP-SAN的实现"><a href="#Linux-IP-SAN的实现" class="headerlink" title="Linux IP SAN的实现"></a>Linux IP SAN的实现</h2><p>现在我就先来实现一下Target端, 并且在上面配置LUN. 接着我们在找一台主机当做Initiator端, 看他能不能发现网络上的SCSI设备并且格式化并使用, 以及当出现了另外一个Initiator时, 同时读写同一个文件会造成什么情况.</p>
+<p>首先, 对于网络上的资源, 显然加密是必然的, 尤其是对于这样的共享存储, 一定是需要进行认证的. 我们的认证方式有两种, 一个是基于IP的, 一个是基于CHAP的.</p>
+<p>我们的CentOS自带的程序包叫做<code>scsi-target-util</code>. 所提供的管理工具叫tgtadm, 他的配置结果保存在内核中, 一旦重启内核即失效. 另外一个叫做tgt-admin: 是通过读取配置文件来进行配置.</p>
+<p>启动服务之后, 模拟的实际上是SCSI总线, 所以我们可以管理多个target, 而每个target也可以管理多个lun.</p>
+<p>对于Initiator端, 我们也需要一个程序包<code>iscsi-initiator-utils</code>. 他有两个工具: iscsi和iscsid. 前者是为了建立连接, 后者是为了进程随时能够读取iSCSI服务.</p>
+<p>那么怎么识别呢? 其实, 对于target和Initiator端都使用了一个叫做iqn的来进行标识. 即 iSCSI qualified name. 是这样的格式: </p>
+<blockquote>
+<p><code>iqn.YEAR-MONTH.tld.domain:string[.substring]</code></p>
+</blockquote>
+<p>例如: iqn.2017-10.com.baidu:i1.c1</p>
+<p>接下来我就开始配置iSCSI server了.</p>
+<p>大体的几个步骤下面列出的这几个:</p>
+<ul>
+<li>准备磁盘设备, 这个我们可以直接使用Vmware的虚拟磁盘来代替</li>
+<li>安装程序包, 启动服务</li>
+<li>创建target</li>
+<li>创建lun</li>
+<li>授权</li>
+</ul>
+<p>OK, 现在我们准备三台主机, 两台作为Initiator端, 一台作为Target端.</p>
+<h3 id="Target端的配置"><a href="#Target端的配置" class="headerlink" title="Target端的配置"></a>Target端的配置</h3><p>在Initiator端, 我准备了两块磁盘每个大小是10G的. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># cat /dev/sd</span></span><br><span class="line">sda   sda1  sda2  sdb   sdc </span><br></pre></td></tr></table></figure>
+
+<p>这两块磁盘不需要进行分区, 也不需要进行格式化. 接着就安装软件吧, 我们来看看生成了哪些东西:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># rpm -ql scsi-target-utils</span></span><br><span class="line">/etc/sysconfig/tgtd</span><br><span class="line">/etc/tgt/conf.d/sample.conf</span><br><span class="line">/etc/tgt/targets.conf</span><br><span class="line">/etc/tgt/tgtd.conf</span><br><span class="line">/usr/lib/systemd/system/tgtd.service</span><br><span class="line">/usr/sbin/tgt-admin</span><br><span class="line">/usr/sbin/tgt-setup-lun</span><br><span class="line">/usr/sbin/tgtadm</span><br><span class="line">/usr/sbin/tgtd</span><br><span class="line">/usr/sbin/tgtimg</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>反正这个守护进程无非就是在监听3260&#x2F;tcp端口, 所以我们可以直接启动它:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># systemctl start tgtd</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># ss -tnl</span></span><br><span class="line">State       Recv-Q Send-Q                                        Local Address:Port                                                       Peer Address:Port              </span><br><span class="line">LISTEN      0      128                                                       *:22                                                                    *:*                  </span><br><span class="line">LISTEN      0      100                                               127.0.0.1:25                                                                    *:*                  </span><br><span class="line">LISTEN      0      128                                                       *:3260                                                                  *:*                  </span><br><span class="line">LISTEN      0      128                                                      :::22                                                                   :::*                  </span><br><span class="line">LISTEN      0      100                                                     ::1:25                                                                   :::*                  </span><br><span class="line">LISTEN      0      128                                                      :::3260                                                                 :::*  </span><br></pre></td></tr></table></figure>
+
+<p>我们先来试试tgtadm这个命令行工具, 熟悉一下具体的工作流程, 接着再试试tgt-admin通过配置配置文件来简化流程.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --help</span></span><br><span class="line">Linux SCSI Target administration utility, version 1.0.55</span><br><span class="line"></span><br><span class="line">Usage: tgtadm [OPTION]</span><br><span class="line">--lld &lt;driver&gt; --mode target</span><br><span class="line">--lld &lt;driver&gt; --mode logicalunit</span><br><span class="line">--lld &lt;driver&gt; --mode account</span><br></pre></td></tr></table></figure>
+
+<p>基本上我们的tgtadm是一个模式化的工具, 一共提供了三个模式: </p>
+<p>target, 用来管理target的; logicalunit就是用来管理lun的; account是用来进行用户账户管理的. </p>
+<p>每个模式又有着对应的操作, show, new, delete, update, bind(授权), unbind(解除授权)</p>
+<p>现在就来进行创建一个target试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode target --op show</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode target --op new --tid 1 --targetname iqn.2017-10.com.justin13wyx:s1.t1</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode target --op show</span></span><br><span class="line">Target 1: iqn.2017-10.com.justin13wyx:s1.t1</span><br><span class="line">    System information:</span><br><span class="line">        Driver: iscsi</span><br><span class="line">        State: ready</span><br><span class="line">    I_T nexus information:</span><br><span class="line">    LUN information:</span><br><span class="line">        LUN: 0</span><br><span class="line">            Type: controller</span><br><span class="line">            SCSI ID: IET     00010000</span><br><span class="line">            SCSI SN: beaf10</span><br><span class="line">            Size: 0 MB, Block size: 1</span><br><span class="line">            Online: Yes</span><br><span class="line">            Removable media: No</span><br><span class="line">            Prevent removal: No</span><br><span class="line">            Readonly: No</span><br><span class="line">            SWP: No</span><br><span class="line">            Thin-provisioning: No</span><br><span class="line">            Backing store <span class="built_in">type</span>: null</span><br><span class="line">            Backing store path: None</span><br><span class="line">            Backing store flags: </span><br><span class="line">    Account information:</span><br><span class="line">    ACL information:</span><br></pre></td></tr></table></figure>
+
+<p>上面显示了当前target的信息, 可以看到, 默认已经有一个LUN了, 他的类型是控制器.</p>
+<p>所以再添加LUN的时候就不能再使用这个0号了. 现在来添加一个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode logicalunit --op new --tid 1 --lun 1 --backing-store /dev/sdb</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode target --op show</span></span><br><span class="line">Target 1: iqn.2017-10.com.justin13wyx:s1.t1</span><br><span class="line">    System information:</span><br><span class="line">        Driver: iscsi</span><br><span class="line">        State: ready</span><br><span class="line">    I_T nexus information:</span><br><span class="line">    LUN information:</span><br><span class="line">        LUN: 0</span><br><span class="line">            Type: controller</span><br><span class="line">            SCSI ID: IET     00010000</span><br><span class="line">            SCSI SN: beaf10</span><br><span class="line">            Size: 0 MB, Block size: 1</span><br><span class="line">            Online: Yes</span><br><span class="line">            Removable media: No</span><br><span class="line">            Prevent removal: No</span><br><span class="line">            Readonly: No</span><br><span class="line">            SWP: No</span><br><span class="line">            Thin-provisioning: No</span><br><span class="line">            Backing store <span class="built_in">type</span>: null</span><br><span class="line">            Backing store path: None</span><br><span class="line">            Backing store flags: </span><br><span class="line">        LUN: 1</span><br><span class="line">            Type: disk</span><br><span class="line">            SCSI ID: IET     00010001</span><br><span class="line">            SCSI SN: beaf11</span><br><span class="line">            Size: 10737 MB, Block size: 512</span><br><span class="line">            Online: Yes</span><br><span class="line">            Removable media: No</span><br><span class="line">            Prevent removal: No</span><br><span class="line">            Readonly: No</span><br><span class="line">            SWP: No</span><br><span class="line">            Thin-provisioning: No</span><br><span class="line">            Backing store <span class="built_in">type</span>: rdwr</span><br><span class="line">            Backing store path: /dev/sdb</span><br><span class="line">            Backing store flags: </span><br><span class="line">    Account information:</span><br><span class="line">    ACL information:</span><br></pre></td></tr></table></figure>
+
+<p>这个时候就能看到我们添加的那个LUN了, 1号. 在添加的时候要使用<code>--backing-store</code>指明使用什么设备, 只要是块设备就行了, 也就是说LVM和RAID都是可以的.</p>
+<p>删除操作也是很容易理解的, 现在我们把另外一个sdc也加进来.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode logicalunit --op new --tid 1 --lun 2 --backing-store /dev/sdc</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来做什么? 授权. 其实对IP授权是比较多见的, 我们先来看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode target --op bind --tid 1 --initiator-address 192.168.206.0/24</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm --lld iscsi --mode target --op show</span></span><br><span class="line">...(omitted)</span><br><span class="line">    ACL information:</span><br><span class="line">        192.168.206.0/24</span><br></pre></td></tr></table></figure>
+
+<p>这个时候ACL信息就有了.</p>
+<blockquote>
+<p>其实刚才的这些选项都是有短格式的, 例如:</p>
+<ul>
+<li>–lld, -L</li>
+<li>–mode, -m</li>
+<li>–op, -o</li>
+<li>–tid, -t</li>
+<li>–lun, -l</li>
+<li>–backing-store, -b</li>
+<li>–initiator-address, -i</li>
+<li>–targetname, -T</li>
+</ul>
+</blockquote>
+<p>这样我们的target就已经配置完了, 很easy吧. 接下来就是另外一边的initiator端了.</p>
+<h3 id="Initiator端的配置"><a href="#Initiator端的配置" class="headerlink" title="Initiator端的配置"></a>Initiator端的配置</h3><p>显然我们还是要先安装软件程序包, 配置Initiator的名字, 并且启动服务. 接着再使用iscsiadm实现对Target端的发现和注册等.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># rpm -ql iscsi-initiator-utils</span></span><br><span class="line">/etc/NetworkManager/dispatcher.d/04-iscsi</span><br><span class="line">/etc/iscsi</span><br><span class="line">/etc/iscsi/iscsid.conf</span><br><span class="line">/usr/lib/systemd/system/iscsi-shutdown.service</span><br><span class="line">/usr/lib/systemd/system/iscsi.service</span><br><span class="line">/usr/lib/systemd/system/iscsid.service</span><br><span class="line">/usr/lib/systemd/system/iscsid.socket</span><br><span class="line">/usr/lib/tmpfiles.d/iscsi.conf</span><br><span class="line">/usr/lib64/libiscsi.so.0</span><br><span class="line">/usr/lib64/python2.7/site-packages/libiscsimodule.so</span><br><span class="line">/usr/libexec/iscsi-mark-root-nodes</span><br><span class="line">/usr/sbin/iscsi-iname</span><br><span class="line">/usr/sbin/iscsiadm</span><br><span class="line">/usr/sbin/iscsid</span><br><span class="line">/usr/sbin/iscsistart</span><br><span class="line">...(omitted)</span><br><span class="line">/var/lib/iscsi</span><br><span class="line">/var/lib/iscsi/ifaces</span><br><span class="line">/var/lib/iscsi/isns</span><br><span class="line">/var/lib/iscsi/nodes</span><br><span class="line">/var/lib/iscsi/send_targets</span><br><span class="line">/var/lib/iscsi/slp</span><br><span class="line">/var/lib/iscsi/static</span><br><span class="line">/var/lock/iscsi</span><br><span class="line">/var/lock/iscsi/lock</span><br></pre></td></tr></table></figure>
+
+<p>这个玩意安装的东西有点多了吧, 提供了多个程序. 真正的管理工具就是那个iscsiadm. 有意思的是, 他有两个服务, 一个是iscsi, 一个是iscsid. 前者是为了实现在开机之后自动连入上一次连接的target, 而iscsid是为了实现数据的持久传输, 所以这些服务我们都需要启动.</p>
+<p>iscsiadm也是一个模式化的工具, 一般我们使用的模式也就只有discovery和node模式, 偶尔可能会需要进行discoverydb的管理, 那就是discoverydb模式了.</p>
+<p>首先查看一下<code>/etc/iscsi/initiatorname.iscsi</code>这个文件, 它里面是我们这个Initiator的名字, 不过这个显然不适合我们. 所以我们需要重新修改一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># cat /etc/iscsi/initiatorname.iscsi </span></span><br><span class="line">InitiatorName=iqn.1994-05.com.redhat:5a7eb857dcf1</span><br></pre></td></tr></table></figure>
+
+<p>对于后面那个随机的字串, 我们可以使用<code>iscsi-iname</code>这个工具生成, 用法很简单, 只要使用<code>-p</code>指明前缀就行了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># echo &quot;InitiatorName=$(iscsi-iname -p iqn.2017-10.com.justin)&quot; &gt; /etc/iscsi/initiatorname.iscsi </span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># cat /etc/iscsi/initiatorname.iscsi </span></span><br><span class="line">InitiatorName=iqn.2017-10.com.justin:198a6172b789</span><br></pre></td></tr></table></figure>
+
+<p>现在就可以启动服务并且尝试进行发现了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># systemctl start iscsi</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># systemctl start iscsid</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># iscsiadm -m discovery -d 3 -t st -p 192.168.206.10:3260</span></span><br><span class="line">iscsiadm: ip 192.168.206.10, port 3260, tgpt -1</span><br><span class="line">iscsiadm: Max file limits 1024 4096</span><br><span class="line">iscsiadm: starting sendtargets discovery, address 192.168.206.10:3260, </span><br><span class="line">iscsiadm: connecting to 192.168.206.10:3260</span><br><span class="line">iscsiadm: connected <span class="built_in">local</span> port 37670 to 192.168.206.10:3260</span><br><span class="line">iscsiadm: connected to discovery address 192.168.206.10</span><br><span class="line">iscsiadm: login response status 0000</span><br><span class="line">iscsiadm: discovery process to 192.168.206.10:3260 exiting</span><br><span class="line">iscsiadm: disconnecting conn 0x555e218a0aa0, fd 3</span><br><span class="line">192.168.206.10:3260,1 iqn.2017-10.com.justin13wyx:s1.t1</span><br></pre></td></tr></table></figure>
+
+<p>来稍微解释一下, 这里的参数其实不止这些, 首选-d参数指明debug等级, 还有一个-P参数指定显示信息的等级, 接着-t指明类型, 这里我们使用到的是sendtargets(st)类型, 接着后面是使用-p参数指明IP和端口, 端口可省.</p>
+<p>从输出信息中也可以看到, 已经发现了我们的s1, t1. 接着, 如果发现了target, 服务就会在<code>/var/lib/iscsi/send_targets</code>创建出来一个对应的IP和端口的目录文件, 里面会存在我们刚刚发现的target. 当然 这个时候我们还不会出现映射过来的磁盘.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ls /var/lib/iscsi/send_targets/192.168.206.10,3260/</span></span><br><span class="line">iqn.2017-10.com.justin13wyx:s1.t1,192.168.206.10,3260,1,default  st_config</span><br></pre></td></tr></table></figure>
+
+<p>因为我们还没有登录进来, 所以这个时候就需要进入node模式了.</p>
+<p>node的选项挺多, 但最后我们可以简化一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># iscsiadm -m node -d 1 -T iqn.2017-10.com.justin13wyx:s1.t1 -p 192.168.206.10:3260 -l</span></span><br><span class="line">Logging <span class="keyword">in</span> to [iface: default, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260] (multiple)</span><br><span class="line">Login to [iface: default, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260] successful.</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># fdisk /dev/sd[a-z] -l</span></span><br><span class="line"></span><br><span class="line">Disk /dev/sda: 21.5 GB, 21474836480 bytes, 41943040 sectors</span><br><span class="line">Units = sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disk label <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x000d18bd</span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/sda1   *        2048     2099199     1048576   83  Linux</span><br><span class="line">/dev/sda2         2099200    41943039    19921920   8e  Linux LVM</span><br><span class="line"></span><br><span class="line">Disk /dev/sdb: 10.7 GB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Units = sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/sdc: 10.7 GB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Units = sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br></pre></td></tr></table></figure>
+
+<p>其中, -T表示对应的target, -p指明IP地址和端口, 端口可省, 最后的-l表示进行登录(log), 除了登录, 还有-u登出(logout).</p>
+<p>试一下吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># iscsiadm -m node -d 1 -T iqn.2017-10.com.justin13wyx:s1.t1 -p 192.168.206.10:3260 -u</span></span><br><span class="line">Logging out of session [sid: 1, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260]</span><br><span class="line">Logout of [sid: 1, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260] successful.</span><br></pre></td></tr></table></figure>
+
+<p>当我们登录的时候, 我们就会建立一条持久连接. 而且, 即使我们现在登出了, 下一次还是会自动的连接过来. 如果不想自动连接过来, 还记得我们之前在<code>/var/lib/iscsi/send_targets</code>看到的那个目录下的软连接吗? 我们可以通过移除那个来搞定, 可以通过命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># iscsiadm -m node -d 1 -T iqn.2017-10.com.justin13wyx:s1.t1 -p 192.168.206.10:3260 -o delete</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ls /var/lib/iscsi/send_targets/192.168.206.10,3260/</span></span><br><span class="line">st_config</span><br></pre></td></tr></table></figure>
+
+<p>这个时候就没有了.</p>
+<p>那我们现在再次发现和登录一次, 接着进行分区和格式化并且挂载使用一下试试看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># iscsiadm -m discovery -t st -p 192.168.206.10</span></span><br><span class="line">192.168.206.10:3260,1 iqn.2017-10.com.justin13wyx:s1.t1</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># iscsiadm -m node -T iqn.2017-10.com.justin13wyx:s1.t1 -p 192.168.206.10 -l</span></span><br><span class="line">Logging <span class="keyword">in</span> to [iface: default, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260] (multiple)</span><br><span class="line">Login to [iface: default, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260] successful.</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># fdisk /dev/sdb</span></span><br><span class="line">Welcome to fdisk (util-linux 2.23.2).</span><br><span class="line"></span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, <span class="keyword">until</span> you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line"></span><br><span class="line">Device does not contain a recognized partition table</span><br><span class="line">Building a new DOS disklabel with disk identifier 0x4feed587.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition <span class="built_in">type</span>:</span><br><span class="line">   p   primary (0 primary, 0 extended, 4 free)</span><br><span class="line">   e   extended</span><br><span class="line">Select (default p): p</span><br><span class="line">Partition number (1-4, default 1): </span><br><span class="line">First sector (2048-20971519, default 2048): </span><br><span class="line">Using default value 2048</span><br><span class="line">Last sector, +sectors or +size&#123;K,M,G&#125; (2048-20971519, default 20971519): +5G</span><br><span class="line">Partition 1 of <span class="built_in">type</span> Linux and of size 5 GiB is <span class="built_in">set</span></span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered!</span><br><span class="line"></span><br><span class="line">Calling ioctl() to re-read partition table.</span><br><span class="line">Syncing disks.</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># mkfs.ext4 /dev/sdb1</span></span><br><span class="line">mke2fs 1.42.9 (28-Dec-2013)</span><br><span class="line">Filesystem label=</span><br><span class="line">OS <span class="built_in">type</span>: Linux</span><br><span class="line">Block size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Fragment size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Stride=0 blocks, Stripe width=0 blocks</span><br><span class="line">327680 inodes, 1310720 blocks</span><br><span class="line">65536 blocks (5.00%) reserved <span class="keyword">for</span> the super user</span><br><span class="line">First data block=0</span><br><span class="line">Maximum filesystem blocks=1342177280</span><br><span class="line">40 block <span class="built_in">groups</span></span><br><span class="line">32768 blocks per group, 32768 fragments per group</span><br><span class="line">8192 inodes per group</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">	32768, 98304, 163840, 229376, 294912, 819200, 884736</span><br><span class="line"></span><br><span class="line">Allocating group tables: <span class="keyword">done</span>                            </span><br><span class="line">Writing inode tables: <span class="keyword">done</span>                            </span><br><span class="line">Creating journal (32768 blocks): <span class="keyword">done</span></span><br><span class="line">Writing superblocks and filesystem accounting information: <span class="keyword">done</span> </span><br></pre></td></tr></table></figure>
+
+<p>接着挂载上来:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># mkdir /data/iscsi -pv</span></span><br><span class="line"><span class="built_in">mkdir</span>: created directory ‘/data/iscsi’</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># mount /dev/sdb1 /data/iscsi/</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># ls /data/iscsi/</span></span><br><span class="line">lost+found</span><br></pre></td></tr></table></figure>
+
+<p>我们向里面写一个issue文件好了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 iscsi]<span class="comment"># echo &quot;RedHat CentOS7 (192.168.206.9)&quot; &gt; issue</span></span><br><span class="line">[root@VM-node1 iscsi]<span class="comment"># cat issue </span></span><br><span class="line">RedHat CentOS7 (192.168.206.9)</span><br></pre></td></tr></table></figure>
+
+<p>接着我们开启另外一台主机, 同样也试试挂载使用:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># echo &quot;InitiatorName=$(iscsi-iname -p iqn.2017-10.com.justin13wyx)&quot; &gt; /etc/iscsi/initiatorname.iscsi </span></span><br><span class="line">[root@VM-node3 ~]<span class="comment"># cat /etc/iscsi/initiatorname.iscsi </span></span><br><span class="line">InitiatorName=iqn.2017-10.com.justin13wyx:a4fe8a6e623f</span><br><span class="line">[root@VM-node3 ~]<span class="comment"># iscsiadm -m discovery -t st -p 192.168.206.10</span></span><br><span class="line">192.168.206.10:3260,1 iqn.2017-10.com.justin13wyx:s1.t1</span><br><span class="line">[root@VM-node3 ~]<span class="comment"># iscsiadm -m node -T iqn.2017-10.com.justin13wyx:s1.t1 -p 192.168.206.10 -l</span></span><br><span class="line">Logging <span class="keyword">in</span> to [iface: default, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260] (multiple)</span><br><span class="line">Login to [iface: default, target: iqn.2017-10.com.justin13wyx:s1.t1, portal: 192.168.206.10,3260] successful.</span><br><span class="line">[root@VM-node3 ~]<span class="comment"># mount /dev/sdb1 /data/iscsi</span></span><br><span class="line">[root@VM-node3 iscsi]<span class="comment"># ls</span></span><br><span class="line">issue  lost+found</span><br></pre></td></tr></table></figure>
+
+<p>没有任何问题, 所以说尽管我们知道不能进行两次挂载, 但是我们却仍然可以进行挂载!</p>
+<p>接下来我们玩一个好玩的, node1对issue进行写入, 我们来看看node3的状态:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 iscsi]<span class="comment"># cat issue </span></span><br><span class="line">RedHat CentOS7 (192.168.206.9)</span><br><span class="line">----</span><br><span class="line">[root@VM-node1 iscsi]<span class="comment"># echo &quot;New line&quot; &gt;&gt; issue </span></span><br><span class="line">[root@VM-node1 iscsi]<span class="comment"># cat issue </span></span><br><span class="line">RedHat CentOS7 (192.168.206.9)</span><br><span class="line">New line</span><br><span class="line">----</span><br><span class="line">[root@VM-node3 iscsi]<span class="comment"># cat issue </span></span><br><span class="line">RedHat CentOS7 (192.168.206.9)</span><br></pre></td></tr></table></figure>
+
+<p>果然是没有改变的, 因为我们说过这种共享存储都是在内存中进行的操作, 接下来我们把node1上的那个卸载掉:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 iscsi]<span class="comment"># cd ~</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># umount /data/iscsi/</span></span><br><span class="line">----</span><br><span class="line">[root@VM-node3 iscsi]<span class="comment"># cat issue </span></span><br><span class="line">RedHat CentOS7 (192.168.206.9)</span><br></pre></td></tr></table></figure>
+
+<p>还是没有改变吧, 好吧, 另外一边也卸载掉.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 iscsi]<span class="comment"># echo &quot;node3&quot; &gt; issue </span></span><br><span class="line">[root@VM-node3 iscsi]<span class="comment"># cd ~</span></span><br><span class="line">[root@VM-node3 ~]<span class="comment"># umount /data/iscsi/</span></span><br></pre></td></tr></table></figure>
+
+<p>接着node1重新恢复:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># mount /dev/sdb1 /data/iscsi/</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># cat /data/iscsi/issue </span></span><br><span class="line">node3</span><br></pre></td></tr></table></figure>
+
+<p>看, 显示的node3最后修改的结果, 也就是说在互相挂载的状态下, 数据是不一致的, 这样就会发生错乱. 所以, 我们应该在一个target上提供多个硬盘来进行分开使用, 避免出现这种数据紊乱的情况.</p>
+<p>以上, 就是我们说的使用命令行的方式进行的配置. 接下来我们再来看一下使用配置文件的方式, 现在就很简单了, 不过我们要先把现在的target删除:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm -m logicalunit -o delete -t 1 -l 1</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm -m logicalunit -o delete -t 1 -l 2</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm -m target -o delete -t 1</span></span><br><span class="line">tgtadm: this target is still active</span><br></pre></td></tr></table></figure>
+
+<p>出现了错误提示, 因为我们还没有登出, 两台Initiator都执行了登出操作之后就可以删除了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm -m target -o delete -t 1</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm -m target -o show</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>现在我们直接来看配置文件: (<code>/etc/tgt/targets.conf</code>)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">default-driver iscsi</span><br><span class="line"></span><br><span class="line">&lt;target iqn.2017-10.com.justin13wyx&gt;</span><br><span class="line">    backing-store /dev/sdb</span><br><span class="line">    backing-store /dev/sdc</span><br><span class="line">    initiator-address 192.168.206.0/24</span><br><span class="line">&lt;/target&gt;</span><br></pre></td></tr></table></figure>
+
+<p>十分好懂吧.</p>
+<p>接着直接重启服务就行了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm -m target -o show</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># systemctl restart tgtd</span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># tgtadm -m target -o show</span></span><br><span class="line">Target 1: iqn.2017-10.com.justin13wyx</span><br><span class="line">    System information:</span><br><span class="line">        Driver: iscsi</span><br><span class="line">        State: ready</span><br><span class="line">    I_T nexus information:</span><br><span class="line">    LUN information:</span><br><span class="line">        LUN: 0</span><br><span class="line">            Type: controller</span><br><span class="line">            SCSI ID: IET     00010000</span><br><span class="line">            SCSI SN: beaf10</span><br><span class="line">            Size: 0 MB, Block size: 1</span><br><span class="line">            Online: Yes</span><br><span class="line">            Removable media: No</span><br><span class="line">            Prevent removal: No</span><br><span class="line">            Readonly: No</span><br><span class="line">            SWP: No</span><br><span class="line">            Thin-provisioning: No</span><br><span class="line">            Backing store <span class="built_in">type</span>: null</span><br><span class="line">            Backing store path: None</span><br><span class="line">            Backing store flags: </span><br><span class="line">        LUN: 1</span><br><span class="line">            Type: disk</span><br><span class="line">            SCSI ID: IET     00010001</span><br><span class="line">            SCSI SN: beaf11</span><br><span class="line">            Size: 10737 MB, Block size: 512</span><br><span class="line">            Online: Yes</span><br><span class="line">            Removable media: No</span><br><span class="line">            Prevent removal: No</span><br><span class="line">            Readonly: No</span><br><span class="line">            SWP: No</span><br><span class="line">            Thin-provisioning: No</span><br><span class="line">            Backing store <span class="built_in">type</span>: rdwr</span><br><span class="line">            Backing store path: /dev/sdb</span><br><span class="line">            Backing store flags: </span><br><span class="line">        LUN: 2</span><br><span class="line">            Type: disk</span><br><span class="line">            SCSI ID: IET     00010002</span><br><span class="line">            SCSI SN: beaf12</span><br><span class="line">            Size: 10737 MB, Block size: 512</span><br><span class="line">            Online: Yes</span><br><span class="line">            Removable media: No</span><br><span class="line">            Prevent removal: No</span><br><span class="line">            Readonly: No</span><br><span class="line">            SWP: No</span><br><span class="line">            Thin-provisioning: No</span><br><span class="line">            Backing store <span class="built_in">type</span>: rdwr</span><br><span class="line">            Backing store path: /dev/sdc</span><br><span class="line">            Backing store flags: </span><br><span class="line">    Account information:</span><br><span class="line">    ACL information:</span><br><span class="line">        192.168.206.0/24</span><br></pre></td></tr></table></figure>
+
+<p>target的名字, LUN还有ACL授权都已经OK了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.</span> <span class="toc-text">SCSI和iSCSI协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">Linux IP SAN的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Target%E7%AB%AF%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">Target端的配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Initiator%E7%AB%AF%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.2.</span> <span class="toc-text">Initiator端的配置</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&text=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&is_video=false&description=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=SCSI和iSCSI协议以及Linux IP SAN的实现&body=Check out this article: https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&title=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&name=SCSI和iSCSI协议以及Linux IP SAN的实现&description=&lt;p&gt;学习了好多集群的概念和理论…要好好消化一下, 所以来个小插曲转移一下注意点啦~&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/23/SCSI%E5%92%8CiSCSI%E5%8D%8F%E8%AE%AE%E4%BB%A5%E5%8F%8ALinux-IP-SAN%E7%9A%84%E5%AE%9E%E7%8E%B0/&t=SCSI和iSCSI协议以及Linux IP SAN的实现"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

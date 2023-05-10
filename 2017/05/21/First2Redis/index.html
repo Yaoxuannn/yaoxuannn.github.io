@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Redis – 基于内存的键值对数据库, 强大之处在于它的值可以是数据结构.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="First2Redis">
+<meta property="og:url" content="https://19971122.xyz/2017/05/21/First2Redis/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Redis – 基于内存的键值对数据库, 强大之处在于它的值可以是数据结构.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-05-21T19:00:34.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:25:25.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>First2Redis</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/21/First2Redis/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/21/First2Redis/&text=First2Redis"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/21/First2Redis/&is_video=false&description=First2Redis"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=First2Redis&body=Check out this article: https://19971122.xyz/2017/05/21/First2Redis/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/21/First2Redis/&name=First2Redis&description=&lt;p&gt;Redis – 基于内存的键值对数据库, 强大之处在于它的值可以是数据结构.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/21/First2Redis/&t=First2Redis"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#String"><span class="toc-number">1.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lists"><span class="toc-number">2.</span> <span class="toc-text">Lists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hashes"><span class="toc-number">3.</span> <span class="toc-text">Hashes</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Set"><span class="toc-number">4.</span> <span class="toc-text">Set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sorted-Set"><span class="toc-number">5.</span> <span class="toc-text">Sorted Set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#EXISTS-and-DEL"><span class="toc-number">6.</span> <span class="toc-text">EXISTS and DEL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TYPE-and-KEYS"><span class="toc-number">7.</span> <span class="toc-text">TYPE and KEYS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RANDOMKEY-and-CLEAR"><span class="toc-number">8.</span> <span class="toc-text">RANDOMKEY and CLEAR</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RENAME-and-RENAMENX"><span class="toc-number">9.</span> <span class="toc-text">RENAME and RENAMENX</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4"><span class="toc-number">10.</span> <span class="toc-text">Redis中的时间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%90%E5%AE%9AKey%E7%9A%84%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4"><span class="toc-number">10.1.</span> <span class="toc-text">限定Key的存活时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2key%E7%9A%84%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4"><span class="toc-number">10.2.</span> <span class="toc-text">查询key的存活时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%85%E9%99%A4%E6%89%80%E6%9C%89%E7%9A%84Key"><span class="toc-number">10.3.</span> <span class="toc-text">清除所有的Key</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E7%BD%AE%E7%9B%B8%E5%85%B3"><span class="toc-number">11.</span> <span class="toc-text">系统设置相关</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        First2Redis
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-05-21T19:00:34.000Z" class="dt-published" itemprop="datePublished">2017-05-21</time>
+        
+        (Updated: <time datetime="2020-11-30T01:25:25.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database/" rel="tag">Database</a>, <a class="p-category" href="/tags/Redis/" rel="tag">Redis</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Redis – 基于内存的键值对数据库, 强大之处在于它的值可以是数据结构.</p>
+<span id="more"></span>
+
+<p>这里先说一说Redis的几种数据类型, 也就是:</p>
+<ul>
+<li>字符串( String )</li>
+<li>列表( List )</li>
+<li>哈希映射( Hashes )</li>
+<li>无序集合( Set )</li>
+<li>有序集合( Sorted Set )</li>
+</ul>
+<h2 id="String"><a href="#String" class="headerlink" title="String"></a>String</h2><p>字符串是Redis中最基本的值类型, 他是二进制安全的, 这意味着一个Redis字符串能包含任意类型的数据, 例如: 一张图片或者一个序列化的对象.最多支持存储512M字节的内容.</p>
+<p>创建&#x2F;修改和检索string, 使用<strong>SET</strong>和<strong>GET</strong>, 如果key已存在, 那么<strong>SET</strong>将会覆盖原值.在<strong>SET</strong>后添加参数可以使得赋值操作仅仅在Key存在&#x2F;不存在的情况下成功.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; set mykey somevalue</span><br><span class="line">OK</span><br><span class="line">&gt; get mykey</span><br><span class="line">&quot;somevalue&quot;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>mykey</code>已经存在的情况下在<strong>SET</strong>后添加参数( 有点像<code>MySQL</code>的<code>IF EXIST</code> ):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; set mykey newval nx</span><br><span class="line">(nil)</span><br><span class="line">&gt; set mykey newval xx</span><br><span class="line">OK</span><br><span class="line">&gt; get mykey</span><br><span class="line">&quot;newval&quot;</span><br></pre></td></tr></table></figure>
+
+<p>可见, <code>nx</code>表明仅在<code>key</code>不存在的时候进行赋值, <code>xx</code>正相反.</p>
+<p>Redis支持一次赋多个值和返回多个值, 使用<code>mset</code>和<code>mget</code>.<strong>( multi )</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; mset a 10 b 20 c 30</span><br><span class="line">OK</span><br><span class="line">&gt; mget a b c</span><br><span class="line">1) &quot;10&quot;</span><br><span class="line">2) &quot;20&quot;</span><br><span class="line">3) &quot;30&quot;</span><br></pre></td></tr></table></figure>
+
+<p>尽管是<code>String</code>类型, 我们仍然可以尝试进行数学运算:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; set counter 100 </span><br><span class="line">OK</span><br><span class="line">&gt; incr counter</span><br><span class="line">(integer) 101</span><br><span class="line">&gt; incrby counter 50</span><br><span class="line">(integer) 151</span><br></pre></td></tr></table></figure>
+
+<p>减法运算是: <code>decr</code>和<code>decrby</code></p>
+<p>如果字符串不能变成数字, Redis会抛出异常:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; set str &quot;A&quot;</span><br><span class="line">OK</span><br><span class="line">&gt; incr str</span><br><span class="line">(error) ERR value is not an integer or out of range.</span><br></pre></td></tr></table></figure>
+
+<h2 id="Lists"><a href="#Lists" class="headerlink" title="Lists"></a>Lists</h2><p>Redis中的列表是一个双端字符串列表, 按照插入顺序排序.可以添加一个元素到列表的头部或者尾部, 当一个插入元素的操作执行在一个空的<code>Key</code>的时候,就会创建一个新的列表.</p>
+<p>同样,删除列表就直接将<code>Key</code>删除就行了.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; rpush mylist 0</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; lpush mylist 1</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; lrange mylist 0 -1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;0&quot;</span><br></pre></td></tr></table></figure>
+
+<p><code>rpush</code>是将元素push到列表的最后, 而<code>lpush</code>相反, 是将元素push到列表的开头, 最后的<code>lrange</code>是将表中的元素列出, 后面的两个参数是分别表示开始索引和终止索引, 如果是负数n表示倒数第n个.</p>
+<p>所以列出所有的元素的就是从开始到最后一个<code>( lrange list 0 -1 )</code></p>
+<p>每一次的<code>push</code>操作都可以将多个元素一次性的放入表中.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; rpush mylist 1 2 3 &quot;foo&quot;</span><br><span class="line">(integer) 4</span><br><span class="line">&gt; lrange mylist 0 -1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">4) &quot;foo&quot;</span><br></pre></td></tr></table></figure>
+
+<p>有<code>push</code>就有<code>pop</code>, 与<code>push</code>一样, <code>pop</code>同样支持两端的<code>pop</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt; lrange mylist 0 -1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">4) &quot;foo&quot;</span><br><span class="line">&gt; lpop mylist</span><br><span class="line">&quot;1&quot;</span><br><span class="line">&gt; rpop mylist</span><br><span class="line">&quot;4&quot;</span><br><span class="line">&gt; lrange mylist</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">2) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Hashes"><a href="#Hashes" class="headerlink" title="Hashes"></a>Hashes</h2><p>Redis Hashes是字符串字段和字符串值之间的映射,因此十分适合用来展现对象.</p>
+<p>使用起来也十分简单, 同样是<strong>SET</strong>和<strong>GET</strong>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt; hmset user:1000 username justin birth 1997 verified 1</span><br><span class="line">OK</span><br><span class="line">&gt; hget user:1000 username</span><br><span class="line">&quot;justin&quot;</span><br><span class="line">&gt; hgetall user:1000</span><br><span class="line">1) &quot;username&quot;</span><br><span class="line">2) &quot;justin&quot;</span><br><span class="line">3) &quot;birth&quot;</span><br><span class="line">4) &quot;1997&quot;</span><br><span class="line">5) &quot;verified&quot;</span><br><span class="line">6) &quot;1&quot;</span><br></pre></td></tr></table></figure>
+
+<p>如果是不存在的数据域, redis会返回<code>nil</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; hmget user:1000 username birth no-such-field</span><br><span class="line">1) &quot;justin&quot;</span><br><span class="line">2) &quot;1997&quot;</span><br><span class="line">3) (nil)</span><br></pre></td></tr></table></figure>
+
+<p>同样可以对hashes中的元素进行操作, 比如:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; hincrby user:1000 birth 10</span><br><span class="line">(integer) 2007</span><br><span class="line">&gt; hincrby user:1000 birth -10</span><br><span class="line">(integer) 1997</span><br></pre></td></tr></table></figure>
+
+<p>在Redis的Hashes中, 不知道为什么似乎没有<code>hdecrby</code>这样的指令.所以如果要进行减法运算, 就加上负值好了.</p>
+<h2 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h2><p>Redis Set是一个无序的字符串集合. 你可以以O(1)的时间复杂度 (无论集合中有多少元素时间复杂度都是常量)完成添加，删除，以及测试元素是否存在的操作. </p>
+<p>Redis Set 拥有不允许包含相同成员的属性, 多次添加相同的元素，最终在集合里只会有一个元素。 </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; sadd myset &quot;1&quot; &quot;A&quot; &quot;Foo&quot; &quot;4&quot; &quot;-10&quot;</span><br><span class="line">(integer) 5</span><br><span class="line">&gt; sadd myset &quot;A&quot; &quot;1&quot;</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; smembers myset</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;4&quot;</span><br><span class="line">3) &quot;Foo&quot;</span><br><span class="line">4) &quot;A&quot;</span><br><span class="line">5) &quot;-10&quot;</span><br></pre></td></tr></table></figure>
+
+<p>接下来看一下如何查看元素是否存在:</p>
+<p><strong>sismember</strong>用于查看集合是否存在，匹配项包括集合名和元素个数.</p>
+<p>匹配成功返回1, 匹配失败返回0.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; sismember myset 3</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; sismember myset &quot;Foo&quot;</span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+
+<h2 id="Sorted-Set"><a href="#Sorted-Set" class="headerlink" title="Sorted Set"></a>Sorted Set</h2><p>Sorted Set 和 Set非常相似，是一个没有重复元素的字符串集合. 不同之处是有序集合的每一个成员都关联了一个评分(score)，这个评分被用来按照从最低分到最高分的方式排序集合中的成员。集合的成员是唯一的，但是评分可以是重复的.</p>
+<p>使用有序集合可以以非常快的速度（O(log(N))）添加，删除和更新元素。因为元素有序, 所以也可以很快的根据评分（score）或者次序（position）来获取一个范围的元素.</p>
+<p>由于<code>Sorted Set</code>和<code>Set</code>的首字母冲突了, 所以Redis中对于<code>Sorted Set</code>操作的指令都是以<code>Z</code>开头的</p>
+<p>上面是我猜的 :)</p>
+<p><code>zadd</code>与<code>sadd</code>类似，但是在元素之前多了一个参数，这个参数便是用于排序的. (为了形成一个有序的集合)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; zadd members 0 kali 1 ubuntu 2 debian</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+
+<p>查看集合有两种方式, <code>ZRANGE</code>是查看正序的集合，<code>ZREVRANGE</code>是查看反序的集合.</p>
+<p>和上文所说的<code>lrange</code>一样: 0表示集合第一个元素，-1表示集合的倒数第一个元素。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&gt; zrange members 0 -1</span><br><span class="line">1) &quot;kali&quot;</span><br><span class="line">2) &quot;ubuntu&quot;</span><br><span class="line">3) &quot;debian&quot;</span><br><span class="line">&gt; zrevrange members 0 -1</span><br><span class="line">1) &quot;debian&quot;</span><br><span class="line">2) &quot;ubuntu&quot;</span><br><span class="line">3) &quot;kali&quot;</span><br><span class="line">&gt; zrange mmebers 0 -1 withscores</span><br><span class="line">1) &quot;kali&quot;</span><br><span class="line">2) &quot;0&quot;</span><br><span class="line">3) &quot;ubuntu&quot;</span><br><span class="line">4) &quot;1&quot;</span><br><span class="line">5) &quot;debian&quot;</span><br><span class="line">6) &quot;2&quot;</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>WITHSCORES</code>参数会连带返回记录值。</p>
+<p>接下来一起来看一下Redis的其他相关命令和系统管理操作.</p>
+<h2 id="EXISTS-and-DEL"><a href="#EXISTS-and-DEL" class="headerlink" title="EXISTS and DEL"></a>EXISTS and DEL</h2><p>见名知意啦~&#96;EXISTS&#96;用来判断一个Key是否存在, 存在就返回1, 不存在就返回0;</p>
+<p><code>DEL</code>用来删除一个键, 或者是一系列的键.返回非零表示删除成功.</p>
+<blockquote>
+<p>非零是因为实际上<code>DEL</code>返回的是删除的条数.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; set mykey m</span><br><span class="line">OK</span><br><span class="line">&gt; exists mykey</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; del mykey</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; exists mykey</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+<h2 id="TYPE-and-KEYS"><a href="#TYPE-and-KEYS" class="headerlink" title="TYPE and KEYS"></a>TYPE and KEYS</h2><p>终于可以知道值的属性了!使用<code>TYPE KEY</code>来获得属性描述.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; set mykey &quot;Foo&quot;</span><br><span class="line">OK</span><br><span class="line">&gt; type mykey</span><br><span class="line">string</span><br></pre></td></tr></table></figure>
+
+<p>所有支持的类型都可能被返回, 包括: <strong>( none, string, list, set, zset, hash )</strong>.</p>
+<p><code>KEYS</code>用来在Redis全局进行键的搜索, 使用<code>keys pattern</code>来进行检索.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; set student_name &#x27;justin&#x27;</span><br><span class="line">OK</span><br><span class="line">&gt; set student_grade 2</span><br><span class="line">OK</span><br><span class="line">&gt; keys student_*</span><br><span class="line">1) &quot;student_name&quot;</span><br><span class="line">2) &quot;student_grade&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="RANDOMKEY-and-CLEAR"><a href="#RANDOMKEY-and-CLEAR" class="headerlink" title="RANDOMKEY and CLEAR"></a>RANDOMKEY and CLEAR</h2><p>很迷的两个指令..我认为的.</p>
+<p><code>CLEAR</code>就相当于<code>ctrl+l</code>.清屏指令</p>
+<p>至于<code>RANDOMKEY</code>, 我是没想明白用处在哪里.</p>
+<p><code>RANDOMKEY</code>随机返回一个键名, 如果数据库为空, 则返回空字符串.</p>
+<p>比如:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt; randomkey</span><br><span class="line">(nil)</span><br><span class="line">&gt; set key1 100</span><br><span class="line">OK</span><br><span class="line">&gt; set key2 200</span><br><span class="line">OK</span><br><span class="line">&gt; set key3 300</span><br><span class="line">OK</span><br><span class="line">&gt; randomkey</span><br><span class="line">&quot;key2&quot;</span><br><span class="line">&gt; randomkey</span><br><span class="line">&quot;key1&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="RENAME-and-RENAMENX"><a href="#RENAME-and-RENAMENX" class="headerlink" title="RENAME and RENAMENX"></a>RENAME and RENAMENX</h2><p>两个指令都是用来进行重命名的,区别在于:</p>
+<ul>
+<li><p>RENAME 直接改名, 如果新的Key已经存在, 那么将会直接进行覆盖.</p>
+</li>
+<li><p>RENAMENX 在改名时, 如果新的Key已经存在, 则会报错并放弃更改.</p>
+</li>
+</ul>
+<p>所以更好用的应该是后面的一个.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; set key value</span><br><span class="line">OK</span><br><span class="line">&gt; set newkey val</span><br><span class="line">OK</span><br><span class="line">&gt; renamenx key newkey</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+<p>这样更安全对嘛?</p>
+<blockquote>
+<p><strong>补</strong>: DBSIZE 这个指令返回当前Redis中所有键的数量.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; set key value</span><br><span class="line">OK</span><br><span class="line">&gt; dbsize</span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+
+<h2 id="Redis中的时间"><a href="#Redis中的时间" class="headerlink" title="Redis中的时间"></a>Redis中的时间</h2><h3 id="限定Key的存活时间"><a href="#限定Key的存活时间" class="headerlink" title="限定Key的存活时间"></a>限定Key的存活时间</h3><p>对于任何数据都可以实现, 这主要用于临时存储, 并避免大量的<code>DEL</code>操作.</p>
+<p>指令是: <code>expire</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; set key somevalue</span><br><span class="line">OK</span><br><span class="line">&gt; expire key 10</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; get key</span><br><span class="line">&quot;somevalue&quot;</span><br></pre></td></tr></table></figure>
+
+<p>10s后再次执行:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; get key </span><br><span class="line">(nil)</span><br></pre></td></tr></table></figure>
+
+<h3 id="查询key的存活时间"><a href="#查询key的存活时间" class="headerlink" title="查询key的存活时间"></a>查询key的存活时间</h3><p>多亲切的指令, 查询key存活时间的指令是: <code>TTL</code> – ( time to live ) </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; set key 100 ex 30</span><br><span class="line">OK</span><br><span class="line">&gt; ttl key</span><br><span class="line">(integer) 28</span><br><span class="line">&gt; ttl key</span><br><span class="line">(integer) 26</span><br></pre></td></tr></table></figure>
+
+<h3 id="清除所有的Key"><a href="#清除所有的Key" class="headerlink" title="清除所有的Key"></a>清除所有的Key</h3><p>两个指令都是用来进行清除操作的:</p>
+<ul>
+<li><code>FLUSHDB</code> 清空当前数据库的所有键</li>
+<li><code>FLUSHALL</code> 清空所有数据库中的所有键</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt; flushdb</span><br><span class="line">OK</span><br><span class="line">-----------</span><br><span class="line">&gt; flushall</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+
+<h2 id="系统设置相关"><a href="#系统设置相关" class="headerlink" title="系统设置相关"></a>系统设置相关</h2><p>Redis可以通过使用配置文件或者<code>CLI</code>的方式进行配置.</p>
+<p>指令的语法倒是同git很像.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt; config get requirepass</span><br><span class="line">1) &quot;requirepass&quot;</span><br><span class="line">2) &quot;&quot;</span><br><span class="line">&gt; config set requirepass &quot;mima&quot;</span><br><span class="line">OK</span><br><span class="line">&gt; config get requirepass</span><br><span class="line">(error) NOAUTH Authentication required</span><br><span class="line">&gt; auth mima</span><br><span class="line">OK</span><br><span class="line">&gt; config get requirepass</span><br><span class="line">1) &quot;requirepass&quot;</span><br><span class="line">2) &quot;mima&quot;</span><br></pre></td></tr></table></figure>
+
+<p>上面是对密码<code>CONFIG</code>的一个例子.</p>
+<p>当然可以直接通过修改redis的配置文件<code>redis.conf</code>来进行修改, 其他的一些可修改项也可直接从<code>redis.conf</code>中获取.</p>
+<p>从上面的例子也可以看出来, redis的<code>config get</code>得到的结果是键值对形式的.</p>
+<p>像这样查询: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt; config get *max-*-entries*</span><br><span class="line">1) &quot;hash-max-ziplist-entries&quot;</span><br><span class="line">2) &quot;512&quot;</span><br><span class="line">3) &quot;list-max-ziplist-entries&quot;</span><br><span class="line">4) &quot;512&quot;</span><br><span class="line">5) &quot;set-max-intset-entries&quot;</span><br><span class="line">6) &quot;512&quot;</span><br><span class="line">7) &quot;zset-max-ziplist-entries&quot;</span><br><span class="line">8) &quot;128&quot;</span><br></pre></td></tr></table></figure>
+
+<p>如果不是为了配置, 而是想要查询redis的各项信息的话, 使用<code>INFO</code>命令.</p>
+<p><strong>INFO [section]</strong> 可以查询redis几乎所有的信息.</p>
+<p>section 有以下:</p>
+<ul>
+<li>server: Redis server的常规信息</li>
+<li>clients: Client的连接选项</li>
+<li>memory: 存储占用相关信息</li>
+<li>persistence: RDB and AOF 相关信息</li>
+<li>stats: 常规统计</li>
+<li>replication: Master&#x2F;slave请求信息</li>
+<li>cpu: CPU 占用信息统计</li>
+<li>cluster: Redis 集群信息</li>
+<li>keyspace: 数据库信息统计</li>
+<li>all: 返回所有信息</li>
+<li>default: 返回常规设置信息</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt; info server</span><br><span class="line"># Server</span><br><span class="line">redis_version:2.8.4</span><br><span class="line">....</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#String"><span class="toc-number">1.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lists"><span class="toc-number">2.</span> <span class="toc-text">Lists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hashes"><span class="toc-number">3.</span> <span class="toc-text">Hashes</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Set"><span class="toc-number">4.</span> <span class="toc-text">Set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sorted-Set"><span class="toc-number">5.</span> <span class="toc-text">Sorted Set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#EXISTS-and-DEL"><span class="toc-number">6.</span> <span class="toc-text">EXISTS and DEL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TYPE-and-KEYS"><span class="toc-number">7.</span> <span class="toc-text">TYPE and KEYS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RANDOMKEY-and-CLEAR"><span class="toc-number">8.</span> <span class="toc-text">RANDOMKEY and CLEAR</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RENAME-and-RENAMENX"><span class="toc-number">9.</span> <span class="toc-text">RENAME and RENAMENX</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4"><span class="toc-number">10.</span> <span class="toc-text">Redis中的时间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%90%E5%AE%9AKey%E7%9A%84%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4"><span class="toc-number">10.1.</span> <span class="toc-text">限定Key的存活时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2key%E7%9A%84%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4"><span class="toc-number">10.2.</span> <span class="toc-text">查询key的存活时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%85%E9%99%A4%E6%89%80%E6%9C%89%E7%9A%84Key"><span class="toc-number">10.3.</span> <span class="toc-text">清除所有的Key</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E7%BD%AE%E7%9B%B8%E5%85%B3"><span class="toc-number">11.</span> <span class="toc-text">系统设置相关</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/21/First2Redis/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/21/First2Redis/&text=First2Redis"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/21/First2Redis/&is_video=false&description=First2Redis"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=First2Redis&body=Check out this article: https://19971122.xyz/2017/05/21/First2Redis/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/21/First2Redis/&title=First2Redis"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/21/First2Redis/&name=First2Redis&description=&lt;p&gt;Redis – 基于内存的键值对数据库, 强大之处在于它的值可以是数据结构.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/21/First2Redis/&t=First2Redis"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="在熟悉了Docker相关的操作之后, 我们现在就可以来对大规模集群的容器编排下手了.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes架构基础">
+<meta property="og:url" content="https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="在熟悉了Docker相关的操作之后, 我们现在就可以来对大规模集群的容器编排下手了.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://d33wubrfki0l68.cloudfront.net/7016517375d10c702489167e704dcb99e570df85/7bb53/images/docs/components-of-kubernetes.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/Kubernetes_network_master_ipshow.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/Kubernetes_network_node_iptables.png">
+<meta property="og:image" content="https://d33wubrfki0l68.cloudfront.net/27b2978647a8d7bdc2a96b213f0c0d3242ef9ce0/e8c9b/images/docs/services-iptables-overview.svg">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/Kubernetes_network_mage_overview.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/Pod%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png">
+<meta property="article:published_time" content="2020-01-10T19:37:08.000Z">
+<meta property="article:modified_time" content="2021-03-09T02:12:46.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Cloud Native">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://d33wubrfki0l68.cloudfront.net/7016517375d10c702489167e704dcb99e570df85/7bb53/images/docs/components-of-kubernetes.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Kubernetes架构基础</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&text=Kubernetes架构基础"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&is_video=false&description=Kubernetes架构基础"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Kubernetes架构基础&body=Check out this article: https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&name=Kubernetes架构基础&description=&lt;p&gt;在熟悉了Docker相关的操作之后, 我们现在就可以来对大规模集群的容器编排下手了.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&t=Kubernetes架构基础"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%B7%A5%E5%85%B7%E6%A0%88"><span class="toc-number">1.</span> <span class="toc-text">容器编排工具栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kubernetes"><span class="toc-number">2.</span> <span class="toc-text">Kubernetes</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kubernetes%E7%9A%84%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0%E5%92%8C%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-number">3.</span> <span class="toc-text">Kubernetes的架构概述和基础概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pod"><span class="toc-number">4.</span> <span class="toc-text">Pod</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pod-Controller"><span class="toc-number">5.</span> <span class="toc-text">Pod Controller</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Service"><span class="toc-number">6.</span> <span class="toc-text">Service</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ingress"><span class="toc-number">7.</span> <span class="toc-text">Ingress</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E5%82%A8"><span class="toc-number">8.</span> <span class="toc-text">存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#StatefulSet%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="toc-number">9.</span> <span class="toc-text">StatefulSet控制器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%81%E5%92%8Cserviceaccount"><span class="toc-number">10.</span> <span class="toc-text">认证和serviceaccount</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Kubernetes架构基础
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-01-10T19:37:08.000Z" class="dt-published" itemprop="datePublished">2020-01-10</time>
+        
+        (Updated: <time datetime="2021-03-09T02:12:46.000Z" class="dt-updated" itemprop="dateModified">2021-03-08</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cloud-Native/" rel="tag">Cloud Native</a>, <a class="p-category" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>在熟悉了Docker相关的操作之后, 我们现在就可以来对大规模集群的容器编排下手了.</p>
+<span id="more"></span>
+
+<h2 id="容器编排工具栈"><a href="#容器编排工具栈" class="headerlink" title="容器编排工具栈"></a>容器编排工具栈</h2><p>我们之前在说Docker的时候就提到过了编排与自动化的概念, 当时我们还引用了维基百科的概念. 我们在使用Ansible的时候, 通过编写playbook就是在进行自动化的编排. 除此之外, 还有puppet, saltstack等等. 而Ansible这些对应的单元是一个个的虚拟机, 在我们引入了Docker之后, 就会发生些许变化, 当管理的对象发生的变化的时候, 我们也要改变我们所使用的工具栈.</p>
+<p>首先就是Docker自己的Docker Compose, 但是这个工具面向的只是一个Docker Host, 也就是说, 他只能对一台主机的多个容器进行编排. 为了能够扩展到多主机的集群环境, 另一个软件就是Docker Swarm, 他可以将多个主机的 容器资源抽象成一个大的资源池, 进行整合工作. 但是将一个Host加入到这个Swarm成员有需要另一个工具, 叫做Docker Machine. 这三个工具, 组成了早期Docker编排的三剑客.</p>
+<p>第二组工具的核心是Mesos, 一个Apache基金会下的分布式系统kernel, 能够对计算进行抽象并提供API支持, 它原生提供了容器支持. 但是说白了Mesos就是一个资源分配工具, 或者说是一个IDC的操作系统. 因此我们还需要一个容器的托管工具, 因为Mesos并不能直接运行容器, 这就是Marathon, 这是一个容器的编排框架.</p>
+<p>最后一种常见的工具, 也就是我们即将探讨的Kubernetes. 就目前来看, Kubernetes已经占据了最多的份额.</p>
+<h2 id="Kubernetes"><a href="#Kubernetes" class="headerlink" title="Kubernetes"></a>Kubernetes</h2><p>Kubernetes源自于Google内部的Borg项目, 据说google在内部使用容器技术已经超过了十年秘而不宣, 没想到Docker横空出世, 自己私藏的东西竟然被民间发现了, 于是使用Go语言重新实现了Borg项目. 这就是Kubernetes的来由.</p>
+<p>Kubernetes能够实现<strong>自动装箱</strong>. 啥意思嘞? 就是根据资源之间的依赖关系自动的进行部署. 另外还可以<strong>自我修复</strong>, 当应用程序崩溃后, 得益于容器技术, 我们不再像之前一样需要进行复杂的部署流程了, 直接kill掉出问题的容器然后新启动一个就行了. 另外, Kubernetes还可以实现水平扩展, 只要物理服务器的资源足够, 就可以不断的新建容器. 以及, 服务发现以及负载均衡, 自动发布和回滚, 密钥和配置管理, 存储编排, 批量处理执行.</p>
+<p>按照我们之前的理解, 其实Kubernetes也是一个集群, 在几个是主机上安装Kubernetes应用程序, 接着让他们协同工作. 值得注意的是, 这里的主机间是存在角色的, 类似我们之前所学到的MySQL的主从模型, 存在一个或多个Master Node和多个Worker Nodes. 这些Worker就是用来提供计算资源以及存储的, 说白了他们其实就是容器节点, 对于容器的启动, 调度等等操作就由Master Node来进行, 用户向Master发送请求, 有Master来分析后端当前的负载情况来进行具体的操作. 顺便说一个, Kubernetes也可以托管Kubernetes.</p>
+<h2 id="Kubernetes的架构概述和基础概念"><a href="#Kubernetes的架构概述和基础概念" class="headerlink" title="Kubernetes的架构概述和基础概念"></a>Kubernetes的架构概述和基础概念</h2><p>既然我们说了是向Master发送请求, 那么必然会有一个API的组件, 在Kubernetes的Master Node上, 这个组件就叫做API Server, 除此之外, 必然还有一个叫做调度器(Scheduler)的组件, 他时刻关注后端的CPU, RAM存储等情况来对资源进行调度. </p>
+<p>上面谈论的都是Kubernetes的Master, 但是对于容器, 我们之前在说到的Docker的时候提到过容器的健康状态检测(Health Check), 这就依赖在Worker上的应用程序**<code>kubelet</code>**了. 这个程序会监控当前主机上的容器状态并作报告. 现在假设, 这个Worker Node, 也就是我们运行容器的主机宕机了而不是容器崩溃的话, 在整个主机上托管的服务就都下线了, 这个时候就要做上面提到的自我修复了. 这些控制器会监控自己创建的容器健康状态, 如果有问题就进行调整. </p>
+<p>我们再来贴个图:</p>
+<p><img src="https://d33wubrfki0l68.cloudfront.net/7016517375d10c702489167e704dcb99e570df85/7bb53/images/docs/components-of-kubernetes.png" alt="Components of Kubernetes"></p>
+<p>但是这个控制器组件(kubelet)也是会出问题的, 因此我们在主节点上有Controller Manager组件, 与容器节点上的kubelet应用程序通过API Server进行通信, 在这个组件的层次上, 我们进行冗余. 值得一提的是, Kubernetes包含许多类型的控制器, </p>
+<ul>
+<li>Node Controller: Responsible for noticing and responding when nodes go down.</li>
+<li>Replication Controller: Responsible for maintaining the correct number of pods for every replication controller object in the system.</li>
+<li>Endpoints Controller: Populates the Endpoints object (that is, joins Services &amp; Pods).</li>
+<li>Service Account &amp; Token Controllers: Create default accounts and API access tokens for new namespaces.</li>
+</ul>
+<p>在Kubernetes之上, 最小的部署单元叫做**<code>Pod</code>**. 同时也是最基本的执行单元(逻辑上). 这个东西封装了容器, 以及配套的网络, 存储等等, 是一个对容器的抽象. 一个Pod里面可以有多个容器, 也可以只存在一个. 这个<code>Pod</code>使用标签(label)来表示元数据的, 这个label是一个kv形式的数据, 为了选择和挑选不同的资源, 还有<code>label selector</code>.</p>
+<p>Pod管理是由Kubernetes的Controller管理的. 我们可以把Pod分成两种类型的:</p>
+<ul>
+<li>自主式Pod</li>
+<li>控制器管理Pod, 控制器有:<ul>
+<li>ReplicationController</li>
+<li>ReplicaSet (不直接使用)</li>
+<li>Deployment: 无状态应用</li>
+<li>StatefulSet: 有状态应用</li>
+<li>DaemonSet</li>
+<li>Job, Cronjob</li>
+</ul>
+</li>
+</ul>
+<p>Pod有其自己的生命周期, 如果我们使用了控制器启动了一个pod, 那么这些pod就会被我们所指定的控制器监控并且受控制.</p>
+<p>那么说到现在, 我们就有2个概念了, 分别是Pod和Controller, 他们组成了Kubernetes的工作负载. 但是, 想象这样的一种场景, pod是有自己的IP地址的, 当控制器kill掉一个创建一个新的pod的时候, IP地址也会发生变化. 这样的话, 我的前端如何追踪这个IP, 并且找到后端接口的地址呢? 由此我们就引入了**服务(Service)**的概念.</p>
+<p>你可以把服务理解成对pod访问策略的一个抽象, Service通过我们之前说的selector来找到对应的Pod. 当我们Pod重建, IP发生变化, 但是label中的某些元数据没有变化, Service正式通过这种机制来找到对应的Pod的.</p>
+<p>说到这里, 可能会有点晕了. 没事, 我们来窥探一个正在运行的Pod都有哪些信息:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">root@kbs-master</span> <span class="string">~</span>]<span class="comment"># kubectl describe pods myapp-5d587c4d45-8859f</span></span><br><span class="line"><span class="attr">Name:</span>         <span class="string">myapp-5d587c4d45-8859f</span></span><br><span class="line"><span class="attr">Namespace:</span>    <span class="string">default</span></span><br><span class="line"><span class="attr">Priority:</span>     <span class="number">0</span></span><br><span class="line"><span class="attr">Node:</span>         <span class="string">kbs-node1/192.168.10.125</span></span><br><span class="line"><span class="attr">Start Time:</span>   <span class="string">Mon,</span> <span class="number">04</span> <span class="string">May</span> <span class="number">2020 11:54:14</span> <span class="number">-0500</span></span><br><span class="line"><span class="attr">Labels:</span>       <span class="string">app=myapp</span></span><br><span class="line">              <span class="string">pod-template-hash=5d587c4d45</span></span><br><span class="line"><span class="attr">Annotations:</span>  <span class="string">&lt;none&gt;</span></span><br><span class="line"><span class="attr">Status:</span>       <span class="string">Running</span></span><br><span class="line"><span class="attr">IP:</span>           <span class="number">10.244</span><span class="number">.1</span><span class="number">.18</span></span><br><span class="line"><span class="attr">IPs:</span></span><br><span class="line">  <span class="attr">IP:</span>           <span class="number">10.244</span><span class="number">.1</span><span class="number">.18</span></span><br><span class="line"><span class="attr">Controlled By:</span>  <span class="string">ReplicaSet/myapp-5d587c4d45</span></span><br><span class="line"><span class="attr">Containers:</span></span><br><span class="line">  <span class="attr">myapp:</span></span><br><span class="line">    <span class="attr">Container ID:</span>   <span class="string">docker://462b4b2a0281ccd3dc2e9318fec515a027126db24ba346e4ca7000ef2d5a445f</span></span><br><span class="line">    <span class="attr">Image:</span>          <span class="string">ikubernetes/myapp:v1</span></span><br><span class="line">    <span class="attr">Image ID:</span>       <span class="string">docker-pullable://ikubernetes/myapp@sha256:9c3dc30b5219788b2b8a4b065f548b922a34479577befb54b03330999d30d513</span></span><br><span class="line">    <span class="attr">Port:</span>           <span class="string">&lt;none&gt;</span></span><br><span class="line">    <span class="attr">Host Port:</span>      <span class="string">&lt;none&gt;</span></span><br><span class="line">    <span class="attr">State:</span>          <span class="string">Running</span></span><br><span class="line">      <span class="attr">Started:</span>      <span class="string">Mon,</span> <span class="number">04</span> <span class="string">May</span> <span class="number">2020 11:54:15</span> <span class="number">-0500</span></span><br><span class="line">    <span class="attr">Ready:</span>          <span class="literal">True</span></span><br><span class="line">    <span class="attr">Restart Count:</span>  <span class="number">0</span></span><br><span class="line">    <span class="attr">Environment:</span>    <span class="string">&lt;none&gt;</span></span><br><span class="line">    <span class="attr">Mounts:</span></span><br><span class="line">      <span class="string">/var/run/secrets/kubernetes.io/serviceaccount</span> <span class="string">from</span> <span class="string">default-token-pqnl7</span> <span class="string">(ro)</span></span><br><span class="line"><span class="attr">Conditions:</span></span><br><span class="line">  <span class="string">Type</span>              <span class="string">Status</span></span><br><span class="line">  <span class="string">Initialized</span>       <span class="literal">True</span> </span><br><span class="line">  <span class="string">Ready</span>             <span class="literal">True</span> </span><br><span class="line">  <span class="string">ContainersReady</span>   <span class="literal">True</span> </span><br><span class="line">  <span class="string">PodScheduled</span>      <span class="literal">True</span> </span><br><span class="line"><span class="attr">Volumes:</span></span><br><span class="line">  <span class="attr">default-token-pqnl7:</span></span><br><span class="line">    <span class="attr">Type:</span>        <span class="string">Secret</span> <span class="string">(a</span> <span class="string">volume</span> <span class="string">populated</span> <span class="string">by</span> <span class="string">a</span> <span class="string">Secret)</span></span><br><span class="line">    <span class="attr">SecretName:</span>  <span class="string">default-token-pqnl7</span></span><br><span class="line">    <span class="attr">Optional:</span>    <span class="literal">false</span></span><br><span class="line"><span class="attr">QoS Class:</span>       <span class="string">BestEffort</span></span><br><span class="line"><span class="attr">Node-Selectors:</span>  <span class="string">&lt;none&gt;</span></span><br><span class="line"><span class="attr">Tolerations:</span>     <span class="string">node.kubernetes.io/not-ready:NoExecute</span> <span class="string">for</span> <span class="string">300s</span></span><br><span class="line">                 <span class="string">node.kubernetes.io/unreachable:NoExecute</span> <span class="string">for</span> <span class="string">300s</span></span><br><span class="line"><span class="attr">Events:</span>          <span class="string">&lt;none&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里是我已经启动了一个双节点Kubernetes集群, 在master节点上执行的结果, 从describe的结果中我们可以看到:</p>
+<ul>
+<li>myapp运行在node1&#x2F;192.168.10.125</li>
+<li>有一个app&#x3D;myapp的label</li>
+<li>有一个10.244.1.18的IP</li>
+<li>被ReplicaSet控制器控制</li>
+<li>有一个叫做myapp的容器</li>
+<li>… (后面对我们这里的内容不重要, 就跳过了)</li>
+</ul>
+<p>刚刚说到, service通过label来寻找pod, 我们来看一个service:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">root@kbs-master</span> <span class="string">~</span>]<span class="comment"># kubectl describe svc myapp</span></span><br><span class="line"><span class="attr">Name:</span>                     <span class="string">myapp</span></span><br><span class="line"><span class="attr">Namespace:</span>                <span class="string">default</span></span><br><span class="line"><span class="attr">Labels:</span>                   <span class="string">app=myapp</span></span><br><span class="line"><span class="attr">Annotations:</span>              <span class="string">&lt;none&gt;</span></span><br><span class="line"><span class="attr">Selector:</span>                 <span class="string">app=myapp</span></span><br><span class="line"><span class="attr">Type:</span>                     <span class="string">NodePort</span></span><br><span class="line"><span class="attr">IP:</span>                       <span class="number">10.96</span><span class="number">.252</span><span class="number">.210</span></span><br><span class="line"><span class="attr">Port:</span>                     <span class="string">&lt;unset&gt;</span>  <span class="number">80</span><span class="string">/TCP</span></span><br><span class="line"><span class="attr">TargetPort:</span>               <span class="number">80</span><span class="string">/TCP</span></span><br><span class="line"><span class="attr">NodePort:</span>                 <span class="string">&lt;unset&gt;</span>  <span class="number">32691</span><span class="string">/TCP</span></span><br><span class="line"><span class="attr">Endpoints:</span>                <span class="number">10.244</span><span class="number">.1</span><span class="number">.16</span><span class="string">:80,10.244.1.17:80,10.244.1.18:80</span></span><br><span class="line"><span class="attr">Session Affinity:</span>         <span class="string">None</span></span><br><span class="line"><span class="attr">External Traffic Policy:</span>  <span class="string">Cluster</span></span><br><span class="line"><span class="attr">Events:</span>                   <span class="string">&lt;none&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>请看! 这里的Selector是不是和上面的label一模一样? 接着我们可以看到这是一个web服务, 因为service对应的端口是80, 你可能会疑惑为什么这个service有三个终端IP, 我们刚刚在上面查看myapp的信息的时候, 说到这是一个由replicaSet控制器控制的pod. 从名字你也可以看出来啦, 这是一个保证复制数量的控制器:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">root@kbs-master</span> <span class="string">~</span>]<span class="comment"># kubectl describe deployment myapp</span></span><br><span class="line"><span class="attr">Name:</span>                   <span class="string">myapp</span></span><br><span class="line"><span class="attr">Namespace:</span>              <span class="string">default</span></span><br><span class="line"><span class="attr">CreationTimestamp:</span>      <span class="string">Mon,</span> <span class="number">04</span> <span class="string">May</span> <span class="number">2020 11:39:20</span> <span class="number">-0500</span></span><br><span class="line"><span class="attr">Labels:</span>                 <span class="string">app=myapp</span></span><br><span class="line"><span class="attr">Annotations:            deployment.kubernetes.io/revision:</span> <span class="number">3</span></span><br><span class="line"><span class="attr">Selector:</span>               <span class="string">app=myapp</span></span><br><span class="line"><span class="attr">Replicas:</span>               <span class="number">3</span> <span class="string">desired</span> <span class="string">|</span> <span class="number">3</span> <span class="string">updated</span> <span class="string">|</span> <span class="number">3</span> <span class="string">total</span> <span class="string">|</span> <span class="number">3</span> <span class="string">available</span> <span class="string">|</span> <span class="number">0</span> <span class="string">unavailable</span></span><br><span class="line"><span class="attr">StrategyType:</span>           <span class="string">RollingUpdate</span></span><br><span class="line"><span class="attr">MinReadySeconds:</span>        <span class="number">0</span></span><br><span class="line"><span class="attr">RollingUpdateStrategy:</span>  <span class="number">25</span><span class="string">%</span> <span class="string">max</span> <span class="string">unavailable,</span> <span class="number">25</span><span class="string">%</span> <span class="string">max</span> <span class="string">surge</span></span><br><span class="line"><span class="attr">Pod Template:</span></span><br><span class="line">  <span class="attr">Labels:</span>  <span class="string">app=myapp</span></span><br><span class="line">  <span class="attr">Containers:</span></span><br><span class="line">   <span class="attr">myapp:</span></span><br><span class="line">    <span class="attr">Image:</span>        <span class="string">ikubernetes/myapp:v1</span></span><br><span class="line">    <span class="attr">Port:</span>         <span class="string">&lt;none&gt;</span></span><br><span class="line">    <span class="attr">Host Port:</span>    <span class="string">&lt;none&gt;</span></span><br><span class="line">    <span class="attr">Environment:</span>  <span class="string">&lt;none&gt;</span></span><br><span class="line">    <span class="attr">Mounts:</span>       <span class="string">&lt;none&gt;</span></span><br><span class="line">  <span class="attr">Volumes:</span>        <span class="string">&lt;none&gt;</span></span><br><span class="line"><span class="attr">Conditions:</span></span><br><span class="line">  <span class="string">Type</span>           <span class="string">Status</span>  <span class="string">Reason</span></span><br><span class="line">  <span class="string">----</span>           <span class="string">------</span>  <span class="string">------</span></span><br><span class="line">  <span class="string">Available</span>      <span class="literal">True</span>    <span class="string">MinimumReplicasAvailable</span></span><br><span class="line">  <span class="string">Progressing</span>    <span class="literal">True</span>    <span class="string">NewReplicaSetAvailable</span></span><br><span class="line"><span class="attr">OldReplicaSets:</span>  <span class="string">&lt;none&gt;</span></span><br><span class="line"><span class="attr">NewReplicaSet:</span>   <span class="string">myapp-5d587c4d45</span> <span class="string">(3/3</span> <span class="string">replicas</span> <span class="string">created)</span></span><br><span class="line"><span class="attr">Events:</span>          <span class="string">&lt;none&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>一共有三个, 当前的状态就是三个都在.</p>
+<p>OK, 我们来看一下host的网络状态:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/Kubernetes_network_master_ipshow.png" alt="Kubernetes_network_master_ipshow"></p>
+<p>发现什么奇怪的现象了吗? 没错 我们service的IP地址并没有出现在这里.</p>
+<p><code>flannel</code>和<code>cni</code>都是<code>10.244.0.X</code>网段的, 他们是为Pod服务的, ens33是我们本机的物理网卡. Service的<code>10.101.214.X</code>网段在哪里?</p>
+<p>相信聪明的你一定想到了, 此时查看一下iptables你就会发现, Service的这个IP实际上是个虚拟IP, 所谓的根据Service访问Pod服务其实就是一个NAT规则而已:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/Kubernetes_network_node_iptables.png" alt="Kubernetes_network_node_iptables"></p>
+<p>注意这里要在pod的主机上查看嗷. </p>
+<p>借用Kubernetes官方的图, 其实就是这样子:</p>
+<p><img src="https://d33wubrfki0l68.cloudfront.net/27b2978647a8d7bdc2a96b213f0c0d3242ef9ce0/e8c9b/images/docs/services-iptables-overview.svg" alt="Services overview diagram for iptables proxy"></p>
+<p>那么, 说道这里. 我们就可以小结一下了.</p>
+<p>我们从最小的单元<code>Pod</code>出发, 在我们创建之后, Kubernetes会为<code>Pod</code>加上一些元数据. 接着, 我们定义一个控制器(e.g: ReplicaSet), 用来做高可用. 这个时候, 我们就有了服务, 但是需要为这些服务提供一个固定的访问接口才行. 因此, 我们需要通过某种手段, 来确保当后端服务的资源变动时, 接口也能知道并且及时改变, 这里的一种解决方案就是通过<code>Pod</code>的元数据以及iptables的NAT规则来进行动态的调整.</p>
+<p>由此, 我们也可以看出来Kubernetes的网络构架是什么样子的. 也就是, Pod间组成一个集群私有网络, Node间组成一个私有网络, 而节点可以通过<code>kube-proxy</code>来访问Pod私有网络, Service使用虚拟IP组成网络. 用一张图来说明就是:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/Kubernetes_network_mage_overview.png" alt="Kubernetes_network_mage_overview"></p>
+<h2 id="Pod"><a href="#Pod" class="headerlink" title="Pod"></a>Pod</h2><p>我们先来剖析一下一个Pod包含哪些东西, 首先我们的Pod中最重要的一个部件就是主容器. 一般情况下, 在我们的主容器启动前, 我们会先进行一系列的初始化的操作, 这个初始化也是交给容器来执行的. 我们可以把它叫做<code>init container</code>. 这个初始化包含一些环境设定, 以及为了主容器的执行做一些准备. 当然这些初始化容器可能不止一个, 如果有多个, 他们是<strong>串行</strong>执行的. 当所有的初始化工作结束, 主容器就会开始执行, 这个时候会有一个<code>post start</code>的 过程, 当主容器刚刚执行的时候, 用户可以手动插入这个钩子. 所以当然了, 在结束之前, 同样也有一个钩子叫做<code>pre stop</code>. 除此之外, 还会有两个健康状态检测, 其中一个是存活状态检测, 另外一个就是检测主容器是否已经准备好, 也就是是否可以提供服务.</p>
+<p>另外, 每一个Pod都会包含一个固定的, 容量很小的容器, 叫做<code>pause</code>. 每一个Pod的各个容器都使用这个<code>pause</code>的网络栈和存储卷.</p>
+<p>Pod是有生命周期的, 他的状态有: <code>Pending</code>, <code>Running</code>, <code>Failed</code>, <code>Succeeded</code>, <code>Unknown</code>. 在我们创建Pod的时候, 会先将此Pod的状态信息写入到etcd中. Pod会先被调度到我们的某个节点上, 这需要scheduler一直参与. 当决定好在哪个节点上创建并且执行的时候, apiserver会再把etcd中的状态信息更新. </p>
+<p>在我们Kubernetes中, 为了启动一个Pod需要这样的过程:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/Pod%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png" alt="Pod生命周期"></p>
+<p>Init容器是干什么的? 简单的说, 这是一个和我们应用程序容器分离的镜像, 我们可以把一些通用的工具集成到InitC中, 这样我们的应用程序镜像就不需要在来做这些操作, 从而专注于自己的业务功能. 另外, InitC可以作为我们主容器的一个访问代理来使用, 例如访问文件. 当然, 通过InitC我们还可以实现简单的同步操作.</p>
+<p>当检测到我们Pod中的InitC容器启动失败,这个时候就会根据我们设置的重启策略(restartPolicy)来决定做哪些决策. 一共有三种:</p>
+<ul>
+<li>Always (默认)</li>
+<li>OnFailure</li>
+<li>Never</li>
+</ul>
+<p>看名字就能理解就不赘述了. 当然一直重启会对我们的系统造成额外的压力, 因此重启的时间间隔是随着重启次数不断增加的, 最多为300s.</p>
+<p>接下来我们说说上文中提到的Pod健康状态检测, Kubernetes可以通过execAction, httpGetAction或者tcpSocketAction来检测, 这三种也就是Kubelet调用的由容器实现的处理程序. 包含一些探测间隔, 超时设定, 失败次数门限等等设定. 探针会获得三种结果: 成功, 失败, 未知.</p>
+<ul>
+<li>livenessProbe: 指示容器是否正在运行</li>
+<li>readinessProbe: 指示容器是否正常提供服务</li>
+</ul>
+<h2 id="Pod-Controller"><a href="#Pod-Controller" class="headerlink" title="Pod Controller"></a>Pod Controller</h2><p>接下来我们来着重说一下Pod的控制器.</p>
+<p>当我们新建一个Pod的时候, 删除之, 该pod并不会重建. 因为这是一个自主式的Pod, 它并没有被控制器管理. 因此, 自主式Pod的时候并不常见, 通过模板内嵌到控制器才是我们更好管理的一个方式. </p>
+<p>我们先再次来列举一次, 常用的Pod Controller:</p>
+<ul>
+<li>ReplicaSet: 创建指定数量的Pod副本, 确保数量始终满足用户设定的值, 支持扩容缩容.</li>
+<li>ReplicationController: 和ReplicaSet目的一致, 但是不支持set选择器. 推荐使用ReplicaSet而非ReplicationController</li>
+<li>Deployment: 工作在ReplicaSet之上, 支持滚动更新和回滚, 声明时配置.(Recommended) 仅用于无状态应用.</li>
+<li>DaemonSet: 用于确保每个节点指运行一个Pod, 常用一些系统级别的应用.</li>
+<li>Job: 可以按照用户指定数量启动, 一次性. 按照工作是否完成来决定是否重建. 当任务完成直接退出.</li>
+<li>Cronjob: 周期性的Job.</li>
+<li>StatefulSet: 每一个Pod单独管理, 针对有状态的应用. 需要脚本嵌入模板来执行操作.</li>
+</ul>
+<p>手写脚本需要运维人员有很好的运维技能, 因此, 如果厂商或者第三方有提供维护脚本就会很方便. 因此, Kubernetes在1.2版本推出了一种资源类型TPR (Third Party Resources), 在1.7版本废止, 因为1.8版本中推出了CDR (Custom Defined Resources)</p>
+<p>接下来我们就开始看这些控制器吧.</p>
+<p>来看一个rs的模板吧:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ReplicaSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">myapp</span></span><br><span class="line">    <span class="attr">namespace:</span> <span class="string">default</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">    <span class="attr">replicas:</span> <span class="number">2</span></span><br><span class="line">    <span class="attr">selector:</span></span><br><span class="line">        <span class="attr">matchLabels:</span></span><br><span class="line">            <span class="attr">app:</span> <span class="string">myapp</span></span><br><span class="line">            <span class="attr">release:</span> <span class="string">canary</span></span><br><span class="line">    <span class="attr">template:</span></span><br><span class="line">        <span class="attr">metadata:</span></span><br><span class="line">            <span class="attr">name:</span> <span class="string">myapp-pod</span></span><br><span class="line">            <span class="attr">labels:</span></span><br><span class="line">                <span class="attr">app:</span> <span class="string">myapp</span></span><br><span class="line">                <span class="attr">release:</span> <span class="string">canary</span></span><br><span class="line">                <span class="attr">env:</span> <span class="string">qa</span></span><br><span class="line">        <span class="attr">spec:</span></span><br><span class="line">            <span class="attr">containers:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">myapp-container</span></span><br><span class="line">              <span class="attr">image:</span> <span class="string">ikubernetes/myapp:v1</span></span><br><span class="line">              <span class="attr">ports:</span></span><br><span class="line">              <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">                <span class="attr">containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来是一个deploy的模板:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">myapp-deploy</span></span><br><span class="line">    <span class="attr">namespace:</span> <span class="string">default</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">    <span class="attr">replicas:</span> <span class="number">2</span></span><br><span class="line">    <span class="attr">selector:</span></span><br><span class="line">        <span class="attr">matchLabels:</span></span><br><span class="line">            <span class="attr">app:</span> <span class="string">myapp</span></span><br><span class="line">            <span class="attr">release:</span> <span class="string">beta</span></span><br><span class="line">    <span class="attr">template:</span></span><br><span class="line">        <span class="attr">metadata:</span></span><br><span class="line">            <span class="attr">labels:</span></span><br><span class="line">                <span class="attr">app:</span> <span class="string">myapp</span></span><br><span class="line">                <span class="attr">release:</span> <span class="string">beta</span></span><br><span class="line">        <span class="attr">spec:</span></span><br><span class="line">            <span class="attr">containers:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">myapp</span></span><br><span class="line">              <span class="attr">image:</span> <span class="string">ikubernetes/myapp:v1</span></span><br><span class="line">              <span class="attr">ports:</span></span><br><span class="line">              <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">               <span class="attr">containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h2><p>我们再来说一下Service这个资源, 在Kubernetes上, Pod存在生命周期, 为了给Pod提供一个固定的访问接口(中间层), 也就是这里的Service. 另外, 我们的Service名称解析强依赖与Kubernetes中的DNS服务, 也就是所谓<code>CoreDNS</code>, 旧版本的Kubernetes使用的是<code>kube-dns</code>. </p>
+<p>Service在Kubernetes中有着四种类型:</p>
+<ul>
+<li>ClusterIP: 默认类型, 自动分配一个Cluster内部的IP, 使得服务只能从集群内部访问.</li>
+<li>NodePort: 在ClusterIP的基础上为Service在每台机器上绑定一个端口, 这样就可以通过<code>NodeIP:NodePort</code>来访问到该服务</li>
+<li>LoadBalancer: 在NodePort的基础上, 借助cloud provider创建一个外部的负载均衡器, 并将请求转发给<code>NodeIP: NodePort</code></li>
+<li>ExternalName: 通过返回一个CNAME记录来使服务映射到<code>externalName</code>, 不创建代理 (kube-dns&gt;1.7&#x2F;CoreDNS&gt;0.0.8)</li>
+</ul>
+<p>说到Service, 我们还是要重复一下之前说过的, Kubernetes的网络:</p>
+<ul>
+<li>node network</li>
+<li>pod network</li>
+<li>cluster network (虚拟的IP)</li>
+</ul>
+<p>我们之前也说过, worker node通过使用kube-proxy和master node的api service进行通信, 通过Kubernetes的watch机制. 接下来我们说三种Service的代理模式:</p>
+<p>第一种(userspace)Pod之间的访问机制是通过访问内核的iptables规则, 然后会被Service转到本地监听的套接字上, 也就是kube-proxy, 然后由它处理和分发, 接着还会再走内核的iptables分发到目标节点的kube-proxy, 最后到达目标Pod. 这种方法十分的麻烦, 因此我们有第二种方法.</p>
+<p>第二种就是直接使用iptables, 而不使用kube-proxy. 当然了, 我们还是需要kube-proxy来维护netfilter规则的. 另外, 还可以直接使用ipvs来调度.</p>
+<p>Kubernetes1.14之后默认使用的是ipvs, 如果ipvs没有被激活, 则会降级到iptables.</p>
+<p>写一个简单的redis服务:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">default</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">    <span class="attr">role:</span> <span class="string">logstore</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="number">10.96</span><span class="number">.96</span><span class="number">.96</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">ClusterIP</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">6379</span></span><br></pre></td></tr></table></figure>
+
+<p>但事实上, 从我们的Service到Pod, 会经过一个Endpoint. 这个Endpoint资源本质上我们是可以手动指定的. 如果我们没有修改默认的资源记录域名, 一般来说都是这样的(例如上面的redis):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis.default.svc.cluster.local.</span><br></pre></td></tr></table></figure>
+
+<p>也就是服务名+名称空间+Domain</p>
+<p>另外, 还有一种无头服务(Headless Service), 也就是不指定ClusterIP, 指定为None或者空字符串, 这样对Pod的请求就会直达到Pod而不会由Service牵头, 这时候的Service可以提供分组服务而不用于调度.</p>
+<h2 id="Ingress"><a href="#Ingress" class="headerlink" title="Ingress"></a>Ingress</h2><p>我们之前说过想要在外部访问到我们的Pod, 可使用NodePort. 我们使用ipvs或者iptables来进行访问的调度, 但是我们知道这两个都是处在4层的. 考虑一种简单的情况, 假设我们的站点使用的是HTTPS的协议, 那这个证书显然不应该是后端Pod的IP而应该是我们调度器的IP, 因为用户访问的域名解析结果显然应该是调度器的IP嘛. 那么问题就显而易见了, 因为我们真正提供服务的Pod和证书信息不匹配, 这个时候我们就需要在请求到达Pod之前, 将HTTPS的头拿掉, 也就要求我们要有一个七层的负载均衡器在前面. 这样, 我们的Pod就使用HTTP即可, 而在互联网中使用HTTPS就好, 然后在接入层卸载SSL.</p>
+<p>基于此, 我们可以启动一个Pod然后共享宿主机的IP地址, 而这个Pod拥有能够七层调度的能力(可以把它想象成一个Nginx), 这样我们就不使用Service了. 当然, 如果这样做的话, 我们的这个Pod就必须是单点. 这个时候我们可以使用DaemonSet控制器来进行控制.</p>
+<p>我们可以通过打上污点(taint)的方式, 让我们的控制器控制仅仅在若干个节点上进行, 并且让这些节点只运行这个调度器, 为我们集群提供一个统一的七层调度访问入口.</p>
+<p>事实上, 这个东西就是Ingress Controller, 虽然他也叫做Controller, 但它并不是master node上的Controller Manager的子组件, 而是一个独立的应用. 这种方式看似美好, 但是存在一个问题, 因为我们的Ingress Controller并不能像我们的Service一样对后端的Pod有实时的watch, 由于Pod存在生命周期, 有可能Pod会被替换掉, 同时IP地址也会发生改变. 所以这个时候我们就可以考虑使用之前说过的headless service了, 让这个服务仅用来对我们的Pod做分组, 我们还是使用Ingress Controller进行调度, 这个时候我们就可以声明一个Ingress资源, 从而定义前端的调度规则. 并且它还可以注入到当前的配置中, 当后端发生变化我们的Ingress会知道, 于是他可以生成配置信息然后通知当前的Pod进行重载.</p>
+<p>安装ingress很简单, 直接照着nginx官网的教程走就可以了. 当然, 除了Nginx, 也有很多ingress的实现方案, 例如HAProxy, 这里我们就用Nginx来做测试了.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@kbs-demo deployments]# kubectl get pods -n nginx-ingress</span><br><span class="line">NAME                            READY   STATUS    RESTARTS   AGE</span><br><span class="line">nginx-ingress-94d765bfd-ttd28   1/1     Running   0          3m39s</span><br></pre></td></tr></table></figure>
+
+<h2 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h2><p>我们之前说过, Pod存在生命周期, 那么我们存在在Pod内部存储空间的数据就会随着Pod的重启而消失. 因此, 我们就需要在Pod自有文件存储之外的地方, 例如我们的节点文件系统. 这样在一定程度上我们就拥有了持久化存储能力. 问题是, 我们的Pod是有调度的. 因此我们直接丢到节点存储上是不合理的. 所以我们应该存储在脱离节点存储的位置上, 例如NFS.</p>
+<p>Kubernetes的存储, 我们可以展开四个话题:</p>
+<ul>
+<li>ConfigMap</li>
+<li>Secret</li>
+<li>Volume</li>
+<li>PV-PVC</li>
+</ul>
+<p>我们就一个一个来说吧.</p>
+<p>首先说到ConfigMap, 这是个啥呢, 简单来说, 这就是一个向容器中注入配置信息的机制, 这就像是Kubernetes的配置文件注册中心(这样举例好像不对…但是API和思想差不多).</p>
+<p>创建一个ConfigMap主要有三种方式, 通过目录, 使用文件以及命令行传参. 使用起来也挺简单, 我们在Pod的资源清单中<code>env</code>内部写上就可以了.</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">env:</span></span><br><span class="line">	<span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SPECIAL_LEVEL_KEY</span></span><br><span class="line">	  <span class="attr">valueFrom:</span></span><br><span class="line">	    <span class="attr">configMapKeyRef:</span></span><br><span class="line">	      <span class="attr">name:</span> <span class="string">special-config</span></span><br><span class="line">	      <span class="attr">key:</span> <span class="string">special.how</span></span><br></pre></td></tr></table></figure>
+
+<p>另外, 我们在导入之后也可以在容器的<code>command</code>中进行引用. 除此之外, 我们还可以把我们configMap的文件直接挂载到我们的Pod中. </p>
+<p>而Secret, 可以用来存储我们的一些密码密钥等需要被加密的配置数据. Secret可以使用Volume挂载或者当做会环境变量来使用. 使用起来Secret和ConfigMap十分相似. 我们Secret有三种类型:</p>
+<ul>
+<li>Service Account: 用来访问Kubernetes API, 由Kubernetes自动创建, 并且会自动挂载到Pod的<code>/run/secrets/kubernetes.io/serviceaccount</code>目录中</li>
+<li>Opaque: Base64编码格式, 存储密码密钥等</li>
+<li>Kubernetes.io&#x2F;dockerconfigjson: 用来存储私有的docker registry的认证信息</li>
+</ul>
+<p>因此我们配置容器化应用的方式就有这些了:</p>
+<ol>
+<li>自定义命令行参数: <code>args: []</code></li>
+<li>把配置文件直接丢到镜像中</li>
+<li>环境变量<ol>
+<li>Cloud Native的应用程序一般直接通过环境变量加载配置</li>
+<li>通过<code>entrypoint</code>脚本来预处理变量为配置文件中的配置信息</li>
+</ol>
+</li>
+<li>存储卷</li>
+</ol>
+<p>上面的两个更多的都是为了向Pod内部注入配置信息而非存储, 接下来我们来说说存储卷Volume.</p>
+<p>准确的说, 我们的存储卷是属于Pod的而不是容器. 我们说过, 每一个Pod都会启动一个超级小的容器, 叫做<code>pause</code>或者叫基础架构容器. 我们所有的容器都使用的<code>pause</code>的网络命名空间. </p>
+<p>Kubernetes支持非常多的存储卷或者存储服务, 我们可以使用<code>explain</code>来看看支持的情况, 或者去官网看文档啦哈哈哈.</p>
+<p>在Kubernetes的存储中, 重头戏应该就是PV和PVC了, 这两个玩意的全称就是<code>PersistentVolume</code>和<code>PersistentVolumeClaim</code>.  一个大概的流程就是, 我们负责存储的工程师来创建和部署存储服务(NFS, Ceph…), 接着由负责管理Kubernetes集群的工程师来提供PV, PV会成为存储系统对Kubernetes的存储抽象层, 接着由用户来声明PVC向PV发起获取存储空间的请求.</p>
+<p>另外, 我们还可以声明一个Kubernetes的资源类型, 叫<code>StorageClass</code>, 来划分不同级别的PV从而根据不同的服务需求指标来提供给用户. 这样我们的PVC就可以不针对某一个特定的PV来申请资源而可以通过对<code>StorageClass</code>来发请求. 存储系统必须要提供相应的RESTful API. </p>
+<h2 id="StatefulSet控制器"><a href="#StatefulSet控制器" class="headerlink" title="StatefulSet控制器"></a>StatefulSet控制器</h2><p>StatefulSet是针对我们有状态的应用设计的, 不同于无状态应用我们可以随意的重建和重启. 那么到底什么样的应用属于StatefulSet嘞?</p>
+<ul>
+<li>稳定且唯一的网络标识符</li>
+<li>稳定且持久的存储</li>
+<li>有序平滑的部署和扩展</li>
+<li>有序平滑的删除和终止</li>
+<li>有序的滚动更新</li>
+</ul>
+<p>我们着重来说一下他的滚动更新吧, 默认使用的更新方法是分区更新, 我们可以从文档中看到:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">[root@kbs-demo ~]# kubectl explain sts.spec.updateStrategy</span><br><span class="line">KIND:     StatefulSet</span><br><span class="line">VERSION:  apps/v1</span><br><span class="line"></span><br><span class="line">RESOURCE: updateStrategy &lt;Object&gt;</span><br><span class="line"></span><br><span class="line">DESCRIPTION:</span><br><span class="line">     updateStrategy indicates the StatefulSetUpdateStrategy that will be</span><br><span class="line">     employed to update Pods in the StatefulSet when a revision is made to</span><br><span class="line">     Template.</span><br><span class="line"></span><br><span class="line">     StatefulSetUpdateStrategy indicates the strategy that the StatefulSet</span><br><span class="line">     controller will use to perform updates. It includes any additional</span><br><span class="line">     parameters necessary to perform the update for the indicated strategy.</span><br><span class="line"></span><br><span class="line">FIELDS:</span><br><span class="line">   rollingUpdate	&lt;Object&gt;</span><br><span class="line">     RollingUpdate is used to communicate parameters when Type is</span><br><span class="line">     RollingUpdateStatefulSetStrategyType.</span><br><span class="line"></span><br><span class="line">   type	&lt;string&gt;</span><br><span class="line">     Type indicates the type of the StatefulSetUpdateStrategy. Default is</span><br><span class="line">     RollingUpdate.</span><br><span class="line"></span><br><span class="line">[root@kbs-demo ~]# kubectl explain sts.spec.updateStrategy.rollingUpdate</span><br><span class="line">KIND:     StatefulSet</span><br><span class="line">VERSION:  apps/v1</span><br><span class="line"></span><br><span class="line">RESOURCE: rollingUpdate &lt;Object&gt;</span><br><span class="line"></span><br><span class="line">DESCRIPTION:</span><br><span class="line">     RollingUpdate is used to communicate parameters when Type is</span><br><span class="line">     RollingUpdateStatefulSetStrategyType.</span><br><span class="line"></span><br><span class="line">     RollingUpdateStatefulSetStrategy is used to communicate parameter for</span><br><span class="line">     RollingUpdateStatefulSetStrategyType.</span><br><span class="line"></span><br><span class="line">FIELDS:</span><br><span class="line">   partition	&lt;integer&gt;</span><br><span class="line">     Partition indicates the ordinal at which the StatefulSet should be</span><br><span class="line">     partitioned. Default value is 0.</span><br></pre></td></tr></table></figure>
+
+<p>那么分区更新是啥嘞? 我们会定义一个分区分界, 例如N, 那么当所有标识&gt;&#x3D;N的Pod都会被更新. 假设我们现在一共有5个Pod, 我定义成N&#x3D;4, 那么从Pod-0开始, 第一个满足条件(也仅有这个)的就是Pod-4, 当我们发布了此更新之后, 如果没有问题, 我们就将N改成0即可. (金丝雀发布)</p>
+<h2 id="认证和serviceaccount"><a href="#认证和serviceaccount" class="headerlink" title="认证和serviceaccount"></a>认证和serviceaccount</h2><p>我们之前了解过, Kubernetes使用<code>api-server</code>来作为整体的管理控制入口, 还可以通过Ingress暴露出来的服务端口来访问. 但是显然我们不能允许来路不明的请求来访问管理接口, 因此我们就需要进行安全认证. Kubernetes使用了基于Role的模型.</p>
+<p>任何客户端访问, 都需要3步, 即:</p>
+<ul>
+<li>认证</li>
+<li>授权检查</li>
+<li>准入控制</li>
+</ul>
+<p>对于认证而言, 最常用的两种就是基于HTTP和HTTPS, 通过交换token和交换证书(双向), 来进行客户端身份的认证. 而对于授权, 同样也有多种认证方式, 但目前最常用的就是RBAC了, 也就是基于角色的访问控制.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%B7%A5%E5%85%B7%E6%A0%88"><span class="toc-number">1.</span> <span class="toc-text">容器编排工具栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kubernetes"><span class="toc-number">2.</span> <span class="toc-text">Kubernetes</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kubernetes%E7%9A%84%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0%E5%92%8C%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-number">3.</span> <span class="toc-text">Kubernetes的架构概述和基础概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pod"><span class="toc-number">4.</span> <span class="toc-text">Pod</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pod-Controller"><span class="toc-number">5.</span> <span class="toc-text">Pod Controller</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Service"><span class="toc-number">6.</span> <span class="toc-text">Service</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ingress"><span class="toc-number">7.</span> <span class="toc-text">Ingress</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E5%82%A8"><span class="toc-number">8.</span> <span class="toc-text">存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#StatefulSet%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="toc-number">9.</span> <span class="toc-text">StatefulSet控制器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%81%E5%92%8Cserviceaccount"><span class="toc-number">10.</span> <span class="toc-text">认证和serviceaccount</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&text=Kubernetes架构基础"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&is_video=false&description=Kubernetes架构基础"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Kubernetes架构基础&body=Check out this article: https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&title=Kubernetes架构基础"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&name=Kubernetes架构基础&description=&lt;p&gt;在熟悉了Docker相关的操作之后, 我们现在就可以来对大规模集群的容器编排下手了.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/&t=Kubernetes架构基础"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

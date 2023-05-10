@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="由于毕业设计的选题选择了关于使用Openstack和Docker容器技术来构建一个高校云主机申请平台, 现在开始学习了解一下这个云计算框架 - openstack. 扯点闲话关于Openstack大家都听说过, 这个项目是由NASA和Rackspace发起开源的一个云平台. 最早于2010年发布第一个版本. 关于Openstack的版本号, 是按照26个英文字母的顺序, 用这些字母开头的单词来作为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识OpenStack_1">
+<meta property="og:url" content="https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="由于毕业设计的选题选择了关于使用Openstack和Docker容器技术来构建一个高校云主机申请平台, 现在开始学习了解一下这个云计算框架 - openstack. 扯点闲话关于Openstack大家都听说过, 这个项目是由NASA和Rackspace发起开源的一个云平台. 最早于2010年发布第一个版本. 关于Openstack的版本号, 是按照26个英文字母的顺序, 用这些字母开头的单词来作为">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://www.openstack.org/software/images/map/openstack-map-v20180601.svg">
+<meta property="og:image" content="https://docs.openstack.org/install-guide/_images/openstack-arch-kilo-logical-v1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/user%26role.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/keystone_concept.png">
+<meta property="article:published_time" content="2019-03-12T13:40:54.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:48:38.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Openstack">
+<meta property="article:tag" content="Cloud Computing">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.openstack.org/software/images/map/openstack-map-v20180601.svg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>初识OpenStack_1</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/12/15/KVM%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&text=初识OpenStack_1"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&is_video=false&description=初识OpenStack_1"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=初识OpenStack_1&body=Check out this article: https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&name=初识OpenStack_1&description=&lt;p&gt;由于毕业设计的选题选择了关于使用Openstack和Docker容器技术来构建一个高校云主机申请平台, 现在开始学习了解一下这个云计算框架 - openstack.&lt;/p&gt;
+&lt;h2 id=&#34;扯点闲话&#34;&gt;&lt;a href=&#34;#扯点闲话&#34; class=&#34;headerlink&#34; title=&#34;扯点闲话&#34;&gt;&lt;/a&gt;扯点闲话&lt;/h2&gt;&lt;p&gt;关于Openstack大家都听说过, 这个项目是由NASA和Rackspace发起开源的一个云平台. 最早于2010年发布第一个版本. 关于Openstack的版本号, 是按照26个英文字母的顺序, 用这些字母开头的单词来作为版本号, 例如2010年的第一个版本叫做Austin, 接着是Bexar, Cactus, Diablo….目前最新的版本是R版, 即Rocky. 这一次的我们选择的版本是Q版本, Queen.名字挺好听的吧. 就是他了.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&t=初识OpenStack_1"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%AF%E7%82%B9%E9%97%B2%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">扯点闲话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Keystone"><span class="toc-number">2.</span> <span class="toc-text">Keystone</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Glance"><span class="toc-number">3.</span> <span class="toc-text">Glance</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        初识OpenStack_1
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-03-12T13:40:54.000Z" class="dt-published" itemprop="datePublished">2019-03-12</time>
+        
+        (Updated: <time datetime="2020-11-30T01:48:38.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cloud-Computing/" rel="tag">Cloud Computing</a>, <a class="p-category" href="/tags/Openstack/" rel="tag">Openstack</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>由于毕业设计的选题选择了关于使用Openstack和Docker容器技术来构建一个高校云主机申请平台, 现在开始学习了解一下这个云计算框架 - openstack.</p>
+<h2 id="扯点闲话"><a href="#扯点闲话" class="headerlink" title="扯点闲话"></a>扯点闲话</h2><p>关于Openstack大家都听说过, 这个项目是由NASA和Rackspace发起开源的一个云平台. 最早于2010年发布第一个版本. 关于Openstack的版本号, 是按照26个英文字母的顺序, 用这些字母开头的单词来作为版本号, 例如2010年的第一个版本叫做Austin, 接着是Bexar, Cactus, Diablo….目前最新的版本是R版, 即Rocky. 这一次的我们选择的版本是Q版本, Queen.名字挺好听的吧. 就是他了.</p>
+<span id="more"></span>
+
+<p>Openstack是一个很复杂和庞大的云计算框架, 不过与其说他是框架, 不如说它是多个项目综合起来的一个更大项目, 最初的Openstack, 仅仅只有最基础的两个服务, 分别是NASA贡献的计算代码Nova和Rackspace贡献的对象存储代码Swift. 到了现在已经有大大小小几十个项目了:</p>
+<p><img src="https://www.openstack.org/software/images/map/openstack-map-v20180601.svg" alt="OpenStack Cloud landscape map"></p>
+<p>这么多组件交互起来是个什么样子呢, 我们只在这里面选取一些必要的组件和一些比较重要的, 一共十二个, 他们交互起来的逻辑架构是这样的:</p>
+<p><img src="https://docs.openstack.org/install-guide/_images/openstack-arch-kilo-logical-v1.png" alt="Logical architecture"></p>
+<p>还是蛮复杂的. </p>
+<p>接下来的几篇关于Openstack的文章, 我们会从单个项目进行入手, 这篇文章我们来看看Openstack的两个核心组件 – Keystone和Glance.</p>
+<h2 id="Keystone"><a href="#Keystone" class="headerlink" title="Keystone"></a>Keystone</h2><p>为什么所有人都要从这个组件说起? 因为这是一个进行统一的身份验证, token的发放和校验, 服务列表, 还有包括用户权限的定义. 几乎所有的Openstack服务都要经过Keystone, 来获取操作的权限和身份识别. 简单说来, 这是一个<code>Identity Sevice</code>.</p>
+<p>官方文档对这么一个服务的表述是: </p>
+<blockquote>
+<p> The OpenStack Identity service provides a single point of integration for managing authentication, authorization, and a catalog of services.</p>
+</blockquote>
+<p>不仅是Openstack的服务要和Keystone打交道, 就连用户第一个打交道的服务就是它, 除了进行鉴权, Keystone还可以进行服务发现, 从而使得其他的服务能够知道有哪些其他服务正在部署. </p>
+<p>Keystone自己的维护了一个小型的数据库, 但是他也可以和诸多外部的系统进行交互, 例如memcached, mysql, LDAP等等. </p>
+<p>接着在实际了解到keystone之前, 我们要先来介绍概念了.</p>
+<p><strong><code>Credential</code></strong> 这个玩意的英文原意就是证书, 凭证之类的意思 (相较于Certificate, 这个偏非官方非正式一点). 在这里, 这个东西指能够证明用户身份的数据, 例如, 用户名和密码, 用户名和API KEY, 或者是权限服务提供的鉴权token.</p>
+<p><strong><code>Endpoint</code></strong> 这个东西挺好理解的, 很多Web框架里面也有这个概念. 这东西就是指一个网络可访问的地址, 通常就是我们所熟知的URL, 翻译过来就是服务的端点, 也就是访问这些服务的入口.</p>
+<p><strong><code>Region</code></strong> 这个东西就是指一个鉴权服务API V3的实体(官网解释), 看不懂什么意思, 没关系后面有解释. 就代表是一个通用的Openstack部署划分的区域, 说白了就是部署的另外一套Openstack, 他们使用同一个Identity服务, 并且我们还可以进行再去region中再加上一个sub-region, 形成树状结构. 通常情况下, 划分region都是地理上的, 比如说不同的机房, 就会被划分不同的region, 例如: <code>us-east</code>, <code>hk-001</code>之类的. 这个玩意我们叫做区域.</p>
+<p><strong><code>Token</code></strong> 很简单啦. 就是一串字母数字组成的字符串. 就像这样子:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;project_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;d0238da87b624a63a1132886db6f2dc5&quot;</span><span class="punctuation">,</span> </span><br><span class="line">  <span class="attr">&quot;expires&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2019-03-12T03:27:26+0000&quot;</span><span class="punctuation">,</span> </span><br><span class="line">  <span class="attr">&quot;user_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0625920ca5934f9fa2e47249b03e3d1b&quot;</span><span class="punctuation">,</span> </span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;gAAAAABchxkOKHqMF890O3Pl_8_ItvrutNPcOgZd0Y18QSv447O4_r17UpQxttXW4NIrTx-t9q5a5OOUkPvq8t704Odsicq9UM6Wr6HSGG7gcYRFymzXr5ZQLiRlNeGHVVQV7mBfbJXKXRg5Of5-yEgY5O-eyEWxMQ4kQJO7zjgpCEbsQMgHvwA&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>又出现了两个概念, <code>project</code>和<code>user</code>. 在说到这个之前, 我们再说一个刚刚就已经提到过的概念:</p>
+<p><strong><code>Service</code></strong> 就是Openstack中的一个服务, 比如我们现在正在说的Keystone, 还有例如计算服务Nova这些, 能够提供一个或者多个<code>endpoint</code>, 使得用户能够访问到资源和进行操作.</p>
+<p>接下来我们介绍一组概念, 分别是<code>User</code>, <code>Role</code>, <code>Project</code>, <code>Domain</code>.</p>
+<p>初次接受这一组概念可能有点迷糊, 多看看就好了.</p>
+<p>在一些低版本的课程中, (2016年之前的版本), 会有一个叫做租户的概念, 说是一个用户组的意思, 这个概念在M版本(2016)之后逐渐的被弱化, 现在已经没有了, 取而代之的就是上面的Project概念. </p>
+<p><strong><code>Project</code></strong> 这个就是用来分组和隔离资源或者权限对象的一个容器. 说的直白点就是命名空间一样的概念. </p>
+<p><strong><code>Domain</code></strong> 这个东西就是在Project之上的一个更大的空间, 包括了多个project和users, 定义了一个鉴权实体的管理边界(这样说不知道你们能不能明白)</p>
+<p><strong><code>User</code><strong>和</strong><code>Role</code></strong> 这两个概念我们放在一起来解释, 先来看这个图吧:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/user%26role.png" alt="user&amp;role"></p>
+<p>可以看到, 用户就相当于是一个人, 系统或者服务的表示形式, 用户可以被<code>project</code>来contain, 而<code>role</code>就是一组来执行特定操作的用户权限的形态, 用户可以和role来进行关联, 当用户进行操作的时候, 服务会去寻找用户所关联上的role是啥, 然后判定可进行的操作范围. 另外, 就像上图所展示的, 不同Project的同一个用户也可以拥有不同的角色.</p>
+<p>以上就是关于Keystione的诸多概念了. 大体上的感觉就像这样子:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/keystone_concept.png" alt="keystone_concept"></p>
+<p>随手用visio画的, 看看就好.</p>
+<p>关于Keystone的安装和基本部署, 官方文档都写的十分详细了(起码CentOS 7版本是这样子的), 所以照着做下来就不会有大问题. 我也没有踩到什么坑. 倒是下面的Glance踩到了坑.</p>
+<h2 id="Glance"><a href="#Glance" class="headerlink" title="Glance"></a>Glance</h2><p>说完了Keystone, 我们再来说下一个服务. 为了创建一个虚拟机, 我们需要一个image映像才可以, 而glance就是</p>
+<p>这么一个用于虚拟机映像的发现注册和获取的服务.glance支持使用文件后端(simple fs),或者是使用对象文件存储系统以及诸多外部存储系统.</p>
+<p>Glance包含这些组件:</p>
+<ul>
+<li>glance-api</li>
+<li>glance-registry – (该组件已经在Q版本中标记为DEPRECATED, 并且将在S版本中去除)</li>
+<li>database</li>
+<li>Storage repository for image files</li>
+<li>Metadata definition service</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@control_node ~]<span class="comment"># openstack image list</span></span><br><span class="line">+--------------------------------------+--------+--------+</span><br><span class="line">| ID                                   | Name   | Status |</span><br><span class="line">+--------------------------------------+--------+--------+</span><br><span class="line">| 057ff68c-0d24-404b-9a3f-d017058c0262 | cirros | active |</span><br><span class="line">+--------------------------------------+--------+--------+</span><br></pre></td></tr></table></figure>
+
+<p>Glance所维护的映像文件都会被赋予一个唯一的ID, 并且这些映像会有这些状态: </p>
+<ul>
+<li>Queued: 镜像ID已经保留, 但是镜像还没有上传</li>
+<li>Saving: 镜像正在被上传</li>
+<li>Active: 镜像已经可以使用</li>
+<li>Killed: 镜像损坏或者不可用</li>
+<li>Deleted: 镜像被删除</li>
+</ul>
+<p>对于磁盘映像文件的支持, glance除了支持亚马逊定义的三种image格式之外, 还支持很多市面上普遍的格式, 例如无结构的raw格式, vhd, vmdk, vdi, iso, qcow2. 其中得益于qcow2的动态增加文件大小和云系统的相性不错, 比较常用.</p>
+<p>接着我们说说在Glance配置的时候踩到的坑:</p>
+<p>配置的时候你会看到官方文档这样的给示例: (api和registery配置文件都是这样的)</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[keystone_authtoken]</span></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"><span class="attr">auth_uri</span> = http://controller:<span class="number">5000</span></span><br><span class="line"><span class="attr">auth_url</span> = http://controller:<span class="number">5000</span></span><br><span class="line"><span class="attr">memcached_servers</span> = controller:<span class="number">11211</span></span><br><span class="line"><span class="attr">auth_type</span> = password</span><br><span class="line"><span class="attr">project_domain_name</span> = Default</span><br><span class="line"><span class="attr">user_domain_name</span> = Default</span><br><span class="line"><span class="attr">project_name</span> = service</span><br><span class="line"><span class="attr">username</span> = glance</span><br><span class="line"><span class="attr">password</span> = GLANCE_PASS</span><br></pre></td></tr></table></figure>
+
+<p>但实际上, 这里的<code>auth_url</code>根本就已经被废弃掉了. 另外很多配置项也是已经消失不见了, 在Q版本的配置文件中, 有一个叫做**<code>www_authenticate_uri</code>**的配置选项, 你可以把这个当做上面示例给的<code>auth_uri</code>, 这个配置项的意义其实就是公共(public)验证服务的的endpoint.</p>
+<p>但是, 搞笑的是, 你还不能不配这个已经被废弃掉的值, 如果没有给它赋值, 即使数据库都成功写入了. 当启动服务的时候会因为缺少这个<code>auth_url</code>配置, 疯狂报错然后就退出.</p>
+<p>所以最后在这个section需要配置的选项有:</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[keystone_authtoken]</span></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"><span class="attr">www_authenticate_uri</span> = http://controller:<span class="number">5000</span></span><br><span class="line"><span class="attr">auth_url</span> = http://controller:<span class="number">5000</span></span><br><span class="line"><span class="attr">memcached_servers</span> = controller:<span class="number">11211</span></span><br><span class="line"><span class="attr">auth_type</span> = password</span><br></pre></td></tr></table></figure>
+
+<p>然后就可以尝试启动服务和使用了.</p>
+<p>以上就是关于Opensatck中权限组件和映像服务的相关说明了</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%AF%E7%82%B9%E9%97%B2%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">扯点闲话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Keystone"><span class="toc-number">2.</span> <span class="toc-text">Keystone</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Glance"><span class="toc-number">3.</span> <span class="toc-text">Glance</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&text=初识OpenStack_1"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&is_video=false&description=初识OpenStack_1"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=初识OpenStack_1&body=Check out this article: https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&title=初识OpenStack_1"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&name=初识OpenStack_1&description=&lt;p&gt;由于毕业设计的选题选择了关于使用Openstack和Docker容器技术来构建一个高校云主机申请平台, 现在开始学习了解一下这个云计算框架 - openstack.&lt;/p&gt;
+&lt;h2 id=&#34;扯点闲话&#34;&gt;&lt;a href=&#34;#扯点闲话&#34; class=&#34;headerlink&#34; title=&#34;扯点闲话&#34;&gt;&lt;/a&gt;扯点闲话&lt;/h2&gt;&lt;p&gt;关于Openstack大家都听说过, 这个项目是由NASA和Rackspace发起开源的一个云平台. 最早于2010年发布第一个版本. 关于Openstack的版本号, 是按照26个英文字母的顺序, 用这些字母开头的单词来作为版本号, 例如2010年的第一个版本叫做Austin, 接着是Bexar, Cactus, Diablo….目前最新的版本是R版, 即Rocky. 这一次的我们选择的版本是Q版本, Queen.名字挺好听的吧. 就是他了.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/&t=初识OpenStack_1"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

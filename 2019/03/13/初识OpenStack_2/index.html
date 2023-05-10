@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="前一篇文章过了一遍权限服务和虚拟机映像服务, 而且都是在控制节点上进行的. 现在终于要开始部署计算服务了, 想想都激动.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识Opensatck_2">
+<meta property="og:url" content="https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="前一篇文章过了一遍权限服务和虚拟机映像服务, 而且都是在控制节点上进行的. 现在终于要开始部署计算服务了, 想想都激动.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/Nova-arch.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/dashboard1.png">
+<meta property="article:published_time" content="2019-03-13T14:14:58.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:48:43.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Openstack">
+<meta property="article:tag" content="Cloud Computing">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/Nova-arch.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>初识Opensatck_2</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&text=初识Opensatck_2"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&is_video=false&description=初识Opensatck_2"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=初识Opensatck_2&body=Check out this article: https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&name=初识Opensatck_2&description=&lt;p&gt;前一篇文章过了一遍权限服务和虚拟机映像服务, 而且都是在控制节点上进行的. 现在终于要开始部署计算服务了, 想想都激动. &lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&t=初识Opensatck_2"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Nova"><span class="toc-number">1.</span> <span class="toc-text">Nova</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Nova%E7%9A%84%E9%85%8D%E7%BD%AE-%E6%8E%A7%E5%88%B6%E8%8A%82%E7%82%B9%E5%92%8C%E8%AE%A1%E7%AE%97%E8%8A%82%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text">Nova的配置 - 控制节点和计算节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Neutron"><span class="toc-number">2.</span> <span class="toc-text">Neutron</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Neutron%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">Neutron的配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizon"><span class="toc-number">3.</span> <span class="toc-text">Horizon</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        初识Opensatck_2
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-03-13T14:14:58.000Z" class="dt-published" itemprop="datePublished">2019-03-13</time>
+        
+        (Updated: <time datetime="2020-11-30T01:48:43.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cloud-Computing/" rel="tag">Cloud Computing</a>, <a class="p-category" href="/tags/Openstack/" rel="tag">Openstack</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>前一篇文章过了一遍权限服务和虚拟机映像服务, 而且都是在控制节点上进行的. 现在终于要开始部署计算服务了, 想想都激动. </p>
+<span id="more"></span>
+
+<h2 id="Nova"><a href="#Nova" class="headerlink" title="Nova"></a>Nova</h2><p>为了了解Nova是如何工作的, 我们先看下这个逻辑架构图的Nova部分:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/Nova-arch.png" alt="Nova-arch"></p>
+<p>可以看到, 其中最重要, 和大部分的组件都产生关系的组件就是这个<code>Queue</code>了. 官方文档称呼这个东西叫做<code>central hub</code>, 都已经central了能不重要吗哈哈. 这个队列主要是在各种daemon中传递消息的, 通常使用的是RabbitMQ.</p>
+<p>然后我们从最外面开始看, 这里唯一和外界打交道的就是nova-api了, 它是用来接受和响应终端用户的计算API调用的. 与之配合的, 上图中没有列出的一个组件是<code>nova-api-metadata service</code>, 听名字就知道了, 这个东西是用来接受来自实例的源数据请求的.</p>
+<p>接着是调度器组件–<code>Nova-scheduler</code>. </p>
+<blockquote>
+<p>值得一提的是, 在Nova中原本有一个Placement API, 参与到scheduler的调度流程当中, 原本是一个可选的功能, 到了P版本的时候要求强制开启. 渐渐地, 在18年的年末, Placement API开始从nova项目中剥离, 渐渐地成为Openstack Placement, 期待最终替代nova-scheduler. 计划在S版本中成为一个独立的项目. 但是目前(这里用的是Q版本), 我们在配置的时候已经有点要单独看待的意思了.</p>
+</blockquote>
+<p>这个东西从队列中取出外部对虚拟机实例的请求然后来决定交给哪一个host来运行. 那么如何运行呢, 这就要交给Nova的另一个核心组件也就是计算服务了. <code>Nova compute</code>是一个用来创建和终止虚拟机实例的工作进程, 例如:</p>
+<ul>
+<li>使用Xen的XenAPI</li>
+<li>使用KVM或者是QEMU的libvirt API</li>
+<li>使用VMware的VMwareAPI</li>
+</ul>
+<p>根据虚拟机平台不同, 所使用到的HyperVisor API也不同. 然后再虚拟机启动之后把他在数据库中存储的状态进行update.</p>
+<p>那就奇怪了, 上面的架构图中, 计算服务似乎并没和数据库进行直接的交互. 没错, 负责协调引领计算节点和数据库交互的模块就是<code>conductor module</code>. </p>
+<h3 id="Nova的配置-控制节点和计算节点"><a href="#Nova的配置-控制节点和计算节点" class="headerlink" title="Nova的配置 - 控制节点和计算节点"></a>Nova的配置 - 控制节点和计算节点</h3><p>我们按照官方文档的说明, 对控制节点和计算节点的Nova服务进行配置, 然后进行安装验证. 下面说下我遇到的问题:</p>
+<p>安装和配置完成之后, 惊奇的发现不停的报503和401错误, 原因大概率可能是因为配置文件里面的密码写错了, 另外, 如果密码参数是空白的话, 也会报错. </p>
+<blockquote>
+<p>我之前在说glance的时候说这个配置项在官方文档已经找不到了, 但是如果不在里面写上的话, 一些服务注册发现会遇到授权错误导致失败, 也即是401 Unauthorized错误的原因. 所以还是要写上的.</p>
+</blockquote>
+<p>如果配置完成我们会运行一个<code> nova-status upgrade check</code>来检查问题.</p>
+<p>这里再记录一个奇妙的事情, 我在执行这个check的时候发现一个Warning提示:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">| Check: Resource Providers                                           |</span><br><span class="line">| Result: Warning                                                     |</span><br><span class="line">| Details: There are 1 compute resource providers and 2 compute nodes |</span><br><span class="line">|   in the deployment. Ideally the number of compute resource         |</span><br><span class="line">|   providers should equal the number of enabled compute nodes        |</span><br><span class="line">|   otherwise the cloud may be underutilized. See                     |</span><br><span class="line">|   https://docs.openstack.org/nova/latest/user/placement.html        |</span><br><span class="line">|   for more details.                                                 |</span><br></pre></td></tr></table></figure>
+
+<p>另外我也发现在使用compute列举服务的时候, 出现了重复的ID:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack compute service list</span><br><span class="line">+----+------------------+-------------------------------+----------+---------+-------+----------------------------+</span><br><span class="line">| ID | Binary           | Host                          | Zone     | Status  | State | Updated At                 |</span><br><span class="line">+----+------------------+-------------------------------+----------+---------+-------+----------------------------+</span><br><span class="line">|  1 | nova-scheduler   | control_node                  | internal | enabled | down  | 2019-03-19T05:49:25.000000 |</span><br><span class="line">|  2 | nova-consoleauth | control_node                  | internal | enabled | down  | 2019-03-19T05:49:31.000000 |</span><br><span class="line">|  3 | nova-conductor   | control_node                  | internal | enabled | down  | 2019-03-19T05:49:32.000000 |</span><br><span class="line">|  8 | nova-compute     | compute_node1                 | nova     | enabled | up    | 2019-03-21T01:23:00.000000 |</span><br><span class="line">|  9 | nova-consoleauth | controller.rjjc.comcontroller | internal | enabled | up    | 2019-03-21T01:23:01.000000 |</span><br><span class="line">| 10 | nova-scheduler   | controller.rjjc.comcontroller | internal | enabled | up    | 2019-03-21T01:22:56.000000 |</span><br><span class="line">| 11 | nova-conductor   | controller.rjjc.comcontroller | internal | enabled | up    | 2019-03-21T01:22:57.000000 |</span><br><span class="line">|  1 | nova-scheduler   | control_node                  | internal | enabled | down  | 2019-03-19T05:49:25.000000 |</span><br><span class="line">|  2 | nova-consoleauth | control_node                  | internal | enabled | down  | 2019-03-19T05:49:31.000000 |</span><br><span class="line">|  3 | nova-conductor   | control_node                  | internal | enabled | down  | 2019-03-19T05:49:32.000000 |</span><br><span class="line">|  8 | nova-compute     | compute_node1                 | nova     | enabled | up    | 2019-03-21T01:23:00.000000 |</span><br><span class="line">|  9 | nova-consoleauth | controller.rjjc.comcontroller | internal | enabled | up    | 2019-03-21T01:23:01.000000 |</span><br><span class="line">| 10 | nova-scheduler   | controller.rjjc.comcontroller | internal | enabled | up    | 2019-03-21T01:22:56.000000 |</span><br><span class="line">| 11 | nova-conductor   | controller.rjjc.comcontroller | internal | enabled | up    | 2019-03-21T01:22:57.000000 |</span><br><span class="line">+----+------------------+-------------------------------+----------+---------+-------+----------------------------+</span><br></pre></td></tr></table></figure>
+
+<p>然后google了很久都说是把数据库改一下就好了, 但是神奇的是进去之后发现并没有重复的compute节点, 于是我就把数据库洗掉了重新生成了一次, 这一次就好了, 想要尝试复现这个情况的时候也没成功. 所以就先当做是一个奇怪的现象记录在这里.</p>
+<p>配置好了Nova之后我们就可以开始着手搭建最小化openstack的最后一步了, 来构建网络服务. 代码名为**<code>neutron</code>**.</p>
+<h2 id="Neutron"><a href="#Neutron" class="headerlink" title="Neutron"></a>Neutron</h2><p>先来了解一下Openstack的两种网络选项, 分别叫做<code>Provider Networks</code>和<code>Self-Service Networks</code>.</p>
+<p>其中前者主要就只有2层, 他把虚拟的网络通过桥接的方式连接到物理网络上, 然后依赖物理网络上的第三层服务(路由). 至于后者, 使用到的技术就是NAT, 所以显然, 这个网络选项是含有第三层服务的.</p>
+<p>接下来就来看看Openstack的网络组件Neutron的相关, 这个服务主要包含三个组件:</p>
+<ul>
+<li>neutron-server 用于接受和路由访问请求到合适的Openstack网络插件</li>
+<li>Openstack Networking plug-ins and agents 这个就是上面提到的网络插件了, 比如思科, vSwitch, Linux bridging, VMware NSX等等; 这里常见的agent例如第三层代理, DHCP等等</li>
+<li>Messaging Queue 最后一个就不用过多介绍了, 主要负责agent和server之间的消息传递.</li>
+</ul>
+<p>现在我们来说说关于neutron和Openstack网络一些概念, 作为一个网络服务就是需要提供对于网络, 子网, 路由器等等的对象抽象. 对于一个给定的网络, 需要设立至少一个外部网络, 这个外部网络不仅仅是一个虚拟定义网络, 而是一个在Openstack范围之外可以访问到的物理的外部网络, 只要是在这么一个外部的网络中, 任何人都可以物理的访问到. 除了外部网络 , 每一个Neutron定义的网络还需要有一至多个内部网络, 这些软件定义网络直接连接到虚拟机, 在这么一个网络中, 只有给定这些网络和子网的虚拟机之间可以通过这些网络直接访问. </p>
+<p>另外, 在Openstack的网络概念中, 还有一个叫做安全组的东西. 熟悉吧, 我们在腾讯云阿里云操作云主机的时候就遇到这个概念了, 所谓安全组其实就是防火墙规则, 一个虚拟机可以被关联到一至多个安全组.</p>
+<p>对于Neutron网络中的另一个重要组成部分 – 插件, 每一个网络插件都有他自己的概念, 因此这种就只能遇到在说了.</p>
+<h3 id="Neutron的配置"><a href="#Neutron的配置" class="headerlink" title="Neutron的配置"></a>Neutron的配置</h3><p><strong>巨大的坑: 主机名不能带下划线!</strong></p>
+<p>这种事情给你就应该在一开始说一下嘛! 如果主机名携带下划线, 就会导致linuxbridge服务启动失败, 并且systemctl不会给你错误返回值! 需要你自己去看日志.</p>
+<p>其他的照着官方那个文档做就没问题.</p>
+<p>配置完了Nova和Neutron之后, 一个最小化的Openstack就完成了</p>
+<p>接下来为了更方便的使用, 我们可以构建horizon.</p>
+<h2 id="Horizon"><a href="#Horizon" class="headerlink" title="Horizon"></a>Horizon</h2><p>Horizon就是Openstack的前端dashboard了. 使用的Django进行的开发, 配置使用起来十分容易:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/dashboard1.png" alt="dashboard1"></p>
+<p>但是现在还不能直接通过镜像启动实例, 因为我们还有一些必要的配置项没有搞. 但是现在这么一个基础的服务框架已经建立, 接下来因为时间和进度的关系, 我会暂时放下Openstack转而学习Docker的基础, 最后再来学习将两者统一起来的项目Zun或者Magnum.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Nova"><span class="toc-number">1.</span> <span class="toc-text">Nova</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Nova%E7%9A%84%E9%85%8D%E7%BD%AE-%E6%8E%A7%E5%88%B6%E8%8A%82%E7%82%B9%E5%92%8C%E8%AE%A1%E7%AE%97%E8%8A%82%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text">Nova的配置 - 控制节点和计算节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Neutron"><span class="toc-number">2.</span> <span class="toc-text">Neutron</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Neutron%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">Neutron的配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizon"><span class="toc-number">3.</span> <span class="toc-text">Horizon</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&text=初识Opensatck_2"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&is_video=false&description=初识Opensatck_2"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=初识Opensatck_2&body=Check out this article: https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&title=初识Opensatck_2"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&name=初识Opensatck_2&description=&lt;p&gt;前一篇文章过了一遍权限服务和虚拟机映像服务, 而且都是在控制节点上进行的. 现在终于要开始部署计算服务了, 想想都激动. &lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/&t=初识Opensatck_2"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="日志是我们排错的重要参考, 现在就来学习一下Linux上重要的日志吧.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux日志服务">
+<meta property="og:url" content="https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="日志是我们排错的重要参考, 现在就来学习一下Linux上重要的日志吧.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://linux.vbird.org/linux_basic/0570syslog//syslog_daemon.gif">
+<meta property="article:published_time" content="2017-09-07T13:21:27.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:39:39.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://linux.vbird.org/linux_basic/0570syslog//syslog_daemon.gif">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux日志服务</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&text=Linux日志服务"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&is_video=false&description=Linux日志服务"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux日志服务&body=Check out this article: https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&name=Linux日志服务&description=&lt;p&gt;日志是我们排错的重要参考, 现在就来学习一下Linux上重要的日志吧.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&t=Linux日志服务"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E6%97%A5%E5%BF%97%E7%AE%80%E8%A6%81%E8%AF%B4%E6%98%8E"><span class="toc-number">1.</span> <span class="toc-text">Linux日志简要说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#boot-log"><span class="toc-number">1.1.</span> <span class="toc-text">boot.log</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cron"><span class="toc-number">1.2.</span> <span class="toc-text">cron</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dmesg"><span class="toc-number">1.3.</span> <span class="toc-text">dmesg</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lastlog"><span class="toc-number">1.4.</span> <span class="toc-text">lastlog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#maillog-x2F-mail-x2F"><span class="toc-number">1.5.</span> <span class="toc-text">maillog&#x2F;mail&#x2F;*</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message"><span class="toc-number">1.6.</span> <span class="toc-text">message</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#secure"><span class="toc-number">1.7.</span> <span class="toc-text">secure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wtmp-faillog"><span class="toc-number">1.8.</span> <span class="toc-text">wtmp, faillog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x2F-httpd-x2F-samba-x2F"><span class="toc-number">1.9.</span> <span class="toc-text">&#x2F;httpd&#x2F;* , samba&#x2F;*</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8systemd%E6%9D%A5%E8%BF%9B%E8%A1%8C%E7%AE%80%E5%8D%95%E7%9A%84%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">使用systemd来进行简单的日志管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rsyslog"><span class="toc-number">3.</span> <span class="toc-text">rsyslog</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E8%AE%BE%E5%AE%9A"><span class="toc-number">3.1.</span> <span class="toc-text">日志服务器的设定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#logrotate"><span class="toc-number">4.</span> <span class="toc-text">logrotate</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux日志服务
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-07T13:21:27.000Z" class="dt-published" itemprop="datePublished">2017-09-07</time>
+        
+        (Updated: <time datetime="2020-11-30T01:39:39.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>日志是我们排错的重要参考, 现在就来学习一下Linux上重要的日志吧.</p>
+<span id="more"></span>
+
+<h2 id="Linux日志简要说明"><a href="#Linux日志简要说明" class="headerlink" title="Linux日志简要说明"></a>Linux日志简要说明</h2><p>众所周知的是, Linux上跑了很多daemons, 他们在运行的时候总归会有很多通知要显示, 这些通知最终就会被记录到日志中了. 换句话说, 记录这些重要信息和通知就是日志服务所要做的工作了.</p>
+<p>日志服务可以很方便的帮助管理人员: 1) 解决系统错误 2) 查看过去时间的事件 3) 解决网络服务的问题</p>
+<p>现在我们就来了解一下常见的Linux日志文件都是记录了什么东西: (就假定前缀都是&#x2F;var&#x2F;log了, 懒得写了)</p>
+<h3 id="boot-log"><a href="#boot-log" class="headerlink" title="boot.log"></a>boot.log</h3><p>这个日志中记录的就是我们进入系统的时候看到的那一大串输出信息, 关于系统是如何启动的,从这里面也可以学到很多~ 但是 这个文件仅仅会记录这一次开机的信息, 前次的信息都会被覆盖.</p>
+<h3 id="cron"><a href="#cron" class="headerlink" title="cron"></a>cron</h3><p>这个日志我们在之前的 <a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/">Crontab学习日志</a> 中提到了一下 对于crontab进程是否正常进行, 是否正确书写crontab 的debug很有帮助.</p>
+<h3 id="dmesg"><a href="#dmesg" class="headerlink" title="dmesg"></a>dmesg</h3><p>这个文件记录的是开机时, 内核扫描硬件过程所产生的各种信息, 这些信息CentOS预设将他们取消显示, 所以额外记录一份在这里面. 直接提供有同名的命令可以来输出dmesg的信息.</p>
+<h3 id="lastlog"><a href="#lastlog" class="headerlink" title="lastlog"></a>lastlog</h3><p>记录系统上所有账号最近一次登录系统的相关信息, 和dmesg一样, 有同名命令来查看输出, 不同的是, 这个文件是一个data文件, 所以你不能直接cat它. </p>
+<h3 id="maillog-x2F-mail-x2F"><a href="#maillog-x2F-mail-x2F" class="headerlink" title="maillog&#x2F;mail&#x2F;*"></a>maillog&#x2F;mail&#x2F;*</h3><p>记录邮件的往来. 其实主要是记录postfix (SMTP提供者)与dovecot (POP3提供者)所产生的信息 .</p>
+<blockquote>
+<p>SMTP是发信所使用的通讯协议， POP3则是收信使用的通讯协议</p>
+<p>postfix与dovecot则分别是两套使用这个通讯协议的软件. </p>
+</blockquote>
+<h3 id="message"><a href="#message" class="headerlink" title="message"></a>message</h3><p>这个日志非常重要啦. 系统错误或者重要的信息都会记录在这里. 我们在查看系统错误的时候, 这个文件是一定要查查看的之一.</p>
+<h3 id="secure"><a href="#secure" class="headerlink" title="secure"></a>secure</h3><p>只要是涉及到用户登录,密码输入的程序(ssh, login, telnet, su, sudo啥的..)都会有记录在这个文件里, 不论登录的结果是成功还是错误.</p>
+<h3 id="wtmp-faillog"><a href="#wtmp-faillog" class="headerlink" title="wtmp, faillog"></a>wtmp, faillog</h3><p>这两个日志可以记录正确登入系统的账号信息以及错误的时候的信息, 如果要读取wtmp, 可以使用last程序~.</p>
+<h3 id="x2F-httpd-x2F-samba-x2F"><a href="#x2F-httpd-x2F-samba-x2F" class="headerlink" title="&#x2F;httpd&#x2F;* , samba&#x2F;*"></a>&#x2F;httpd&#x2F;* , samba&#x2F;*</h3><p>常见的网络服务啥的, 会用自己的日志文件来记录他们自己产生的各项信息.</p>
+<p><strong>上面就是一些常见的日志文件, 但是要说明的是, 不同的Linux distribution的日志文件是不一样的, 有的可能有, 有的可能没有, 但是大家都会有一个messages文件.</strong></p>
+<p>那么问题来了, 这些日志是怎么产生的呢? 或者说, 是谁写的呢?</p>
+<p>除了上面说过的, 有应用程序自己处理的日志文件之外, 另一种就是Linux distribution提供的日志服务来统一管理了, 只需要将信息传递给这个服务, 他就会自己分门别类按照格式将信息放到对应的日志文件中去. CentOS中提供<strong>rsyslog.service</strong>这个服务来统一管理. </p>
+<p>那么我们在提出第二个问题,如果说这些日志服务一直奋力的工作, 那么几天之后我们的日志文件岂不是就会变得无比巨大嘛~ 而太大的文件读写效率并不高,所以就要想办法来进行备份和更新. 为了解决这个问题, 引入logrotate这个东西, 它就是来自动化的实现这一过程的.</p>
+<p>总结一下，针对日志文件所需的功能，我们需要的服务与程序有：</p>
+<ul>
+<li>systemd-journald.service：最主要的信息收受者, 由systemd提供</li>
+<li>rsyslog.service：主要登录系统与网络等服务的信息</li>
+<li>logrotate：主要在进行日志文件的轮替功能</li>
+</ul>
+<h2 id="使用systemd来进行简单的日志管理"><a href="#使用systemd来进行简单的日志管理" class="headerlink" title="使用systemd来进行简单的日志管理"></a>使用systemd来进行简单的日志管理</h2><p>刚刚上面的总结好像多了个什么奇怪的东西, emmm..这个journald其实就像是中间件一样, 由于系统是由systemd在管理, 所以消息日志会先发到systemd身上, 接着journald会把这些记录下来, 基于内存的方式. 这样的好处是快速, 却在开机重启后 丢失, 所以journald再将日志发送给rsyslogd, 接着日志信息就会被记录到磁盘中了.</p>
+<p>journalctl就是我们实际使用的查看日志的工具了, 基本上你可以使用它来查看全部的日志, 所有的信息!! 而且更方便的是, 不同于rsyslogd分类的方式会使得你在一个日志里左找右找, journald可以使得你很快的定位到能看到的地方.</p>
+<p>现在就来试用一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># journalctl # 什么参数也不加, 直接执行</span></span><br><span class="line">-- Logs begin at Wed 2017-09-06 00:09:06 EDT, end at Wed 2017-09-06 01:01:01 EDT. --</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain systemd-journal[89]: Runtime journal is using 8.0M (max allowed 91.9M, trying to leave 137.9M free of 911.7M available → current limi</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Initializing cgroup subsys cpuset</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Initializing cgroup subsys cpu</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Initializing cgroup subsys cpuacct</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Linux version 3.10.0-514.21.2.el7.x86_64 (builder@kbuilder.dev.centos.org) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-11) (GC</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Command line: BOOT_IMAGE=/vmlinuz-3.10.0-514.21.2.el7.x86_64 root=/dev/mapper/cl-root ro crashkernel=auto rd.lvm.lv=cl/root r</span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 从这次开机以来的所有记录, 量非常大</span></span><br><span class="line">[root@WWW ~]<span class="comment"># journalctl --since today # 从今天开始的所有记录, 由于我刚开的机, 所以和上面一样</span></span><br><span class="line">-- Logs begin at Wed 2017-09-06 00:09:06 EDT, end at Wed 2017-09-06 01:01:01 EDT. --</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain systemd-journal[89]: Runtime journal is using 8.0M (max allowed 91.9M, trying to leave 137.9M free of 911.7M available → current limi</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Initializing cgroup subsys cpuset</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Initializing cgroup subsys cpu</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Initializing cgroup subsys cpuacct</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Linux version 3.10.0-514.21.2.el7.x86_64 (builder@kbuilder.dev.centos.org) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-11) (GC</span><br><span class="line">Sep 06 00:09:06 localhost.localdomain kernel: Command line: BOOT_IMAGE=/vmlinuz-3.10.0-514.21.2.el7.x86_64 root=/dev/mapper/cl-root ro crashkernel=auto rd.lvm.lv=cl/root r</span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 既然有了since, 自然就有until, 其实这两个可以直接写成-S和-U, 如果是昨天的话, 也可以直接使用yesterday</span></span><br><span class="line">[root@WWW ~]<span class="comment"># journalctl --since &quot;2017-09-06 00:00:00&quot; --until &quot;2017-09-07 00:00:00&quot; </span></span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 方便的是, 我们可以直接指定查看哪一个的UNIT的日志, 使用-u或者--unit, 比如:</span></span><br><span class="line">[root@WWW ~]<span class="comment"># journalctl -u rsyslog</span></span><br><span class="line">-- Logs begin at Wed 2017-09-06 00:09:06 EDT, end at Wed 2017-09-06 01:26:47 EDT. --</span><br><span class="line">Sep 06 00:09:34 WWW systemd[1]: Starting System Logging Service...</span><br><span class="line">Sep 06 00:09:34 WWW systemd[1]: Started System Logging Service.</span><br><span class="line"><span class="comment"># 如果有的时候输出太多了, 或者我只想查看部分怎么办呢, 有-n参数帮你解决</span></span><br><span class="line">[root@WWW ~]<span class="comment"># journalctl -n 10</span></span><br><span class="line">[root@WWW ~]<span class="comment"># journalctl -n 5</span></span><br><span class="line">-- Logs begin at Wed 2017-09-06 00:09:06 EDT, end at Wed 2017-09-06 01:26:47 EDT. --</span><br><span class="line">Sep 06 01:26:47 WWW NetworkManager[742]: &lt;info&gt;  [1504675607.0186] dhcp4 (enp0s3): state changed bound -&gt; bound</span><br><span class="line">Sep 06 01:26:47 WWW dbus[593]: [system] Activating via systemd: service name=<span class="string">&#x27;org.freedesktop.nm_dispatcher&#x27;</span> unit=<span class="string">&#x27;dbus-org.freedesktop.nm-dispatcher.service&#x27;</span></span><br><span class="line">Sep 06 01:26:47 WWW systemd[1]: Starting Network Manager Script Dispatcher Service...</span><br><span class="line">Sep 06 01:26:47 WWW dbus-daemon[593]: dbus[593]: [system] Activating via systemd: service name=<span class="string">&#x27;org.freedesktop.nm_dispatcher&#x27;</span> unit=<span class="string">&#x27;dbus-org.freedesktop.nm-dispatcher.ser</span></span><br><span class="line"><span class="string">Sep 06 01:26:47 WWW dhclient[845]: bound to 192.168.56.101 -- renewal in 584 seconds.</span></span><br><span class="line"><span class="string">lines 1-6/6 (END) # 这样就可以仅仅查看部分, 节选的日志</span></span><br><span class="line"><span class="string"># 另外, 还可以直接指定PID/UID.~</span></span><br><span class="line"><span class="string">[root@WWW ~]# journalctl _PID=`pidof crond`</span></span><br><span class="line"><span class="string">-- Logs begin at Wed 2017-09-06 00:09:06 EDT, end at Wed 2017-09-06 01:36:31 EDT. --</span></span><br><span class="line"><span class="string">Sep 06 00:09:22 WWW crond[614]: (CRON) INFO (RANDOM_DELAY will be scaled with factor 88% if used.)</span></span><br><span class="line"><span class="string">Sep 06 00:09:22 WWW crond[614]: (CRON) INFO (running with inotify support)</span></span><br><span class="line"><span class="string"># 还可以只查看相对应等级的日志</span></span><br><span class="line"><span class="string">[root@WWW ~]# journalctl -p err</span></span><br><span class="line"><span class="string">-- Logs begin at Wed 2017-09-06 00:09:06 EDT, end at Wed 2017-09-06 01:36:31 EDT. --</span></span><br><span class="line"><span class="string">Sep 06 00:09:19 WWW kernel: intel_rapl: no valid rapl domains found in package 0</span></span><br><span class="line"><span class="string">Sep 06 00:09:27 WWW systemd[1]: Failed to start vboxadd.service.</span></span><br><span class="line"><span class="string">Sep 06 00:09:27 WWW systemd[1]: Failed to start vboxadd-service.service.</span></span><br><span class="line"><span class="string">Sep 06 00:09:35 WWW postfix/sendmail[1437]: fatal: parameter inet_interfaces: no local interface found for ::1</span></span><br><span class="line"><span class="string">Sep 06 00:09:35 WWW postfix[1450]: fatal: parameter inet_interfaces: no local interface found for ::1</span></span><br><span class="line"><span class="string">Sep 06 00:09:36 WWW systemd[1]: Failed to start Postfix Mail Transport Agent.</span></span><br><span class="line"><span class="string"># 最后说两个常用的参数, -r和-f</span></span><br><span class="line"><span class="string"># -r就是reverse的意思啦, 最近时间的日志先输出</span></span><br><span class="line"><span class="string"># -f就是follow的意思, 和tail -f的-f是一样的效果了</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="rsyslog"><a href="#rsyslog" class="headerlink" title="rsyslog"></a>rsyslog</h2><p>rsyslog其实一个升级版的syslog, 它支持更多特性, 例如: </p>
+<ul>
+<li>多线程</li>
+<li>SSL, TLS, UDP, TCP</li>
+<li>MySQL, PGSQl, Oracle实现日志存储</li>
+<li>过滤器, 实现过滤日志中的任意部分</li>
+<li>自定义输出格式</li>
+</ul>
+<p>这些介绍在其RPM包的介绍中也有:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># rpm -qi rsyslog</span></span><br><span class="line">Name        : rsyslog                      Relocations: (not relocatable)</span><br><span class="line">Version     : 4.6.2                             Vendor: CentOS</span><br><span class="line">Release     : 12.el6                        Build Date: Thu 08 Dec 2011 05:40:21 AM CST</span><br><span class="line">Install Date: Fri 16 Dec 2011 01:49:45 PM CST      Build Host: c6b4.bsys.dev.centos.org</span><br><span class="line">Group       : System Environment/Daemons    Source RPM: rsyslog-4.6.2-12.el6.src.rpm</span><br><span class="line">Size        : 1560043                          License: GPLv3+</span><br><span class="line">Signature   : RSA/SHA1, Fri 09 Dec 2011 05:07:22 AM CST, Key ID 0946fca2c105b9de</span><br><span class="line">Packager    : CentOS BuildSystem &lt;http://bugs.centos.org&gt;</span><br><span class="line">URL         : http://www.rsyslog.com/</span><br><span class="line">Summary     : Enhanced system logging and kernel message trapping daemons</span><br><span class="line">Description :</span><br><span class="line">Rsyslog is an enhanced, multi-threaded syslog daemon. It supports MySQL,</span><br><span class="line">syslog/TCP, RFC 3195, permitted sender lists, filtering on any message part,</span><br><span class="line">and fine grain output format control. It is compatible with stock sysklogd</span><br><span class="line">and can be used as a drop-in replacement. Rsyslog is simple to <span class="built_in">set</span> up, with</span><br><span class="line">advanced features suitable <span class="keyword">for</span> enterprise-class, encryption-protected syslog</span><br><span class="line">relay chains.</span><br></pre></td></tr></table></figure>
+
+<p>而现在一些中型的互联网公司会选择使用elasticsearch, logstash, kibana &#x3D; elk组合, 也就是分布式日志存储系统 + 日志收集器 + 前端日志展示组合. </p>
+<p>现在就来正经的说说这个rsyslog服务吧.  先来看一下我们的日志的一般格式:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Sep 06 00:09:22 WWW  crond[614]: (CRON) INFO (running with inotify support)</span><br><span class="line">|---日期/时间---|主机|服务/程序/[PID]| 具体信息...</span><br></pre></td></tr></table></figure>
+
+<p>OK, 接下来就先从rsyslog.service的配置文件来说起!</p>
+<blockquote>
+<p>可能你会觉得奇怪, 为什么要有主机这个选项. 日志不就是自己机器的记录嘛. 这是因为我们的机器是可以充当日志服务器 收集记录其他机器的日志.</p>
+</blockquote>
+<p>看一下rsyslog这个服务:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW <span class="built_in">log</span>]<span class="comment"># systemctl status rsyslog</span></span><br><span class="line">● rsyslog.service - System Logging Service</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/rsyslog.service; enabled; vendor preset: enabled)</span><br><span class="line">   Active: active (running) since Wed 2017-09-06 00:09:34 EDT; 1h 57min ago</span><br><span class="line"> Main PID: 1005 (rsyslogd)</span><br><span class="line">   CGroup: /system.slice/rsyslog.service</span><br><span class="line">           └─1005 /usr/sbin/rsyslogd -n</span><br><span class="line"></span><br><span class="line">Sep 06 00:09:34 WWW systemd[1]: Starting System Logging Service...</span><br><span class="line">Sep 06 00:09:34 WWW systemd[1]: Started System Logging Service.</span><br></pre></td></tr></table></figure>
+
+<p>显然是启动了的, 而且也已经开机自动启动了~.</p>
+<p>rsyslog的配置很好找, 就在&#x2F;etc&#x2F;下, 重点在这个文件的<code>RULES</code>部分. 规定了<strong>什么服务</strong>, <strong>什么等级</strong>, <strong>需要被记录在哪里</strong> 这三个东西 所以设定起来就是这个样子:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#以mail这个服务产生的info等级为例：</span></span><br><span class="line">mail.info /var/log/maillog_info</span><br><span class="line"><span class="comment"># 这一行说明：mail 服务产生的**大于等于** info 等级的讯息，都记录到 </span></span><br><span class="line"><span class="comment"># /var/log/maillog_info 档案中</span></span><br></pre></td></tr></table></figure>
+
+<p>这里需要注意的是那个 服务名和等级中间的**.**  .</p>
+<p>这个点就像是运算符一样的东西, 规则是这样的:</p>
+<ul>
+<li>. ：代表比后面还要严重的等级(含该等级)都被记录下来，例如： mail.info代表只要是mail的信息，而且该信息等级严重于info (含info本身)时，就会被记录下来.</li>
+<li>.&#x3D; ：代表所需要的等级就是后面接的等级而已(完全匹配)</li>
+<li>.! ：有点反向选择的感觉，代表忽略大于等于这个等级的信息(低于这个等级的才会被纪录)</li>
+</ul>
+<p>那么有哪些信息等级呢? 下表:</p>
+<table>
+<thead>
+<tr>
+<th align="left">等级数值</th>
+<th>等级名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">7</td>
+<td>debug</td>
+<td>用来debug (除错) 时产生的</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td>info</td>
+<td>一些基本的说明</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td>notice</td>
+<td>正常信息, 但比info 需要被注意到的一些内容</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td>warning (warn)</td>
+<td>警示的讯息，可能有问题，但是还不至于影响到某个daemon 运作. 基本上， info, notice, warn 这三个都是在告知一些基本信息而已，还不至于干扰到系统运作</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td>err (error)</td>
+<td>一些重大的错误讯息，例如配置文件的某些设定造成该服务无法启动的说明， 通常藉由err 的错误告知，可以了解到该服务无法启动的原因</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td>crit</td>
+<td>比error 还要严重的错误信息，这个crit 是临界点(critical) 的缩写，这个错误已经很严重了</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td>alert</td>
+<td>警告等级，已经很有问题的等级，比crit 还要严重</td>
+</tr>
+<tr>
+<td align="left">0</td>
+<td>emerg (panic)</td>
+<td>疼痛等级，意指系统已经几乎要当机的状态. 很严重的错误资讯.  通常只有硬件出问题，导致整个核心无法顺利运行的时候，才会出现这样的等级的讯息</td>
+</tr>
+</tbody></table>
+<p>syslog提供了多个不同的服务类型, 只要软件daemon进行对自己想要响应的服务类型发起调用, 就可以将日志托付到对应的文件里了. 用一张图可以来表示这个:</p>
+<p><img src="http://linux.vbird.org/linux_basic/0570syslog//syslog_daemon.gif" alt="syslog 所制订的服务与软件调用的方式"></p>
+<p>而如果这样的调用分配的不是很好的话, 就会造成某一个日志文件特别大, 其他的日志几乎没有什么内容. 所以在rsyslog.conf中所作的规范, 就要好好想想咯~.</p>
+<p>OK~那现在我们就来看一下默认CentOS7所写的rsyslog.conf 是由哪些项目吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW etc]<span class="comment"># vim /etc/rsyslog.conf</span></span><br><span class="line"><span class="comment">#kern.*                                                 /dev/console</span></span><br><span class="line">*.info;mail.none;authpriv.none;cron.none                /var/log/messages</span><br><span class="line">authpriv.*                                              /var/log/secure</span><br><span class="line">mail.*                                                  -/var/log/maillog</span><br><span class="line">cron.*                                                  /var/log/cron</span><br><span class="line">*.emerg                                                 :omusrmsg:*</span><br><span class="line">uucp,news.crit                                          /var/log/spooler</span><br><span class="line">local7.*                                                /var/log/boot.log</span><br></pre></td></tr></table></figure>
+
+<p>首先第一个, 表示只要是内核产生的信息都进行终端的输出, 而这个console一般就是外部设备连接过来到一些封闭系统主机的.</p>
+<p>后面都是一般的规则了, 但是我们注意到maillog那一行的前面加上了一个-号, 这个是什么意思呢? 有-号标识的表示日志较多(或者不是特别关键),优先放入buffer, 临界后再输出到磁盘的策略(简单的说就是异步写入).  那么<code>:omusrmsg:*</code> 又是什么意思呢? * 号表示当前在线的所有人, 而前面的那一串意思是发送消息, 也就是类似wall的效果.</p>
+<p>当然了, 之前也说过了, 不同的发行版对于日志是不一样的, 其实就是因为这个默认配置文件不一样.</p>
+<p>再回到文件的开头, 这里面加载了一些rsyslog会用到的模块, 这些模块都是rpm包安装的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#### MODULES ####</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$ModLoad</span> imuxsock.so    <span class="comment"># provides support for local system logging (e.g. via logger command)</span></span><br><span class="line"><span class="variable">$ModLoad</span> imklog.so      <span class="comment"># provides kernel logging support (previously done by rklogd)</span></span><br><span class="line"><span class="comment">#$ModLoad immark.so     # provides --MARK-- message capability</span></span><br><span class="line">...(omitted)</span><br><span class="line">:! rpm -ql rsyslog</span><br><span class="line">/lib64/rsyslog/imfile.so</span><br><span class="line">/lib64/rsyslog/imklog.so</span><br><span class="line">/lib64/rsyslog/immark.so</span><br><span class="line">/lib64/rsyslog/imtcp.so</span><br><span class="line">/lib64/rsyslog/imudp.so</span><br><span class="line">/lib64/rsyslog/imuxsock.so</span><br><span class="line">/lib64/rsyslog/lmnet.so</span><br><span class="line">/lib64/rsyslog/lmnetstrms.so</span><br><span class="line">/lib64/rsyslog/lmnsd_ptcp.so</span><br><span class="line">/lib64/rsyslog/lmregexp.so</span><br><span class="line">/lib64/rsyslog/lmstrmsrv.so</span><br><span class="line">/lib64/rsyslog/lmtcpclt.so</span><br><span class="line">/lib64/rsyslog/lmtcpsrv.so</span><br><span class="line">/lib64/rsyslog/lmzlibw.so</span><br><span class="line">/lib64/rsyslog/ommail.so</span><br><span class="line">/lib64/rsyslog/omtesting.so</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>这些模块由一个共同的特点, 那就是有的是用im开头, 用的用om开头, 相信你也猜出来了, i就是输入, o就是输出.</p>
+<h3 id="日志服务器的设定"><a href="#日志服务器的设定" class="headerlink" title="日志服务器的设定"></a>日志服务器的设定</h3><p>设定一个日志服务器其实是有很多好处的, 假如某一天你的主机遭到了入侵, Hacker删除了所有的日志, 但是由于你的日志还放到了日志服务器上, 这样就可以很快的追查到对方. 不仅如此, 10台服务器你就要挨个查看各自的日志, 但是如果有日志服务器的话, 你就可以直接去那一台机器上查看了.</p>
+<p>那么说了这么多, 怎么设定一个日志服务器呢?</p>
+<p>先来说说Server端的设定: </p>
+<p>打开配置文件&#x2F;etc&#x2F;rsyslog.conf, 接着找到:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">14 # Provides UDP syslog reception</span><br><span class="line">15 #$ModLoad imudp</span><br><span class="line">16 #$UDPServerRun 514</span><br><span class="line">17 </span><br><span class="line">18 # Provides TCP syslog reception</span><br><span class="line">19 $ModLoad imtcp</span><br><span class="line">20 $InputTCPServerRun 514</span><br></pre></td></tr></table></figure>
+
+<p>如果网络环境稳定, 就用UDP吧, 如果想要的是数据的可靠传输, 那么就用TCP, 解掉注释就行了.</p>
+<p>接下来就很简单了, 只要重启服务, 这台Linux主机就可以作为一台日志服务器了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW etc]<span class="comment"># systemctl restart rsyslog</span></span><br><span class="line">[root@WWW etc]<span class="comment"># ss -antp</span></span><br><span class="line">State       Recv-Q Send-Q                                        Local Address:Port                                                       Peer Address:Port              </span><br><span class="line">LISTEN      0      128                                                       *:22                                                                    *:*                   <span class="built_in">users</span>:((&quot;sshd&quot;,pid=<span class="number">1011</span>,fd=<span class="number">3</span>))</span><br><span class="line">LISTEN      0      25                                                        *:514                                                                   *:*                   <span class="built_in">users</span>:((&quot;rsyslogd&quot;,pid=<span class="number">3087</span>,fd=<span class="number">3</span>))</span><br></pre></td></tr></table></figure>
+
+<p>查看监听端口, 也可发现rsyslogd已经监听在514端口了.</p>
+<p>Client端也很简单, 在配置文件的最下面, 有这样一句:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">89 <span class="comment"># remote host is: name/ip:port, e.g. 192.168.0.1:514, port optional</span></span><br><span class="line">90 <span class="comment">#*.* @@remote-host:514</span></span><br><span class="line">91 <span class="comment"># ### end of the forwarding rule ###</span></span><br></pre></td></tr></table></figure>
+
+<p>解掉第90行的注释, 将remote-host改成日志服务器的IP就可以了. </p>
+<blockquote>
+<p>tip: 如果是TCP传输, 就写@@. 如果是UDP, 就只有一个@</p>
+</blockquote>
+<h2 id="logrotate"><a href="#logrotate" class="headerlink" title="logrotate"></a>logrotate</h2><p>最后来看看这个玩意的设定吧.</p>
+<p>我们说过这个东西是一个自动化的工具, 用来定时将日志写入磁盘. 说到定时任务, 那么第一时间就想到了crontab! 进入&#x2F;etc&#x2F;cron.daily&#x2F;, 果然里面有logrotate. </p>
+<p>现在就说说怎么设计这个logrotate. 首先, 这个日志轮替显然是有一定条件的, 这个条件就记录在&#x2F;etc&#x2F;logrotate.conf这个配置文件里面. 包括在&#x2F;etc&#x2F;logrotate.d&#x2F;下面的文件. 这些也一贯的会主动调用到conf文件里面.  在我们的log目录下, 一般都会有末尾序号或时间的日志或者有的经过了压缩. 而一段时间了之后, 太老的日志就会被删除.</p>
+<p>OK, 现在就来看看默认的logrotate.conf这个配置文件吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">weekly     &lt;== 时间频率</span><br><span class="line">rotate 4   &lt;== 保留日志的个数</span><br><span class="line">create     &lt;== 由于日志被更名，因此建立一个新的来继续储存</span><br><span class="line">dateext    &lt;== 让被轮替的日志名称加上日期</span><br><span class="line"><span class="comment">#compress &lt;== 被轮替的日志是否需要压缩</span></span><br><span class="line">include /etc/logrotate.d</span><br><span class="line"><span class="comment"># 将/etc/logrotate.d/ 这个目录中的所有配置都读进来执行rotate的工作</span></span><br><span class="line"><span class="comment"># 下面就是单一设定, 如果由单一的设定就按照单一的处理, 没有的话就使用全局设定</span></span><br><span class="line">/var/log/wtmp &#123;        &lt;== 仅针对/var/log/wtmp所设定的参数 </span><br><span class="line">    monthly            &lt;== 每个月一次</span><br><span class="line">    create 0664 root utmp &lt;== 指定新建文件的权限与所属帐号/群组 </span><br><span class="line">    minsize 1M         &lt;== 档案容量一定要超过1M后才进行rotate (覆盖时间参数) </span><br><span class="line">    rotate 1           &lt;== 仅保留一个</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>这样就很清楚了吧, 当我们安装需要日志记录的程序的时候, 在RPM执行过程中就会把开发者写的logrotate配置文件拷贝到&#x2F;etc&#x2F;logrotate.d&#x2F;下面.</p>
+<p>好吧, 现在就来看一下syslog是怎么写的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">/var/log/cron</span><br><span class="line">/var/log/maillog</span><br><span class="line">/var/log/messages</span><br><span class="line">/var/log/secure</span><br><span class="line">/var/log/spooler</span><br><span class="line">&#123;</span><br><span class="line">    missingok <span class="comment"># 即使log丢了也没关系</span></span><br><span class="line">    sharedscripts <span class="comment"># 脚本开头声明</span></span><br><span class="line">    postrotate <span class="comment"># 脚本执行时机, post之后 pre之前.</span></span><br><span class="line">        /bin/kill -HUP `<span class="built_in">cat</span> /var/run/syslogd.pid 2&gt; /dev/null` 2&gt; /dev/null || <span class="literal">true</span></span><br><span class="line">    endscript <span class="comment"># 脚本结束声明</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个脚本是要干什么啊, HUP这个信号是说重新读取配置文件, 也就相当是要平滑重启一次啦.  一般我们在post时期都会选择重新启动(因为名字变了啊), 而在pre的时候修改日志的属性.(比如a属性).</p>
+<p>尽管是定时任务, 但是我们还是可以显式的调用Ta, 这样玩:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># logrotate -v /etc/logrotate.conf </span></span><br><span class="line">reading config file /etc/logrotate.conf</span><br><span class="line">including /etc/logrotate.d</span><br><span class="line">reading config file chrony</span><br><span class="line">reading config file httpd</span><br><span class="line">reading config file ppp</span><br><span class="line">reading config file syslog</span><br><span class="line">reading config file wpa_supplicant</span><br><span class="line">reading config file yum</span><br><span class="line">Allocating <span class="built_in">hash</span> table <span class="keyword">for</span> state file, size 15360 B</span><br><span class="line"></span><br><span class="line">Handling 8 logs</span><br><span class="line"></span><br><span class="line">rotating pattern: /var/log/chrony/*.<span class="built_in">log</span>  weekly (4 rotations)</span><br><span class="line">empty <span class="built_in">log</span> files are rotated, old logs are removed</span><br><span class="line">considering <span class="built_in">log</span> /var/log/chrony/*.<span class="built_in">log</span></span><br><span class="line">  <span class="built_in">log</span> /var/log/chrony/*.<span class="built_in">log</span> does not exist -- skipping</span><br><span class="line">not running postrotate script, since no logs were rotated</span><br><span class="line"></span><br><span class="line">...(omitted)</span><br><span class="line">rotating pattern: /var/log/wtmp  monthly (1 rotations)</span><br><span class="line">empty <span class="built_in">log</span> files are rotated, only <span class="built_in">log</span> files &gt;= 1048576 bytes are rotated, old logs are removed</span><br><span class="line">considering <span class="built_in">log</span> /var/log/wtmp</span><br><span class="line">  <span class="built_in">log</span> does not need rotating (<span class="built_in">log</span> has been already rotated)</span><br><span class="line">rotating pattern: /var/log/btmp  monthly (1 rotations)</span><br><span class="line">empty <span class="built_in">log</span> files are rotated, old logs are removed</span><br><span class="line">considering <span class="built_in">log</span> /var/log/btmp</span><br><span class="line">  <span class="built_in">log</span> does not need rotating (<span class="built_in">log</span> has been already rotated)</span><br></pre></td></tr></table></figure>
+
+<p>加上<code>-v</code>参数使得logrotate展示出实际上做了哪些工作. 由于时间未到 所以没有执行. 如果非要手动更新一次日志的话, 就加上<code>-f|--force</code>参数即可.</p>
+<p><strong>更新 17.10.4</strong>:</p>
+<p>现在我们来试试将日志存储在MySQL服务器上. 首先找一台MYSQL服务器, 这里我们就选择使用日志服务器本身, 如果你要另开机器的话,别忘记了权限设定哦.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ss -ant</span></span><br><span class="line">State       Recv-Q Send-Q                                        Local Address:Port                                                       Peer Address:Port              </span><br><span class="line">LISTEN      0      50                                                        *:3306                                                                  *:*                  </span><br><span class="line">LISTEN      0      128                                                       *:111                                                                   *:*                  </span><br><span class="line">LISTEN      0      10                                                127.0.0.1:53                                                                    *:*                  </span><br><span class="line">LISTEN      0      128                                                       *:22                                                                    *:*                  </span><br><span class="line">LISTEN      0      128                                               127.0.0.1:953                                                                   *:*                  </span><br><span class="line">LISTEN      0      25                                                        *:514                                                                   *:*                  </span><br><span class="line">ESTAB       0      0                                            192.168.56.103:22                                                         192.168.56.1:1780               </span><br><span class="line">ESTAB       0      0                                            192.168.56.103:514                                                      192.168.56.101:54647</span><br></pre></td></tr></table></figure>
+
+<p>3306端口已经开始监听, 本机的514已经和目标主机建立连接, 现在来设定数据库连接.</p>
+<p>为了能够使得rsyslog和mysql能够建立连接, 我们需要安装一个驱动包:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># yum install rsyslog-mysql</span></span><br><span class="line">[root@WWW ~]<span class="comment"># rpm -ql rsyslog-mysql</span></span><br><span class="line">/usr/lib64/rsyslog/ommysql.so</span><br><span class="line">/usr/share/doc/rsyslog-8.24.0/mysql-createDB.sql</span><br></pre></td></tr></table></figure>
+
+<p>其实就是一个共享对象和一个sql文件. ( 这个sql其实就是创建一个日志数据库, 接着创建了两张表, 正如其名 )</p>
+<p>接着我们就需要由一个用于来访问这个数据库了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># mysql -u root -p </span></span><br><span class="line">Enter password: </span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection <span class="built_in">id</span> is 12</span><br><span class="line">Server version: 5.5.56-MariaDB MariaDB Server</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type <span class="string">&#x27;help;&#x27;</span> or <span class="string">&#x27;\h&#x27;</span> <span class="keyword">for</span> <span class="built_in">help</span>. Type <span class="string">&#x27;\c&#x27;</span> to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; </span><br><span class="line">MariaDB [(none)]&gt; </span><br><span class="line">MariaDB [(none)]&gt; grant all on Syslog.* to <span class="string">&#x27;syslog&#x27;</span>@<span class="string">&#x27;192.168.56.%&#x27;</span> identified by <span class="string">&#x27;syslogpasswd&#x27;</span>;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; flush privileges;</span><br><span class="line">Query OK, 0 rows affected (0.01 sec)</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>现在就可以进行sql文件读入了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># mysql -usyslog -h 192.168.56.103 -p &lt; /usr/share/doc/rsyslog-8.24.0/mysql-createDB.sql </span></span><br><span class="line">Enter password: </span><br><span class="line">[root@WWW ~]<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>此时再使用syslog用户就可以看到数据库和表了.</p>
+<p>接下来就简单了, 我们在配置文件中导入模块, 并且进行一下配置就行了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$ModLoad</span> ommysql</span><br><span class="line"></span><br><span class="line"><span class="comment">#*.info;mail.none;authpriv.none;cron.none                /var/log/messages</span></span><br><span class="line">*.info;mail.none;authpriv.none;cron.none                :ommysql:192.168.56.103,Syslog,syslog,syslogpasswd</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>**注意: 这个模块一定要在第一个Section里写, ** 我们把原来的注释掉, 改成记录到数据库中.</p>
+<p>接着随便做些什么, 在数据库中就会有记录了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E6%97%A5%E5%BF%97%E7%AE%80%E8%A6%81%E8%AF%B4%E6%98%8E"><span class="toc-number">1.</span> <span class="toc-text">Linux日志简要说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#boot-log"><span class="toc-number">1.1.</span> <span class="toc-text">boot.log</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cron"><span class="toc-number">1.2.</span> <span class="toc-text">cron</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dmesg"><span class="toc-number">1.3.</span> <span class="toc-text">dmesg</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lastlog"><span class="toc-number">1.4.</span> <span class="toc-text">lastlog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#maillog-x2F-mail-x2F"><span class="toc-number">1.5.</span> <span class="toc-text">maillog&#x2F;mail&#x2F;*</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message"><span class="toc-number">1.6.</span> <span class="toc-text">message</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#secure"><span class="toc-number">1.7.</span> <span class="toc-text">secure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wtmp-faillog"><span class="toc-number">1.8.</span> <span class="toc-text">wtmp, faillog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x2F-httpd-x2F-samba-x2F"><span class="toc-number">1.9.</span> <span class="toc-text">&#x2F;httpd&#x2F;* , samba&#x2F;*</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8systemd%E6%9D%A5%E8%BF%9B%E8%A1%8C%E7%AE%80%E5%8D%95%E7%9A%84%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">使用systemd来进行简单的日志管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rsyslog"><span class="toc-number">3.</span> <span class="toc-text">rsyslog</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E8%AE%BE%E5%AE%9A"><span class="toc-number">3.1.</span> <span class="toc-text">日志服务器的设定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#logrotate"><span class="toc-number">4.</span> <span class="toc-text">logrotate</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&text=Linux日志服务"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&is_video=false&description=Linux日志服务"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux日志服务&body=Check out this article: https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&title=Linux日志服务"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&name=Linux日志服务&description=&lt;p&gt;日志是我们排错的重要参考, 现在就来学习一下Linux上重要的日志吧.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/&t=Linux日志服务"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="如果没有loader, 那么kernel根本没有办法被系统加载, 现在来说说grub吧, 当前Linux里最主流的boot loader.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BootLoader-GRUB">
+<meta property="og:url" content="https://19971122.xyz/2017/07/14/BootLoader-GRUB/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="如果没有loader, 那么kernel根本没有办法被系统加载, 现在来说说grub吧, 当前Linux里最主流的boot loader.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/grub_stg.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/enter_grub.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/grub_menu.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/root_help.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/dev.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/boot_2.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/boot_3.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/grub_%E6%94%B9.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/grub_password.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/boot_passwd%27.png">
+<meta property="article:published_time" content="2017-07-14T21:20:48.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:30:16.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta property="article:tag" content="bootloader">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/grub_stg.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>BootLoader-GRUB</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/14/BootLoader-GRUB/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&text=BootLoader-GRUB"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&is_video=false&description=BootLoader-GRUB"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=BootLoader-GRUB&body=Check out this article: https://19971122.xyz/2017/07/14/BootLoader-GRUB/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&name=BootLoader-GRUB&description=&lt;p&gt;如果没有loader, 那么kernel根本没有办法被系统加载, 现在来说说grub吧, 当前Linux里最主流的boot loader.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&t=BootLoader-GRUB"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#GRUB-old-version"><span class="toc-number">1.</span> <span class="toc-text">GRUB (old version)</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        BootLoader-GRUB
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-07-14T21:20:48.000Z" class="dt-published" itemprop="datePublished">2017-07-14</time>
+        
+        (Updated: <time datetime="2020-11-30T01:30:16.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>, <a class="p-category" href="/tags/bootloader/" rel="tag">bootloader</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>如果没有loader, 那么kernel根本没有办法被系统加载, 现在来说说grub吧, 当前Linux里最主流的boot loader.</p>
+<span id="more"></span>
+
+<h2 id="GRUB-old-version"><a href="#GRUB-old-version" class="headerlink" title="GRUB (old version)"></a>GRUB (old version)</h2><p>在CentOS5&#x2F;6系统启动流程中我们就已经提过了grub这个小东西. 全称叫<code>GRand Unified Bootloader</code>.</p>
+<p>  从CentOS7开始, 使用了新版的grub, 也就是1.x版本, 这个被叫做grub2. 而原先的CentOS5&#x2F;6使用的就是grub 0.x版本 也就是所谓grub legacy. 并且这两者也已经出现了巨大的变化.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">grub legacy:</span><br><span class="line">    stage1: mbr</span><br><span class="line">    stage1_5: mbr之后的扇区, 让stage1中的bootloader可以识别stage2所在分区的文件系统</span><br><span class="line">    stage2: 磁盘分区(/boot/grub/)</span><br></pre></td></tr></table></figure>
+
+<p>这些在前文都已经提过了.</p>
+<p>先从旧版的开始吧. :)</p>
+<p>grub的配置文件就位于&#x2F;boot&#x2F;grub&#x2F;grub.conf, 在当前目录就有一个符号链接指向他, 这个先不说, 另外还有一个&#x2F;etc&#x2F;grub.conf也指向它. </p>
+<p>尽管在前文曾经提到过, 但是现在我们再把这个grub的引导过程顺一遍: 首先在主板识别了硬盘并且通过INT_13中断(管他是什么, 反正能将第一扇区的内容export出去)来进行bootloader的读取之后, 此时bootloader已经可以读取主机上的硬盘设备了, 但此时仍然不能读取文件系统(软件组织的), 因此这个时候通过文件系统驱动的帮助, 就进入了stage2, stage2和内核等都放在一个基本的磁盘分区.接着主程序就开始读取配置文件了.</p>
+<p>这里需要先明确grub的功用:</p>
+<ul>
+<li>提供菜单, 并提供交互接口<ul>
+<li>e: 编辑模式, 用于编辑菜单</li>
+<li>c: 命令模式, 交互式接口</li>
+</ul>
+</li>
+<li>加载用户选择的内核或操作系统, 允许传递参数给内核, 可隐藏菜单</li>
+<li>保护机制, 为编辑菜单, 启用内核进行认证</li>
+<li>控制权移交功能(important)</li>
+</ul>
+<p>我们进入&#x2F;boot&#x2F;grub下看一看里面的关键文件:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/grub_stg.png" alt="grub_stg"></p>
+<p>这里面的stage1文件就是我们说的, 用来进行跳转的.</p>
+<p>*stage1_ 5文件包含了各种识别文件系统的代码，使得grub可以从文件系统中读取体积更大功能更复杂的stage2文件. stage1_ 5一般安装在MBR后、第一个分区前的那段空闲空间中，也就是MBR gap空间，它的作用是跳转到stage2的第一个扇区.</p>
+<p>其实传统的grub在某些环境下是可以不用stage1_5文件就能正常运行的.</p>
+<p>stage2的作用就是加载各种环境和加载内核 当跳转到stage2的第一个扇区后，该扇区的代码负责加载stage2剩余的内容. 需要说的一点是: stage2是存放在磁盘上的. 这点和后面我们要说的GRUB2有对应.</p>
+<p>下面就来看一下grub的命令行接口吧:</p>
+<p>进入grub菜单的方式就是在出现boot的界面的时候按下任意键就行了.</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/enter_grub.png" alt="enter_grub"></p>
+<p>接着就会看到这样的菜单:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/grub_menu.png" alt="grub_menu"></p>
+<p>使用<code>help</code>就可以显示所有支持的命令, 还可以单独的进行<code>help [KEYWORD]</code> 来查看单个命令的使用方式</p>
+<p>比如设置挂载根文件系统的命令<code>root</code>. 在后面加上设备路径, 把他当成根来挂载. (<strong>这里的根是指要被挂载成grub根的根哦!</strong>)</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/root_help.png" alt="root_help"></p>
+<p>在仔细说说命令行的使用前, 让我们再来讨论一下 这个**&#x2F;boot**. 可以分区 也可以不分区而是根的一个目录, 这些都是可能的. 我们都知道,如果想要访问某个设备就要先将其挂载到我们的目录上, 有一个入口才行.所以第一种情况, boot在根分区上(一个分区), 那么就是一个目录文件. 所以在读取vmlinuz的时候, 我就需要先加载根文件系统才可以读取到也就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/boot/vmlinuz --- 这里的根是 根文件系统那个的根</span><br></pre></td></tr></table></figure>
+
+<p>第二种情况 如果&#x2F;boot是一个不同于根的分区, 是挂载上去的. 那么这个时候访问路径就变成了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/vmlinuz --- 这里的根就变成了 boot对应的那个分区的文件系统的根</span><br></pre></td></tr></table></figure>
+
+<p>我们知道这个时候, 是系统启动之前, 所以根是没有装载起来的, 但是现在要访问vmlinuz文件哇, 这个时候访问就是向第一种情况的那种. 此时如果grub想要从根访问&#x2F;boot, 一个要求就是根必须是基本的文件系统, 不能是那种复杂的逻辑卷. 这,就是为什么推荐将boot单独分区, 且是那种很简单的, 这样在根使用了一些叫高级复杂的文件系统架构时候也可以确保正常启动内核.</p>
+<p>那么如何识别设备呢? 在进入菜单之后, 其实就可以看到一个默认的根:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/dev.png" alt="dev"></p>
+<p><code>hd0,0</code> 表示的就是 hard disk 第一块磁盘的第一个分区. 也就是说<code>hd磁盘编号,分区编号</code> </p>
+<p>好, 让我们继续吧!</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">grub&gt; find FILENAME</span><br><span class="line"><span class="comment"># 这个寻找指令不是简单的输入文件名就好了哦,要指定具体的分区, 写出完整的路径</span></span><br><span class="line">grub&gt; find (hd0,0)/vmlinuz-2.6.32-220.el6.x86_64</span><br><span class="line">  (hd0,0)</span><br><span class="line"><span class="comment"># 通过这个可以快速的确定文件的存在性</span></span><br><span class="line"><span class="comment"># 但其实我也可以先指定根的所在, 这样就可以不同每一次都加上分区了</span></span><br><span class="line">grub&gt; root (hd0,0)</span><br><span class="line">grub&gt; find /vmlinuz-2.6.32-220.el6.x86_64</span><br><span class="line">  (hd0,0)</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是设置要加载的内核文件镜像以及ramdisk是什么, 使用<code>kernel</code>和<code>initrd</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grub&gt; kernel /vmlinuz-2.6.32-220.el6.x86_64</span><br><span class="line">grub&gt; initrd /initramfs-2.6.32-220.el6.x86_64.img</span><br></pre></td></tr></table></figure>
+
+<p>这里一定要做到: <strong>版本完完全全匹配</strong></p>
+<p>最后执行<code>boot</code>就可以了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grub&gt; boot</span><br></pre></td></tr></table></figure>
+
+<p>我们还可以手动在加上一些参数, 比如: <code>selinux=0</code>, 以及开机等级什么的.</p>
+<p>所以现在就会明白了: 当我们直接选择这个选项并且直接回车的时候…</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/boot_2.png" alt="boot_2"></p>
+<p>其实执行的就是敲击<code>e</code>进入的编辑页面的这些:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/boot_3.png" alt="boot_3"></p>
+<p>列举一些常用选项: <strong>quiet</strong> 表示静默模式, 显示较少的信息, 也可以直接加上等级, 一种常见的就是加上1或者single, 进入单用户维护模式.</p>
+<p>前面说过了 读取完配置文件就会有这么一个菜单, 这么个配置文件就决定这么个菜单的表现形式.位置也已经在上面说过了, 现在就先来看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> /etc/grub</span><br><span class="line"><span class="comment"># grub.conf generated by anaconda</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Note that you do not have to rerun grub after making changes to this file</span></span><br><span class="line"><span class="comment"># NOTICE:  You have a /boot partition.  This means that</span></span><br><span class="line"><span class="comment">#          all kernel and initrd paths are relative to /boot/, eg.</span></span><br><span class="line"><span class="comment">#          root (hd0,0)</span></span><br><span class="line"><span class="comment">#          kernel /vmlinuz-version ro root=/dev/mapper/vg_livecd-lv_root</span></span><br><span class="line"><span class="comment">#          initrd /initrd-[generic-]version.img</span></span><br><span class="line"><span class="comment">#boot=/dev/sda</span></span><br><span class="line">default=0 <span class="comment"># 哪一个是默认启动的菜单</span></span><br><span class="line"><span class="built_in">timeout</span>=5 <span class="comment"># 超时5秒</span></span><br><span class="line">splashimage=(hd0,0)/grub/splash.xpm.gz <span class="comment"># 默认的背景图片, 最大支持14位颜色深度(2^14)</span></span><br><span class="line">hiddenmenu <span class="comment"># 隐藏菜单</span></span><br><span class="line">title CentOS (2.6.32-220.el6.x86_64) <span class="comment"># 这个就是一开始看到的一级菜单的那个选项内容, 下面的缩进三只就是进去看到的二级菜单</span></span><br><span class="line">	root (hd0,0)</span><br><span class="line">	kernel /vmlinuz-2.6.32-220.el6.x86_64 ro root=/dev/mapper/vg_livecd-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg_livecd/lv_swap rd_NO_MD quiet rd_LVM_LV=vg_livecd/lv_root SYSFONT=latarcyrheb-sun16 rhgb crashkernel=auto  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM</span><br><span class="line">	initrd /initramfs-2.6.32-220.el6.x86_64.img</span><br></pre></td></tr></table></figure>
+
+
+
+<p>.我们还可以对菜单进行加密:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">default=0</span><br><span class="line"><span class="built_in">timeout</span>=5</span><br><span class="line">splashimage=(hd0,0)/grub/splash.xpm.gz</span><br><span class="line">hiddenmenu</span><br><span class="line"><span class="comment"># 在这里可以插进来一条全局的配置, 菜单编辑认证(防编辑)</span></span><br><span class="line">password [--md5] STRING</span><br><span class="line">title CentOS (2.6.32-220.el6.x86_64)</span><br><span class="line">    password [--md5] STRING <span class="comment"># 启用选定的内核或操作系统的认证(防启动)</span></span><br></pre></td></tr></table></figure>
+
+<p>这里放的密码串, 可以直接写明文, 但是这样很不安全, 因此更应该使用md5形式的摘要串, grub提供了这样的一个工具来帮我们生成: <code>grub-md5-crypt</code> 使用方法就是直接敲进去进入交互界面然后就键入要加密的密码串就可以的得到了.</p>
+<p>现在在我折腾了之后看到的菜单, 不仅多了一条菜单而且还会发现这个时候下方的提示也变了 </p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/grub_%E6%94%B9.png" alt="grub_改"></p>
+<p>使用p进入密码输入界面:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/grub_password.png" alt="grub_password"></p>
+<p>接着就会变成原来的那种, 由于我给第二个Linux系统加入了密码认证, 所以在直接Enter第二的时候, 会进入这样的页面:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/boot_passwd%27.png" alt="boot_passwd&#39;"></p>
+<p>如果输入错误就会直接回到GRUB的主页面, 正确当然就是直接进入系统啦</p>
+<blockquote>
+<p><strong>进入单用户模式</strong></p>
+<p>说到这里, 进入单用户维护模式就变得非常简单了. </p>
+<p>1). 编辑grub菜单(选定要编辑的title, 而后使用e命令)</p>
+<p>2). 在选定的kernel后面加上: 1, s, S, single都行</p>
+<p>3). 在kernel所在行, 键入<code>b</code>命令(boot)</p>
+</blockquote>
+<p><strong>grub的重新安装</strong></p>
+<p> 什么时候才需要重装grub啊? 很多时候, 重新安装grub体现在很多问题的解决上. 所以当出现了一些系统无法启动的时候, 别急着重装系统! 先看看问题出在哪一个环节上, 有时候当问题出现在引导上, 修复一下也要不了多少时间而且还可以完美无损. 并且grub的重新安装还可以解决多系统在同一块硬盘上共存的问题.</p>
+<p>重新安装一个最简单的方法就是使用<code>grub-install</code>命令 但是注意呀, 这里说的修复是指修复镜像和<code>ramdisk</code> 不包括<code>grub.conf</code> 的, 所以说如果你的<code>grub.conf</code> 损坏了, 是要进行手动的重写的.</p>
+<p>具体的操作步骤:</p>
+<p><a target="_blank" rel="noopener" href="http://linux.vbird.org/linux_basic/0510osloader//0510osloader-centos5.php#grub_initrd">鸟哥的私房菜旧版</a></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#GRUB-old-version"><span class="toc-number">1.</span> <span class="toc-text">GRUB (old version)</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/14/BootLoader-GRUB/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&text=BootLoader-GRUB"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&is_video=false&description=BootLoader-GRUB"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=BootLoader-GRUB&body=Check out this article: https://19971122.xyz/2017/07/14/BootLoader-GRUB/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&title=BootLoader-GRUB"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&name=BootLoader-GRUB&description=&lt;p&gt;如果没有loader, 那么kernel根本没有办法被系统加载, 现在来说说grub吧, 当前Linux里最主流的boot loader.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/14/BootLoader-GRUB/&t=BootLoader-GRUB"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

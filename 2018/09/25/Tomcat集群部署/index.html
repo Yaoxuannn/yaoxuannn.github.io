@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="初步了解了单机Tomcat的配置. 接下来我们就来看一下Tomcat负载均衡集群的配置吧.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tomcat集群部署">
+<meta property="og:url" content="https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="初步了解了单机Tomcat的配置. 接下来我们就来看一下Tomcat负载均衡集群的配置吧.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/balancer-manager_example.png">
+<meta property="article:published_time" content="2018-09-25T22:21:29.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:48:00.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Cluster">
+<meta property="article:tag" content="Tomcat">
+<meta property="article:tag" content="Memcached">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/balancer-manager_example.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Tomcat集群部署</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&text=Tomcat集群部署"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&is_video=false&description=Tomcat集群部署"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Tomcat集群部署&body=Check out this article: https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&name=Tomcat集群部署&description=&lt;p&gt;初步了解了单机Tomcat的配置. 接下来我们就来看一下Tomcat负载均衡集群的配置吧.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&t=Tomcat集群部署"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx%E5%92%8CApache%E5%AE%9E%E7%8E%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%9A%84TC"><span class="toc-number">2.</span> <span class="toc-text">Nginx和Apache实现负载均衡的TC</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Session-Cluster"><span class="toc-number">3.</span> <span class="toc-text">Session Cluster</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Memcached"><span class="toc-number">4.</span> <span class="toc-text">Memcached</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Tomcat集群部署
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-09-25T22:21:29.000Z" class="dt-published" itemprop="datePublished">2018-09-25</time>
+        
+        (Updated: <time datetime="2020-11-30T01:48:00.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cluster/" rel="tag">Cluster</a>, <a class="p-category" href="/tags/Memcached/" rel="tag">Memcached</a>, <a class="p-category" href="/tags/Tomcat/" rel="tag">Tomcat</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>初步了解了单机Tomcat的配置. 接下来我们就来看一下Tomcat负载均衡集群的配置吧.</p>
+<span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>说到了集群就一定会说到的问题就是关于会话保持的问题了, 我们也可以把这个问题叫做会话黏性, 常规的方式例如: 进行源地址IP绑定, 还有基于cookie的方式. 这两种方式的一个显而易见的问题就是关于当我们的后端服务器重启或者是宕机的时候就会导致所有的session丢失. 这个时候我们就要做session的持久化或者是使用session集群和session服务器, 常见的是基于kv的数据库比如memcached和redis.</p>
+<p>我们先来使用nginx做前端load balancer和tomcat配合搭建LB Tomcat, 接着使用Apache加上tomcat实现一样的效果. </p>
+<p>接着我们使用tomcat自己的LB实现来搭建tomcat负载均衡集群, 最后再加上一个memcache session服务器.</p>
+<h2 id="Nginx和Apache实现负载均衡的TC"><a href="#Nginx和Apache实现负载均衡的TC" class="headerlink" title="Nginx和Apache实现负载均衡的TC"></a>Nginx和Apache实现负载均衡的TC</h2><p>这次一共使用3台主机, 其中一个作为负载均衡器, 安装httpd和nginx, 后端放两台tomcat主机, 配置上基本和上一个保持一致. 唯一的不同点是作为测试的jsp页面一个写的是node1一个写的是node2, 并且将主机名设定成了web1.wyx.com和web2.wyx.com.</p>
+<p>接着, 将默认的主机设置成为这两个我们自定义主机.</p>
+<p>tomcat的配置到这里就基本结束了, 接下来来配置一下nginx, 其实就是我们之前配置的反向代理, 很简单的. 直接贴下配置:</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">location</span> <span class="regexp">~* \.(jsp|do)$</span> &#123;</span><br><span class="line">    <span class="attribute">proxy_pass</span> http://tcservers;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="section">upstream</span> tcservers &#123;</span><br><span class="line">    <span class="attribute">server</span> web1.wyx.com:<span class="number">8080</span>;</span><br><span class="line">    <span class="attribute">server</span> web2.wyx.com:<span class="number">8080</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>默认的负载均衡算法就是轮询所以当我们进行访问测试的时候就是一个接一个的出现.</p>
+<p>但是我们说, 一个稍微好一点的架构是在每一个tomcat的前面加上一个httpd , 接着通过nginx的负载均衡到这些Apache主机上, 有这些Apache主机进行tomcat的访问, 最后返回结果.</p>
+<p>如果是通过apache来构建tomcat集群的话, 我们有三种方案, 一种是使用http协议进行访问, 一种是使用之前说的ajp协议. 上面的这两种都需要使用到mod_proxy模块, 而子模块不同而已. 第三种方案叫做使用一个叫做<code>mod_jk</code>的模块来实现. 不过这个模块仅仅支持AJP协议并且httpd没有自行携带. 需要我们到官方的站点上进行源代码的下载自行编译. 另外, 我们之前提到过, httpd其实也是可以做负载均衡的, 这依赖一个模块叫做<code>proxy_balancer_module</code>. 这个模块一般来说也是自行携带的, 不需要再另行安装.</p>
+<p>对于上面的第三种, 我们就暂时忽略了, 主要来看看前两的使用.</p>
+<p>我们在上一次的Tomcat配置学习的时候, 曾经使用httpd做前端服务器进行了代理, 但是当时只是跟着配置了一下, 对于一些代理的apache指令并不知道是什么东西, 现在来说明一下.</p>
+<p><strong>ProxyPreserve {On|Off}</strong>: 该选项表示是否将请求报文中的Host发送给后端的代理服务器, 这个选项在之前的实验中我也尝试过了.</p>
+<p><strong>ProxyRequests {On|Off}</strong>: 这个选项表示是否开启Apache的正向代理功能, 要求mod_proxy_http模块必须启用.</p>
+<p><strong>ProxyPassReverse</strong>: 用于让apacje调整HTTP重定向报文中的Location, Content-Location和URI标签所对应的URL. 在反向代理环境中需要打开这个选项来避免重定向报文绕过proxy服务器.</p>
+<p><strong>ProxyVia {On|Off|Full|Block}</strong>: 用来控制是否在请求的首部中加上<code>Via</code>头部, 默认的值是<code>Off</code>. <code>Full</code>表示每一个Via的头部都会加上Apache服务器的版本号信息, <code>Block</code>表示每一个代理的请求报文中的<code>Via</code>都会被移除.</p>
+<p><strong>ProxyPass [Path] !|url [key&#x3D;value key&#x3D;value]</strong>: 这个指令是用来将后端服务器某个URL与当前服务器的虚拟路径关联起来作为提供服务的路径. 说白了就是进行反向代理, 这也就是说, 当这个选项打开的时候, <code>ProxyRequests</code>必须关闭(废话啦).  <em>需要注意的一点是, 如果这个地方的路径后面写上了<code>/</code>那么URL的结尾也必须加上<code>/</code>. 或者都不写</em></p>
+<blockquote>
+<p>ProxyPass常用的一些属性有<code>min</code>, <code>max</code>分别表示后端服务器的最小和最大连接池容量. <code>loadfactor</code>定义负载均衡的权重相当于是Nginx的<code>weight</code>. <code>retry</code>表示apache得到错误响应之后等到的重试时长, 单位是s.</p>
+</blockquote>
+<p>如果上面的Proxy是使用<code>balance://</code>开头的 ( 这说明是一个负载均衡器, 这种感觉就好像我们在使用Ngixn反向代理功能的时候写的upstream服务器组 ), 那么我们还可以加上以下的属性:</p>
+<blockquote>
+<p>lbmethod: 很好理解吧. 就是负载均衡使用的调度方法, 默认的方法是<code>byrequests</code>, 也就是根据权重将统计请求个数进行调度, 还有<code>bytraffic</code>, 执行基于权重的流量计数调度, <code>bybusyness</code>通过考量每个后端服务器的当前负载进行调度.</p>
+<p>maxattempts: 放弃请求执行故障转移的次数, 最大值不能超过节点的个数.</p>
+<p>nofailover: 是否进行故障转移, 如果在我们后端服务器有进行SESSION绑定的话, 就不应该进行转移, 因为这样会损坏用户的session.</p>
+<p>stickysession: 设置调度器session名字, 根据web程序语言的不同, 设置成为JSESSIONID或者PHPSESSIONID.</p>
+</blockquote>
+<p>比如一个示例:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Proxy</span> <span class="attr">balancer:</span>//<span class="attr">hotcluster</span>&gt;</span></span><br><span class="line">    BalancerMember http://web1.wyx.com loadfactor=1</span><br><span class="line">    BalancerMember http://web2.wyx.com loadfactor=2</span><br><span class="line">    ProxySet lbmethod=bytraffic</span><br><span class="line"><span class="tag">&lt;/<span class="name">Proxy</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里就定义好了一个负载均衡集群, 那么怎么让他们生效呢? 我们在虚拟主机的配置文件中这样定义:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">proxy</span> <span class="attr">balancer:</span>//<span class="attr">lbcluster</span>&gt;</span></span><br><span class="line">    BalancerMember ajp://192.168.16.100:8009 loadfactor=10</span><br><span class="line">    BalancerMember ajp://192.168.16.101:8009 loadfactor=10</span><br><span class="line"><span class="tag">&lt;/<span class="name">proxy</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">VirtualHost</span> *<span class="attr">:80</span>&gt;</span></span><br><span class="line">    ServerName www.wyx.com</span><br><span class="line">    ProxyVia On</span><br><span class="line">    ProxyRequests Off</span><br><span class="line">    ProxyPreserveHost On</span><br><span class="line">    <span class="tag">&lt;<span class="name">Proxy</span> *&gt;</span></span><br><span class="line">        Require all granted</span><br><span class="line">    <span class="tag">&lt;/<span class="name">Proxy</span>&gt;</span></span><br><span class="line">    ProxyPass / balancer://lbcluster/</span><br><span class="line">    ProxyPassReverse / balancer://lbcluster/</span><br><span class="line">    <span class="tag">&lt;<span class="name">Location</span> /&gt;</span></span><br><span class="line">        Require all granted</span><br><span class="line">    <span class="tag">&lt;<span class="name">Location</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">VirtualHost</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样配置完成之后我们可以就先启动试试效果了, 和Nginx之前演示的效果类似, 现在 我们加上关于Session相关的配置:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">proxy</span> <span class="attr">balancer:</span>//<span class="attr">lbcluster</span>&gt;</span></span><br><span class="line">        BalancerMember ajp://192.168.16.100:8009 loadfactor=10 route=node1</span><br><span class="line">        BalancerMember ajp://192.168.16.101:8009 loadfactor=10 route=node2</span><br><span class="line">        ProxySet stickysession=JSESSIONID</span><br><span class="line"><span class="tag">&lt;/<span class="name">proxy</span>&gt;</span></span><br><span class="line">...(后面一致)</span><br></pre></td></tr></table></figure>
+
+<p>这样再次访问几次, 就会出现访问到同一个后端服务器的现象了.</p>
+<p>另外, 我们的<code>mod_proxy_http</code>其实也内置了一个负载均衡的web管理页面, 只需要简单的配置就可以使用了, 来看一下吧.</p>
+<p>加上一个访问路径:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">VirtualHost</span> *<span class="attr">:80</span>&gt;</span></span><br><span class="line">        ServerName www.wyx.com</span><br><span class="line">        ProxyVia On</span><br><span class="line">        ProxyRequests Off</span><br><span class="line">        ProxyPreserveHost On</span><br><span class="line">        <span class="tag">&lt;<span class="name">Proxy</span> *&gt;</span></span><br><span class="line">                Require all granted</span><br><span class="line">        <span class="tag">&lt;/<span class="name">Proxy</span>&gt;</span></span><br><span class="line">        ProxyPass / balancer://lbcluster/</span><br><span class="line">        ProxyPassReverse / balancer://lbcluster/</span><br><span class="line">        <span class="tag">&lt;<span class="name">Location</span> /&gt;</span></span><br><span class="line">                Require all granted</span><br><span class="line">        <span class="tag">&lt;/<span class="name">Location</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Location</span> /<span class="attr">balancer-manager</span>&gt;</span></span><br><span class="line">                SetHandler balancer-manager</span><br><span class="line">                ProxyPass !</span><br><span class="line">                Require ip 192.168.16.1</span><br><span class="line">                Require all denied</span><br><span class="line">        <span class="tag">&lt;/<span class="name">Location</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">VirtualHost</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里加上了一个Location, 访问的效果就想这样:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/balancer-manager_example.png" alt="balancer-manager_example"></p>
+<p>可以在这个页面进行一些简单的管理和状态监视.</p>
+<h2 id="Session-Cluster"><a href="#Session-Cluster" class="headerlink" title="Session Cluster"></a>Session Cluster</h2><p>tomcat提供了一些会话管理组件, 主要有两种, 一个是标准会话管理器, 一个是持久会话管理器.</p>
+<p>对于标准会话管理器, 使用的类是<code>org.apache.catalina.session.StandardManager</code>, 常用的三个属性是:</p>
+<ul>
+<li>maxActiveSessions: 最大允许的活动会话数量, 默认是-1, 也就是不限制</li>
+<li>maxInactiveInterval: 非活动的会话超时时长, 默认是60s</li>
+<li>pathname: 会话文件的保存目录 默认保存在webapp下的SESSIONS.ser文件中</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Manager</span> <span class="attr">classname</span>=<span class="string">“org.apache.catalina.session.StandardManager”</span></span></span><br><span class="line"><span class="tag">         <span class="attr">maxInactiveInterval</span>=<span class="string">7200</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p> 但是大部分的情况下, 我们使用的都是另外一个可以进行持久化保存的会话管理器(PersistantManager). 这个会话管理器可以将会话数据保存在持久存储中, 并且可以在服务器意外终止的时候重启启动的时候加载这些会话信息, 持久会话管理器支持将会话保存在文件存储或者JDBC中.</p>
+<p>例如一个保存在文件中的示例:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Manager</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.session.PersistantManager&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">saveOnRestart</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Store</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.session.FileStore&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">directory</span>=<span class="string">&quot;/data/tomcat-sessions&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Manager</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>每一个用户的会话都会保存到上面制定的目录位置中, 命名为session_id.session, 并且后台线程会每隔一定时间进行检查(默认是60s).</p>
+<p>上面是保存在文件中的, 刚刚说是可以使用JDBC存储的, 也就是说我们可以把上面的Store区域改成:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Manager</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.session.PersistantManager&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">saveOnRestart</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Store</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.session.JDBCStore&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">driverName</span>=<span class="string">&quot;com.mysql.jdbc.driver&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">connectionURL</span>=<span class="string">&quot;jdbc:mysql//localhost:3306/mydb?user=user_name;password=pw&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Manager</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>另外还有一个叫做<code>DeltaManager</code>的会话管理器, 这一种是将每一个tomcat节点通过一条总线连接起来, 接着通过多播方式进行session同步, 每一台主机上面都包含所有的session数据, 这样哪怕一台节点宕机了, session数据也依然在, 只要前端调度进行一次故障转移就行了. 但是由于使用的是多播的方式, 所以这就必然限制了集群的规模.</p>
+<p>除了这些, 还有一个叫做<code>BackupManager</code>的东西.</p>
+<p>官方文档上关于构建会话复制集群的说明在这里: <a target="_blank" rel="noopener" href="http://tomcat.apache.org/tomcat-8.5-doc/cluster-howto.html">cluster-howto</a>. 但是要看好版本号, 不同版本的tomcat配置起来会有出入的.</p>
+<p>直接使用官方网站上的配置说明就可以了: (可以根据情况修改一下组播地址和接受的IP地址)</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Cluster</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.ha.tcp.SimpleTcpCluster&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">channelSendOptions</span>=<span class="string">&quot;8&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">Manager</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.ha.session.DeltaManager&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">expireSessionsOnShutdown</span>=<span class="string">&quot;false&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">notifyListenersOnReplication</span>=<span class="string">&quot;true&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">Channel</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.tribes.group.GroupChannel&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Membership</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.tribes.membership.McastService&quot;</span></span></span><br><span class="line"><span class="tag">                <span class="attr">address</span>=<span class="string">&quot;228.0.0.4&quot;</span></span></span><br><span class="line"><span class="tag">                <span class="attr">port</span>=<span class="string">&quot;45564&quot;</span></span></span><br><span class="line"><span class="tag">                <span class="attr">frequency</span>=<span class="string">&quot;500&quot;</span></span></span><br><span class="line"><span class="tag">                <span class="attr">dropTime</span>=<span class="string">&quot;3000&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Receiver</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.tribes.transport.nio.NioReceiver&quot;</span></span></span><br><span class="line"><span class="tag">              <span class="attr">address</span>=<span class="string">&quot;auto&quot;</span></span></span><br><span class="line"><span class="tag">              <span class="attr">port</span>=<span class="string">&quot;4000&quot;</span></span></span><br><span class="line"><span class="tag">              <span class="attr">autoBind</span>=<span class="string">&quot;100&quot;</span></span></span><br><span class="line"><span class="tag">              <span class="attr">selectorTimeout</span>=<span class="string">&quot;5000&quot;</span></span></span><br><span class="line"><span class="tag">              <span class="attr">maxThreads</span>=<span class="string">&quot;6&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">Sender</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.tribes.transport.ReplicationTransmitter&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">Transport</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.tribes.transport.nio.PooledParallelSender&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">Sender</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Interceptor</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.tribes.group.interceptors.TcpFailureDetector&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Interceptor</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor&quot;</span>/&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">Channel</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.ha.tcp.ReplicationValve&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">filter</span>=<span class="string">&quot;&quot;</span>/&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.ha.session.JvmRouteBinderValve&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">Deployer</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.ha.deploy.FarmWarDeployer&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">tempDir</span>=<span class="string">&quot;/tmp/war-temp/&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">deployDir</span>=<span class="string">&quot;/tmp/war-deploy/&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">watchDir</span>=<span class="string">&quot;/tmp/war-listen/&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">watchEnabled</span>=<span class="string">&quot;false&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">ClusterListener</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.ha.session.ClusterSessionListener&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Cluster</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意: 为了使得webapp可以被管理器进行分发, 必须要在web.xml中添加<code>distributable</code>元素</strong></p>
+<p>这里还是像之前的实验一样, 只有两个节点. 配置结束之后查看一下两个节点的日志, 可以看到”:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">04-Oct-2018 17:28:24.520 INFO [Membership-MemberAdded.] org.apache.catalina.ha.tcp.SimpleTcpCluster.memberAdded Replication member added:[org.apache.catalina.tribes.membership.MemberImpl[tcp://&#123;192, 168, 16, 101&#125;:4000,&#123;192, 168, 16, 101&#125;,4000, alive=1036, securePort=-1, UDP Port=-1, id=&#123;-8 8 14 -62 107 -126 71 94 -107 116 88 49 9 -83 -91 -105 &#125;, payload=&#123;&#125;, command=&#123;&#125;, domain=&#123;&#125;]]</span><br></pre></td></tr></table></figure>
+
+<p>已经加入了.</p>
+<p>接着我们写一个JSP页面来方便观察实验效果:</p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page language=<span class="string">&quot;java&quot;</span> %&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">  &lt;head&gt;&lt;title&gt;TomcatA&lt;/title&gt;&lt;/head&gt;</span><br><span class="line">  &lt;body&gt;</span><br><span class="line">    &lt;h1&gt;&lt;font color=<span class="string">&quot;red&quot;</span>&gt;web1.wyx.com&lt;/font&gt;&lt;/h1&gt;</span><br><span class="line">    &lt;table align=<span class="string">&quot;centre&quot;</span> border=<span class="string">&quot;1&quot;</span>&gt;</span><br><span class="line">      &lt;tr&gt;</span><br><span class="line">        &lt;td&gt;Session ID&lt;/td&gt;</span><br><span class="line">    &lt;% session.setAttribute(<span class="string">&quot;wyx.com&quot;</span>,<span class="string">&quot;wyx.com&quot;</span>); %&gt;</span><br><span class="line">        &lt;td&gt;&lt;%= session.getId() %&gt;&lt;/td&gt;</span><br><span class="line">      &lt;/tr&gt;</span><br><span class="line">      &lt;tr&gt;</span><br><span class="line">        &lt;td&gt;Created on&lt;/td&gt;</span><br><span class="line">        &lt;td&gt;&lt;%= session.getCreationTime() %&gt;&lt;/td&gt;</span><br><span class="line">     &lt;/tr&gt;</span><br><span class="line">    &lt;/table&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>另外, apache也已经配置了最基本的负载均衡, 没有配置stickysession.</p>
+<p>接着访问就会出现神奇的事情了, 虽然我们的主机在进行调度, 但是得到的session是一样的, 也就是说不同的主机处理了同一个会话.</p>
+<h2 id="Memcached"><a href="#Memcached" class="headerlink" title="Memcached"></a>Memcached</h2><p>我们接下来引入memcached, 这是一个基于内存的使用key&#x2F;value高性能的数据缓存. 和redis最大的不同是, redis是store, 而memcached是cache. 也就是说, 这玩意不能用来进行存储, 不能持久化, 但是可以进行高性能的键值对缓存.</p>
+<p> 之前说过我们软件系统存储数据有三种类型的, 分别是:</p>
+<ul>
+<li>结构化数据, 例如我们的RDBMS所管理的数据</li>
+<li>半结构化数据, JSON, XML都是这一类数据</li>
+<li>非结构化数据, 文件</li>
+</ul>
+<p>而我们的memcached只能存取最简单的数据类型, 那就是K-V存储. 他的应用场景在哪里呢? 比如说, 在一个存储百万条数据的MySQL数据库中进行查询, 会经过很多次的磁盘IO, 这就大大降低了查询的效率, 但是如果我们在查询之后能够把查询的结果缓存下来, 就可以直接在下一次的访问时直接返回结果而不需要再进行IO了.</p>
+<p>那么这个数据我们该怎么使用memcached来进行缓存呢? 其实很简单, 计算出这一次查询SQL语句的哈希值, 然后将这个哈希值作为存储的键, 而查询的结果集也就是一个数据流作为存储的值就可以了.</p>
+<p>其实, 我们的MySQL系统本身就是具有缓存系统的, 只不过当我们存在多个MySQL的时候, 就需要一个公共的缓存系统了. </p>
+<p>memcached有这些特点:</p>
+<ul>
+<li>协议十分简单, 因为只需要进行数据的get和push, 并不需要一些复杂的操作</li>
+<li>记录libevent事件处理</li>
+<li>基于内存完成数据的存储, 基于的算法就是我们熟悉的LRU算法</li>
+<li>memcacahed互不通信的集群</li>
+</ul>
+<p>至于安装也是十分简单的了, 直接使用yum进行安装就可以了, 并且看一下生成的文件:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]# rpm -ql memcached</span><br><span class="line">/etc/sysconfig/memcached</span><br><span class="line">/usr/bin/memcached</span><br><span class="line">/usr/bin/memcached-tool</span><br><span class="line">/usr/lib/systemd/system/memcached.service</span><br><span class="line">/usr/share/doc/memcached-1.4.15</span><br><span class="line">/usr/share/doc/memcached-1.4.15/AUTHORS</span><br><span class="line">/usr/share/doc/memcached-1.4.15/CONTRIBUTORS</span><br><span class="line">/usr/share/doc/memcached-1.4.15/COPYING</span><br><span class="line">/usr/share/doc/memcached-1.4.15/ChangeLog</span><br><span class="line">/usr/share/doc/memcached-1.4.15/NEWS</span><br><span class="line">/usr/share/doc/memcached-1.4.15/README.md</span><br><span class="line">/usr/share/doc/memcached-1.4.15/protocol.txt</span><br><span class="line">/usr/share/doc/memcached-1.4.15/readme.txt</span><br><span class="line">/usr/share/doc/memcached-1.4.15/threads.txt</span><br><span class="line">/usr/share/man/man1/memcached-tool.1.gz</span><br><span class="line">/usr/share/man/man1/memcached.1.gz</span><br></pre></td></tr></table></figure>
+
+<p>就连省略都不需要了, 可以说是很简单了. 一个简单的配置文件, 一个主程序, 管理程序再加上服务脚本和文档就没了.</p>
+<p>甚至说就连配置文件也是十分的简单:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]# cat /etc/sysconfig/memcached </span><br><span class="line">PORT=&quot;11211&quot;</span><br><span class="line">USER=&quot;memcached&quot;</span><br><span class="line">MAXCONN=&quot;1024&quot;</span><br><span class="line">CACHESIZE=&quot;64&quot;</span><br><span class="line">OPTIONS=&quot;&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>其实就是一些环境变量.</p>
+<p>直接启动服务就可以看到tcp&#x2F;udp的11211端口已经监听了.</p>
+<p>我们可以使用telnet进行一些memcached的尝试:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]# telnet 127.0.0.1 11211</span><br><span class="line">Trying 127.0.0.1...</span><br><span class="line">Connected to 127.0.0.1.</span><br><span class="line">Escape character is &#x27;^]&#x27;.</span><br><span class="line">set mykey 0 60 11</span><br><span class="line">hello world</span><br><span class="line">STORED</span><br><span class="line">get mykey</span><br><span class="line">VALUE mykey 0 11</span><br><span class="line">hello world</span><br><span class="line">END</span><br><span class="line">(60s later)</span><br><span class="line">get mykey</span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+
+<p>简单的说明一下吧. set操作就是无条件的设置一个键, 当然也可以进行修改, get操作就是在获取值. 上面的意思是set一个键, 键的名字叫做mykey, 标号是0, 存活时间是60s, 长度是11个字节, 这个地方如果你设定的字节长度和实际你要存储的数据的长度不符合的话是会报错的.</p>
+<p>接着一些其他的操作:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">set mykey 0 60 11     </span><br><span class="line">hello world</span><br><span class="line">STORED</span><br><span class="line">append mykey 0 60 1</span><br><span class="line">!</span><br><span class="line">STORED</span><br><span class="line">get mykey</span><br><span class="line">VALUE mykey 1 12</span><br><span class="line">hello world!</span><br><span class="line">END</span><br><span class="line">prepend mykey 0 60 2</span><br><span class="line">a </span><br><span class="line">STORED</span><br><span class="line">get mykey</span><br><span class="line">VALUE mykey 1 14</span><br><span class="line">a hello world!</span><br><span class="line">END</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>通过使用<code>append</code>和<code>prepend</code>可以在键的后面和前面添加值. 另外使用<code>delete</code>来删除, <code>stats</code>来查看当前的状态, <code>flush_all</code>来清除所有的, <code>incr</code>和<code>decr</code>来增加和减少. 基本的命令就这些了.</p>
+<p>但是需要提醒一点的是, 可能在你删除了一个键之后发现似乎stats显示的总数没有变少, 但是当前数目变少了, 这是因为memcached使用的是惰性的存储模式, 也就是说, 删除的时候没有真正的删除而是加上了一个不可用的标识符.</p>
+<p>这个地方使用的是命令行的形式, 在应用程序中, 使用memcached也很简单, 因为协议简单, 所以对接起来就也容易.</p>
+<p>接下来我们来说说memcached对内存存储的工作模式. 它使用的是叫做<code>slab allocation</code>的也就是整理内存来进行复用的模式. 由于存储的内容大小不一样, 所以就先按照一些提前订好的大小分成组. 举个例子, 我先准备好2字节的内存空间(很多, 一大把), 4字节的(也有很多), 8字节的(还是很多)等等. 接着假设来了一个3字节的数据, 我们就把他丢进4字节的组中. 这一个4字节的内存空间, 我们叫做<code>chunk</code>, 而这一整个组我们叫做<code>slab class</code>.</p>
+<p>这种感觉有点类似我们内存的分页(4K). 所以其实一个4Kb的内存页的内部, 分配给slab用于再次分割, 成为一个个chunk. 这种模式对于内存的回收重新利用就很方便. memcached规定最大的单个不能超过1M. 那么这些内存空间的大小该怎么去增长呢? 这个概念在memcached中叫做factor, 也就是增长因子, 默认的大小是1.25. 我们可以手动启动加上<code>-vv</code>参数来验证一下:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]# memcached -u memcached -vv</span><br><span class="line">slab class   1: chunk size        96 perslab   10922</span><br><span class="line">slab class   2: chunk size       120 perslab    8738</span><br><span class="line">slab class   3: chunk size       152 perslab    6898</span><br><span class="line">slab class   4: chunk size       192 perslab    5461</span><br><span class="line">slab class   5: chunk size       240 perslab    4369</span><br><span class="line">slab class   6: chunk size       304 perslab    3449</span><br><span class="line">slab class   7: chunk size       384 perslab    2730</span><br><span class="line">slab class   8: chunk size       480 perslab    2184</span><br><span class="line">slab class   9: chunk size       600 perslab    1747</span><br><span class="line">slab class  10: chunk size       752 perslab    1394</span><br><span class="line">slab class  11: chunk size       944 perslab    1110</span><br><span class="line">slab class  12: chunk size      1184 perslab     885</span><br><span class="line">slab class  13: chunk size      1480 perslab     708</span><br><span class="line">slab class  14: chunk size      1856 perslab     564</span><br><span class="line">slab class  15: chunk size      2320 perslab     451</span><br><span class="line">slab class  16: chunk size      2904 perslab     361</span><br><span class="line">slab class  17: chunk size      3632 perslab     288</span><br><span class="line">slab class  18: chunk size      4544 perslab     230</span><br><span class="line">slab class  19: chunk size      5680 perslab     184</span><br><span class="line">slab class  20: chunk size      7104 perslab     147</span><br><span class="line">slab class  21: chunk size      8880 perslab     118</span><br><span class="line">slab class  22: chunk size     11104 perslab      94</span><br><span class="line">slab class  23: chunk size     13880 perslab      75</span><br><span class="line">slab class  24: chunk size     17352 perslab      60</span><br><span class="line">slab class  25: chunk size     21696 perslab      48</span><br><span class="line">slab class  26: chunk size     27120 perslab      38</span><br><span class="line">slab class  27: chunk size     33904 perslab      30</span><br><span class="line">slab class  28: chunk size     42384 perslab      24</span><br><span class="line">slab class  29: chunk size     52984 perslab      19</span><br><span class="line">slab class  30: chunk size     66232 perslab      15</span><br><span class="line">slab class  31: chunk size     82792 perslab      12</span><br><span class="line">slab class  32: chunk size    103496 perslab      10</span><br><span class="line">slab class  33: chunk size    129376 perslab       8</span><br><span class="line">slab class  34: chunk size    161720 perslab       6</span><br><span class="line">slab class  35: chunk size    202152 perslab       5</span><br><span class="line">slab class  36: chunk size    252696 perslab       4</span><br><span class="line">slab class  37: chunk size    315872 perslab       3</span><br><span class="line">slab class  38: chunk size    394840 perslab       2</span><br><span class="line">slab class  39: chunk size    493552 perslab       2</span><br><span class="line">slab class  40: chunk size    616944 perslab       1</span><br><span class="line">slab class  41: chunk size    771184 perslab       1</span><br><span class="line">slab class  42: chunk size   1048576 perslab       1</span><br><span class="line">&lt;26 server listening (auto-negotiate)</span><br><span class="line">&lt;27 server listening (auto-negotiate)</span><br><span class="line">&lt;28 send buffer was 212992, now 268435456</span><br><span class="line">&lt;29 send buffer was 212992, now 268435456</span><br><span class="line">&lt;28 server listening (udp)</span><br><span class="line">&lt;29 server listening (udp)</span><br><span class="line">&lt;28 server listening (udp)</span><br><span class="line">&lt;29 server listening (udp)</span><br><span class="line">&lt;28 server listening (udp)</span><br><span class="line">&lt;29 server listening (udp)</span><br><span class="line">&lt;28 server listening (udp)</span><br><span class="line">&lt;29 server listening (udp)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>通过增加<code>-f</code>参数来指定, 可以修改这个增长因子.</p>
+<p>接下来来看一下memcached的管理工具, 还是之前的<code>hello world</code>这个11字节的数据, 存储结束之后我们退出telnet然后使用<code>memcached-tools</code>来查看一下:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]# memcached-tool 127.0.0.1</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"> Item_Size  Max_age   Pages   Count   Full?  Evicted Evict_Time OOM</span></span><br><span class="line">  1      96B        10s       1       1     yes        0        0    0</span><br><span class="line">[root@VM-master ~]# memcached-tool 127.0.0.1</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"> Item_Size  Max_age   Pages   Count   Full?  Evicted Evict_Time OOM</span></span><br><span class="line">  1      96B        84s       1       1     yes        0        0    0</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到有数据了, 其中第一个<code>#</code>表示slab class的编号, 往上看, 1编号的slab大小就是96字节, 而11字节的数据就进入这个里面了, 后面的<code>Max_age</code>表示当前缓存对象的生存时间, <code>Pages</code>表示分配给slab的内存页数, <code>Count</code>表示slab内的记录数, <code>Full?</code>表示是否还有空闲的chunks.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx%E5%92%8CApache%E5%AE%9E%E7%8E%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%9A%84TC"><span class="toc-number">2.</span> <span class="toc-text">Nginx和Apache实现负载均衡的TC</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Session-Cluster"><span class="toc-number">3.</span> <span class="toc-text">Session Cluster</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Memcached"><span class="toc-number">4.</span> <span class="toc-text">Memcached</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&text=Tomcat集群部署"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&is_video=false&description=Tomcat集群部署"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Tomcat集群部署&body=Check out this article: https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&title=Tomcat集群部署"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&name=Tomcat集群部署&description=&lt;p&gt;初步了解了单机Tomcat的配置. 接下来我们就来看一下Tomcat负载均衡集群的配置吧.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/&t=Tomcat集群部署"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

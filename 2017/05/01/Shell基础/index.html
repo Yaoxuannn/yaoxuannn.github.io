@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="学习Shell脚本第一步!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bash基础">
+<meta property="og:url" content="https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="学习Shell脚本第一步!">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-05-01T06:41:23.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="shell">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Bash基础</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/05/05/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-3/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&text=Bash基础"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&is_video=false&description=Bash基础"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Bash基础&body=Check out this article: https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&name=Bash基础&description=&lt;p&gt;学习Shell脚本第一步!&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&t=Bash基础"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Bash%E7%9A%84%E5%9F%BA%E7%A1%80%E5%8A%9F%E8%83%BD"><span class="toc-number">1.</span> <span class="toc-text">Bash的基础功能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E5%88%AB%E5%90%8D%E5%92%8C%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-number">1.1.</span> <span class="toc-text">命令别名和快捷键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%86%E5%8F%B2%E5%91%BD%E4%BB%A4"><span class="toc-number">1.2.</span> <span class="toc-text">历史命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-number">1.3.</span> <span class="toc-text">输出重定向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E9%81%93%E7%AC%A6"><span class="toc-number">1.4.</span> <span class="toc-text">管道符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6"><span class="toc-number">1.5.</span> <span class="toc-text">通配符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F"><span class="toc-number">1.6.</span> <span class="toc-text">变量</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Bash基础
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-05-01T06:41:23.000Z" class="dt-published" itemprop="datePublished">2017-05-01</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/shell/" rel="tag">shell</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>学习Shell脚本第一步!</p>
+<span id="more"></span>
+
+<p>Linux下使用的Shell标准Shell是bash, 这是BShelll家族的一员, BSD.Unix下的标准SHell是CShell.</p>
+<p>BShell(Bourne Shell)主要包括sh.ksh.Bash.psh.zsh, Cshell主要包括csh, tcsh.</p>
+<h2 id="Bash的基础功能"><a href="#Bash的基础功能" class="headerlink" title="Bash的基础功能"></a>Bash的基础功能</h2><h3 id="命令别名和快捷键"><a href="#命令别名和快捷键" class="headerlink" title="命令别名和快捷键"></a>命令别名和快捷键</h3><p>在Shell中使用alias可以看到当前的别名, 有些命令敲起来很长, 很不方便, 所以就建立一个映射.</p>
+<p>一个最典型的例子就是: ll &#x3D; <code>ll -l --color=auto</code>. </p>
+<p>临时更改SHell别名可以直接在alias中设置, <code>alias sth.=&#39;another th&#39;</code>.</p>
+<p>这样的设置在重启机器后就会失效, 如果想要永久设置就在.bashrc下.</p>
+<p>编辑后,该文件不会立即生效.这里使用<code>source</code>来使得系统重新载入.</p>
+<p>接下来我来说一下Liuux中命令的生效顺序:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">第一顺位: 执行用绝对路径或相对路径执行的命令</span><br><span class="line">第二顺位: 执行别名</span><br><span class="line">第三顺位: 执行Bash的内部命令</span><br><span class="line">第四顺位: 执行按照<span class="variable">$PATH</span>的环境变量定的目录查找顺序找到的第一个命令</span><br></pre></td></tr></table></figure>
+
+<p>下面说一些超常用的快捷键:</p>
+<blockquote>
+<p>Ctrl + c terminate current order.<br>Ctrl + l clear screen<br>Ctrl + a move cursor to the head of the line<br>Ctrl + e move cursor to the end of the line<br>Ctrl + u delete from the head of the line to the current position of the cursor</p>
+</blockquote>
+<p>另外补充一个: 使用 ALT+. 可以复制上一条命令的最后一个单词, 这里说的单词是指命令的<strong>词</strong>. ( 使用远程连接的话, 需要使用Esc来代替ALT, 或者可以想个办法做mapping.</p>
+<h3 id="历史命令"><a href="#历史命令" class="headerlink" title="历史命令"></a>历史命令</h3><p>Bash是可以查看历史命令的, 在早期的BShell是没有历史命令功能的.</p>
+<p>查看历史使用<code>history</code>命令, 和这个关联的文件时<code>.bash_history</code>, 我们知道使用history加上<code>-c</code>参数可以清空历史命令.</p>
+<p>事实上, 历史仍然保存在文件中, <code>-c</code>仅仅是清空Buffer中的命令, 而如果想要彻底删个干净就要在<code>-c</code>之后再加上<code>-w</code>执行一遍.<code>-w</code>的意思是将缓存的历史命令写入到文件中(覆盖).,</p>
+<p>在我们每次注销的时候, 系统会自动执行<code>-w</code>.</p>
+<p>另外, 历史命令还有这样的使用方法.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">!! 重复执行上一条命令</span><br><span class="line">!字符串 执行最后一条以该字符串开头的命令</span><br></pre></td></tr></table></figure>
+
+<p>在Shell中使用Tab键进行命令补全, 这是一个很重要的功能, 它不仅大大加速我们的命令输入, 而且还有一定的查错能力.</p>
+<h3 id="输出重定向"><a href="#输出重定向" class="headerlink" title="输出重定向"></a>输出重定向</h3><p>首先要明确的是三个标准输入输出: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">键盘 /dev/stdin     0  标准输入</span><br><span class="line"></span><br><span class="line">显示器 /dev/stdout  1  标准输出</span><br><span class="line"></span><br><span class="line">	  /dev/stderr   2  标准错误输出</span><br></pre></td></tr></table></figure>
+
+<p>命令的输出默认当然就是显示屏幕上, 也就是标准输出1.</p>
+<p>但是Bash是可以重定向输出流的,像这样</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ifconfig &gt; test.log</span><br></pre></td></tr></table></figure>
+
+<p>命令输出 &gt; &#x2F; &gt;&gt; 仅能保存正确的输出, 如果遇到错误的情况还是会输出到屏幕上, 这就是因为标准错误输出和标准输出是两个东西.</p>
+<p>参见下表:</p>
+<table>
+<thead>
+<tr>
+<th align="center">类型</th>
+<th align="center">符号</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">标准输出重定向</td>
+<td align="center">Command &gt; file</td>
+<td align="center">覆盖方式</td>
+</tr>
+<tr>
+<td align="center">标准输出重定向</td>
+<td align="center">Command &gt;&gt; file</td>
+<td align="center">追加方式</td>
+</tr>
+<tr>
+<td align="center">标准错误输出重定向</td>
+<td align="center">COOMAND 2&gt;file</td>
+<td align="center">覆盖方式</td>
+</tr>
+<tr>
+<td align="center">标准错误输出重定向</td>
+<td align="center">COOMAND 2&gt;&gt;file</td>
+<td align="center">追加方式</td>
+</tr>
+</tbody></table>
+<p><strong>注意:标准错误输出重定向的时候,&gt;&gt;和文件之间是没有空格的!一旦出现空格,重定向就会失效</strong></p>
+<p>但是,仔细想一下<code>2&gt;/2&gt;&gt;</code>这种我们根本就不会使用到, 因为如果已经知道命令是错的, 为什么我还要执行呢?</p>
+<p>所以下表更有参考价值:</p>
+<table>
+<thead>
+<tr>
+<th align="center">类型</th>
+<th align="center">符号</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">标准错误输出和正确输出重定向</td>
+<td align="center">命令 &gt; 文件 2&gt;&amp;1</td>
+<td align="center">覆盖方式</td>
+</tr>
+<tr>
+<td align="center">标准错误输出和正确输出重定向</td>
+<td align="center">命令 &gt;&gt;文件 2&gt;&amp;1</td>
+<td align="center">追加方式</td>
+</tr>
+<tr>
+<td align="center">标准错误输出和正确输出重定向</td>
+<td align="center">命令 &amp;&gt;文件</td>
+<td align="center">覆盖方式</td>
+</tr>
+<tr>
+<td align="center">标准错误输出和正确输出重定向</td>
+<td align="center">命令 &amp;&gt;&gt;文件</td>
+<td align="center">追加方式</td>
+</tr>
+<tr>
+<td align="center">标准错误输出和正确输出重定向</td>
+<td align="center">命令&gt;&gt;文件1 2&gt;&gt;文件2</td>
+<td align="center">追加方式</td>
+</tr>
+</tbody></table>
+<p>其中,13和24等价.</p>
+<p>另外, 如果不想将输出输出到文件中, 可以重定向到”黑洞”中, 也就是<code>/dev/null</code>, 这个文件就像是路由黑洞一样吃进去就没反应了, 或者类比成Windows下的回收站.</p>
+<p>这个文件就是可以理解成Linux预置的垃圾桶, 在一些命令&#x2F;脚本执行过程中发生的一些无关紧要的错误, 我没有必要将其显示出来. 而是可以直接丢弃掉.</p>
+<p>关于输入重定向, 我们以<code>wc</code>来举个例子, <code>wc</code>可以统计输入流中的字节数, 单词数, 行数.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">wc</span>&lt;anaconda-ks.cfg </span><br><span class="line"><span class="comment"># 148  228 2523</span></span><br><span class="line"><span class="built_in">wc</span>&lt;anaconda-ks.cfg  -l</span><br><span class="line"><span class="comment"># 148</span></span><br><span class="line"><span class="built_in">wc</span>&lt;anaconda-ks.cfg  -w</span><br><span class="line"><span class="comment"># 228</span></span><br><span class="line"><span class="built_in">wc</span>&lt;anaconda-ks.cfg  -c</span><br><span class="line"><span class="comment"># 2523</span></span><br></pre></td></tr></table></figure>
+<p>这个意思是<code>anaconda-ks.cfg</code>文件中, 有148行, 228个单词, 2523个字节.</p>
+<h3 id="管道符"><a href="#管道符" class="headerlink" title="管道符"></a>管道符</h3><p>首先来说一下多命令执行符这个东西.</p>
+<p>同高级语言一样, Shell的对多命令顺序执行的执行符和一些逻辑关联词是一样的.</p>
+<table>
+<thead>
+<tr>
+<th align="center">多命令执行符</th>
+<th align="center">格式</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">;</td>
+<td align="center">1;2</td>
+<td align="center">顺序执行, 没有逻辑联系</td>
+</tr>
+<tr>
+<td align="center">&amp;&amp;</td>
+<td align="center">1&amp;&amp;2</td>
+<td align="center">逻辑与, 只有1正确执行, 2才会执行</td>
+</tr>
+<tr>
+<td align="center">&amp;Iota;&amp;Iota;</td>
+<td align="center">1 &amp;Iota;&amp;Iota; 2</td>
+<td align="center">逻辑或, 只有1执行不正确, 2才会执行</td>
+</tr>
+</tbody></table>
+<p>一个简单的综合使用就像是这样</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./abash.sh &amp;&amp; <span class="built_in">echo</span> <span class="built_in">yes</span> || <span class="built_in">echo</span> no</span><br></pre></td></tr></table></figure>
+
+<p>接下来看一下管道符:</p>
+<p><code>|</code>.</p>
+<p>简单的一个竖杠, 可以将命令1的正确输出作为命令2的操作对象.</p>
+<p>来看一个简单的小栗子:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -an | grep ESTABLISHED | <span class="built_in">wc</span> -l</span><br></pre></td></tr></table></figure>
+<p>这个命令组合显示当前已建立的连接数.</p>
+<h3 id="通配符"><a href="#通配符" class="headerlink" title="通配符"></a>通配符</h3><p>最后来看一下通配符.</p>
+<table>
+<thead>
+<tr>
+<th align="center">通配符</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">?</td>
+<td align="center">匹配一个任意字符</td>
+</tr>
+<tr>
+<td align="center">*</td>
+<td align="center">匹配0个或任意, 可以匹配任意内容</td>
+</tr>
+<tr>
+<td align="center">[]</td>
+<td align="center">匹配中括号内的任意一个字符</td>
+</tr>
+<tr>
+<td align="center">[-]</td>
+<td align="center">匹配中括号内任意一个字符, -表示一个范围</td>
+</tr>
+<tr>
+<td align="center">[^]</td>
+<td align="center">逻辑非, 匹配不是中括号内的一个字符</td>
+</tr>
+</tbody></table>
+<p>接着再来说一下Bash中的特殊字符:</p>
+<table>
+<thead>
+<tr>
+<th align="center">符号</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">‘’</td>
+<td align="center">在单引号中的特殊符号都失去意义</td>
+</tr>
+<tr>
+<td align="center">“”</td>
+<td align="center">除了”$”, “&#96;”, “&quot;, 其他都失去特殊含义</td>
+</tr>
+<tr>
+<td align="center">&#96;&#96;</td>
+<td align="center">调用系统命令, Bash中会优先执行</td>
+</tr>
+<tr>
+<td align="center">$()</td>
+<td align="center">等价于&#96;&#96;,引用系统命令</td>
+</tr>
+<tr>
+<td align="center">#</td>
+<td align="center">注释</td>
+</tr>
+<tr>
+<td align="center">$</td>
+<td align="center">调用变量的值</td>
+</tr>
+<tr>
+<td align="center">\</td>
+<td align="center">转义字符</td>
+</tr>
+</tbody></table>
+<p>其中, 推荐使用 $() 来代替 &#96;, 因为更清晰.</p>
+<hr>
+<p>在开始进行Shell编程前, 必须还要了解一些环境变量,位置参数变量以及预定义变量.</p>
+<p>我们已经知道如何去定义一个变量: <code>a=4</code>.</p>
+<p>但是这样定义的变量是不能在Shell间通用的,现在就可以引入环境变量的概念了.</p>
+<p>环境变量是作用于系统的一类变量, 只要在声明时加上<code>export</code>关键字就可以生效了.</p>
+<p>使用<code>set</code>查看所有的系统变量, 使用<code>env</code>仅仅查看环境变量.</p>
+<p>接下来说一下位置参数变量, 其实这个就像是<code>Python</code>的<code>sys.argv</code>, 获取脚本参数的变量.</p>
+<p>有这些位置参数:</p>
+<table>
+<thead>
+<tr>
+<th align="center">参数</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$n</td>
+<td align="center">n是数字, 0代表本身, 1-?就是后面的参数</td>
+</tr>
+<tr>
+<td align="center">$*</td>
+<td align="center">命令行中的所有参数(作为整体)</td>
+</tr>
+<tr>
+<td align="center">$@</td>
+<td align="center">命令行中的所有参数(作为单独的部分)</td>
+</tr>
+<tr>
+<td align="center">$#</td>
+<td align="center">参数的个数(不包括脚本本身)</td>
+</tr>
+</tbody></table>
+<p>最后, 就是一些预定义变量了.</p>
+<p>主要有三个:</p>
+<table>
+<thead>
+<tr>
+<th align="center">参数</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$?</td>
+<td align="center">返回上次命令执行的状态</td>
+</tr>
+<tr>
+<td align="center">$$</td>
+<td align="center">当前进程的PID</td>
+</tr>
+<tr>
+<td align="center">$!</td>
+<td align="center">后台运行的最后一个进程的PID</td>
+</tr>
+</tbody></table>
+<p>接下来开始进行Shell的学习吧!</p>
+<h3 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h3><hr>
+<p>之前说过了如何去声明和打印一个变量, 但要知道的是, Linux中的所有变量默认都是字符串型的.</p>
+<p>也就是说:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># a=11</span></span><br><span class="line">[root@localhost ~]<span class="comment"># b=22</span></span><br><span class="line">[root@localhost ~]<span class="comment"># c=$a+$b</span></span><br><span class="line">[root@localhost ~]<span class="comment"># echo $c</span></span><br><span class="line">11+22</span><br></pre></td></tr></table></figure>
+
+<p>这样就没办法进行数值运算了.所以先来学习一下怎么声明种类.</p>
+<p>使用declare来声明变量类型,语法结构和支持的类型是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">declare</span> [+/-][Opt.] 变量名</span><br><span class="line">- : 设定</span><br><span class="line">+ : 取消</span><br><span class="line">-a : (array)数组型</span><br><span class="line">-i : (interger)整数</span><br><span class="line">-x : (<span class="built_in">env</span>)环境变量</span><br><span class="line">-r : (read-only)只读变量</span><br><span class="line">-p : (<span class="built_in">print</span>)打印变量声明的类型</span><br></pre></td></tr></table></figure>
+
+<p>举几个例子:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># aa=11 </span></span><br><span class="line">[root@localhost ~]<span class="comment"># bb=22</span></span><br><span class="line">[root@localhost ~]<span class="comment"># declare -i cc=$aa+$bb</span></span><br><span class="line">[root@localhost ~]<span class="comment"># echo $cc</span></span><br><span class="line">33</span><br></pre></td></tr></table></figure>
+
+<p>或者声明数组变量:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># movie[0]=a</span></span><br><span class="line">[root@localhost ~]<span class="comment"># movie[1]=b</span></span><br><span class="line">[root@localhost ~]<span class="comment"># declare -a movie[2]=c</span></span><br><span class="line">[root@localhost ~]<span class="comment"># echo $&#123;movie&#125;</span></span><br><span class="line">a</span><br><span class="line">[root@localhost ~]<span class="comment"># echo $&#123;movie[1]&#125;</span></span><br><span class="line">b</span><br><span class="line">[root@localhost ~]<span class="comment"># echo $&#123;movie[*]&#125;</span></span><br><span class="line">a b c</span><br></pre></td></tr></table></figure>
+
+<p>现在可以告诉你啦!</p>
+<p>之前使用的<code>export</code>实际上调用的就是<code>declare</code>的<code>-x</code>选项, 不信的话你可以试试<code>declare -p</code>, 接着你就会看到大部分的系统环境变量都是<code>declare -x</code>.</p>
+<p>最后再看一下,只读属性<code>(-r)</code>, 请注意:<strong>不要随意添加只读属性, 因为只读的属性是不可删除 不可改变 不可取消的</strong>.</p>
+<p>现在就来学习数值运算了.</p>
+<p>虽然之前说的声明类型同样可以进行数值运算, 但是这还是有点麻烦的.</p>
+<p>所以当进行表达式(expression)运算时, 使用<code>expr</code>来进行运算.</p>
+<p>e.g:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># aa=11</span></span><br><span class="line">[root@localhost ~]<span class="comment"># bb=22</span></span><br><span class="line">[root@localhost ~]<span class="comment"># dd=$(expr $aa + $bb)</span></span><br><span class="line">[root@localhost ~]<span class="comment"># echo $dd</span></span><br><span class="line">33</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意!expr后面的运算符两侧必须要加空格否则会失效</strong></p>
+<p>这就很好敲了? 相信你一定满脸MMP..</p>
+<p>是的..这个命令更难敲.</p>
+<p>所以来看一下这个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># aa=22 </span></span><br><span class="line">[root@localhost ~]<span class="comment"># bb=11</span></span><br><span class="line">[root@localhost ~]<span class="comment"># ff=$(( $aa+$bb ))</span></span><br><span class="line">[root@localhost ~]<span class="comment"># # 或者</span></span><br><span class="line">[root@localhost ~]<span class="comment"># gg=$[$aa+$bb]</span></span><br><span class="line">[root@localhost ~]<span class="comment"># echo $ff</span></span><br><span class="line">33</span><br><span class="line">[root@localhost ~]<span class="comment"># echo $gg</span></span><br><span class="line">33</span><br></pre></td></tr></table></figure>
+
+<p>这样就更好记了.</p>
+<p>那么Shell支持哪些运算呢?</p>
+<p>按照优先级从高到低:</p>
+<table>
+<thead>
+<tr>
+<th align="center">运算符</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">单目正负</td>
+</tr>
+<tr>
+<td align="center">逻辑非.按位反</td>
+</tr>
+<tr>
+<td align="center">乘除 取模</td>
+</tr>
+<tr>
+<td align="center">加减</td>
+</tr>
+<tr>
+<td align="center">左移 右移</td>
+</tr>
+<tr>
+<td align="center">比较运算</td>
+</tr>
+<tr>
+<td align="center">按位运算</td>
+</tr>
+<tr>
+<td align="center">逻辑运算</td>
+</tr>
+<tr>
+<td align="center">赋值及运算赋值符</td>
+</tr>
+</tbody></table>
+<p>继续下去..我们来看一下变量测试</p>
+<p>这个东西只有Shell中才有, 其他语言中是没有的.</p>
+<p>好吧..这个东西主要是用来脚本调优.(真的我觉得没什么用)</p>
+<p>下一个表来看,其实语法上没什么难的..</p>
+<p>好了变量测试就先这样吧..</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Bash%E7%9A%84%E5%9F%BA%E7%A1%80%E5%8A%9F%E8%83%BD"><span class="toc-number">1.</span> <span class="toc-text">Bash的基础功能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E5%88%AB%E5%90%8D%E5%92%8C%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-number">1.1.</span> <span class="toc-text">命令别名和快捷键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%86%E5%8F%B2%E5%91%BD%E4%BB%A4"><span class="toc-number">1.2.</span> <span class="toc-text">历史命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-number">1.3.</span> <span class="toc-text">输出重定向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E9%81%93%E7%AC%A6"><span class="toc-number">1.4.</span> <span class="toc-text">管道符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6"><span class="toc-number">1.5.</span> <span class="toc-text">通配符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F"><span class="toc-number">1.6.</span> <span class="toc-text">变量</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&text=Bash基础"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&is_video=false&description=Bash基础"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Bash基础&body=Check out this article: https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&title=Bash基础"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&name=Bash基础&description=&lt;p&gt;学习Shell脚本第一步!&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/01/Shell%E5%9F%BA%E7%A1%80/&t=Bash基础"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Crontab是Linux下一个强大的计划任务工具.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Crontab学习日志">
+<meta property="og:url" content="https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Crontab是Linux下一个强大的计划任务工具.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-04-27T04:06:57.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:32:36.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Crontab">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Crontab学习日志</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/05/01/Shell%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&text=Crontab学习日志"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&is_video=false&description=Crontab学习日志"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Crontab学习日志&body=Check out this article: https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&name=Crontab学习日志&description=&lt;p&gt;Crontab是Linux下一个强大的计划任务工具.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&t=Crontab学习日志"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E5%AE%89%E8%A3%85"><span class="toc-number">1.</span> <span class="toc-text">检测安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E8%AF%95%E7%89%9B%E5%88%80"><span class="toc-number">2.</span> <span class="toc-text">小试牛刀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E8%BF%B0"><span class="toc-number">3.</span> <span class="toc-text">简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">4.</span> <span class="toc-text">配置文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Crontab%E7%9A%84%E5%B8%B8%E8%A7%81%E5%BC%82%E5%B8%B8%E5%92%8C%E9%94%99%E8%AF%AF"><span class="toc-number">5.</span> <span class="toc-text">Crontab的常见异常和错误</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Crontab学习日志
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-04-27T04:06:57.000Z" class="dt-published" itemprop="datePublished">2017-04-27</time>
+        
+        (Updated: <time datetime="2020-11-30T01:32:36.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Crontab/" rel="tag">Crontab</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Crontab是Linux下一个强大的计划任务工具.</p>
+<span id="more"></span>
+
+<p>基本上Linux发行版上都会默认安装的工具.</p>
+<h2 id="检测安装"><a href="#检测安装" class="headerlink" title="检测安装"></a>检测安装</h2><p>可以通过使用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">crontab -l</span><br><span class="line"><span class="comment"># OR</span></span><br><span class="line">service crond status</span><br></pre></td></tr></table></figure>
+<p>来检测是否安装.</p>
+<p>如果没有,你可以先好好凝视一下你的服务器或者虚拟机,也许它是假的:). </p>
+<p>接着使用<code>yum install crontabs</code>(Cent OS)进行安装.</p>
+<p><strong>7.7的更新:</strong> 在新版的CentOS6|7上crontab使用了新的程序包. 可以使用rpm进行查看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm -q cronie</span><br><span class="line">cronie-1.4.11-14.el7_2.1.x86_64</span><br></pre></td></tr></table></figure>
+
+<p>另外还可以看到有一个叫<code>cronie-anacron-1.4.11-14.el7_2.1.x86_64</code>的程序包.</p>
+<p>这个<code>anacron</code>是什么呢?</p>
+<p>这里我们把整个周期性任务计划相关的程序包来进行一下小结:</p>
+<ul>
+<li><code>cronie</code>: 主程序包, 提供了<code>crond</code>守护进程和相关的辅助工具.</li>
+<li><code>cronie-anacron</code>: <code>cronie</code>的补充程序, 用于监控<code>cronie</code>任务执行情况, 比如当指定时间执行的任务未能正常运行, 则<code>anacron</code>会再随后进行任务的启动</li>
+<li><code>crontabs</code>: 包含CentOS提供的系统维护的任务</li>
+</ul>
+<p>因此要确保<code>crontab</code>正常运行, 就要先保证<code>crond</code>正常在运行.</p>
+<h2 id="小试牛刀"><a href="#小试牛刀" class="headerlink" title="小试牛刀"></a>小试牛刀</h2><p>先来感受一下定时任务的便利吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br></pre></td></tr></table></figure>
+
+<p>进入编辑界面,在最后添加一行之后, 保存退出.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/1 * * * * <span class="built_in">date</span> &gt;&gt; /tmp/date.log</span><br></pre></td></tr></table></figure>
+
+<p>接着你可以使用<code>tail -f /tmp/date.log</code>, 这时候就会发现每分钟这个文件就会得到更新 显示当期的时间</p>
+<h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>crontab 的核心在于crond这个进程, 这个系统服务每分钟都会从配置文件中刷新任务.</p>
+<p>有时间到了后crond就会启动这个任务.</p>
+<p>而crontab这个就是用户操作,用来调整定时任务的工具了, 最后, 配置文件负责以文件的形式设置定时任务.</p>
+<p>用户的<code>cron</code>: 每个用户都有一个专门的<code>cron</code>任务文件: <code>/var/spool/cron/USERNAME</code> </p>
+<p><code>crontab</code>的使用方法:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">crontab [-u | user] [-l | -r | -e] [-i]</span><br><span class="line">-l: 列出所有任务</span><br><span class="line">-e: 编辑任务</span><br><span class="line">-r: 移除所有任务</span><br><span class="line">-i: 同-r一起使用, 使用交互式模式让用户有选择的进行移除.(和大部分的交互效果一样)</span><br></pre></td></tr></table></figure>
+
+<p> 在cron任务中, <code>%</code>是有特殊的意义 所以是要进行转义的. 另外在<code>cron</code>中, 如果想要获得秒级的运行就要使用这样的形式:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* * * * * <span class="keyword">for</span> min <span class="keyword">in</span> 0 1 2; <span class="keyword">do</span> <span class="built_in">echo</span> <span class="string">&quot;exec.&quot;</span>; <span class="built_in">sleep</span> 20; <span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<p>其实这里使用到的<code>sleep</code>指令不仅仅是执行秒的睡眠, 还可以进行分钟和小时, 甚至天的. 只要加上单位就行</p>
+<h2 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h2><p>作为我们修改的对象,只有知道怎么书写任务,才可以更好的使用, 接下来就来看一下Crontab的配置文件的组成.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">* * * * * [user-name] COMMAND</span><br><span class="line">| | | | |__星期0~7(0/7均表示周日)</span><br><span class="line">| | | |____月份1~12</span><br><span class="line">| | |______日期1~31</span><br><span class="line">| |________小时0~23</span><br><span class="line">|__________分钟0~59</span><br></pre></td></tr></table></figure>
+
+<p>为更好地理解这些参数,请看下面的一些实例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 每天晚上21:30重启服务器</span></span><br><span class="line">30 21 * * * service httpd restart</span><br><span class="line"><span class="comment"># 每月1, 10, 22日的21:30重启服务器 </span></span><br><span class="line">30 21 1,10,22 * * service httpd restart</span><br><span class="line"><span class="comment"># 每月1到10日4:45重启Apache</span></span><br><span class="line">45 4 1-10 * * service httpd restart</span><br><span class="line"><span class="comment"># 每隔2分钟打印一个日志</span></span><br><span class="line">*/2 * * * * <span class="built_in">tail</span> -n 5 /var/log/pptpd.log</span><br><span class="line"><span class="comment"># 每奇数分钟打印一个日志</span></span><br><span class="line">1-59/2 * * * * <span class="built_in">tail</span> -n 5 /var/log/pptpd.log</span><br><span class="line"><span class="comment"># 每天晚11:00到第二天早上7点, 每隔一小时重启Apache</span></span><br><span class="line">0 23-7/1 * * * service httpd restart</span><br></pre></td></tr></table></figure>
+
+<p>简单的小结一下:</p>
+<blockquote>
+<p>* 表示任何时候都匹配(Universal 通配符 &#x2F;摊手)<br>可以用”A,B,C”表示 A || B || C<br>使用”A-B”表示 range(A,B)<br>用”*&#x2F;A”表示每A分钟(小时..等)执行一次</p>
+</blockquote>
+<p>每一条任务都是有用户依托的,因此在跟踪运行时会发现类似这样的记录:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Apr 27 00:47:01 localhost CROND[21437]: (root) CMD (/usr/local/sa/agent/secu-tcs-agent-mon-safe.sh /usr/local/sa/agent &gt; /dev/null 2&gt;&amp;1)</span><br><span class="line">Apr 27 00:48:01 localhost crond[619]: (*system*) RELOAD (/etc/cron.d/sysstat)</span><br><span class="line">Apr 27 00:48:01 localhost crond[619]: (tester) ORPHAN (no passwd entry)</span><br><span class="line">Apr 27 00:48:01 localhost CROND[21556]: (root) CMD (/usr/local/sa/agent/secu-tcs-agent-mon-safe.sh /usr/local/sa/agent &gt; /dev/null 2&gt;&amp;1)</span><br><span class="line">Apr 27 00:48:01 localhost CROND[21557]: (root) CMD (/usr/local/qcloud/stargate/admin/start.sh &gt; /dev/null 2&gt;&amp;1 &amp;)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到有tester.root的任务在执行.</p>
+<h2 id="Crontab的常见异常和错误"><a href="#Crontab的常见异常和错误" class="headerlink" title="Crontab的常见异常和错误"></a>Crontab的常见异常和错误</h2><p>Crontab的常见错误有以下几点:</p>
+<ul>
+<li>环境变量</li>
+<li>CLI双引号中使用%时, 未加反斜线 \</li>
+<li>第三和第五个域之间执行的是或操作</li>
+<li>分钟设置误用</li>
+</ul>
+<p>一个一个来说明一下.</p>
+<p>首先,我们来做个小实验,在当前用户的.bash_profile内加上下面的内容:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APPDIR=/etc</span><br><span class="line"><span class="built_in">export</span> APPDIR</span><br></pre></td></tr></table></figure>
+
+<p>接着使用<code>source .bash_profile</code> 使得立即生效,在CLI下试试<code>echo $APPDIR</code>,会输出<code>/etc</code>说明没有问题.</p>
+<p>但是当我们在crontab中加上这样的定时任务后<code>*/1 * * * * echo $APPDIR&gt;/tmp/appdir.log</code>.</p>
+<p>会发现这个文件中只有空行,并没有获得<code>$APPDIR</code>这个环境变量值.</p>
+<p>所以,在进行任务设置时要小心这个不能识别的问题.</p>
+<hr>
+<p>对于第二和第三个,一起看一下:</p>
+<p>首先回顾一下之前的参数说明第三和第五个他们是有关系的(星期和日),所以这里他们在实际运行时是采取的<strong>或</strong>的操作,<del>(这个先存疑,使用在线工具测试是正常的,但教学来源表明这是或的操作)</del>已解决,采取的或操作.</p>
+<p>即:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">59 1 1-7 4 0 /root/a.sh</span><br></pre></td></tr></table></figure>
+
+<p>这个任务表示什么?</p>
+<p>如果你觉得是四月的第一个星期日的1:59分执行bash脚本,那就错了.</p>
+<p>他执行的次数远比原来多.这是因为他会在每月的1-7日以及周日执行,大约会执行11次.</p>
+<p>所以,应该这么写:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">59 1 1-7 4 * <span class="built_in">test</span> `<span class="built_in">date</span> -\%w -eq 0 &amp;&amp; /root/a.sh`</span><br></pre></td></tr></table></figure>
+
+<p>这样经过验证的结果就是正确的.</p>
+<p>另外,在这个任务中我们使用了反斜线<code>\</code>,在CLI下这个操作是不需要的,但在计划任务里是需要的</p>
+<hr>
+<p>分钟数设置时的易错点: 如果想要执行每两小时的任务,也许你会这么写:<code>* 0,2,4,6,8,10,12,14,16,18,20,22 * * *  COMMAND</code>,但事实上,这样是错误的,因为他意味这在这些时的每分钟都会执行一次.</p>
+<p>正确的方式应该要把分钟数<strong>设置成0</strong>,也就是这个样子的:<code>0 */2 * * * COMMAND</code>.</p>
+<p>如果想让Crontab执行秒级的任务,就要借助Shell的sleep方法, 也就是像这样: <code>date &amp;&amp; sleep 0.5s &amp;&amp; date</code>.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E5%AE%89%E8%A3%85"><span class="toc-number">1.</span> <span class="toc-text">检测安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E8%AF%95%E7%89%9B%E5%88%80"><span class="toc-number">2.</span> <span class="toc-text">小试牛刀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E8%BF%B0"><span class="toc-number">3.</span> <span class="toc-text">简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">4.</span> <span class="toc-text">配置文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Crontab%E7%9A%84%E5%B8%B8%E8%A7%81%E5%BC%82%E5%B8%B8%E5%92%8C%E9%94%99%E8%AF%AF"><span class="toc-number">5.</span> <span class="toc-text">Crontab的常见异常和错误</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&text=Crontab学习日志"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&is_video=false&description=Crontab学习日志"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Crontab学习日志&body=Check out this article: https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&title=Crontab学习日志"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&name=Crontab学习日志&description=&lt;p&gt;Crontab是Linux下一个强大的计划任务工具.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/&t=Crontab学习日志"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

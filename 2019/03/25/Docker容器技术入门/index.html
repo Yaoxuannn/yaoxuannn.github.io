@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="从今天开始学习Docker容器!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker容器技术入门">
+<meta property="og:url" content="https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="从今天开始学习Docker容器!">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/namespace.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/cgroups1.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/docker_image.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/docker_image2.png">
+<meta property="og:image" content="https://docs.docker.com/engine/images/engine-components-flow.png">
+<meta property="og:image" content="https://docs.docker.com/engine/images/architecture.svg">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.comdocker_network.png/">
+<meta property="article:published_time" content="2019-03-25T14:21:40.000Z">
+<meta property="article:modified_time" content="2020-12-05T21:59:42.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Cloud Native">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/namespace.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Docker容器技术入门</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/03/13/%E5%88%9D%E8%AF%86OpenStack_2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&text=Docker容器技术入门"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&is_video=false&description=Docker容器技术入门"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Docker容器技术入门&body=Check out this article: https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&name=Docker容器技术入门&description=&lt;p&gt;从今天开始学习Docker容器!&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&t=Docker容器技术入门"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E4%B8%BA%E5%AE%B9%E5%99%A8"><span class="toc-number">1.</span> <span class="toc-text">何为容器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E4%B8%BADocker"><span class="toc-number">2.</span> <span class="toc-text">何为Docker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E9%95%9C%E5%83%8F"><span class="toc-number">2.1.</span> <span class="toc-text">Docker的镜像</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E4%B8%BA%E7%BC%96%E6%8E%92"><span class="toc-number">3.</span> <span class="toc-text">何为编排</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3Docker"><span class="toc-number">4.</span> <span class="toc-text">了解Docker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="toc-number">4.1.</span> <span class="toc-text">Docker的架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E5%AF%B9%E8%B1%A1%E6%8A%BD%E8%B1%A1"><span class="toc-number">4.2.</span> <span class="toc-text">Docker的对象抽象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">4.3.</span> <span class="toc-text">Docker的使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E8%99%9A%E6%8B%9F%E5%8C%96%E7%BD%91%E7%BB%9C"><span class="toc-number">4.4.</span> <span class="toc-text">Docker的虚拟化网络</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C"><span class="toc-number">4.5.</span> <span class="toc-text">Docker的容器网络</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E5%AD%98%E5%82%A8%E5%8D%B7"><span class="toc-number">4.6.</span> <span class="toc-text">Docker的存储卷</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3Dockerfile"><span class="toc-number">5.</span> <span class="toc-text">了解Dockerfile</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E7%9A%84%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93"><span class="toc-number">6.</span> <span class="toc-text">Docker的私有仓库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E7%9A%84%E8%B5%84%E6%BA%90%E9%99%90%E5%88%B6"><span class="toc-number">7.</span> <span class="toc-text">Docker的资源限制</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Docker容器技术入门
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-03-25T14:21:40.000Z" class="dt-published" itemprop="datePublished">2019-03-25</time>
+        
+        (Updated: <time datetime="2020-12-05T21:59:42.000Z" class="dt-updated" itemprop="dateModified">2020-12-05</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cloud-Native/" rel="tag">Cloud Native</a>, <a class="p-category" href="/tags/Docker/" rel="tag">Docker</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>从今天开始学习Docker容器!</p>
+<span id="more"></span>
+
+<h2 id="何为容器"><a href="#何为容器" class="headerlink" title="何为容器"></a>何为容器</h2><p>在说到容器是什么之前, 我们要先来复习一下虚拟化技术.</p>
+<p>我们之前在看Xen的时候了解到了2种虚拟化级别分别是Type-I和Type-II, 其中第一类的虚拟化是在硬件架构上直接安装一个虚拟资源管理器, 我们一般把这个叫做Supervisor. 而后者这是正常安装一个Host OS, 然后再在上面进行虚拟化.</p>
+<p>我们知道, 这种虚拟化的架构, 一个显而易见的缺点就在于调用复杂, 往往上层虚拟机一个调用需要跨越多个系统隔离层, 不仅如此, 我们虚拟化的环境, 一个虚拟机就对应着一个完整的用户空间, 在这么一个用户空间内, 我们运行了多个应用进程. 那么我们想到能不能把这么一个巨大的用户空间进行划分隔离, 从而使得一个内核, 多个用户空间, 进程之间互相不干扰, 使得每一个进程运行在一个沙箱中, 这种技术其实就是<strong>容器技术</strong> .</p>
+<p>容器技术最早在BSD时期就有了, 当时把这种技术叫做jail, 十分形象吧. 沙箱即监狱, 进程所能到达的最大边界就是这个隔离的用户空间的边界. 后来, Linux模仿BSD也搞出来了一个类似的东西, 叫做vserver, 使用的到的一个技术点就是我们之前所熟悉的chroot, 根切换. </p>
+<p>除了根切换, 一个隔离环境还需要个隔离哪些资源呢?</p>
+<p>首当其冲的就是UTS了, 也就是一台Linux主机的主机名和一些基本信息, 还有文件系统的挂载点, 进程的ID号(PID), 进程间通讯(IPC), 用户和网络(例如端口).</p>
+<p>为了能够隔离这些空间, 我们Linux内核在内核空间对这些资源使用到了命名空间(namespace)来进行管理和隔离.</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/namespace.png" alt="namespace"></p>
+<p>好的, 现在资源隔离的问题我们已经解决了, 接下来想象这么一个场景, 如果一个容器中的进程突然要求获取全部的CPU资源, 会怎么样呢? 其实不会造成大问题, CPU资源是一个可压缩型资源, 其他容器中的进程就挂起等待CPU就好了. 那么如果是内存资源呢? 一个容器中的进程占据了大部分的内存使得其他的容器中进程无法申请到内存, 一个进程如果申请不到内存, 就会被直接kill掉. 这样的结果是我们无法接受的, 于是Linux使用了一个叫做<strong>控制组</strong>的概念来约束资源分配:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/cgroups1.png" alt="cgroups1"></p>
+<p>除此之外, 还支持组内嵌套.</p>
+<p>我们把Linux容器叫做 - LXC, 也就是<strong>L</strong>inu<strong>X</strong> <strong>C</strong>ontainer.</p>
+<h2 id="何为Docker"><a href="#何为Docker" class="headerlink" title="何为Docker"></a>何为Docker</h2><blockquote>
+<p> docker – 处理集装箱的码头工人</p>
+</blockquote>
+<p>既然已经有历史悠久的容器技术了, 为啥还会有Docker的出现呢?</p>
+<p>首先我们说, 在最初创建一个容器是需要自行写代码的, 不仅如此, 启动销毁一个容器都需要通过代码形式进行, 十分不方便. 那么与其搞这么复杂, 我为啥不直接使用虚拟机呢? 资源隔离的效果也要更好.当然性能和资源节约方面肯定还是容器更胜一筹.</p>
+<p>接下来说到Docker, 其实Docker实际上就是一个LXC的加强版, 早期的docker版本其实就是对LXC的一个二次封装, 一个前端应用程序. Docker使用Go语言编写.</p>
+<p>Docker真正强大的地方在与他的易用性, 主要体现在他的<strong>镜像</strong>上.</p>
+<p>就像我们使用虚拟机那样, 我们把操作系统打包成一个镜像文件. 安装时直接进行使用这个镜像文件就可以处理了, 而docker也是如此. 甚至不仅如此, docker对镜像文件的处理, 更加精妙.</p>
+<h3 id="Docker的镜像"><a href="#Docker的镜像" class="headerlink" title="Docker的镜像"></a>Docker的镜像</h3><p><strong>分层构建, 联合挂载.</strong></p>
+<p>我们可以来看这么一个图:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/docker_image.png" alt="docker_image"></p>
+<p>可以看到, docker的镜像构成是分层的, 最底层的就是用于系统引导的文件系统, 包括bootloader和kernel, 当容器启动完成之后就会被卸载来节省内存. 通常是aufs&#x2F;btrfs这样的文件系统. 这是所谓的容器的内核空间. </p>
+<blockquote>
+<p> aufs叫做高级多层同一文件系统(advanced multi-layered unification filesystem), 主要用来为Linux文件系统实现”联合挂载”. 由于某些历史原因, centos上不支持使用aufs, 所以docker也使用btrfs, devicemapper, overlayfs等等.</p>
+</blockquote>
+<p>我们知道, docker宣扬单个容器(用户空间)只运行单个服务. 这也就是说, 如过我们现在需要多个功能不同的镜像, 按照传统的镜像构建, 我们就需要多份不同的<strong>完整镜像</strong>. </p>
+<p>而现在, 按照docker的这种构建方法, 我们只需要一份基础层, 也就是上图中的rootfs, 我第一个容器需要跑Nginx, 好, 那么就把Nginx的层给挂载到基础层上面, 然后使用它, 另外一个需要使用到Apache httpd, 好, 那么就在把httpd的层给挂载到同一个基础层上面, 通过这种层叠和联合挂载的方式就会节省大量的资源. </p>
+<p>不过值得注意的是, 基础层是公用的, 那么如果我在一个容器中进行了数据修改, 会影响到其他容器吗? 显然这种事情是不能被允许的, 我们本来就是需要隔离的环境嘛. 所以这些镜像层都是<strong>只读</strong>的. 那我的数据修改怎么生效呢?</p>
+<p>Docker在容器的启动和执行时, 会在它所使用的镜像的顶层, 叠加一个可读可写的新层, 容器的数据操作都会生效在这么一个可写层上, 如果删除了某些资源, 上层就会把这个资源标记成不可见, 容器就会以为自己真的删除了, 实际上资源还原封不动的保留在下层, 数据修改亦是如此:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/docker_image2.png" alt="docker_image2"></p>
+<p>这里使用到的技术就是CoW, 也就是写时复制, 我们在之前说到LVM的快照的时候就已经说过了. 这里就不在重复了.</p>
+<p>你可能会有这样的疑问, 假设我现在使用的服务是MariaDB, 产生的数据量是巨大的, 难道还要存储在这么一个可写层上? 其实原本, 这么一个可写层在容器停止的时候也是会被持久化的, 但更一般的, 我们在使用容器的时候, 数据都是直接存储在远端存储上的, 也就是说我们找一个共享存储, 把它挂载到自己文件系统上使用, 这样的好处是, 首先不会消耗太多的性能(写时复制还是很吃性能的), 另外在发生迁移的时候很方便, 我们只需要重新创建一个新的容器, 然后把使用的共享存储挂载上去就行了.</p>
+<h2 id="何为编排"><a href="#何为编排" class="headerlink" title="何为编排"></a>何为编排</h2><p>我们经常听到这么一个概念, 叫做 – <strong>编排</strong> (<code>Orchestration</code>), 到底是个啥?</p>
+<p>其实这个概念我们去年的学习Linux集群管理的时候就已经接触过了, 维基百科给出的解释是:</p>
+<blockquote>
+<p><strong>Orchestration</strong> is the automated <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Configuration_management">configuration</a>, coordination, and management of computer systems and <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Software_deployment">software</a>.[<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Orchestration_(computing)#cite_note-Erl-1">1]</a></p>
+<p>A <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Category:Orchestration_software">number of tools exist</a> for automation of server configuration and management, including <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Ansible_(software)">Ansible</a>, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Puppet_(software)">Puppet</a>, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Salt_(software)">Salt</a> and <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Terraform_(software)">Terraform</a>.[<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Orchestration_(computing)#cite_note-2">2]</a>. For Container Orchestration there is different solutions such as <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Kubernetes">Kubernetes</a> software or managed services such as AWS EKS, AWS ECS or Amazon Fargate.</p>
+</blockquote>
+<p>编排是一个很宽泛的概念, 我们之前所使用到的集群管理配置工具, 例如Ansible, Puppet这些自动化配置管理应用都是编排工具. 在和Docker有关的概念中, Kubernetes就是一个有名的<strong>容器编排</strong>工具</p>
+<p>所以说白了, 编排就是一个对我们计算机资源的自动化配置, 协调和管理.</p>
+<h2 id="了解Docker"><a href="#了解Docker" class="headerlink" title="了解Docker"></a>了解Docker</h2><p>现在我们就来更多的了解下docker.</p>
+<h3 id="Docker的架构"><a href="#Docker的架构" class="headerlink" title="Docker的架构"></a>Docker的架构</h3><p><img src="https://docs.docker.com/engine/images/engine-components-flow.png" alt="Docker Engine Components Flow"></p>
+<p>这个是docker的引擎组件流.</p>
+<p>我们可以很明显得看出来, docker是一个C&#x2F;S架构的应用程序, 客户端通过docker CLI发送RESTful API来访问服务器端的docker守护进程, 服务器端支持三种套接字形式:</p>
+<ul>
+<li>IPv4</li>
+<li>IPv6</li>
+<li>Unix Sockets</li>
+</ul>
+<p>因此我们也可以将docker的daemon部署在同一个系统中.</p>
+<p>下图是docker的架构图:</p>
+<p><img src="https://docs.docker.com/engine/images/architecture.svg" alt="Docker Architecture Diagram"></p>
+<p>在主机中, 可以看到容器和镜像两个部分, 这是两个最重要的组件了. 镜像就从docker自己维护的一个hub上下载到本地. 在Client和Host之间, Host和Registry之间, 都是使用的https协议, 如果想要使用http, 需要手动指明.</p>
+<p>当然了, 就像Github一样, 我们也可以构建自己的仓库. 那么有个问题, 在Github中, 我们使用到的仓库被叫做<code>Repository</code>, 而Docker叫做<code>Registry</code>. 这是为什么呢?</p>
+<p>原因是这样的: 一个Registry之上, 除了提供镜像本身, 还有对用户的身份认证和对镜像的搜索应用. 在我们的docker仓库中, 一个仓库只对应一个应用, 仓库名就是应用名. 由于应用存在不同的版本, 为了标记这些镜像, 我们就给这些镜像加上一个**<code>tag</code>**, 通过仓库名加上标签就可以唯一标识一个标签, 当用户访问仓库名(应用名)访问而没有携带tag的时候, 就会默认使用最新版(latest). 我们把这些同一应用的镜像集合叫做Repository.</p>
+<p>所以简单的说, 镜像的集合叫做Repository, Repository的集合叫做Registry.</p>
+<h3 id="Docker的对象抽象"><a href="#Docker的对象抽象" class="headerlink" title="Docker的对象抽象"></a>Docker的对象抽象</h3><p>我们使用Docker, 就会和docker所抽象的资源打交道, 这其中就包括: 镜像, 容器, 网络, 存储卷, 插件等等其他对象.</p>
+<p>上面已经对docker的镜像做了一层简单的分析和了解, 这里就不在赘述.</p>
+<p>然后我们说到容器, 容器就是镜像的一个可运行实例, 我们可以通过docker API或者CLI来对一个容器做创建启动停止删除等等操作, 我们也可以使容器连接到一至多个网络, 附加存储, 甚至基于当前的状态来创建新的镜像. 当一个容器被移除的时候, 任何没有被持久化的数据都会消失.</p>
+<h3 id="Docker的使用"><a href="#Docker的使用" class="headerlink" title="Docker的使用"></a>Docker的使用</h3><p>我自己去自行试验了, 记录略. (没踩到坑, 大概)</p>
+<h3 id="Docker的虚拟化网络"><a href="#Docker的虚拟化网络" class="headerlink" title="Docker的虚拟化网络"></a>Docker的虚拟化网络</h3><p>docker默认使用bridge网络, 我们可以通过<code>docker network list</code>来看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># docker network list</span></span><br><span class="line">NETWORK ID          NAME                DRIVER              SCOPE</span><br><span class="line">210f0e83c9ce        bridge              bridge              <span class="built_in">local</span></span><br><span class="line">f46b112b7488        host                host                <span class="built_in">local</span></span><br><span class="line">51c645c27224        none                null                <span class="built_in">local</span></span><br></pre></td></tr></table></figure>
+
+<p>不仅如此, 在我们安装完docker之后就会多出一个虚拟网卡, 他就是用来作为docker容器和物理网卡的桥和容器间通信的二层设备:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># ip link</span></span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">2: ens192: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:50:56:99:4b:a5 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">5: docker0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default </span><br><span class="line">    <span class="built_in">link</span>/ether 02:42:15:e8:50:9f brd ff:ff:ff:ff:ff:ff</span><br></pre></td></tr></table></figure>
+
+<p>这其实就是二层交换机.</p>
+<p>不仅如此, 当你启动一个容器之后, 就会生成一个虚拟网卡, 这就是容器和docker0这个交换机的其中一半, 然后通过虚拟的桥连接到docker0上, 我们可以通过<code>brctl</code>看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># brctl show</span></span><br><span class="line">bridge name	bridge <span class="built_in">id</span>		STP enabled	interfaces</span><br><span class="line">docker0		8000.024215e8509f	no		veth33dc701</span><br><span class="line">									  veth4b0d096</span><br></pre></td></tr></table></figure>
+
+<p>这个docker0桥默认使用的nat桥, 我们可以通过iptables来看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># iptables -t nat -nL</span></span><br><span class="line">Chain PREROUTING (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">DOCKER     all  --  0.0.0.0/0            0.0.0.0/0            ADDRTYPE match dst-type LOCAL</span><br><span class="line"></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">DOCKER     all  --  0.0.0.0/0           !127.0.0.0/8          ADDRTYPE match dst-type LOCAL</span><br><span class="line"></span><br><span class="line">Chain POSTROUTING (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">MASQUERADE  all  --  172.17.0.0/16        0.0.0.0/0           </span><br><span class="line"></span><br><span class="line">Chain DOCKER (2 references)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line">RETURN     all  --  0.0.0.0/0            0.0.0.0/0   </span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 只要是源地址是<code>172.17.0.0/16</code>网段的, 就会被进行地址伪装, 也就是SNAT.</p>
+<p>接着我们再说第二种网络模型. 在这一种网络模型中, 我们有一个容器共享物理机的网络资源的命名空间, 这就意味着这个容器拥有了对宿主机的网络的修改能力, 也就是特权行为. 我们把这样的容器称作<code>Open container</code>. </p>
+<p>另外, 还可以通过多个容器共享同一个网络命名空间, 我们把这种称作<code>Join</code>式的网络. </p>
+<p>最后一种, 就是不携带网络通信功能, 只有一个loopback接口, 这种叫做<code>Closed Conatiner</code>.</p>
+<p>用一个图来总结就是:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.comdocker_network.png/" alt="docker_network"></p>
+<h3 id="Docker的容器网络"><a href="#Docker的容器网络" class="headerlink" title="Docker的容器网络"></a>Docker的容器网络</h3><p>通过在创建容器的时候传递网络参数就可以指定使用的网络模型.</p>
+<p>不仅如此, 还可以通过传递参数的方式来注入主机名, DNS, hosts文件等等. 但是容器所使用的网络是一个内部网络, 为了能够将服务暴露出去, 我们需要将容器的端口和宿主机的端口做映射, 通过在创建容器的时候加上<code>-p</code>参数就可以进行mapping.</p>
+<p>如果是只直接写上容器需要暴露的端口, 就会将这个端口映射到宿主机的一个动态随机端口上, 至于是那个端口, 可以通过查看iptables规则或者是使用docker port命令查看, 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># iptables -t nat -vnL</span></span><br><span class="line"></span><br><span class="line">Chain DOCKER (2 references)</span><br><span class="line"> pkts bytes target     prot opt <span class="keyword">in</span>     out     <span class="built_in">source</span>               destination         </span><br><span class="line">    0     0 RETURN     all  --  docker0 *       0.0.0.0/0            0.0.0.0/0           </span><br><span class="line">    0     0 DNAT       tcp  --  !docker0 *       0.0.0.0/0            0.0.0.0/0            tcp dpt:32768 to:172.17.0.2:80</span><br><span class="line">[root@docker ~]<span class="comment"># docker port web1</span></span><br><span class="line">80/tcp -&gt; 0.0.0.0:32768</span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 指定的80端口被暴露到了宿主机的一个随机的端口, 我们可以试着访问下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># curl 10.230.204.178:32768</span></span><br><span class="line">&lt;h1&gt;The busybox httpd server.&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>是没问题的!</p>
+<p>但是动态的端口实用性仍然有限, 我们可以通过完整的指定地址和端口来完成映射. 另外, -p选项可以被指定多次.</p>
+<p>接下来我们创建一个容器共享的网络空间, 在创建容器的时候指定网络为别的容器的网络就可以, 来试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># docker attach b1</span></span><br><span class="line">/ <span class="comment"># ifconfig </span></span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:03  </span><br><span class="line">          inet addr:172.17.0.3  Bcast:0.0.0.0  Mask:255.255.0.0</span><br><span class="line">          inet6 addr: fe80::42:acff:fe11:3/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:8 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:0 </span><br><span class="line">          RX bytes:656 (656.0 B)  TX bytes:656 (656.0 B)</span><br><span class="line">---</span><br><span class="line">[root@docker ~]<span class="comment"># docker run --name b2 -it --network container:b1 59.68.29.77:5000/busybox</span></span><br><span class="line">/ <span class="comment"># ifconfig </span></span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:03  </span><br><span class="line">          inet addr:172.17.0.3  Bcast:0.0.0.0  Mask:255.255.0.0</span><br><span class="line">          inet6 addr: fe80::42:acff:fe11:3/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:8 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:0 </span><br><span class="line">          RX bytes:656 (656.0 B)  TX bytes:656 (656.0 B)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>但是, 两者的文件系统等其他资源都是隔离的, 只有网络是共享的.</p>
+<p>那么我们能不能像VMware那样来修改docker0桥的信息呢, 很简单, 在daemon.json文件中配置属性项就可以了, 其中最重要的属性就是<code>bip</code>也就是bridge ip.</p>
+<h3 id="Docker的存储卷"><a href="#Docker的存储卷" class="headerlink" title="Docker的存储卷"></a>Docker的存储卷</h3><p>还记得文章的开头所说的关于镜像的构成吗? 我们说镜像的最上层是一个可写层, 使用CoW技术来进行数据操作. 然后我们提到使用别的存储来持久化数据. 并且还在上面说到Docker的对象抽象中有一个叫做<code>volume</code>的, 这个就是我们在这一小节要提到的存储卷. 通过将宿主机上的一个目录文件和容器中的文件系统中的目录进行一定范围的绑定, 通过大的文件系统隔离, 仅仅只把这个目录的空间进行关联. 当然, 除了宿主机上的存储, 我们也可以拿一个nfs服务器或者什么共享存储来当做容器的卷.</p>
+<p>当我们进行了卷的绑定操作之后, 哪怕删除容器, 数据也会持久化在存储中. Docker有两种类型的卷, 每种类型的卷都在容器中存在一个挂载点, 但是在宿主机上的位置有所不同:</p>
+<ul>
+<li>Bind mount volume 用户指定位置</li>
+<li>Docker-managed volume 由Docker来创建和管理</li>
+</ul>
+<p>操作起来也十分简单, 来看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># docker run --name b1 -it -v /data 59.68.29.77:5000/busybox</span></span><br><span class="line">/ <span class="comment"># ls /data/</span></span><br><span class="line">/ <span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>这样就是创建了一个容器内的<code>/data</code>目录指向宿主机的一个特定目录的存储卷, 这个存储卷由Docker进行维护, 那么到底是哪里呢, 我们可以来inspect一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"> ...</span><br><span class="line"> 		<span class="string">&quot;Mounts&quot;</span>: [</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="string">&quot;Type&quot;</span>: <span class="string">&quot;volume&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Name&quot;</span>: <span class="string">&quot;0bd6ed489a4c9714c3a8089216407a3dd342c637c9f68872707aa92a89d6ec21&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Source&quot;</span>: <span class="string">&quot;/var/lib/docker/volumes/0bd6ed489a4c9714c3a8089216407a3dd342c637c9f68872707aa92a89d6ec21/_data&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Destination&quot;</span>: <span class="string">&quot;/data&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Driver&quot;</span>: <span class="string">&quot;local&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Mode&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">                <span class="string">&quot;RW&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">                <span class="string">&quot;Propagation&quot;</span>: <span class="string">&quot;&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>可以看到在宿主机的位置, 接下来我们通过宿主机在这里写点文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># echo &quot;Hello docker&quot; &gt; /var/lib/docker/volumes/0bd6ed489a4c9714c3a8089216407a3dd342c637c9f68872707aa92a89d6ec21/_data/hello</span></span><br></pre></td></tr></table></figure>
+
+<p>然后回到容器中, 就会看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># cat /data/hello </span></span><br><span class="line">Hello docker</span><br></pre></td></tr></table></figure>
+
+<p>当然反过来也是完全可以的.</p>
+<p>这是由docker来管理的, 接下来我们试试自行管理的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># docker run --name b2 -it --rm -v /data/volume/b2:/data 59.68.29.77:5000/busybox </span></span><br></pre></td></tr></table></figure>
+
+<p>然后我们还是来查看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">        <span class="string">&quot;Mounts&quot;</span>: [</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="string">&quot;Type&quot;</span>: <span class="string">&quot;bind&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Source&quot;</span>: <span class="string">&quot;/data/volume/b2&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Destination&quot;</span>: <span class="string">&quot;/data&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Mode&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">                <span class="string">&quot;RW&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">                <span class="string">&quot;Propagation&quot;</span>: <span class="string">&quot;rprivate&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>宿主机的目录也不需要提前建立, docker是可以帮你自动建立的.</p>
+<p>同样的, 就像我们的共享网络一样. 容器也可以同时挂载本地的同一个卷.  除了手动指明, 还可以通过传递<code>--from-container</code>来直接复制别的容器的配置.</p>
+<h2 id="了解Dockerfile"><a href="#了解Dockerfile" class="headerlink" title="了解Dockerfile"></a>了解Dockerfile</h2><p>dockerfile可以说是Docker的另一个重要概念.</p>
+<p>什么是Dockerfile, 这个东西说白了就是一个纯文本文件, 里面是用于创建镜像的指令. 通过读取dockerfile中的指令, Docker可以自动化的进行容器build. 那么我们为什么会需要这么一个东西呢. 很简单, 假设我们从互联网中下载下来了一个Nginx或者是别的什么应用的镜像. 使用的时候我们总是会先进行配置, 然后才会投入使用.</p>
+<p>而Dockerfile就是解决这样的问题, 当我们创建容器的时候, 在实际运行真正的服务进程之前, 我们会先运行另外一个程序, 这个程序就是会进行服务配置的一个自动化程序. </p>
+<p>Docker会按照顺序从上到下的运行Dockerfile中的指令, 每一条指令都是独立的, 在Dockerfile中为了区分参数和指令, 我们通常会把指令大写, 尽管Dockerfile是大小写不敏感的. 使用<code>#</code>来表示一行注释. 一个Dockerfile必须使用FROM作为指令开头, FROM说明我们构建的基础镜像是哪个.</p>
+<p>接下来我们简单的说一下Dockerfile的工作原理, 首先我们需要一个工作目录, 构建镜像所需要的所有文件必须包含在这个目录之下, 而不能在父目录中, 接着在这个工作目录中放着我们的Dockerfile, 需要注意的是这个文件名首字母必须大写, 然后, 就像我们的git一样, 如果说在子目录中的文件我不需要使用到, 就可以在这个工作目录中加上一个隐藏文件, 叫做<code>.dockerignore</code>, 语法格式基本上和<code>.gitignore</code>一样.</p>
+<p>由于我们构建镜像的环境是基于一个基础镜像, 所以能够使用的命令都是限制在这个环境中的.</p>
+<p>关于更多Dockerfile的语法和格式, 推荐阅读<a target="_blank" rel="noopener" href="https://docs.docker.com/engine/reference/builder/">官方文档</a></p>
+<h2 id="Docker的私有仓库"><a href="#Docker的私有仓库" class="headerlink" title="Docker的私有仓库"></a>Docker的私有仓库</h2><p>我们在说到上面的Docker的架构的时候就提到了Registry这个东西, 我们也可以搭建私有的局域网内的私有仓库. 其实, 搭建这么仓库很简单, 因为Docker官方提供了这么一个容器镜像, 就是专门做这件事情的, 这个镜像就叫做docker-registry. 可以直接通过yum下载安装软件包:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># yum info docker-registry</span></span><br><span class="line">Loaded plugins: fastestmirror</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line">Available Packages</span><br><span class="line">Name        : docker-registry</span><br><span class="line">Arch        : x86_64</span><br><span class="line">Version     : 0.9.1</span><br><span class="line">Release     : 7.el7</span><br><span class="line">Size        : 123 k</span><br><span class="line">Repo        : extras</span><br><span class="line">Summary     : Registry server <span class="keyword">for</span> Docker</span><br><span class="line">URL         : https://github.com/docker/docker-registry</span><br><span class="line">License     : ASL 2.0</span><br><span class="line">Description : Registry server <span class="keyword">for</span> Docker (hosting/delivering of repositories and images).</span><br></pre></td></tr></table></figure>
+
+<p>安装之后其实是一个叫做docker-distribution的东西:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># rpm -ql docker-distribution</span></span><br><span class="line">/etc/docker-distribution/registry/config.yml</span><br><span class="line">/usr/bin/registry</span><br><span class="line">/usr/lib/systemd/system/docker-distribution.service</span><br><span class="line">/usr/share/doc/docker-distribution-2.6.2</span><br><span class="line">/usr/share/doc/docker-distribution-2.6.2/AUTHORS</span><br><span class="line">/usr/share/doc/docker-distribution-2.6.2/CONTRIBUTING.md</span><br><span class="line">/usr/share/doc/docker-distribution-2.6.2/LICENSE</span><br><span class="line">/usr/share/doc/docker-distribution-2.6.2/MAINTAINERS</span><br><span class="line">/usr/share/doc/docker-distribution-2.6.2/README.md</span><br><span class="line">/var/lib/registry</span><br></pre></td></tr></table></figure>
+
+<p>安装的东西也很少, 最下面的那个目录就是存储用户上传的镜像的.</p>
+<p>我们来看一下这个配置文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@docker ~]<span class="comment"># cat /etc/docker-distribution/registry/config.yml </span></span><br><span class="line">version: 0.1</span><br><span class="line"><span class="built_in">log</span>:</span><br><span class="line">  fields:</span><br><span class="line">    service: registry</span><br><span class="line">storage:</span><br><span class="line">    cache:</span><br><span class="line">        layerinfo: inmemory</span><br><span class="line">    filesystem:</span><br><span class="line">        rootdirectory: /var/lib/registry</span><br><span class="line">http:</span><br><span class="line">    addr: :5000</span><br></pre></td></tr></table></figure>
+
+<p>我们如果想要修改路径的话, 就在这里改变目录就行了. 默认监听本机的所有5000端口.</p>
+<p>服务端默认使用的协议是http, 但是我们的客户端是一个默认htttps的客户端, 服务端和客户端不兼容, 怎么办?</p>
+<p>由于是内网, 我们可以把我们的服务端当做非加密, 不安全的特例加进我们客户端的配置文件中, 也就是daemon.json的<code>insecure_registry</code>就可以了.</p>
+<p>默认的工具只有CLI端, 如果需要Web界面, 可以使用harbor项目.</p>
+<h2 id="Docker的资源限制"><a href="#Docker的资源限制" class="headerlink" title="Docker的资源限制"></a>Docker的资源限制</h2><p>我们对容器的资源进行管控, 主要是从三个维度:</p>
+<ul>
+<li>CPU</li>
+<li>Memory</li>
+<li>Block I&#x2F;O</li>
+</ul>
+<p>虽说是三个, 但是实际上, 我们真的能管控的还是仅限于前两个.</p>
+<p>我们先来说说内存控制, 默认的情况下, 一个容器可以使用的资源是无限制的. Docker支持对容器的RAM和swap空间增加限制. 简单的说, 在进行容器的创建的时候, 增加一个<code>-m/--memory</code>参数就可以限制内存用量了, 你可以使用各种单位例如m,g啥的. 对于swap的限制依赖于对内存用量的限制, 也就是说, 如果你想要限制swap用量, 必须先明确指定这个容器的内存用量是多少. 对应的参数是<code>--memory-swap</code></p>
+<p>对于这个swap设定, 其实逻辑有点奇怪. 假设swap设置为S, memory设置为M, 那么最后的容器总内存是S, 可用的ram是M, swap是S-M. swap指定为-1的时候, 代表无限制.</p>
+<p>ok, 接下来来说说CPU. 默认情况下, 使用到的CPU资源也是无限制的. 我们来介绍三个CPU资源限制参数.</p>
+<p>首先是<code>--cpu-share</code>, 传入一个默认是1024的可大可小的值. 得益于我们的CPU是一个可压缩的资源, 所以我们可以通过指明每一个容器使用CPU的比例来进行动态的划分. 例如, 我现在有三个容器的参数分别是1024:512:2048. 那么当三个容器都在运行的时候占总运算比分别是2:1:4. 但是如果第二个和第三个都不吃CPU的话, 第一个容器是完全可以占用全部的运算资源的. 因为此时的比例就是1:0:0了嘛. 所以这是一个容器之间对CPU的限制, 并不能对单个容器的CPU用量进行限制. 如果想要做到这个效果, 就应该使用下面的参数.</p>
+<p><code>--cpus</code>, 简单直接, 直接指明你想让容器所使用到的最多的CPU资源. 例如, 指定<code>--cpu 1.5</code>就是限制该容器最多可以用一个半的CPU. 但是使用的是哪个核心, 我们是不知道的, 如果想要明确指定容器可以使用到的核心, 使用下面的参数.</p>
+<p><code>--cpusets-cpus</code>, 我们的CPU从0开始, 一个四核心的主机, CPU就是0,1,2,3. 所以比如说我限制上面提到的容器只可以使用前两个核心, 那就写<code>--cpuset-cpus 0,1</code>即可.</p>
+<p>如果想要看看限制的效果, 可以试着pull一个压力测试的镜像跑着玩玩, 例如<code>docker-stress-ng</code>跑着玩玩, 例如<code>docker-stress-ng</code></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E4%B8%BA%E5%AE%B9%E5%99%A8"><span class="toc-number">1.</span> <span class="toc-text">何为容器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E4%B8%BADocker"><span class="toc-number">2.</span> <span class="toc-text">何为Docker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E9%95%9C%E5%83%8F"><span class="toc-number">2.1.</span> <span class="toc-text">Docker的镜像</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E4%B8%BA%E7%BC%96%E6%8E%92"><span class="toc-number">3.</span> <span class="toc-text">何为编排</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3Docker"><span class="toc-number">4.</span> <span class="toc-text">了解Docker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="toc-number">4.1.</span> <span class="toc-text">Docker的架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E5%AF%B9%E8%B1%A1%E6%8A%BD%E8%B1%A1"><span class="toc-number">4.2.</span> <span class="toc-text">Docker的对象抽象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">4.3.</span> <span class="toc-text">Docker的使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E8%99%9A%E6%8B%9F%E5%8C%96%E7%BD%91%E7%BB%9C"><span class="toc-number">4.4.</span> <span class="toc-text">Docker的虚拟化网络</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C"><span class="toc-number">4.5.</span> <span class="toc-text">Docker的容器网络</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E7%9A%84%E5%AD%98%E5%82%A8%E5%8D%B7"><span class="toc-number">4.6.</span> <span class="toc-text">Docker的存储卷</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3Dockerfile"><span class="toc-number">5.</span> <span class="toc-text">了解Dockerfile</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E7%9A%84%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93"><span class="toc-number">6.</span> <span class="toc-text">Docker的私有仓库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E7%9A%84%E8%B5%84%E6%BA%90%E9%99%90%E5%88%B6"><span class="toc-number">7.</span> <span class="toc-text">Docker的资源限制</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&text=Docker容器技术入门"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&is_video=false&description=Docker容器技术入门"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Docker容器技术入门&body=Check out this article: https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&title=Docker容器技术入门"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&name=Docker容器技术入门&description=&lt;p&gt;从今天开始学习Docker容器!&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/03/25/Docker%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF%E5%85%A5%E9%97%A8/&t=Docker容器技术入门"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

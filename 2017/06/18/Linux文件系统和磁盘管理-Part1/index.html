@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Quota&amp;LVM2.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux文件系统和磁盘管理--Part1">
+<meta property="og:url" content="https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Quota&amp;LVM2.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ext2.jpg">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/fat.jpg">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/group.jpg">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/jump.jpg">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/dumpe2fs.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.compasswd.png/">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.comdumpe2fs2.png/">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.comvfs.gif/">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm1.gif">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm.gif">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_2.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_3.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_pv.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_vg.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pv.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vgdisplay.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vgextend_.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvcreate.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lv.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/mkfs.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvextend0.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vgextend.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvdisplay_1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvresize.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sdb11.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/resize2fs.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/fs_lv.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvresize_reduce.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pvdisplay_sdb5.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pvdisplay_11.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pvremove.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/snapshot.gif">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sanp_1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sanp_2.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/lv_sanpshot.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/df_snap.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sanp.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/df-h.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/tar.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/umount.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/mkfs_.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/remount.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/xfs1.png">
+<meta property="article:published_time" content="2017-06-18T22:26:29.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:39:27.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ext2.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux文件系统和磁盘管理--Part1</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&sudo/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&text=Linux文件系统和磁盘管理--Part1"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&is_video=false&description=Linux文件系统和磁盘管理--Part1"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux文件系统和磁盘管理--Part1&body=Check out this article: https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&name=Linux文件系统和磁盘管理--Part1&description=&lt;p&gt;Quota&amp;amp;LVM2.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&t=Linux文件系统和磁盘管理--Part1"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E8%AF%86%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-EXT2"><span class="toc-number">1.</span> <span class="toc-text">初识文件系统(EXT2)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E7%9A%84EXT2-x2F-3%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.1.</span> <span class="toc-text">Linux的EXT2&#x2F;3文件系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%93%8D%E4%BD%9C"><span class="toc-number">1.2.</span> <span class="toc-text">Linux的文件系统的操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VFS"><span class="toc-number">1.3.</span> <span class="toc-text">VFS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E9%85%8D%E9%A2%9D-Quota"><span class="toc-number">2.</span> <span class="toc-text">磁盘配额(Quota)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVM"><span class="toc-number">3.</span> <span class="toc-text">LVM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LVM%E7%9A%84%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B"><span class="toc-number">3.1.</span> <span class="toc-text">LVM的构建过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVM%E7%9A%84%E7%B3%BB%E7%BB%9F%E5%BF%AB%E7%85%A7"><span class="toc-number">4.</span> <span class="toc-text">LVM的系统快照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XFS%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">5.</span> <span class="toc-text">XFS文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%8C%BA-data-section"><span class="toc-number">5.1.</span> <span class="toc-text">数据区(data section)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%8C%BA-log-section"><span class="toc-number">5.2.</span> <span class="toc-text">日志区(log section)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%B3%E6%97%B6%E5%8C%BA-realtime-section"><span class="toc-number">5.3.</span> <span class="toc-text">即时区(realtime section)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XFS%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-number">6.</span> <span class="toc-text">XFS的构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XFS%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">7.</span> <span class="toc-text">XFS的使用</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux文件系统和磁盘管理--Part1
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-06-18T22:26:29.000Z" class="dt-published" itemprop="datePublished">2017-06-18</time>
+        
+        (Updated: <time datetime="2020-11-30T01:39:27.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Quota&amp;LVM2.</p>
+<span id="more"></span>
+
+<h2 id="初识文件系统-EXT2"><a href="#初识文件系统-EXT2" class="headerlink" title="初识文件系统(EXT2)"></a>初识文件系统(EXT2)</h2><blockquote>
+<p>EXT2文件系统是Linux上最传统的文件系统.</p>
+</blockquote>
+<p>传统的磁盘和文件系统中, 一个分区就是一个文件系统, 但现在有了LVM等新技术, 使得一个分区可以获得多个文件系统.</p>
+<p>所以现在严格的说, 文件系统应该是<strong>一个可被挂载的数据</strong>而不是一个分区.</p>
+<p>操作系统的文件属性除了文件内容之外, 通常还会有很多属性(元信息:[大小,时间,群组,权限等等]),而<strong>操作系统会将这些元信息储存在inode中, 而文件的实际数据储存在data block中</strong>, 而这些储存的块(block)和inode的信息(总量,使用情况,剩余量等等)又被存储在一个叫做<strong>superblock</strong>的地方.</p>
+<p>这样简单总结一下就是:</p>
+<ul>
+<li>superblock 记录整个文件系统的整体信息, 包括文件的inode&#x2F;block的总量&#x2F;使用量&#x2F;剩余量&#x2F;文件系统的格式和相关信息等</li>
+<li>block 存储文件实际内容的地方, 一个文件如果过大, 会分不同的块来存储</li>
+<li>inode 记录文件的属性, 以及此文件的内容所对应的的block块.</li>
+</ul>
+<p>inode&#x2F;block 的数据访问就像是这样:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ext2.jpg" alt="ext2"></p>
+<p>上面的浅色方格就是指inode节点, 当访问文件时,操作系统会首先找到文件对应的inode节点, 接着读取inode节点中的信息(e.g:权限), 没问题的话就会从inode中找到文件的内容实际是放在2.7.13.15这些block中, 进而进行读取或其他的文件操作.</p>
+<p>这种文件系统叫做索引式文件系统, 不同于早期U盘使用的<strong>FAT</strong>, 那是一种向前查找的方式, 即是说:他没有Inode, 每一个文件的信息都是从每一个block的末位读到的.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/fat.jpg" alt="fat"></p>
+<p>这样就会造成的一种情况是, 读取一个文件会使得磁盘的磁头多转好多圈才能读完一个文件的数据.</p>
+<p>而磁盘碎片就是因为写入的block太过于分散, 导致文件的读取性能会大大的降低, 因此FAT文件系统经常需要进行磁盘的碎片清理.</p>
+<h3 id="Linux的EXT2-x2F-3文件系统"><a href="#Linux的EXT2-x2F-3文件系统" class="headerlink" title="Linux的EXT2&#x2F;3文件系统"></a>Linux的EXT2&#x2F;3文件系统</h3><p>文件系统最一开始是将block的大小和inode的节点的数量都规划好了, 除非再进行格式化或者使用工具改变文件系统的大小.</p>
+<p>考虑这样的情况, 一个文件系统的大小为500GB, 这是一个非常庞大的数字, 如果直接这样分组, 会导致inode和block的数量非常大, 这样就会非常不容易管理. 因此一种明智的做法设计是: <strong>进行分组</strong>.</p>
+<p>这样的块组叫做<code>blockgroup</code>.</p>
+<p>再考虑整体的规划上, 文件系统的最前方是一个启动扇区, 这个扇区中可以安装引导装载程序.(boot loader),这样我们就可以将不同系统的引导程序安装在系统最前端, 而不用直接覆盖MBR.</p>
+<p>下面看整个文件系统的块组的构造情况:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/group.jpg" alt="group"></p>
+<p>整个blockgroup的最大组成部分就是data block.这个就是文件内容的存放地方.在Ext2系统中存在三种规格的block, 分别是1KB, 2KB以及4KB.在格式化的时候,block的大小就已经被固定了, 而且每一个block还会被编上号.inode的大小会影响到整个文件系统的最大容量. 当然了,每个block当然只能放一个文件, 即使文件的大小小于block的大小.</p>
+<p>接下来, 是inodetable, 对于索引式文件系统这个是很重要的东西!因为inode中记录了所有文件数据实际上是放在哪个block中, 基本上inode中记录了以下文件数据:</p>
+<ul>
+<li>文件的访问模式</li>
+<li>该文件所属的组和所有者</li>
+<li>该文件的大小</li>
+<li>该文件的创建或创建时间</li>
+<li>最近一次的修改时间</li>
+<li>定义文件特性的标志(UID什么的)</li>
+<li>该文件的真正指向(指针)</li>
+</ul>
+<p>对于inode本身呢? 它具有以下特点:</p>
+<ul>
+<li>每一个inode的大小固定为128bytes(256)</li>
+<li>一个文件对应一个inode, 因此inode的数量决定了文件的最大数量</li>
+<li>系统读取文件的时候需要先找到inode, 然后检测权限是否符合, 符合才会继续去读取block的内容</li>
+</ul>
+<p>事实上, inode要记录的信息非常的多, 所以仅有128bytes(256)是不够的, 这样就会想到一种扩展的方法, 我们将inode寻到的block作为文件信息的拓展就像路由器一样.</p>
+<p>这样ext文件系统最多经过三次跳转来进行文件信息的读取. ( 直接 -&gt; 双间接 -&gt; 三间接 )</p>
+<p>就像下面的图所展示的过程:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/jump.jpg" alt="jump"></p>
+<p>接下来的就是超级块 前面已经简单说过超级块的作用, 就是记录文件系统的信息, 他记录的主要信息待会会再下面看到.</p>
+<p>文件系统描述说明: 其实就是每个block group的开始和结束的block号码, 以及其他区段的位置(block号)</p>
+<p>块对照表(block bitmap): 主要用于记载那些block是空的.</p>
+<p>inode对照表(inode bitmap): 与块对照表相似的功能, 记录那些空闲的inode</p>
+<p>现在就来看一下这些东西到底表现出来是个什么吧!</p>
+<p>使用<code>dumpe2fs</code>来看, 这个命令输出的信息非常的多.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@Ubuntu ~]$ dumpe2fs | less</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/dumpe2fs.png" alt="dumpe2fs"></p>
+<p>首先看到文件系统的名称, 也就是<code>Filesystem volumn name</code>, 而后往下看就是关于文件系统的挂载参数, 以及文件系统的状态.</p>
+<p>接下来就是上面所提到的node和block的总数, 以及剩余多少可用, 起始的block的号码,每个block的大小,inode的大小等等..</p>
+<p>上面的就是对ext文件系统的基础认知了.</p>
+<p>现在, 创建一个目录文件 那么操作系统就会分配1个inode以及至少一个block给它, 你会发现即使文件是空的他依然会占用4KB的大小(一个block的大小).</p>
+<p>对于目录, 他存放的数据是什么呢? 目录文件的block中存放的是这个目录文件下存放的所有文件的inode号码和文件名.</p>
+<p>因此目录文件并不只会占用一个block, 如果目录里面的内容太多导致一个block承载不了这么多的内容的话, 操作系统就会再分配一个block给他. </p>
+<p>下面模拟一次操作系统读取passwd文件过程.</p>
+<ol>
+<li>首先, 操作系统通过挂载点信息找到设备挂载的根目录的inode的节点号, 如你所见, 是2.( 系统最顶层的inode节点一般都是2, 并且&#x2F;目录下的<code>.</code>和<code>..</code>都指向同一个地方, 也就是根自己本身 ) 访问用户具有该inode节点中记录的权限.因此允许进入得到block的号码.</li>
+</ol>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.compasswd.png/" alt="passwd"></p>
+<ol>
+<li>接着, 由上一步得到block的号码,去寻找有&#x2F;etc目录的inode的号码. ( 458753 )</li>
+<li>下一步, 读取458753的inode的信息, 如果有权限, 获得block号码, 继续访问block的内容</li>
+<li>从block中得到passwd文件的inode号码.</li>
+<li>读取passwd的inode(459453), 判断权限, 如果有则获得block的内容. 读取结束.</li>
+</ol>
+<p>这里的第一步提到了挂载点, 其实挂载的意义在于将一个目录作为文件系统的入口目录, 要想使用文件系统, 你总要把它放在Linux中的文件树上的某个地方.</p>
+<p>你也许会奇怪, 为什么是从2号开始的. 还记得以前说过的虚拟文件系统吗? 就是&#x2F;proc 和&#x2F;sys 这两只.他们拥有1号inode.</p>
+<p>了解到这里, 我们再回到之前那张dumpe2fs的图.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.comdumpe2fs2.png/" alt="dumpe2fs2"></p>
+<p>在头信息的最后, 那些红色方框中的, 就是下面要说说的日志文件系统.上面说的只是读取文件, 实际上写入文件的过程是复杂的.</p>
+<p>在写入文件的过程中, 我们不是直接写入进block中的, 因为在进行文件的删除,编辑,写入的时候superblock,inode bitmap,block bitmap的数据都是在变化的, 这样 我们称inode table和data block为数据存放区域, 而上述的三个称为中间数据</p>
+<p>考虑这么一种情况, 在你进行正常的文件写入的时候, 因为某些原因导致系统中断(停电, 内核错误等等), 这个时候你的文件内容虽然已经写入到了data block中, 但是却还没有同步到table和bitmap上, 这样就会有很多不好的后果.也就造成了一种<strong>数据不一致</strong>的状态.简单说就是你的文件确实已经被拷贝到了磁盘上, 但是却没有分配到inode, 这样不仅无法看到, 而且在未来还有可能被覆盖掉.</p>
+<p>早期的ext2文件系统确实考虑到了这个情况, 但是解决方法有点蠢, ext2选择在开机时进行一次数据一致性的大检查, 这样检查的缺点在于<strong>十分费时</strong></p>
+<p>于是在ext3文件系统中有了一个日志文件系统, 原理是这样的:</p>
+<blockquote>
+<p>首先, 当系统要写入一个文件时, 会现在日志记录块中记录文件要写入的信息. 接着就开始写入文件的权限和数据, 并开始更新元信息.最后完成数据和元数据的更新后, 在日志记录块中完成这个文件的记录.</p>
+</blockquote>
+<p>这样就不用进行整个磁盘的大检查了, 直接定位到不一致的块就行了.这个就是日志文件系统的最基础的功能.</p>
+<h3 id="Linux的文件系统的操作"><a href="#Linux的文件系统的操作" class="headerlink" title="Linux的文件系统的操作"></a>Linux的文件系统的操作</h3><p>相信你已经发现了, Linux的内存占用似乎总是占满了所有的物理内存.这是因为提高文件系统的IO效率, Linux采取了异步处理的方式,说来也很简单就是在文件仍然没有经过改动的话,就会被设置一个Clean的标志位, 如果文件内容被修改过了, 就会标记为脏数据(Dirty), 这些操作都是在内存中进行的, 所以系统会不定期的将内存中的标记为Dirty的资源写入磁盘.</p>
+<p>并且, 系统将常用的文件数据放在主存储器的缓冲区内, 以加速文件的读&#x2F;写. 这就是为什么Linux的物理内存会被耗光的原因.</p>
+<h3 id="VFS"><a href="#VFS" class="headerlink" title="VFS"></a>VFS</h3><p>Linux的内核通过一个叫做VFS的模块功能进行的文件系统的读取.我们所操作的整个文件系统都是建立在VFS之上, 下面的图可很好的概括一下:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.comvfs.gif/" alt="vfs"></p>
+<p>再说说一个磁盘空间的浪费问题, 前面其实已经说过, 如果一个文件的大小不够一个block的大小, 他依然会占满整个block, 而一个block又最多只能有一个文件的内容.</p>
+<h2 id="磁盘配额-Quota"><a href="#磁盘配额-Quota" class="headerlink" title="磁盘配额(Quota)"></a>磁盘配额(Quota)</h2><p>现在就进入我们的第一个主题了.</p>
+<p>假设我们有多人登陆同一台服务器(10人), 我们给家目录单分了一个独立的分区, 大小为10GB, 这样当然是人均分1GB的空间才公平.但是不做任何操作的话 就只能靠大家自觉 ( 不存在的好吗 )</p>
+<p>Quota就能帮我们实现这个. 首先要说的是, Quota的作用范围仅是作用于文件系统的, 这就是说你这个分区的内容都会受到影响.然后就是Quota对root无效(Linux里的天神 &#x2F;摊手)</p>
+<p>Quota的限制功能体现在限制容量和文件数量上(也就是通过操作block&#x2F;inode来进行的)</p>
+<p>另外Quota中有三个关键的变量:</p>
+<ul>
+<li>soft 软限制, 不会超过hard.用户超过该值会发出磁盘爆满的警告, 如果在最后的grace time内将容量降低回来, 倒计时就会停止.</li>
+<li>hard 硬限制, 用户绝对不会超过这个限制, 一旦超出, 用户就会即刻失去磁盘的使用权.</li>
+<li>grace time 默认的宽限时间是7天, 如果在时间内你没有将磁盘的使用容量降下来, soft的值就会取代hard</li>
+</ul>
+<p>一个配置的例子:</p>
+<ul>
+<li>hard &#x3D; 500MBytes</li>
+<li>soft &#x3D; 400MBytes</li>
+</ul>
+<p>以上面配置的例子来说，假设你的容量高达 450MBytes 了，那七天的宽限时间就会开始倒数， 若七天内你都不进行任何删除文件的动作来替你的磁碟用量瘦身， 那么七天后你的磁碟最大用量将变成 400MBytes (那个 soft 的限制值)，此时你的磁碟使用权就会被锁住而无法新增文件了。</p>
+<p>下面就来操作一次吧..首先要在挂载的时候开启配额选项,<strong>此次注意:根据需要,开启针对用户的限额是usrquota, 针对组别的是grpquota.</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]$ mount -o remount,usrquota,grpquota /<span class="variable">$POSITION</span>(挂载点位置)</span><br></pre></td></tr></table></figure>
+
+<p>接下来, 就开启quota的记录档吧.</p>
+<blockquote>
+<p>其实 Quota 是透过分析整个文件系统中，每个使用者(群组)拥有的文件总数与总容量， 再将这些数据记录在该文件系统的最顶层目录，然后在该记录档中再使用每个帐号(或群组)的限制值去规范磁碟使用量的</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]$ quotacheck [-avugfM] [/mount_point]</span><br><span class="line">选项与参数：</span><br><span class="line">-a  ：扫瞄所有在 /etc/mtab 内，含有 quota 支持的 filesystem，加上此参数后， </span><br><span class="line">      /mount_point 可不必写，因为扫瞄所有的 filesystem 了嘛！</span><br><span class="line">-u  ：针对使用者扫瞄文件与目录的使用情况，会创建 aquota.user</span><br><span class="line">-g  ：针对群组扫瞄文件与目录的使用情况，会创建 aquota.group</span><br><span class="line">-v  ：显示扫瞄过程的资讯；</span><br><span class="line">-f  ：强制扫瞄文件系统，并写入新的 quota 配置档 (危险)</span><br><span class="line">-M  ：强制以读写的方式扫瞄文件系统，只有在特殊情况下才会使用。</span><br></pre></td></tr></table></figure>
+
+<p>接着就执行一次试试, 正常是会报错的, 别担心.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]$ quotacheck -avug</span><br><span class="line">quotacheck: Scanning /dev/磁盘 [挂载点] quotacheck: Cannot <span class="built_in">stat</span> old user quota</span><br><span class="line">file: No such file or directory &lt;==有找到文件系统，但尚未制作记录档！</span><br><span class="line">quotacheck: Cannot <span class="built_in">stat</span> old group quota file: No such file or directory</span><br><span class="line">quotacheck: Cannot <span class="built_in">stat</span> old user quota file: No such file or directory</span><br><span class="line">quotacheck: Cannot <span class="built_in">stat</span> old group quota file: No such file or directory</span><br></pre></td></tr></table></figure>
+
+<p>接着你的挂载的根目录就会多出两个文件(如果你把用户级别的和组级别的都打开了的话)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># ll -d /挂载点/a*</span></span><br><span class="line">-rw------- 1 root root 8192 Mar  6 11:58 /home/aquota.group</span><br><span class="line">-rw------- 1 root root 9216 Mar  6 11:58 /home/aquota.user</span><br></pre></td></tr></table></figure>
+
+<p>接着是最简单的一步了, 直接启动Quota的服务.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># quotaon [-avug]</span></span><br><span class="line">[root@www ~]<span class="comment"># quotaon [-vug] [/mount_point]</span></span><br><span class="line">选项与参数：</span><br><span class="line">-u  ：针对使用者启动 quota (aquota.user)</span><br><span class="line">-g  ：针对群组启动 quota (aquota.group)</span><br><span class="line">-v  ：显示启动过程的相关信息；</span><br><span class="line">-a  ：根据 /etc/mtab 内的 filesystem 配置启动有关的 quota ，若不加 -a 的话，</span><br><span class="line">      则后面就需要加上特定的那个 filesystem 喔！</span><br><span class="line"></span><br><span class="line"><span class="comment"># 由於我们要启动 user/group 的 quota ，所以使用底下的语法即可</span></span><br><span class="line">[root@www ~]<span class="comment"># quotaon -auvg</span></span><br><span class="line">/dev/磁盘 [挂载点]: group quotas turned on</span><br><span class="line">/dev/磁盘 [挂载点]: user quotas turned on</span><br></pre></td></tr></table></figure>
+
+<p>关闭此服务也是很简单的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># quotaoff [-a]</span></span><br><span class="line">[root@www ~]<span class="comment"># quotaoff [-ug] [/mount_point]</span></span><br><span class="line">选项与参数：</span><br><span class="line">-a  ：全部的 filesystem 的 quota 都关闭 (根据 /etc/mtab)</span><br><span class="line">-u  ：仅针对后面接的那个 /mount_point 关闭 user quota</span><br><span class="line">-g  ：仅针对后面接的那个 /mount_point 关闭 group quota</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是进行最重要的地方了, 对用户或组别进行配置.这里有两种的方式进行配置, 一种是使用命令进行终端上的配置, 不喜欢这种,推荐使用<code>edquota</code>命令, 调出vi的页面供管理员编辑.</p>
+<p>写的方式也很简单, 直接指定soft和hard就好了, 其他的属性都是自己计算的,我们不需要管他们.</p>
+<p>这样设置之后磁盘配额就完成了, 作为管理员, 我们当然要关注当前的磁盘使用情况, 这是就要使用<code>repquota -auvs</code>命令来获取信息了, 如果你想给某个用户发送磁盘快要满了的警告, 就直接使用<code>warnquota</code>命令就好.</p>
+<p>最后加一句小提示: 在进行目录迁移的时候, SELINUX会进行限制, 因此你需要暂时关闭SELINUX或者修改SELINUX的规则.</p>
+<h2 id="LVM"><a href="#LVM" class="headerlink" title="LVM"></a>LVM</h2><p>LVM叫做逻辑卷管理器(Logical Volume Manager)</p>
+<p>LVM拥有动态进行磁盘空间分配的功能, 看起来是动态分配, 事实上是将所有磁盘的空间全部集合到一个整体, 再在这个整体的基础上进行分配.</p>
+<blockquote>
+<p>LVM 的作法是将几个实体的 partitions (或 disk) 透过软件组合成为一块看起来是独立的大磁盘 (VG) ，然后将这块大磁盘再经过分割成为可使用分割槽 (LV)， 最终就能够挂载使用了.</p>
+</blockquote>
+<p>一个一个来说一下这些东西,就从最小的组成的开始吧.</p>
+<p><strong>Physical Volume, PV 叫做物理卷</strong></p>
+<p>LVM的最底层的卷, 通过调整系统标识符来使得它成为LVM的专用标识符.</p>
+<p><strong>Volume Group, VG 卷用户组</strong></p>
+<p>一个VG就是将许多PV整合起来, 它的最大大小和下面的PE有关.</p>
+<p><strong>Physical Extend, PE, 物理拓展快</strong></p>
+<p>PE是LVM的最小存储快, 你可以把它理解成上面说过的block, 只不过这个是LVM的存储块.</p>
+<p>一个VG最多可以包含256个PE, 这就意味着如果使用默认的PE大小(4MB), VG的最大容量是256GB</p>
+<p><strong>Logical Volume, LV 逻辑卷</strong></p>
+<p>这个就是最终形成的LVM了, LV包含若干个PE, 也就是像一个个block group一样, 只不过他的弹性变换是通过交换PE做到的.细节见下图:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm1.gif" alt="lvm1"></p>
+<p>这样, 经过PV -&gt; VG -&gt; LV 的过程, 最后将LV进行格式化合适的文件系统就可以使用了, 这个文件系统拥有扩充和减少的能力.</p>
+<p>一个完整的流程就像这样:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm.gif" alt="lvm"></p>
+<p>直接实际使用一遍就行了.</p>
+<h3 id="LVM的构建过程"><a href="#LVM的构建过程" class="headerlink" title="LVM的构建过程"></a>LVM的构建过程</h3><p>既然要进行LVM的制作, 自然要先开启LVM的功能, 现在的发行版都会自己打开这个.所以一般不用担心这个, 如果没有的话…先确认内核的支持,然后在考虑是否安装lvm这个软件吧.</p>
+<p>准备工作就是进行分区, 这次就先分四个区吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~<span class="comment"># fdisk /dev/sdb</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_1.png" alt="lvm_1"></p>
+<p>接着我们将所有要成为LVM的PV的磁盘标记成<code>8e</code>.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_2.png" alt="lvm_2"></p>
+<p>最后,就可以得到这样分区的磁盘:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_3.png" alt="lvm_3"></p>
+<p>好了,准备工作就到这里, 下面就开工吧!</p>
+<p><strong>LVM的构建第一步就是构建PV.</strong></p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_pv.png" alt="lvm_pv"></p>
+<p>这里, 最常用的就是上面的三个命令, <code>pvscan</code>用来检测当前已存在的PV, 如果想要获得每一个PV的详细信息就使用<code>pvdisplay</code>命令.<code>pvcreate</code>见名知意,就是构建PV的命令啦.</p>
+<p>很快的我们得到了5个PV.</p>
+<p><strong>第二步,VG阶段</strong></p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvm_vg.png" alt="lvm_vg"></p>
+<p>VG的构建要制定PE的大小, 使用<code>-s</code>指定.接着需要指定VG的名字, 和使用哪些PV进行构建.</p>
+<p>如你所见, 最后一个sdb9并没有得到使用, 此时已经被使用了的sdb8就获得了这些属性.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pv.png" alt="pv"></p>
+<p>最后再来看一下我们的获得的VG的状态:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vgdisplay.png" alt="vgdisplay"></p>
+<p>注意到现在的PE个数是252个. 并且由于现在我们还没有进入LV阶段, 所以所有的PE都是可以任意使用的.</p>
+<p>现在我们进行令人激动人心的第一步, 扩展现在的VG, 还剩下一个sdb9没有使用呢.现在我们就把它加上去.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vgextend_.png" alt="vgextend_"></p>
+<p>PE的数量增加了!这说明很顺利, 我们将sdb9加入了进来.</p>
+<p><strong>第三步,LV阶段</strong></p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvcreate.png" alt="lvcreate"></p>
+<p>很快就构建了一个LV, -l参数表明使用的PE个数.</p>
+<p>现在就来看一下吧:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lv.png" alt="lv">, 总大小是5G左右.</p>
+<p>先来简单的格式化一下:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/mkfs.png" alt="mkfs"></p>
+<p>现在可以简单的松口气啦, 一个LV就这样可以正常工作了.</p>
+<p>可是, LVM最神奇的功能我们还没有试一试呢.好的, 现在就来尝试一下放大LV的容量.</p>
+<p>首先当然还需要在分出新的空间来, 继续分区后, 重复一下之前的工作.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvextend0.png" alt="lvextend0"></p>
+<p>接下来就是魔法了:</p>
+<p><strong>使用<code>vgextend</code>先扩展<code>vg</code></strong></p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vgextend.png" alt="vgextend"></p>
+<p>看!VG的大小变大了, 而且PE的个数又增长了一大截.</p>
+<p>再看看我们的LV又没有变大:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvdisplay_1.png" alt="lvdisplay_1"></p>
+<p>挨?没有变化, 这是为什么呢?</p>
+<p>这会因为LV的放缩是需要手动去指定的. 命令是<code>lvresize</code>, 再来操作一次:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvresize.png" alt="lvresize"></p>
+<p>成功了!我们改变了LV的大小.</p>
+<p>等等!增加容易, 但是如果要减少容量岂不是会损坏文件系统?</p>
+<p>所以,优先要进行的工作就是重新规划文件系统的大小!</p>
+<p>假设我们现在要将sdb5拿出来, 那么就要先看一下大小:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sdb11.png" alt="sdb11"></p>
+<p>大小为1.0GB, 那么在待会缩减文件系统的时候, 就是减少1G的容量了.</p>
+<p>由于缩减容量是不能在线执行的(挂载中执行), 所以要先将其<code>umount</code>.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/resize2fs.png" alt="resize2fs"></p>
+<p>总大小是6.89G, 因此减少1G之后是5.89G, 直接执行,发现要求强制执行一次磁盘检查..好吧那就执行吧, 接着直接缩减.挂载.再查看一下..OK啦</p>
+<p>现在系统的大小已经降下来了, 之后就可以安全的删除PV了.</p>
+<p>删除PV前还要先将LV的容量缩减 其实现在的状态是这样的:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/fs_lv.png" alt="fs_lv"></p>
+<p>缩减LV:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lvresize_reduce.png" alt="lvresize_reduce"></p>
+<p>接着就要将sdb5移除了, 先别急, 我么要先确认一下当前PV的情况:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pvdisplay_sdb5.png" alt="pvdisplay_sdb5"><br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pvdisplay_11.png" alt="pvdisplay_11"></p>
+<p>咦?搞了半天空闲的PE都在sdb11里!那么就要先把sdb5和sdb11的PE进行交换..</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pvremove.png" alt="pvremove"></p>
+<p>交换之后,就可以把这个PV从VG中移出了,看一下pvscan的结果,sdb5已经成为未分配的状态了.</p>
+<p>接着就可以把这个分区从PV中移走了, 这个分区就可以用做其他用途了.</p>
+<h2 id="LVM的系统快照"><a href="#LVM的系统快照" class="headerlink" title="LVM的系统快照"></a>LVM的系统快照</h2><p>LVM技术除了提供弹性的文件系统, 还可以进行备份, 严格说来叫做系统快照(Snapshot).</p>
+<p>原理说来也很简单:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/snapshot.gif" alt="snapshot"></p>
+<p>上图的长虚线是快照区, 而短虚线是文件系统. 从上图可以看出来LVM开辟一块区域专门用来存放快照, 这样就会有一个限制, 那就是快照区和文件系统区必须要在一个VG内.</p>
+<p>一旦文件系统中的文件发生了改动,快照区就会将发生之前的资料移到快照区, 然后从快照区中将发生改变的PE移出去.</p>
+<p>那么还是直接实践吧:</p>
+<p>先把我们刚刚移除的sdb5变回来…</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sanp_1.png" alt="sanp_1"></p>
+<p>多了63个可用的PE, 我们用50个来构建快照.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sanp_2.png" alt="sanp_2"></p>
+<p>这个和我们构建LV的不同在于, 加了<code>-s</code>参数(snapshot之意)</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/lv_sanpshot.png" alt="lv_sanpshot"></p>
+<p>红框上面还有两个非常重要的参数.一个是快照实际的空间一个是拥有的PE数量.</p>
+<p>这里有一个名词叫<strong>COW</strong>, 意思是<code>Copy on first write</code>,结合上面的图示, COW的优势在于原始的物理块连续, 没有碎片, 但是却将原本的一次写操作变成了1读3写.</p>
+<p>还有一种快照技术叫做<strong>ROW</strong>(<code>Redirect on first write</code>).其实就是在数据块改变时,和COW一样分配一个新的物理块,接着就不一样了,ROW选择将原始卷中的文件映射改变,变成新的物理块,这样其实是比COW的性能更好的,因为一共是0读2写.但是缺点是原始卷中的物理块是不连续的,也就是磁盘碎片.</p>
+<p>好了,下面来挂载试一下.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/df_snap.png" alt="df_snap"></p>
+<p>他们两个是一模一样的呢!不过Snapshot会主动记录员nameofLV的数据!</p>
+<p>现在来试一下快照的功能:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sanp.png" alt="sanp"></p>
+<p>已经被使用了1.30%.</p>
+<p>现在我们试一试恢复原数据( <strong>实验建议:建议多拷贝一些数据到里面,这样效果才比较明显</strong> )</p>
+<p>重新挂载.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/df-h.png" alt="df-h"></p>
+<p>可以看出,快照和原来已经发生了变化.</p>
+<p>接着进入snapshot, 进行备份:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/tar.png" alt="tar"></p>
+<p>备份之后就可以将我们的原LV进行格式化了.</p>
+<p>先将快照移除并删掉:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/umount.png" alt="umount"></p>
+<p>格式化:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/mkfs_.png" alt="mkfs_"></p>
+<p>重新挂载回来,之前的备份进行解包.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/remount.png" alt="remount"></p>
+<p>好了,复原工作就结束了.</p>
+<p>实验结束了, 现在就把LVM关闭吧.</p>
+<p>附一下简要流程:</p>
+<ul>
+<li><p>先卸载系统上面的LVM 档案系统(包括快照与所有LV)；</p>
+</li>
+<li><p>使用lvremove 移除LV ；</p>
+</li>
+<li><p>使用vgchange -an VGname 让VGname 这个VG 不具有* Active 的标志；</p>
+</li>
+<li><p>使用vgremove 移除VG：</p>
+</li>
+<li><p>使用pvremove 移除PV；</p>
+</li>
+<li><p>最后，使用fdisk 修改ID 回来！OK啦!</p>
+<hr>
+</li>
+</ul>
+<p>17.6.20 更新:</p>
+<h2 id="XFS文件系统"><a href="#XFS文件系统" class="headerlink" title="XFS文件系统"></a>XFS文件系统</h2><p>从CentOS7开始, 官方已经开始使用XFS文件系统而抛弃了EXT4.</p>
+<p>这是因为在原先磁盘容量不是很大的时候, 这种预先就划分所有的inode&#x2F;block&#x2F;meta data的做法还没有什么问题.但是现在的磁盘大小动辄就是TB以上的等级, 光是进行格式化就要花费很多时间.</p>
+<p>而XFS是一个适合高容量或者巨型资料的文件系统.</p>
+<p>XFS 就是一个日志式档案系统, 所有EXT文件系统支持的功能. 他都支持.</p>
+<p>在文件系统的构造上, XFS将文件系统分成了三个部分: 数据区(data section), 日志区(log section), 即时区(realtime section). 这三个区的内容是这样的:</p>
+<h3 id="数据区-data-section"><a href="#数据区-data-section" class="headerlink" title="数据区(data section)"></a>数据区(data section)</h3><p>基本上，数据区就跟我们之前谈到的EXT系统一样，包括inode&#x2F;data block&#x2F;superblock 等资料，都放置在这个区块。这个数据区与EXT家族的block group 类似，也是分为多个储存区群组(allocation groups, AG) 来分别放置档案系统所需要的资料。每个储存区群组都包含了:</p>
+<ul>
+<li><p>整个档案系统的superblock</p>
+</li>
+<li><p>剩余空间的管理机制</p>
+</li>
+<li><p>inode的分配与追踪</p>
+<p>此外，inode与block 都是系统需要用到时， 这才动态配置产生，所以格式化动作非常快！</p>
+</li>
+</ul>
+<h3 id="日志区-log-section"><a href="#日志区-log-section" class="headerlink" title="日志区(log section)"></a>日志区(log section)</h3><p>这个区是XFS用来进行数据恢复以及检查错误的重要的区域.和日志区有点像,当文件系统出现变化都会先在这里进行记录, 直到该变化被完整的写入到磁盘中. 这一条记录才会被终结掉. 这样当文件系统因为某些原因导致损毁的时候 系统就可以使用这个区块进行检验, 这样就可以直到在挂掉之前文件系统在干什么, 借以快速修复文件系统.</p>
+<p>有意思的是, 这个区块你可选择外部的磁盘. 就是说你的文件系统是可以跨磁盘的(就像btrfs那样).</p>
+<h3 id="即时区-realtime-section"><a href="#即时区-realtime-section" class="headerlink" title="即时区(realtime section)"></a>即时区(realtime section)</h3><p>这个部分是用来进行数据写入时使用的, 当写入数据的时候, xfs会先寻找一个或者数个extent区块, 接着分配结束后, 再将数据写入到data section的inode和block里面去. 这个extent区块的大小在格式化的时候就要指定(4K-1G).一般普通的使用都直接使用预设的64K就好.</p>
+<h2 id="XFS的构建"><a href="#XFS的构建" class="headerlink" title="XFS的构建"></a>XFS的构建</h2><p>简单介绍一下之后, 我们下面就要一起来构建XFS系统, 仍然是老朋友<code>mkfs</code>的出场啦.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ mkfs.xfs device</span><br><span class="line"><span class="comment"># 和ext一样, 后面也可以指定block, inode的相关参数,</span></span><br><span class="line"><span class="comment"># 但是特别就是指定data section的相关参数</span></span><br></pre></td></tr></table></figure>
+
+<p>下面就来操作一下:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/xfs1.png" alt="xfs1"></p>
+<p>很快就成功格式化了一个xfs的系统, 可以看到他的data, log和realtime都有不同的参数.</p>
+<p>如果是多个核心的机器, 建议加上<code>-d adcount=[核数]</code> 的参数, 这样可以使得XFS读写系统的速度增加.</p>
+<p>在这里插一句XFS4RAID的性能优化:</p>
+<p>RAID中的区块叫做<code>stripe</code>, 这个<code>stripe</code> 的大小会决定我们格式化文件系统的参数的值.主要就是<code>data section</code>啦.其中的<code>sunit</code>设置为和RAID的<code>stripe</code>一样大小的, 而<code>swidth</code>由磁盘的数量和等级来定(e.g: 组建一个RAID-5的阵列, 一共有8块磁盘, 其中一个为备份盘. 此时<code>sw</code>就设置为7) 最后计算一下<code>extsize</code>就是<code>sw</code>*<code>su</code></p>
+<p>直接进环境吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ mkfs.xfs -f -d agcount=1,su=256k,sw=7 -r extsize=1792k /dev/sdb2 </span><br></pre></td></tr></table></figure>
+
+<p>查看创建的XFS的描述信息使用<code>xfs_info</code>的命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ xfs_info /mydata/</span><br><span class="line">meta-data=/dev/sdb1              isize=512    agcount=4, agsize=131072 blks</span><br><span class="line">         =                       sectsz=512   attr=2, projid32bit=1</span><br><span class="line">         =                       crc=1        finobt=1 spinodes=0 rmapbt=0</span><br><span class="line">         =                       reflink=0</span><br><span class="line">data     =                       bsize=4096   blocks=524288, imaxpct=25</span><br><span class="line">         =                       sunit=0      swidth=0 blks</span><br><span class="line">naming   =version 2              bsize=4096   ascii-ci=0 ftype=1</span><br><span class="line"><span class="built_in">log</span>      =internal               bsize=4096   blocks=2560, version=2</span><br><span class="line">         =                       sectsz=512   sunit=0 blks, lazy-count=1</span><br><span class="line">realtime =none                   extsz=4096   blocks=0, rtextents=0</span><br></pre></td></tr></table></figure>
+
+<p>上面的<code>isize</code>是指<code>inode</code>的容量, 每一个都有<code>512bytes</code>大小, 后面的<code>agcount</code>就是储</p>
+<p>存群组的个数, 共有<code>4</code>个.</p>
+<p>接着后面的是每一个储存群组有的<code>block</code>的个数, 有<code>121072</code>个. 后面的<code>bsize</code>, 相信也能猜出来 恩 就是每一个<code>block</code>的大小. </p>
+<p>后面的<code>internal</code>标识日志区的位置是在文件系统内, 而不是外部设备, 以及占用的<code>block</code>的数量.</p>
+<h2 id="XFS的使用"><a href="#XFS的使用" class="headerlink" title="XFS的使用"></a>XFS的使用</h2><p>如果在格式化的时候我忘记了给文件系统加上UUID和Label怎么办呢? 不需要重新进行格式化的, 可以使用<code>xfs_admin</code>来查看和重新设定.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ xfs_admin [OPTIONS] &lt;DEVICE&gt;</span><br><span class="line">-l 列出label</span><br><span class="line">-u 列出UUID</span><br><span class="line">-L 设定Label</span><br><span class="line">-U 设定UUID</span><br></pre></td></tr></table></figure>
+
+
+<p>如果文件系统损坏, 或者发生了什么错乱 就要进行修复.XFS的修复指令是<code>xfs_repair</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ xfs_repair [-fnd] &lt;DEVICE&gt; </span><br><span class="line">-f 表明后面的device其实是个文件系统而不是实体磁盘</span><br><span class="line">-n 仅仅是检查, 并不会修改系统的信息</span><br><span class="line">-d (危险参数) 对根目录(/)进行检查和修复.</span><br></pre></td></tr></table></figure>
+
+
+<p>如果文件系统损坏, 或者发生了什么错乱 就要进行修复.XFS的修复指令是<code>xfs_repair</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ xfs_repair [-fnd] &lt;DEVICE&gt; </span><br><span class="line">-f 表明后面的device其实是个文件系统而不是实体磁盘</span><br><span class="line">-n 仅仅是检查, 并不会修改系统的信息</span><br><span class="line">-d (危险参数) 对根目录(/)进行检查和修复.</span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E8%AF%86%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-EXT2"><span class="toc-number">1.</span> <span class="toc-text">初识文件系统(EXT2)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E7%9A%84EXT2-x2F-3%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.1.</span> <span class="toc-text">Linux的EXT2&#x2F;3文件系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%93%8D%E4%BD%9C"><span class="toc-number">1.2.</span> <span class="toc-text">Linux的文件系统的操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VFS"><span class="toc-number">1.3.</span> <span class="toc-text">VFS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E9%85%8D%E9%A2%9D-Quota"><span class="toc-number">2.</span> <span class="toc-text">磁盘配额(Quota)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVM"><span class="toc-number">3.</span> <span class="toc-text">LVM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LVM%E7%9A%84%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B"><span class="toc-number">3.1.</span> <span class="toc-text">LVM的构建过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LVM%E7%9A%84%E7%B3%BB%E7%BB%9F%E5%BF%AB%E7%85%A7"><span class="toc-number">4.</span> <span class="toc-text">LVM的系统快照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XFS%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">5.</span> <span class="toc-text">XFS文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%8C%BA-data-section"><span class="toc-number">5.1.</span> <span class="toc-text">数据区(data section)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%8C%BA-log-section"><span class="toc-number">5.2.</span> <span class="toc-text">日志区(log section)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%B3%E6%97%B6%E5%8C%BA-realtime-section"><span class="toc-number">5.3.</span> <span class="toc-text">即时区(realtime section)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XFS%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-number">6.</span> <span class="toc-text">XFS的构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XFS%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">7.</span> <span class="toc-text">XFS的使用</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&text=Linux文件系统和磁盘管理--Part1"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&is_video=false&description=Linux文件系统和磁盘管理--Part1"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux文件系统和磁盘管理--Part1&body=Check out this article: https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&title=Linux文件系统和磁盘管理--Part1"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&name=Linux文件系统和磁盘管理--Part1&description=&lt;p&gt;Quota&amp;amp;LVM2.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/&t=Linux文件系统和磁盘管理--Part1"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

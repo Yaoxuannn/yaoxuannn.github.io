@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="接下来我们来说说MySQL的备份和恢复相关. 关于备份和恢复, 小到可以仅仅涉及一条命令和一个SQL文件, 大到可以说成一个学科. ( 然后发现, 每件事情不都是这样的. 简直就是废话23333. )">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL的备份和恢复">
+<meta property="og:url" content="https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="接下来我们来说说MySQL的备份和恢复相关. 关于备份和恢复, 小到可以仅仅涉及一条命令和一个SQL文件, 大到可以说成一个学科. ( 然后发现, 每件事情不都是这样的. 简直就是废话23333. )">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/hellodb_table_innodb.png">
+<meta property="article:published_time" content="2020-03-22T18:29:29.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Database">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/hellodb_table_innodb.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>MySQL的备份和恢复</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/05/09/MySQL%E7%9A%84%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E6%9E%B6%E6%9E%84/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/03/03/MariaDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&text=MySQL的备份和恢复"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&is_video=false&description=MySQL的备份和恢复"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MySQL的备份和恢复&body=Check out this article: https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&name=MySQL的备份和恢复&description=&lt;p&gt;接下来我们来说说MySQL的备份和恢复相关. 关于备份和恢复, 小到可以仅仅涉及一条命令和一个SQL文件, 大到可以说成一个学科. ( 然后发现, 每件事情不都是这样的. 简直就是废话23333. )&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&t=MySQL的备份和恢复"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B4%E8%AF%B4%E5%A4%87%E4%BB%BD"><span class="toc-number">1.</span> <span class="toc-text">说说备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysqldump"><span class="toc-number">2.</span> <span class="toc-text">mysqldump</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xtrabackup"><span class="toc-number">3.</span> <span class="toc-text">xtrabackup</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        MySQL的备份和恢复
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-03-22T18:29:29.000Z" class="dt-published" itemprop="datePublished">2020-03-22</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database/" rel="tag">Database</a>, <a class="p-category" href="/tags/MySQL/" rel="tag">MySQL</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>接下来我们来说说MySQL的备份和恢复相关. 关于备份和恢复, 小到可以仅仅涉及一条命令和一个SQL文件, 大到可以说成一个学科. ( 然后发现, 每件事情不都是这样的. 简直就是废话23333. )</p>
+<span id="more"></span>
+
+<h2 id="说说备份"><a href="#说说备份" class="headerlink" title="说说备份"></a>说说备份</h2><p>首先我们来说说, 为什么要备份? 备份的目的主要是应对应急情况下的不时之需. 也就是所谓的<strong>灾难恢复</strong>, 包括不限于人为操作, 硬件故障, 软件故障, 自然灾害, 外部攻击等等. 除了灾难恢复, 有时候我们进行测试也是需要进行备份的. 这里可能会有人说, 我们可以使用类似RAID10的手段来进行硬件上的数据备份. 没错, 这个做法是为了保证数据不会因为硬件的故障丢失和损坏, 但是对于数据的删除操作, 任何情况下也无法进行冗余, 说白了, 无论使用哪种数据存储设备, 备份都是必不可少的.</p>
+<p>备份, 一定不是镜像. 因为镜像会同步主体的操作. 所以一般情况下, 我们的备份更多有可能是离线的. </p>
+<p>不同的业务模型需要的备份的力度也不同, 我们可以看:</p>
+<ul>
+<li>能容忍最多丢失多少的数据</li>
+<li>恢复数据需要在多长时间内完成</li>
+<li>需要恢复那些数据</li>
+</ul>
+<p>另外, 有的时候, 我们的备份的数据集都没问题, 但是有可能因为还原出问题导致备份的数据集全部失效, 因此我们需要经常做做还原测试, 用于测试备份的可用性, 以及做还原演练.</p>
+<p>说回备份本身, 我们的备份类型分为: <strong>完全备份</strong>, 这会整个数据集, <strong>部分备份</strong>, 只备份数据子集. 从数据变化的时间轴出发, 我们也可以划分成: 完全备份, 增量备份, 差异备份. 看名字挺好理解了, 就不展开了.</p>
+<p>另外, 我们的备份还分成:</p>
+<ul>
+<li>热备份: 读写操作均可执行</li>
+<li>温备份: 读操作可进行, 写操作不可执行</li>
+<li>冷备份: 读写操作均不可进行</li>
+</ul>
+<p>从上到下, 需要的技术要求也越低.</p>
+<p>我们前面在说InnoDB存储引擎的时候, 引入过一个概念叫做MVCC, 即多版本并发控制. 我们可以对内部的数据做一个快照然后备份, 因此InnoDB存储引擎就是支持热备的, 而MyISAM, 一般情况下, 是不能够进行热备的.</p>
+<p>而温备, 就相对来说简单一点, 直接对服务器层面上施加一个写锁就可以了. 虽然听起来很不错, 但是实际上, 真正实施起来还是有很多问题, 例如在我们进行备份的时候, 有一个事务正在执行, 这个施加写锁的请求就会被挂起等待事务完成, 如果事务很大, 需要数小时才能完成, 那也就意味着我们的备份也需要数小时之后才能进行. </p>
+<p>最后, 做冷备, 就意味着服务会被关闭, 这就不用多说了. 所以说到底, 最后还是需要热备.</p>
+<p>另外, 我们可以把备份的方式分成:</p>
+<ul>
+<li>物理备份: 直接复制数据文件进行备份</li>
+<li>逻辑备份: 从数据库中导出数据另存来进行备份 (数据库协议)</li>
+</ul>
+<p>我们来简单分析一下这两种备份的优与劣.</p>
+<p>首先物理备份只需要文件层面的复制就好了, 而逻辑备份需要使用遵循数据库服务端协议的客户端来操作. 但是, 物理备份需要和存储引擎相关联, 数据文件所使用的存储引擎回复时也得用一样的, 而逻辑备份就和存储引擎无关.</p>
+<p>除了需要备份数据, 我们还需要备份二进制文件, InnoDB的事务日志, 代码(存储过程, 存储函数, 触发器, 事件调度器), 服务器的配置文件等等, 这些都是我们需要考虑的.</p>
+<p>接下来我们就来说说备份工具吧!</p>
+<p>首当其冲, 大家都听说过的, 就是<code>mysqldump</code>了. 这是一个逻辑备份工具, 适用所有存储引擎, 支持温备, 能够对InnoDB存储引擎进行热备, 支持完全备份, 部分备份.</p>
+<p><code>xtrabackup</code>, 是一个由Percona提供的支持对InnoDB进行热备的工具, 支持完全备份和增量备份.</p>
+<p>然后就是我们的复制归档工具: <code>cp</code>, <code>tar</code>等等, 这些就是物理备份工具了, 只能进行冷备.</p>
+<p>以及, <code>lvm2</code>的快照, 可以实现一个几乎的热备, 为什么说是几乎呢? 因为lvm并不能备份, 他只是一个快照功能, 说到底, 还是需要借助于文件系统管理工具进行备份.</p>
+<p>还有一个仅适用于MyISAM存储引擎的冷备工具: <code>mysqlhotcopy</code>, 不过很少有人用就是了.</p>
+<p>如何选择这些工具呢? 我们可以像这样:</p>
+<ul>
+<li>mysqldump+复制binlog<ul>
+<li>使用mysqldump进行完全备份, 复制binlog指定时间范围的event进行增量备份</li>
+</ul>
+</li>
+<li>lvm2快照+复制binlog</li>
+<li>直接使用xtrabackup</li>
+</ul>
+<h2 id="mysqldump"><a href="#mysqldump" class="headerlink" title="mysqldump"></a>mysqldump</h2><p>接下来我们来说说其中一个工具, mysqldump. 在我们的数据量较小的情况下, mysqldump就是一个很不错的选择. 这个程序是mysql自带的, 而xtrabackup是需要另外安装使用的. </p>
+<p>mysqldump是从文件系统层面上的备份, 上面也说过了, mysqldump是一个逻辑备份工具, 所以, schema和数据是存储在一起的. dump出来的东西, 是一个单个巨大的SQL语句, output的东西也是一个单个巨大的备份文件.</p>
+<p>mysqldump说白了其实就是通过mysql协议连接到服务器然后进行一个全量的查询.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldump [options] [db_name [tbl_name ...]]</span><br></pre></td></tr></table></figure>
+
+<p>我们可以直接指定选择什么数据库, 或者通过传递选项来备份所有的数据库. 当然了, 我们也可以进行表级别的备份.</p>
+<p>不过, 需要提到的是, 如果在备份的时候, 下面的三种方式, 第一种略有不同:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Usage: mysqldump [OPTIONS] database [tables]</span><br><span class="line">OR     mysqldump [OPTIONS] --databases [OPTIONS] DB1 [DB2 DB3...]</span><br><span class="line">OR     mysqldump [OPTIONS] --all-databases [OPTIONS]</span><br></pre></td></tr></table></figure>
+
+<p>如果我们没有传递<code>--databases</code>或者<code>--all-databases</code>的话, 备份的结果中是不包含创建数据库的语句的, 而另外两个会自带创建数据库语句.</p>
+<p>接下来还是回到我们之前说的问题, 显然我们不能直接就从一个正在运行的线上数据库dump数据, 因为这样获取的数据备份会出现新旧数据夹杂在一起. 因此我们需要在备份时候做锁定表的操作.</p>
+<p>mysqldump就有提供类似的选项:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">--lock-all-tables, -x</span><br><span class="line">Lock all tables across all databases. This is achieved by acquiring a global read lock for the duration of the whole dump. This option automatically turns off --single-transaction and --lock-tables.</span><br><span class="line"></span><br><span class="line">--lock-tables, -l</span><br><span class="line">For each dumped database, lock all tables to be dumped before dumping them. The tables are locked with READ LOCAL to allow concurrent inserts in the case of MyISAM tables. For transactional tables such as InnoDB, --single-transaction is a much better option than --lock-tables because it does not need to lock the tables at all.</span><br><span class="line"></span><br><span class="line">Because --lock-tables locks tables for each database separately, this option does not guarantee that the tables in the dump file arelogically consistent between databases. Tables in different databases may be dumped in completely different states.</span><br></pre></td></tr></table></figure>
+
+<p>其中, 我们可以直接给所有的表都施加一个全局的读锁, 不过在我们只备份其中的几个表, 这个选项就有点太过了. 因此可以选择只锁定我们需要备份的表. 注意这里是读锁, 因此还是可以进行读的操作的. </p>
+<p>首先我们说MyISAM存储引擎. 我们前面也说过了, 它是不能热备的, 因为我们就锁定备份库然后进行备份操作就行了. 而对于InnoDB而言, 我们可以实现热备, 为了实现热备, 我们会使用到InnoDB的事务功能.</p>
+<p>mysqldump可以启动一个巨大的事务操作, 在备份结束之后才commit. 这个选项叫做<code>--single-transaction</code>. 这样我们备份的数据就是一个时间点的.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">--single-transaction</span><br><span class="line">           </span><br><span class="line">This option sends a START TRANSACTION SQL statement to the server before dumping data. It is useful only with transactional tables such as InnoDB, because then it dumps the consistent state of the database at the time when BEGIN was issued without blocking any applications.</span><br><span class="line"></span><br><span class="line">When using this option, you should keep in mind that only InnoDB tables are dumped in a consistent state. For example, any MyISAM or MEMORY tables dumped while using this option may still change state.</span><br><span class="line"></span><br><span class="line">While a --single-transaction dump is in process, to ensure a valid dump file (correct table contents and binary log coordinates), no other connection should use the following statements: ALTER TABLE, CREATE TABLE, DROP TABLE, RENAME TABLE, TRUNCATE TABLE. A consistent read is not isolated from those statements, so use of them on a table to be dumped can cause the SELECT that is performed by mysqldump to retrieve the table contents to obtain incorrect contents or fail.</span><br><span class="line"></span><br><span class="line">The --single-transaction option and the --lock-tables option are mutually exclusive because LOCK TABLES causes any pending transactions to be committed implicitly.</span><br><span class="line"></span><br><span class="line">This option is not supported for MySQL Cluster tables; the results cannot be guaranteed to be consistent due to the fact that the NDBCLUSTERstorage engine supports only the READ_COMMITTED transaction isolation level. You should always use NDB backup and restore instead.</span><br><span class="line"></span><br><span class="line">To dump large tables, you should combine the --single-transaction option with --quick.</span><br></pre></td></tr></table></figure>
+
+<p>mysqldump还可以备份数据库相关的event scheduler, 通过<code>-E</code>或者<code>--events</code>选项来指定.</p>
+<p>存储过程和存储函数也是可以备份的, 通过<code>-R</code>来指明备份这些.</p>
+<p>默认情况下, 触发器也是被备份的, 如果想要避免备份触发器, 传递<code>--skip-triggers</code>.</p>
+<p>在锁定表完成后, 进行日志滚动: <code>--flush-logs</code>. 为什么要做这个操作呢? 这样当我们一次备份结束, 在下一次备份的时候就可以直接把新的binlog拿来用了, 而不需要看上一次备份的master-log的位置在哪里.</p>
+<p>总的来说, 在中小规模的数据库下, mysqldump可以说是一个廉价可靠易用的解决方案.</p>
+<h2 id="xtrabackup"><a href="#xtrabackup" class="headerlink" title="xtrabackup"></a>xtrabackup</h2><p>接下来我们再来说说<code>xtrabackup</code>这个工具. </p>
+<p>在我们的epel源中收录了他的2.3.6版本, 可以直接通过yum下载安装.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# rpm -ql percona-xtrabackup</span><br><span class="line">/usr/bin/innobackupex</span><br><span class="line">/usr/bin/xbcrypt</span><br><span class="line">/usr/bin/xbstream</span><br><span class="line">/usr/bin/xtrabackup</span><br><span class="line">/usr/share/doc/percona-xtrabackup-2.3.6</span><br><span class="line">/usr/share/doc/percona-xtrabackup-2.3.6/COPYING</span><br><span class="line">/usr/share/doc/percona-xtrabackup-2.3.6/README</span><br><span class="line">/usr/share/doc/percona-xtrabackup-2.3.6/VERSION</span><br><span class="line">/usr/share/man/man1/innobackupex.1.gz</span><br><span class="line">/usr/share/man/man1/xbcrypt.1.gz</span><br><span class="line">/usr/share/man/man1/xbstream.1.gz</span><br><span class="line">/usr/share/man/man1/xtrabackup.1.gz</span><br></pre></td></tr></table></figure>
+
+<p>可以看到下载生成的文件很少, 基本就是几个应用程序然后就是帮助文档了.</p>
+<p>这里有一个innobackupex的程序, man文档中说他是一个perl脚本, 用作xtrabackup的wrapper, 但是实际上这个东西就是一个软连接, 指向xtrabackup.</p>
+<p>在我们使用xtrabackup进行备份的时候, 应用程序会在我们的备份目录中创建这些文件:</p>
+<ul>
+<li>xtrabackup_checkpoints – 备份类型(完全或增量), 备份状态(如是否是prepared) 以及 LSN (日志序列号)</li>
+</ul>
+<p>对于每个InnoDB页都会有一个LSN.</p>
+<ul>
+<li>xtrabackup_binlog_info – mysql服务器当前正在使用的二进制日志文件以及到备份这一刻位置的二进制日志时间的位置</li>
+<li>xtrabackup_binlog_pos_innodb – 二进制日志文件及用于InnoDB或者XtraDB的表的二进制日志文件的位置</li>
+</ul>
+<p>我们来执行一次备份操作, 就会好理解很多.</p>
+<p>首先还是看一下我们当前的表:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/hellodb_table_innodb.png" alt="hellodb_table_innodb"></p>
+<p>使用的都是InnoDB引擎. 接着我们要来确保一下<code>innodb_file_per_table</code>这个选项是要打开的.</p>
+<p>我们直接运行一次全库的备份: <code>innobackupex --user=???--password=??? /backups/</code>, 这里其实默认就带上了百分的参数<code>--backup</code>因此我们可以忽略不写.</p>
+<p>执行的结果最后告诉我们备份的目标地址以及一些信息:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">200507 12:58:29 Backup created in directory &#x27;/backups//2020-05-07_12-58-28&#x27;</span><br><span class="line">MySQL binlog position: filename &#x27;mariadb-bin.000003&#x27;, position &#x27;245&#x27;</span><br><span class="line">200507 12:58:29 [00] Writing backup-my.cnf</span><br><span class="line">200507 12:58:29 [00]        ...done</span><br><span class="line">200507 12:58:29 [00] Writing xtrabackup_info</span><br><span class="line">200507 12:58:29 [00]        ...done</span><br><span class="line">xtrabackup: Transaction log of lsn (1646953) to (1646953) was copied.</span><br><span class="line">200507 12:58:29 completed OK!</span><br></pre></td></tr></table></figure>
+
+<p>在这个备份的目录下, 我们可以看到刚刚提到的那些文件:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# ls -l /backups/2020-05-07_12-58-28/</span><br><span class="line">total 18460</span><br><span class="line">-rw-r-----. 1 root root      386 May  7 12:58 backup-my.cnf</span><br><span class="line">drwx------. 2 root root      272 May  7 12:58 hellodb</span><br><span class="line">-rw-r-----. 1 root root 18874368 May  7 12:58 ibdata1</span><br><span class="line">drwx------. 2 root root       48 May  7 12:58 mydb</span><br><span class="line">drwx------. 2 root root     4096 May  7 12:58 mysql</span><br><span class="line">drwx------. 2 root root     4096 May  7 12:58 performance_schema</span><br><span class="line">-rw-r-----. 1 root root       23 May  7 12:58 xtrabackup_binlog_info</span><br><span class="line">-rw-r-----. 1 root root      113 May  7 12:58 xtrabackup_checkpoints</span><br><span class="line">-rw-r-----. 1 root root      471 May  7 12:58 xtrabackup_info</span><br><span class="line">-rw-r-----. 1 root root     2560 May  7 12:58 xtrabackup_logfile</span><br></pre></td></tr></table></figure>
+
+<p>如果查看checkpoints的内容, 我们也可以获取这一次备份的信息:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 2020-05-07_12-58-28]# cat xtrabackup_checkpoints </span><br><span class="line">backup_type = full-backuped</span><br><span class="line">from_lsn = 0</span><br><span class="line">to_lsn = 1646953</span><br><span class="line">last_lsn = 1646953</span><br><span class="line">compact = 0</span><br><span class="line">recover_binlog_info = 0</span><br></pre></td></tr></table></figure>
+
+<p>备份完成了之后, 在进行数据恢复之前, 我们现需要对备份进行整理, 以确保不会出现事务相关的问题. 整理的选项就加上<code>apply-log</code>就可以了.</p>
+<p>尽管我们备份的时候是不存在未完成的事务的, 我们还是可以执行一下整理命令来看一下效果:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">xtrabackup: cd to /backups/2020-05-07_12-58-28/</span><br><span class="line">xtrabackup: This target seems to be not prepared yet.</span><br><span class="line">xtrabackup: xtrabackup_logfile detected: size=2097152, start_lsn=(1646953)</span><br><span class="line">xtrabackup: using the following InnoDB configuration for recovery:</span><br><span class="line">xtrabackup:   innodb_data_home_dir = ./</span><br><span class="line">xtrabackup:   innodb_data_file_path = ibdata1:10M:autoextend</span><br><span class="line">xtrabackup:   innodb_log_group_home_dir = ./</span><br><span class="line">xtrabackup:   innodb_log_files_in_group = 1</span><br><span class="line">xtrabackup:   innodb_log_file_size = 2097152</span><br><span class="line">xtrabackup: using the following InnoDB configuration for recovery:</span><br><span class="line">xtrabackup:   innodb_data_home_dir = ./</span><br><span class="line">xtrabackup:   innodb_data_file_path = ibdata1:10M:autoextend</span><br><span class="line">xtrabackup:   innodb_log_group_home_dir = ./</span><br><span class="line">xtrabackup:   innodb_log_files_in_group = 1</span><br><span class="line">xtrabackup:   innodb_log_file_size = 2097152</span><br><span class="line">xtrabackup: Starting InnoDB instance for recovery.</span><br></pre></td></tr></table></figure>
+
+<p>首先是获取我们备份目录下的内容然后读取InnoDB存储引擎的配置.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">InnoDB: 5.6.24 started; log sequence number 1646953</span><br><span class="line">xtrabackup: Last MySQL binlog file position 436, file name ./mariadb-bin.000001</span><br><span class="line"></span><br><span class="line">xtrabackup: starting shutdown with innodb_fast_shutdown = 1</span><br><span class="line">InnoDB: FTS optimize thread exiting.</span><br><span class="line">InnoDB: Starting shutdown...</span><br><span class="line">InnoDB: Shutdown completed; log sequence number 1646963</span><br><span class="line">xtrabackup: using the following InnoDB configuration for recovery:</span><br><span class="line">xtrabackup:   innodb_data_home_dir = ./</span><br><span class="line">xtrabackup:   innodb_data_file_path = ibdata1:10M:autoextend</span><br><span class="line">xtrabackup:   innodb_log_group_home_dir = ./</span><br><span class="line">xtrabackup:   innodb_log_files_in_group = 2</span><br><span class="line">xtrabackup:   innodb_log_file_size = 5242880</span><br><span class="line">InnoDB: Using atomics to ref count buffer pool pages</span><br><span class="line">InnoDB: The InnoDB memory heap is disabled</span><br><span class="line">InnoDB: Mutexes and rw_locks use GCC atomic builtins</span><br><span class="line">InnoDB: Memory barrier is not used</span><br><span class="line">InnoDB: Compressed tables use zlib 1.2.7</span><br><span class="line">InnoDB: Using CPU crc32 instructions</span><br><span class="line">InnoDB: Initializing buffer pool, size = 100.0M</span><br><span class="line">InnoDB: Completed initialization of buffer pool</span><br><span class="line">InnoDB: Setting log file ./ib_logfile101 size to 5 MB</span><br><span class="line">InnoDB: Setting log file ./ib_logfile1 size to 5 MB</span><br><span class="line">InnoDB: Renaming log file ./ib_logfile101 to ./ib_logfile0</span><br><span class="line">InnoDB: New log files created, LSN=1646963</span><br><span class="line">InnoDB: Highest supported file format is Barracuda.</span><br><span class="line">InnoDB: 128 rollback segment(s) are active.</span><br><span class="line">InnoDB: Waiting for purge to start</span><br><span class="line">InnoDB: 5.6.24 started; log sequence number 1647116</span><br><span class="line">xtrabackup: starting shutdown with innodb_fast_shutdown = 1</span><br><span class="line">InnoDB: FTS optimize thread exiting.</span><br><span class="line">InnoDB: Starting shutdown...</span><br><span class="line">InnoDB: Shutdown completed; log sequence number 1647126</span><br><span class="line">200507 13:06:18 completed OK!</span><br></pre></td></tr></table></figure>
+
+<p>接着会读取最后一个二进制日志文件, 然后创建一个新的日志文件, 标记序列号.</p>
+<p>接下来我们就可以进行恢复操作了. 注意在恢复的时候, mysql服务可以为关闭状态.</p>
+<p>恢复的参数是<code>--copy-back</code>.</p>
+<p>在执行完毕之后, 你可能会遇到文件权限的问题. 这是因为在执行完操作之后, data的属主属组会变成mysql没有权限访问的对象, 因此, 我们需要在启动之前更改数据文件的属主属组.</p>
+<p>这里我们做的是一个全库的备份. 如果是增量备份呢?</p>
+<p>想要实现增量备份, 首先我们需要一个已有的备份. 我们之前说过每个InnoDB的页面都会包含一个LSN信息, 增量备份就是通过这个信息来实现的. 我们可以用下面的命令进行第一个增量备份: (省略user&#x2F;password)</p>
+<p><code>innobackupex --incremental /backup --incremental-basedir=BASEDIR</code></p>
+<p>这里BASEDIR指的就是完全备份所在的目录.  这个备份倒没什么, 但是此刻聪明的你一定想到了, 在进行准备恢复操作的时候, 就会有一点不同了.</p>
+<p>首先我们需要在每个(完全+增量)备份中, 进行事务的重放操作. 重放之后, 所有的备份数据就会合并到我们的完全备份上.  接着我们就对所有的备份将未提交的事务进行回滚就行了. 反映到实际操作, 就像这样:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">innobackupex --apply-log --redo-only BASE-DIR</span><br><span class="line">innobackupex --apply-log --redo-only BASE-DIR --incremental-dir=INCREMENTAL-DIR-1</span><br><span class="line">innobackupex --apply-log --redo-only BASE-DIR --incremental-dir=INCREMENTAL-DIR-2</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>这样, 将每个增量备份都执行一边, 就ok了.</p>
+<p>我新建了<code>mydb.t2</code>并且插入了两行数据, 接着我们执行<strong>增量</strong>备份的命令.</p>
+<p>执行一遍之后我们再来查看一下checkpoint:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 2020-05-10_03-10-25]# cat xtrabackup_checkpoints </span><br><span class="line">backup_type = incremental</span><br><span class="line">from_lsn = 1646953</span><br><span class="line">to_lsn = 1650558</span><br><span class="line">last_lsn = 1650558</span><br><span class="line">compact = 0</span><br><span class="line">recover_binlog_info = 0</span><br></pre></td></tr></table></figure>
+
+<p>这一次的备份类型就变成增量了. 而且同时LSN也不再从0开始了.</p>
+<p>接下来我们来尝试进行数据恢复. </p>
+<p>在准备工作结束后, 再次查看全量备份的checkpoint, 我们可以看到:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# cat /backups/2020-05-07_12-58-28/xtrabackup_checkpoints </span><br><span class="line">backup_type = log-applied</span><br><span class="line">from_lsn = 0</span><br><span class="line">to_lsn = 1650558</span><br><span class="line">last_lsn = 1650558</span><br><span class="line">compact = 0</span><br><span class="line">recover_binlog_info = 0</span><br></pre></td></tr></table></figure>
+
+<p>接着就copy-back即可, 别忘记改变属主属组.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B4%E8%AF%B4%E5%A4%87%E4%BB%BD"><span class="toc-number">1.</span> <span class="toc-text">说说备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysqldump"><span class="toc-number">2.</span> <span class="toc-text">mysqldump</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xtrabackup"><span class="toc-number">3.</span> <span class="toc-text">xtrabackup</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&text=MySQL的备份和恢复"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&is_video=false&description=MySQL的备份和恢复"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MySQL的备份和恢复&body=Check out this article: https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&title=MySQL的备份和恢复"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&name=MySQL的备份和恢复&description=&lt;p&gt;接下来我们来说说MySQL的备份和恢复相关. 关于备份和恢复, 小到可以仅仅涉及一条命令和一个SQL文件, 大到可以说成一个学科. ( 然后发现, 每件事情不都是这样的. 简直就是废话23333. )&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/03/22/MySQL%E7%9A%84%E5%A4%87%E4%BB%BD%E5%92%8C%E6%81%A2%E5%A4%8D/&t=MySQL的备份和恢复"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

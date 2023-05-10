@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="令人头疼的程序包管理….学习笔记在此. 来自未来的评论: 现在看来Linux的程序包管理是最轻松的, 比Mac, Windows好管理太多了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux程序包管理">
+<meta property="og:url" content="https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="令人头疼的程序包管理….学习笔记在此. 来自未来的评论: 现在看来Linux的程序包管理是最轻松的, 比Mac, Windows好管理太多了">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-06-21T22:26:29.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:25:25.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Software Package">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux程序包管理</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/06/20/RAID%E5%8F%82%E8%80%83/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&text=Linux程序包管理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&is_video=false&description=Linux程序包管理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux程序包管理&body=Check out this article: https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&name=Linux程序包管理&description=&lt;p&gt;令人头疼的程序包管理….学习笔记在此.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;来自未来的评论: 现在看来Linux的程序包管理是最轻松的, 比Mac, Windows好管理太多了&lt;/strong&gt;&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&t=Linux程序包管理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%89%AF%E6%89%AF%E5%88%AB%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">先扯扯别的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E5%8C%85-RPM"><span class="toc-number">2.</span> <span class="toc-text">程序包(RPM)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%A8%8B%E5%BA%8F%E5%8C%85"><span class="toc-number">3.</span> <span class="toc-text">管理程序包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%A8%8B%E5%BA%8F%E5%8C%85"><span class="toc-number">3.1.</span> <span class="toc-text">获取程序包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS%E7%9A%84rpm"><span class="toc-number">3.2.</span> <span class="toc-text">CentOS的rpm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%A8%8B%E5%BA%8F%E5%8C%85%E5%B7%A5%E5%85%B7YUM"><span class="toc-number">4.</span> <span class="toc-text">管理程序包工具YUM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5yum%E7%9A%84%E4%B8%96%E7%95%8C"><span class="toc-number">4.1.</span> <span class="toc-text">进入yum的世界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8-1"><span class="toc-number">4.2.</span> <span class="toc-text">yum的基本使用(1)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E7%9A%84%E5%8C%85%E7%BB%84%E7%AE%A1%E7%90%86"><span class="toc-number">4.3.</span> <span class="toc-text">yum的包组管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8-2"><span class="toc-number">4.4.</span> <span class="toc-text">yum的基本使用(2)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E7%A8%8B%E5%BA%8F%E5%8C%85"><span class="toc-number">5.</span> <span class="toc-text">编译安装程序包</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux程序包管理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-06-21T22:26:29.000Z" class="dt-published" itemprop="datePublished">2017-06-21</time>
+        
+        (Updated: <time datetime="2020-11-30T01:25:25.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/Software-Package/" rel="tag">Software Package</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>令人头疼的程序包管理….学习笔记在此.</p>
+<p><strong>来自未来的评论: 现在看来Linux的程序包管理是最轻松的, 比Mac, Windows好管理太多了</strong></p>
+<span id="more"></span>
+
+<h2 id="先扯扯别的"><a href="#先扯扯别的" class="headerlink" title="先扯扯别的"></a>先扯扯别的</h2><p>先来简单谈谈程序相关的一些小东西吧, 说一说为什么程序员写的代码可以在不同的操作系统上跑起来.</p>
+<p>最底层当然就是硬件, 在往上一层是操作系统内核, 不同的操作系统的内核的操作是不同的, 同时也提供了不同的系统调用, 这样就会使得每一个系统自成一派, 为了解决这个问题, 在提供系统调用的基础上, 再封装一层接口, 使得程序员在写程序的时候, 只需要面向接口就好, 而不关心系统调用是什么样的, 这样当不同的操作系统的提供的接口都满足某个规范的时候就可以实现程序在不同的操作系统上都可以运行了.</p>
+<p>这样的接口规范叫<code>POSIX</code> – <code>Portable OS</code> 便携式操作系统. 后面的<code>IX</code>是为了贴合<code>UNIX.LINUX</code>这样的命名规范罢了.</p>
+<p>这样程序在源代码的级别上就是一样的了, 事实上所谓源代码文件只不过是一个文本文件罢了, 在经过预处理, 编译器做编译,形成目标代码,这样就可以通过汇编器做汇编成为机器码. 现在仍然不能运行, 因为很多程序是依赖库的. 这样就会产生两个分支, </p>
+<ul>
+<li><p>静态编译: </p>
+</li>
+<li><p>共享编译: *.so 共享对象</p>
+<p>最后一步, 链接.</p>
+</li>
+</ul>
+<p><code>Linux</code>下的可执行程序是<code>ELF</code>格式的(这里说的是格式,不是扩展名), 而<code>Windows</code>下的可执行文件是<code>EXE</code>格式的.</p>
+<p>因此, 一旦编译成二进制格式后, 程序将会变得不兼容, 因此说, 源代码级别是相同的.  </p>
+<p><code>Linux</code>下查看一个二进制程序依赖哪些库的命令是: <code>ldd</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@Ubuntu:~$ ldd /bin/ls</span><br><span class="line">	linux-vdso.so.1 =&gt;  (0x00007fff4ee35000)</span><br><span class="line">	libselinux.so.1 =&gt; /lib/x86_64-linux-gnu/libselinux.so.1 (0x00007f99b26f7000)</span><br><span class="line">	libacl.so.1 =&gt; /lib/x86_64-linux-gnu/libacl.so.1 (0x00007f99b24ef000)</span><br><span class="line">	libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f99b2126000)</span><br><span class="line">	libpcre.so.3 =&gt; /lib/x86_64-linux-gnu/libpcre.so.3 (0x00007f99b1ee8000)</span><br><span class="line">	libdl.so.2 =&gt; /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f99b1ce4000)</span><br><span class="line">	/lib64/ld-linux-x86-64.so.2 (0x00005560ba8de000)</span><br><span class="line">	libattr.so.1 =&gt; /lib/x86_64-linux-gnu/libattr.so.1 (0x00007f99b1ade000)</span><br></pre></td></tr></table></figure>
+
+<p>除了熟悉的<code>API(Application Programming Interface)</code>外, 还有一个叫做<code>ABI(Application Binary Interface)</code>.导致<code>Linux</code>下的程序在<code>Windows</code>下不能运行的原因就是这个<code>ABI</code> 不同. 程序在链接时就决定了是如何去寻找库的路径.</p>
+<p>为了能跨平台的运行, 就有一种方法是库级别的虚拟化. 只要能解决库文件 以及文件格式的问题 就可以进行跨平台.</p>
+<p><strong>Linux –[Wine] – Windows</strong></p>
+<p><strong>Windows – [Cywin] – Linux</strong></p>
+<p>在上一层, 为了实现跨平台, 那么就提供应用程序接口! 这个最典型的东西就是<code>Java</code>和<code>JVM</code>.</p>
+<hr>
+<p>系统级别的开发:</p>
+<ul>
+<li>C</li>
+<li>C++</li>
+<li>….</li>
+</ul>
+<p>应用级别的开发:</p>
+<ul>
+<li>Java</li>
+<li>Python</li>
+<li>PHP</li>
+<li>perl</li>
+<li>ruby</li>
+<li>….</li>
+</ul>
+<p>二进制程序的组成部分:</p>
+<p><strong>二进制文件, 库文件, 配置文件, 帮助文件</strong></p>
+<p>这些文件都要放在一些目录下, 但是问题就出现了, 一个二进制程序, 我是放在<code>/bin</code>下还是<code>/sbin</code>下,还是<code>/usr/bin</code> ? <code>/usr/sbin</code> ? <code>/usr/local/bin</code> ? <code>/usr/local/sbin</code> ?</p>
+<p>想象这样的情况. 一个程序有20个二进制, 10个库文件, 4个配置文件等等…难道每一个都要手工指定吗?</p>
+<p>事实上, 最清楚程序内容该放在那里的人应该就是作者了. 然而又有些用户希望能够自己制定位置. 所以就想到, 将整个程序打包.</p>
+<p>这样在加上一个程序包管理器, 就可以实现较傻瓜化的安装.</p>
+<p>程序包管理器的好处有以下几点:</p>
+<ul>
+<li>能够记录程序的安装位置</li>
+<li>卸载时能够追踪所有的目录, 不需要再记忆安装位置</li>
+<li>自动进行安装, 该放哪就放哪.</li>
+<li>可以方便的进行更新, 查询, 校验的操作.</li>
+</ul>
+<p>目前相对最早并且还存在的程序包管理器是<code>Debian</code>的, 程序包的安装格式为<code>deb</code> 这个管理器叫做<code>dpt</code>.</p>
+<p>接着<code>redhat</code>也推出了自己的包管理工具, 叫做<code>rpm</code>, 其程序包的格式也是<code>rpm</code> 使用<code>perl</code>开发.</p>
+<p>目前, <code>rpm</code>已经成为<code>Linux</code>的工业标准, 使用<code>C</code>语言进行了重新开发.</p>
+<h2 id="程序包-RPM"><a href="#程序包-RPM" class="headerlink" title="程序包(RPM)"></a>程序包(RPM)</h2><blockquote>
+<p>RPM is Package Manager.</p>
+</blockquote>
+<p>每一个RPM包都是要拿到源代码的, 接着将源代码<strong>制作</strong>成的.  分两种: 普通的<code>rpm</code>包, 源码<code>rpm</code>包 </p>
+<p>源码的命名格式是: <code>name-VERSION.tar.gz</code></p>
+<p><code>VERSION</code>的构成:  <code>major.minor.release</code> </p>
+<p>主版本号不会轻易改变,除非是发生了翻天覆地的改变. </p>
+<p>次版本号在添加了一个功能或者一些做了优化,以及功能的小改. </p>
+<p>发行号也就是在修复一个<code>Bug</code>的时候会进行改变.</p>
+<p><code>rpm</code>包的命名基本和源码包的格式相同: <code>name-VERSION-ARCH.rpm</code></p>
+<p><code>VERSION</code>会和源码包的版本号一致 而<code>ARCH</code>是为了指明平台而存在的, 其命名的格式如下:</p>
+<p><code>release</code>[这个是<code>RPM</code>的发行号,而不是程序的.].<code>os</code>.[el7…].<code>arch</code>[CPU架构,e.g: x86_64, i386, i686 …]</p>
+<ul>
+<li>noarch 表示任何硬件架构都可以运行</li>
+</ul>
+<p>如果一个程序的大部分功能是一般用户不需要的, 那么直接装上去的话, 会使得体积增大很多.</p>
+<p>这个时候就想到进行拆包:</p>
+<p><code>testapp-VERSION-ARCH.rpm</code> 主包</p>
+<p><code>testapp-devel-VERSION-ARCH.rpm</code> 支包&#x2F;子包</p>
+<p><code>testapp-plugin-filter-VERSION-ARCH.rpm</code> 子包的子包</p>
+<p>支包是依赖于主包的, 因此在安装支包的时候, 应该先安装主包.</p>
+<p>包之间, 存在依赖关系, 假设现在有, X, Y, Z 三个包. </p>
+<blockquote>
+<p>X &lt;- 依赖 &lt;- Y &lt;-依赖 &lt;- Z</p>
+</blockquote>
+<p>那么这样的话, 要安装 Z ,就要先安装 Y , 而安装 Y 就要先安装 X , 这样很有可能折腾一天, 连一个包都装不上.</p>
+<p>为了解决这样的问题, 制作而成的程序包会有两个部分组成. 而整个程序包管理器也有两个部分组成.</p>
+<p><strong>程序的组成清单 :</strong></p>
+<p>由于rpm在展开前是看不到里面的内容的. 因此就把里面的内容记录在一个文件清单中.当想要获取rpm的内容时, 通过程序包管理器的接口访问这个文件就可以知道了. 这个文件清单每一个程序包独有.</p>
+<p>除了清单文件, 还有一些安装和卸载的所用的脚本, 就比如说<code>nginx</code>在安装时是需要进行一次预配置的, 并且是以<code>nginx</code>的用户的身份来运行的, 如果系统中没有<code>nginx</code>用户, 那么脚本会自动的进行用户创建.</p>
+<p><strong>数据库(公共)</strong>:</p>
+<p>这个数据库中存放了程序包的名称和版本 依赖关系 功能说明 安装生成的文件路径以及校验码信息.</p>
+<h2 id="管理程序包"><a href="#管理程序包" class="headerlink" title="管理程序包"></a>管理程序包</h2><h3 id="获取程序包"><a href="#获取程序包" class="headerlink" title="获取程序包"></a>获取程序包</h3><ul>
+<li><strong>光盘</strong> : 最直接和最安全的方式就是使用光盘进行获取, 但是这样的程序包一般都是已经过时的.</li>
+<li><strong>官方的FTP&#x2F;HTTP文件服务器</strong> : 虽然是经过验证并且是最较新的, 但是我们需要的包有可能官方不一定会收录进去.</li>
+<li><strong>项目站点</strong> : 第三方软件的的官方站点的软件包</li>
+<li><strong>第三方组织</strong> : 比如: <code>Fedora-EPEL</code>(最权威),  <code>REPL</code>..等等 , 由社区组织进行验证.</li>
+<li><strong>自己制作</strong> : 算了吧.  : )</li>
+</ul>
+<p>一个可能会用到的网站: <a target="_blank" rel="noopener" href="https://pkgs.org/"><strong>pkgs.org</strong></a></p>
+<h3 id="CentOS的rpm"><a href="#CentOS的rpm" class="headerlink" title="CentOS的rpm"></a>CentOS的rpm</h3><p>现在就来学习使用rpm来进行包的管理.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ man rpm</span><br></pre></td></tr></table></figure>
+
+<p>同大多数命令一样, <code>rpm</code>的<code>-v</code>和<code>-vv</code>参数, 是为了输出信息和大量调试信息. 先把这个说在最前面.</p>
+<p>接着再说下<code>-h</code>, 这次不是显示帮助了, 而是以<code>Hash</code>的形式显示程序包的安装等等..的进度, 其实说白了就是用**#<strong>来画一个进度条. 一般来说, 一个</strong>#**表示<code>2%</code>的进度.</p>
+<p>rpm的安装升级和卸载遵循相似的命令格式, 如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rpm &#123;-i|--install&#125; [install-options] PACKAGE_FILE ...</span><br><span class="line">rpm &#123;-U|--upgrade&#125; [install-options] PACKAGE_FILE ...</span><br><span class="line">rpm &#123;-F|--freshen&#125; [install-options] PACKAGE_FILE ...</span><br><span class="line">rpm &#123;-e|--erase&#125; [erase-options] PACKAGE_NAME ...</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>RPM</code>进行包安装时, 如果依赖关系检测失败, 则直接报错退出.</p>
+<p>一些会用到的安装选项有:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[install-options]</span><br><span class="line">    --<span class="built_in">test</span>: 测试安装, 但是不执行真正的安装过程; dry run模式</span><br><span class="line">    --nodeps: 忽略依赖关系, 使用这个选项并不是一个理智的选择, 但在某些场景(循环依赖)下, 这个选项倒成为了一种解决办法, 更好的方法是一起安装.</span><br><span class="line">    --replacepkgs: 进行替换安装, 简单地说就是重装</span><br><span class="line">    --nodigest: 不检查包的完整性</span><br><span class="line">    --nosignature: 不检查来源合法性</span><br><span class="line">    --noscripts: 不执行程序包的脚本: --no$</span><br><span class="line">        %pre: 安装前的脚本</span><br><span class="line">        %post: 安装后的脚本</span><br><span class="line">        %preun: 卸载前的脚本</span><br><span class="line">        %postun: 卸载后的脚本</span><br></pre></td></tr></table></figure>
+
+<p>对于升级, 有两种选项: 一个是**-U|–upgrade**, 一个是**-F|–freshen**, 使用前者进行更新的时候, 如果旧版本的程序包不存在, 而会直接进行安装, 而对于后者, 如果旧版的程序包不存在, 则什么都不会做.</p>
+<p><strong>注意:</strong></p>
+<p><strong>(1) 不要对Linux的内核进行升级, Linux是支持多内核版本共存的. 因此,直接安装新版本内核就好.</strong></p>
+<p><strong>(2) 如果原程序包的配置文件被修改过, 升级时, 新版的配置不会覆盖老版本的配置文件, 新版本的配置文件会得到重命名, 一般叫做FILENAME.rpmnew而保留下来</strong></p>
+<p>下面再来说说卸载. 在卸载是, 要先知道包的安装情况.</p>
+<p>因此, 要先来谈谈包的查询.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm &#123;-q|query&#125; [select-options] [query-options]</span><br><span class="line">[select-options]</span><br><span class="line">    -a: 获取本机安装的所有软件包</span><br><span class="line">    -f: 查看指定的文件是由那个程序安装生成的.</span><br><span class="line">[query-options]</span><br><span class="line">    --changelog: 查询rpm包的changlog.(更新日志)</span><br><span class="line">    -c: 列出该文件的软件包安装的所有的配置文件</span><br><span class="line">    -d: 列出该文件的软件包安装的所有的文档</span><br><span class="line">    -i: 输出该安装包的信息(几乎你所需要的常用信息都有, 很好用)</span><br><span class="line">    --scripts: 列出该安装包的所有脚本(4种, 如果有的话)</span><br><span class="line">    -l: 列出安装包安装的所有文件</span><br><span class="line">    -R: 查询指定程序包所依赖的CAPABILITY</span><br></pre></td></tr></table></figure>
+
+<p>行了, 现在就来卸载安装的软件吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm &#123;-e|--erase&#125; [--allmatches] [--justdb] [--nodeps] [--noscripts] [--notriggers] [--<span class="built_in">test</span>] PACKAGE_NAME ...</span><br><span class="line">--nodeps 忽略依赖关系, 默认如果有包依赖待删除的包的话会拒绝删除.</span><br></pre></td></tr></table></figure>
+
+<p>删除软件包的细节不是很多. </p>
+<p><code>rpm</code>的另一个很重要的功能是进行软件包的校验.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm &#123;-V|--verify&#125; [select-options] [verify-options]</span><br><span class="line">[select-options]</span><br><span class="line">    <span class="comment"># 上面说过啦~</span></span><br><span class="line">[query-options]</span><br><span class="line">    <span class="comment"># 校验一个软件就是将软件包中已安装的文件信息和rpm数据库中存储的文件元信息进行对比.</span></span><br><span class="line">    <span class="comment"># 对比的信息有: 大小, 摘要, 权限, 类型, 所属等等..</span></span><br></pre></td></tr></table></figure>
+
+<p>现在我们来试一试, 修改一个刚刚装好的<code>redis</code>的文件.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm -ql redis</span><br><span class="line">/etc/logrotate.d/redis</span><br><span class="line">...</span><br><span class="line">/usr/share/doc/redis-3.2.3/README.md</span><br><span class="line">...</span><br><span class="line">/var/run/redis</span><br><span class="line"><span class="comment"># 就拿这个README开刀.</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> <span class="string">&quot;YOU&#x27;RE HACKED!!&quot;</span> &gt;&gt; /usr/share/doc/redis-3.2.3/README.md</span><br><span class="line">[root@WWW ~]$ rpm -V redis</span><br><span class="line">S.5....T.  d /usr/share/doc/redis-3.2.3/README.md</span><br></pre></td></tr></table></figure>
+
+<p>输出了一段信息, 只要有信息就表示文件被修改过了. 前方的标记是指改变了哪些元素:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">S file Size differs 文件的大小</span><br><span class="line">M Mode differs (includes permissions and file <span class="built_in">type</span>) 文件权限改变</span><br><span class="line">5 digest (formerly MD5 <span class="built_in">sum</span>) differs 文件内容改变</span><br><span class="line">D Device major/minor number mismatch 设备文件主次设备号不匹配</span><br><span class="line">L readLink(2) path mismatch <span class="comment"># 不管他</span></span><br><span class="line">U User ownership differs 所属用户改变</span><br><span class="line">G Group ownership differs 所属组改变</span><br><span class="line">T mTime differs 时间戳改变</span><br><span class="line">P caPabilities differ</span><br></pre></td></tr></table></figure>
+
+<p>根据上面的结果, 在校验时可以手工指定不检查的项目, 和上面一样, 直接<code>--noXXXX</code>就好了.</p>
+<p>那么, <code>rpm</code>是如何实现包的合法性验证以及完整性验证呢?</p>
+<p>软件包的完整性检验是很简单的, 只要软件包的两次计算的特征码没有出现改变, 就说明该包是完整的.</p>
+<blockquote>
+<p>说的明白点, 这个特征码其实就是作者在打包完成后进行的一次MD5计算, 并把这个计算得到的摘要值附在包的后面. 这样当以后检验的时候, 就使用同样的方法进行一次摘要计算.</p>
+</blockquote>
+<p>但事实上, 这种方法并不是很好, 因为你并不能确定这个包后的MD5摘要是作者本人提供的.任何人都可以进行篡改. 所以现在的网站上采取的都是将正确的摘要计算结果放在页面上. 接着只要用户自己进行比对就好了, 这样的策略使得只有当对方网站遭到了入侵的时候才会变的不可靠.</p>
+<p>但是这样也不是很好, 每次我下载完成文件都要手动去进行校验,  而且对方网站被入侵的可能性也是存在的.</p>
+<p>那么有更好的方案吗?</p>
+<p>简单的, 只要把最初附在包最后面的特征码进行一次加密就好了, 这样用户先进行解密就好了. 但是, 为了解密得到特征码, 必须先知道密码, 这样岂不是就会造成密码满天飞的情况了吗? 这里使用到了的技术就是熟悉的公钥加密技术, 是非对称加密的一种.</p>
+<p>一般来说, 包的完整性检验是使用的SHA256,而来源合法性是通过RSA进行的加密.</p>
+<p>如果手中已经有了密钥文件使用<code>rpm --import &lt; KEY_FILE &gt;</code>;</p>
+<p>那么<code>rpm</code>的数据文件都保存在哪里呢? 之前说过<code>/var/lib/</code>是保存程序运行状态的目录, <code>rpm</code>也不例外,在<code>/var/lib</code>下有<code>rpm</code>的目录文件.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW 17:22 [115]/var/lib/rpm]$ <span class="built_in">ls</span></span><br><span class="line">Basenames  Conflictname  __db.001  __db.002  __db.003  Dirnames  Group  Installtid  Name  Obsoletename  Packages  Providename  Requirename  Sha1header  Sigmd5  Triggername</span><br></pre></td></tr></table></figure>
+
+<p>这些其实就是<code>rpm</code>的数据文件, 从名字也可以看出来有: 软件包的依赖, 触发器, <code>md5</code>校验码等等…</p>
+<p>这些就是<code>rpm</code>用来做缓存的., 如果在安装包或者卸载包的时候加了<code>-vv</code>的参数, 就看到<code>rpm</code>打开和关闭数据库的操作.</p>
+<p>一旦数据文件遭到了破坏(因为是文件), 那么我们的查询种种操作就会失败, 这个时候就要进行数据库的重建.</p>
+<p>两个指令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm &#123;--initdb|--rebuilddb&#125;</span><br><span class="line">    --initdb: 初始化</span><br><span class="line">        如果事先不存在数据库, 则会新建, 否则不会执行任何操作.</span><br><span class="line">    --rebuilddb: 重建</span><br><span class="line">        无论当前存在与否, 直接进行数据库的建立.</span><br></pre></td></tr></table></figure>
+
+<h2 id="管理程序包工具YUM"><a href="#管理程序包工具YUM" class="headerlink" title="管理程序包工具YUM"></a>管理程序包工具YUM</h2><p> <code>yum</code>(<code>Yellowdog Update Modifier</code>)是<code>CentOS</code>上的一个软件包安装的前端工具(C&#x2F;S架构), 它的工作前提是需要联网, 其实需要连接一个拥有巨大空间的文件服务器,这个服务器中包含了大量的<code>rpm</code>包. 而这样的服务器在网络上有很多,因此需要在配置文件中指定<code>yum</code>要访问的服务器地址.</p>
+<p><code>yum</code>的工作原理简单说是这样的: 当用户要安装程序包的时候, <code>yum</code>接收到用户的指令, 这个时候YUM会尝试寻找本地指向的有程序包的文件服务主机的地址, 这个地址从配置文件中读取, 接着找到了之后, 而远方服务器会有仓库(repository)来存储程序包和一个描述信息(包之间的依赖关系, 包的版本等等信息), 接着<code>yum</code>从服务器上把这个文件下载下来, 放在自己的一个缓存区内. </p>
+<p>接着读取这个文件中是否有用户请求的包的信息, 接着还会自动的解析这个文件中对于依赖关系的描述.(查询本地已安装过的包, 将依赖并且没有安装的包列出来) 接着就启动一个文件服务器的客户端, 向远方的服务器请求下载相应的包文件. </p>
+<p>同样也是放在本地, 接着就进行安装, 安装完成后就会将这些缓存中的包删除. 但是这个元数据不会被删除. 如果每一次使用都要进行下载, 那岂不是很蠢? 但是如果服务器端的程序包进行了更新, 我怎么知道呢 ? 很简单, 远方服务器会有一个文件单独存放这个元数据文件的校验码.那么<code>yum</code>每次只要进行对这个校验码的请求就可以知道是否需要进行更新元数据文件.</p>
+<p>在寻找远端服务器的时候, <code>yum</code>可以基于插件进行加载远端服务器的镜像, 这样就可以一个仓库, 执行多个服务器.<code>yum</code>会优先加载最近的服务器节点.</p>
+<p><code>yum</code>面临的最大的问题是, 程序包安装过程中, 如果发生错误而导致中断, 产生的后果将是不可逆的, 无法修复.因此现在的趋势开始导向<code>dnf</code> [ 不是地下城 :) ] 这个工具, 但是现在<code>CentOS7</code>官方还没有明确的宣布, 所以还是先来学习下<code>yum</code>,  但实际上, 他们两人的命令是很相像的.</p>
+<h3 id="进入yum的世界"><a href="#进入yum的世界" class="headerlink" title="进入yum的世界"></a>进入yum的世界</h3><p>yum的一个重要组成部分就是yum仓库(repository), 这个仓库中存储了大量的rpm包以及包的相关元数据信息文件(放置在特定的目录下: repodata) 这个目录的位置, 就是我们指定<code>yum</code>仓库的位置</p>
+<p><code>yum</code>支持的文件服务器有: </p>
+<ul>
+<li><strong>ftp:&#x2F;&#x2F;</strong> </li>
+<li><strong>http:&#x2F;&#x2F;</strong></li>
+<li><strong>nfs:&#x2F;&#x2F;</strong></li>
+<li><strong>file:&#x2F;&#x2F;</strong></li>
+</ul>
+<p>由于yum也是一个由安装包安装的软件, 所以我们也就可以用上面的rpm命令查看yum生成的相关文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm -qc yum</span><br><span class="line">/etc/logrotate.d/yum <span class="comment"># 日志滚动文件</span></span><br><span class="line">/etc/yum.conf <span class="comment"># 主配置文件, 文件内引用了 /etc/yum.repos.d/*.repo </span></span><br><span class="line">/etc/yum/version-groups.conf <span class="comment"># 跟yum本身的关系不大</span></span><br></pre></td></tr></table></figure>
+
+<p>yum的主配置文件<code>/etc/yum.conf</code>包含了<code>/etc/yum.repos.d/*.repo</code>. 大的<code>/etc/yum.conf</code>配置了yum所有仓库的公共配置, 而每一个<code>*.repo</code>文件就是配置的每一个仓库的地址等信息. 一个<code>yum</code>是可以指定多个仓库的, 在安装时会自动从这些仓库中选择出最新的版本. </p>
+<p>下面来解析一下yum的公共配置文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[main]</span><br><span class="line">cachedir=/var/cache/yum/<span class="variable">$basearch</span>/<span class="variable">$releasever</span></span><br><span class="line">keepcache=0 <span class="comment"># 是否保存缓存</span></span><br><span class="line">debuglevel=2</span><br><span class="line">logfile=/var/log/yum.log <span class="comment"># 日志记录的位置</span></span><br><span class="line">exactarch=1 <span class="comment"># 是否精确严格匹配硬件架构</span></span><br><span class="line">obsoletes=1 <span class="comment"># 用于更新的处理逻辑</span></span><br><span class="line">gpgcheck=1 <span class="comment"># 是否进行验证检查</span></span><br><span class="line">plugins=1 <span class="comment"># 是否启用插件</span></span><br><span class="line">installonly_limit=5 <span class="comment"># 最大的并行安装数</span></span><br><span class="line">bugtracker_url=http://bugs.centos.org/set_project.php?project_id=23&amp;ref=http://bugs.centos.org/bug_report_page.php?category=yum</span><br><span class="line">distroverpkg=centos-release <span class="comment"># 当前的发行版</span></span><br></pre></td></tr></table></figure>
+
+<p>很简单吧, 其实这个配置文件时有手册的, yum还支持很多选项的, 例如ssl验证, 代理隧道的配置, 很多.</p>
+<p>而每一个仓库自己的配置文件长这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[epel] <span class="comment"># 这里的id应该是唯一标识</span></span><br><span class="line">name=EPEL <span class="keyword">for</span> redhat/centos <span class="variable">$releasever</span> - <span class="variable">$basearch</span> <span class="comment"># 仓库名称*</span></span><br><span class="line">baseurl=http://mirrors.tencentyun.com/epel/<span class="variable">$releasever</span>/<span class="variable">$basearch</span>/ <span class="comment"># 访问路径* 指向repodata</span></span><br><span class="line">failovermethod=priority <span class="comment"># 故障转移方法: 多个URL下, 如果坏掉了, 怎么处理.</span></span><br><span class="line"><span class="comment"># 两种选项: roundrobin 和 priority</span></span><br><span class="line"><span class="comment"># roundrobin 虽说是轮询吧, 但其实是失败后进行随机的选择, 默认值</span></span><br><span class="line"><span class="comment"># priority 按照优先级进行选择</span></span><br><span class="line">enabled=1 <span class="comment"># 是否启用本仓库  (好蠢的选项.</span></span><br><span class="line">gpgcheck=1 <span class="comment"># 是否进行检查来源和合法性.</span></span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7 <span class="comment"># 提供一个url, 指向一个密钥文件</span></span><br><span class="line"><span class="comment"># 加星号的两个是最重要的,其他的都是不太重要的可选项 注意=号两侧一定不能出现空格, 否则可能会出现迷之错误</span></span><br><span class="line"><span class="comment"># baseurl是可以指定多个的, 之前说过</span></span><br><span class="line"><span class="comment"># 还有一个重要的配置叫做mirrorlist, 这个指向一个文件, 指向的文件包含了一个url列表, 其实就是一大把baseurl.</span></span><br><span class="line"><span class="comment"># cost 也有可能会用到, 默认是1000 表示开销.</span></span><br></pre></td></tr></table></figure>
+
+<p>随便找一个镜像站点(阿里云,网易,各种高校), 可以很轻易的找到<code>repodata</code>目录文件, 原来是<code>xml</code>啊, 看过你就知道我在说什么了, 嘻嘻 : )</p>
+<p>之前说我觉得这个<code>enable</code>选项是个很蠢的选项, 其实不是, 因为你可以在一个文件中指定多个<code>repo</code>, 这时这个选项就派上用场了.</p>
+<h3 id="yum的基本使用-1"><a href="#yum的基本使用-1" class="headerlink" title="yum的基本使用(1)"></a>yum的基本使用(1)</h3><p>yum的命令格式是下面这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum [options] [<span class="built_in">command</span>] [package ...]</span><br></pre></td></tr></table></figure>
+
+<p>yum也是有很多的子命令以实现不同的管理: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">* install package1 [package2] [...] <span class="comment"># 安装包</span></span><br><span class="line">* update [package1] [package2] [...]</span><br><span class="line">* update-to [package1] [package2] [...]</span><br><span class="line">* update-minimal [package1] [package2] [...]</span><br><span class="line">* check-update</span><br><span class="line">* upgrade [package1] [package2] [...]</span><br><span class="line">* upgrade-to [package1] [package2] [...]</span><br><span class="line">* distribution-synchronization [package1] [package2] [...]</span><br><span class="line">* remove | erase package1 [package2] [...]</span><br><span class="line">* autoremove [package1] [...]</span><br><span class="line">* list [...] <span class="comment"># 列出所有的程序包, 凡是最后一栏加上@符号的, 就是已经安装过的.anaconda表示在系统安装的时候就安装的包</span></span><br><span class="line">    * available</span><br><span class="line">    * updates</span><br><span class="line">    * installed</span><br><span class="line">* info [...]</span><br><span class="line">* provides | whatprovides feature1 [feature2] [...]</span><br><span class="line">* clean [ packages | metadata | expire-cache | rpmdb | plugins | all ]</span><br><span class="line">* makecache [fast]</span><br><span class="line">* <span class="built_in">groups</span> [...]</span><br><span class="line">* search string1 [string2] [...]</span><br><span class="line">* shell [filename]</span><br><span class="line">* reinstall package1 [package2] [...]</span><br><span class="line">* downgrade package1 [package2] [...]</span><br><span class="line">* deplist package1 [package2] [...]</span><br><span class="line">* repolist [all|enabled|disabled]</span><br><span class="line">* repoinfo [all|enabled|disabled]</span><br><span class="line">* repository-packages &lt;enabled-repoid&gt; &lt;install|remove|remove-or-reinstall|remove-or-distribution-synchronization&gt; [package2] [...]</span><br><span class="line">* version [ all | installed | available | group-* | nogroups* | grouplist | groupinfo ]</span><br><span class="line">* <span class="built_in">history</span> [info|list|packages-list|packages-info|summary|addon-info|redo|undo|rollback|new|<span class="built_in">sync</span>|stats]</span><br><span class="line">* load-transaction [txfile]</span><br><span class="line">* updateinfo [summary | list | info | remove-pkgs-ts | exclude-updates | exclude-all | check-running-kernel]</span><br><span class="line">* fssnapshot [summary | list | have-space | create | delete]</span><br><span class="line">* fs [filters | refilter | refilter-cleanup | <span class="built_in">du</span>]</span><br><span class="line">* check</span><br></pre></td></tr></table></figure>
+
+<p>这些命令…其实都有可能会用到…我尽量用简洁的语言描述一下&#x2F;&#x2F;.</p>
+<p>列出信息类的命令有这些:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum repolist [all|enabled|disabled] <span class="comment"># 列出目前的仓库. 建议加上all参数, 这样可以看到每一个仓库的启用状态. </span></span><br><span class="line">[root@WWW ~]$ yum repoinfo [all|enabled|disabled] <span class="comment"># 列出当前仓库的信息, 版本, 大小, 日期等等...</span></span><br><span class="line">[root@WWW ~]$ yum list [...] <span class="comment"># 列出所有的程序包, 凡是最后一栏加上@符号的, 就是已经安装过的.anaconda表示在系统安装的时候就安装的包</span></span><br><span class="line">  <span class="comment"># available 当前没有安装但是仓库有提供的包</span></span><br><span class="line">  <span class="comment"># updates 有更新的包</span></span><br><span class="line">  <span class="comment"># installed 已经安装在系统的包</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来就是进行安装工作了: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum install package1 [package2] [...] <span class="comment"># 安装包, 一次可以安装多个包.</span></span><br><span class="line"><span class="comment"># 安装时, 可以在后面跟上应用的版本号以安装不同版本</span></span><br></pre></td></tr></table></figure>
+
+<p>升级也很简单了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum update [package1] [...] <span class="comment"># 可以指明包名, 也可以不指明要单独升级哪一包, 而升级所有可能的包.</span></span><br></pre></td></tr></table></figure>
+
+<p>与升级相反过来(<strong>降级</strong>)的指令是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum downgrade package1 [package2] [...]</span><br></pre></td></tr></table></figure>
+
+<p>如果要检查可用的升级使用:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum check-update</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是进行程序包的卸载啦:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum remove|erase package1 [package2] [...]</span><br></pre></td></tr></table></figure>
+
+<p>那么安装完的程序包,我如何像<code>rpm</code>那样查看程序的信息呢 ?</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum info [...] <span class="comment"># 这里是可以不用指定具体的包名从而输出所有的包的信息...相信没有人会这样查询吧..</span></span><br><span class="line"><span class="comment"># 因此如果是一般的查询的话, 建议还是加上包的名字吧.</span></span><br><span class="line">[root@WWW ~]$ yum info gcc</span><br><span class="line">Installed Packages</span><br><span class="line">Name        : gcc &lt;--- 包名</span><br><span class="line">Arch        : x86_64 &lt;--- 需要的硬件架构</span><br><span class="line">Version     : 4.8.5 &lt;--- 版本</span><br><span class="line">Release     : 11.el7 &lt;--- rpm的版本</span><br><span class="line">Size        : 37 M &lt;--- 大小</span><br><span class="line">Repo        : installed &lt;--- 仓库类别</span><br><span class="line">From repo   : os &lt;--- 来源仓库</span><br><span class="line">Summary     : Various compilers (C, C++, Objective-C, Java, ...) &lt;--- 简述</span><br><span class="line">URL         : http://gcc.gnu.org</span><br><span class="line">License     : GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD</span><br><span class="line">Description : The gcc package contains the GNU Compiler Collection version 4.8.</span><br><span class="line">            : You<span class="string">&#x27;ll need this package in order to compile C code.</span></span><br></pre></td></tr></table></figure>
+
+<p>是不是感觉怪怪的. 其实<code>rpm -qi</code>所输出的信息是更加有用的啊, 因为中间有包的安装时间等等<code>yum</code> 所不能输出的信息, 因此我推荐使用	<code>rpm</code> 进行查询.</p>
+<p>查询子程序(或特性)来源于哪一个软件包, 这一个功能个人感觉<code>yum</code>要优于<code>rpm</code>呐.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum provides redis-cli</span><br><span class="line">redis-3.2.3-1.el7.x86_64 : A persistent key-value database</span><br><span class="line">Repo        : epel</span><br><span class="line">Matched from:</span><br><span class="line">Filename    : /usr/bin/redis-cli</span><br><span class="line"></span><br><span class="line">redis-3.2.3-1.el7.x86_64 : A persistent key-value database</span><br><span class="line">Repo        : @epel</span><br><span class="line">Matched from:</span><br><span class="line">Filename    : /usr/bin/redis-cli</span><br><span class="line"><span class="comment"># 你看yum告诉我们了, 这个redis-cli来源于哪一个软件包, 以及当前的安装情况. 即使当前的系统没有安装这个程序, yum仍然可以把这个包给抓出来.</span></span><br><span class="line"><span class="comment"># 还记得之前说过的ip的一大堆子命令吗. 试一试ss</span></span><br><span class="line">[root@WWW ~]$ yum provides ss</span><br><span class="line">iproute-3.10.0-74.el7.x86_64 : Advanced IP routing and network device configuration tools</span><br><span class="line">Repo        : os</span><br><span class="line">Matched from:</span><br><span class="line">Filename    : /usr/sbin/ss</span><br><span class="line"></span><br><span class="line">iproute-3.10.0-74.el7.x86_64 : Advanced IP routing and network device configuration tools</span><br><span class="line">Repo        : @os</span><br><span class="line">Matched from:</span><br><span class="line">Filename    : /usr/sbin/ss</span><br></pre></td></tr></table></figure>
+
+<p><code>yum</code>的这个功能等价于<code>rpm</code>的<code>-qf</code>选项, 但是<code>yum</code>是不需要指定具体的路径的, 而<code>rpm</code>是不会从<code>$PATH</code>中寻找的. 而且<code>yum</code>输出的信息要更多.</p>
+<p>由于查询逻辑不一样( <code>rpm</code>有本地的限制 ), 所以再次推荐使用<code>yum</code>的这个功能而不是<code>rpm -qf</code>.</p>
+<p>接下来是一个清理本地缓存的指令, 之前说过yum会将下载的元数据和程序包都缓存到本地, 在程序安装完成之后就会将程序的rpm包删除, 但是元数据会保留下来.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum clean [ package | metadata | expire-cache | rpmdb | plugins | all ]</span><br></pre></td></tr></table></figure>
+
+<p>反过来, 如果想要手动进行一次缓存的重建的话, 使用:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum makecache</span><br></pre></td></tr></table></figure>
+
+<p>其实这个就是手动进行一次下载, 其实就是在<code>yum</code>每一次下载都会进行一次缓存的重建, 因此没有必要频繁的进行手动的重建.</p>
+<p>在我们进行软件包的下载的时候, 还有一个经常要进行的操作就是<strong>搜(shou)索(shuo)</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum search string [string2]</span><br></pre></td></tr></table></figure>
+
+<p>匹配是进行的是模糊匹配, 会同时搜索程序包名和<code>summary</code>信息</p>
+<p>很简单, 类似rpm的<code>replace</code>, yum也有一个重新安装的功能, 直接见名知意</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum reinstall package1 [package2] [...]</span><br></pre></td></tr></table></figure>
+
+<p><code>yum</code>同样也可以查看一个包的依赖有哪些, 并且要比<code>rpm</code>看到的要更好看.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum deplist package1 [package2] [...]</span><br></pre></td></tr></table></figure>
+
+<p>yum是支持事务的, 因此我们也可以查看这些记录, 这个就是yum的history功能:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum <span class="built_in">history</span></span><br><span class="line">ID     | Command line             | Date and time    | Action(s)      | Altered</span><br><span class="line">-------------------------------------------------------------------------------</span><br><span class="line">    64 | remove pptpd             | 2017-06-18 10:43 | Erase          |    1 EE</span><br><span class="line">    63 | install redhat-lsb       | 2017-06-16 16:10 | Install        |   74   </span><br><span class="line">    62 | remove vim vim-tiny vim- | 2017-06-10 01:23 | Erase          |    1 EE</span><br><span class="line">    61 | install -y ruby ruby-dev | 2017-06-10 01:23 | Install        |   39   </span><br><span class="line">    60 | update                   | 2017-06-10 01:17 | I, O, U        |   41   </span><br><span class="line">    59 | install python-devel     | 2017-06-10 01:16 | Install        |    1   </span><br><span class="line">    58 | install libncurses5-dev  | 2017-06-10 00:15 | Install        |    1   </span><br><span class="line">    57 | remove vim vim-runtime g | 2017-06-10 00:13 | Erase          |    1   </span><br><span class="line">    56 | install ctags            | 2017-06-09 17:54 | Install        |    1   </span><br><span class="line">    55 | update                   | 2017-05-27 12:26 | Update         |    3   </span><br><span class="line">    54 | install redis.x86_64     | 2017-05-21 22:55 | Install        |    2   </span><br><span class="line">    53 | install tcl              | 2017-05-21 14:35 | Install        |    1   </span><br><span class="line">    52 | install privoxy          | 2017-05-20 17:20 | Install        |    1  </span><br></pre></td></tr></table></figure>
+
+<p>上面的history后面可以跟上很多的参数:</p>
+<p><code>[info|list|packages-list|packages-info|summary|addon-info|redo|undo|rollback|new|sync|stats]</code></p>
+<p>默认的参数是<code>list</code>, 其实这个功能用的不是很多啦.</p>
+<p>继续说<code>yum</code>的事务功能, 当你终止一个正常的安装或者卸载或者凡是涉及到事务的操作时, <code>yum</code>会生成一个事务文件, 保存在<code>/tmp/*.yumtx</code></p>
+<p>这样就随时可以进行回复:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">--&gt; Running transaction check</span><br><span class="line">---&gt; Package zsh.x86_64 0:5.0.2-25.el7_3.1 will be erased</span><br><span class="line">--&gt; Finished Dependency Resolution</span><br><span class="line">......</span><br><span class="line">Is this ok [y/N]: </span><br><span class="line">Exiting on user <span class="built_in">command</span></span><br><span class="line">Your transaction was saved, rerun it with:</span><br><span class="line"> yum load-transaction /tmp/yum_save_tx.2017-06-24.16-09.HQGAUR.yumtx</span><br><span class="line">--------------------------------------------------------------------</span><br><span class="line">[root@WWW ~]$ yum load-transaction /tmp/yum_save_tx.2017-06-24.16-09.HQGAUR.yumtx</span><br><span class="line">...</span><br><span class="line">Is this ok [y/N]: y</span><br><span class="line">Downloading packages:</span><br><span class="line">Running transaction check</span><br><span class="line">Running transaction <span class="built_in">test</span></span><br><span class="line">Transaction <span class="built_in">test</span> succeeded</span><br><span class="line">Running transaction</span><br><span class="line">  Erasing    : zsh-5.0.2-25.el7_3.1.x86_64</span><br><span class="line">  Verifying  : zsh-5.0.2-25.el7_3.1.x86_64</span><br><span class="line">Removed:</span><br><span class="line">  zsh.x86_64 0:5.0.2-25.el7_3.1                                                                                                                                            </span><br></pre></td></tr></table></figure>
+
+<h3 id="yum的包组管理"><a href="#yum的包组管理" class="headerlink" title="yum的包组管理"></a>yum的包组管理</h3><p>yum支持一个独特的功能, 叫<strong>组管理</strong>.</p>
+<p>说白了其实就是软件大礼包, 直接安装一个组就是将这个组内所有的包执行安装.</p>
+<p>对组的操作和对单个软件包的操作基本类似, 命令也基本通用, 只要在前面加上<code>groups</code>就行了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ yum <span class="built_in">groups</span> info</span><br><span class="line">[root@WWW ~]$ yum <span class="built_in">groups</span> install</span><br><span class="line">[root@WWW ~]$ yum <span class="built_in">groups</span> list</span><br><span class="line">[root@WWW ~]$ yum <span class="built_in">groups</span> remove</span><br><span class="line">[root@WWW ~]$ yum <span class="built_in">groups</span> summary</span><br></pre></td></tr></table></figure>
+
+<h3 id="yum的基本使用-2"><a href="#yum的基本使用-2" class="headerlink" title="yum的基本使用(2)"></a>yum的基本使用(2)</h3><p>现在我们拿到了一张CnetOS的光盘, 如何将这张光盘当成我们的本地<code>yum</code>仓库呢?</p>
+<ul>
+<li>挂载光盘到某目录<ul>
+<li><code>mount -r -t iso9660 /dev/cdrom /media/cdrom</code></li>
+</ul>
+</li>
+<li>创建配置文件<ul>
+<li><code>[CentOS7]</code></li>
+<li><code>name = </code></li>
+<li><code>baseurl = </code></li>
+<li><code>gpgcheck = </code></li>
+<li><code>enabled = </code></li>
+</ul>
+</li>
+</ul>
+<p>其实在命令行中也可以进行配置文件的编写, 例如: <code>--nogpgcheck</code></p>
+<p><code>yum</code>的命令行选项:</p>
+<p> <code>-y</code> : 自动回答为<code>Yes</code></p>
+<p><code>-q</code> : 静默模式, 不会有输出</p>
+<p><code>--disablerepo=repoidglob</code> : 临时禁用此处指定的<code>repo</code> </p>
+<p><code>--enablerepo=repoidglob</code> : 临时启用此处指定的<code>repo</code></p>
+<p><code>--noplugins</code> : 禁用所有的插件</p>
+<hr>
+<p>在上面的配置文件的章节中 我们发现了一些以<code>$</code>开头的字符, 这些其实就是变量了.</p>
+<p>yum的repo的配置中的可用的变量有: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$releasever</span>: 当前OS的发行版中主版本号</span><br><span class="line"><span class="variable">$arch</span>: 平台 ( i386, i586, i686 ... )</span><br><span class="line"><span class="variable">$basearch</span>: 基础平台 ( x86, x86_64, ... )</span><br><span class="line"><span class="variable">$YUM0</span>-<span class="variable">$YUM9</span>: 自定义变量</span><br></pre></td></tr></table></figure>
+
+<p>这样就拼成了我们看到的<code>URL</code>: <code>http://mirrors.scuec.edu.cn/centos/$releasever/$basearch/os</code></p>
+<h2 id="编译安装程序包"><a href="#编译安装程序包" class="headerlink" title="编译安装程序包"></a>编译安装程序包</h2><p>上面再说rpm的时候, 提到过有两种rpm包, 其中有一种是源码rpm包, 这种包的命名是这样的:</p>
+<p><code>testapp-VERSION-release.src.rpm</code></p>
+<p>这个src就是source的意思, 这个包内是不含二进制格式的输出的, 只有源码, 也就是这个需要我们手动进行编译. 安装后使用<code>rpmbuild</code>命令制作成二进制的<code>rpm</code>包, 而后就可以进行安装了. </p>
+<p>之所以需要这样的包, 是因为并没有考虑到操作系统, 实际也就是CPU的架构. 这样就可以根据本机实际的情况编译出适合自己(CPU的指令集)的二进制包,. 从命名中也可以发现了, 这个包中并没有<code>arch</code>这个部分.</p>
+<p>而这样一个过程也已经在上面说过了, 再重复一遍吧:</p>
+<p><code>源代码 --&gt; 预处理 --&gt; 编译(gcc) --&gt; 汇编 --&gt; 链接 --&gt; 执行</code></p>
+<p>现在我们来想这么一个问题, 一个程序的源文件肯定是很多部分组成的,而且这些文件很可能是存在依赖关系的, 那么在编译的时候我该优先编译哪一个呢? </p>
+<p>这就是我们源代码的组织结构, 多文件组织. 显然我们不能就直接进行一个一个的<code>gcc</code>, 那么就需要一个项目管理工具, 就比如说<code>Java</code>中的<code>maven</code>. 而在<code>C/C++</code>中一个著名的项目管理工具就是<code>make</code>.很多人都把这个<code>make</code>当做成了编译器. 这样我们就不用手动的一个一个的进行<code>gcc</code>了.</p>
+<p>那么<code>make</code>怎么能做到这么智能的知道去做什么呢? 这依靠一个重要的配置文件 – <strong>makefile</strong></p>
+<p>而这个<code>makefile</code>又不能直接就存在或者是写死的, 因为这样就失去了灵活性, 每一个用户都希望有自己的需求, 比如: 文件的位置, 以及一些功能的取舍.</p>
+<p>实际上的<code>makefile</code>的生成是由一个<code>Makefile.in</code>的模板进行的.  那么这么一个模板文件又是由用户指定选项来选则特性是否启用. 提供给用户进行特性选则的工具叫做<code>configure</code>. 综上, 这么一个过程就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">configure --&gt; Makefile.<span class="keyword">in</span> --&gt; malefile</span><br></pre></td></tr></table></figure>
+
+<p>这样的话, 我们的编译安装的三个步骤就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure --[OPTIONS] <span class="comment"># 生成makefile, 依赖Makefile.in</span></span><br><span class="line">make <span class="comment"># 编译的步骤</span></span><br><span class="line">make install <span class="comment"># 其实就是将生成的文件放在指定的文件夹</span></span><br></pre></td></tr></table></figure>
+
+<p>在<code>(1)</code>的过程中, 通过选项传递参数, 指定启用特性, 安装路径等, 执行时会参考用户的选项和<code>Makefile.in</code>生成<code>makefile</code>, 接着, 因为有些功能的启用需要依赖其他的模块或者一些外部程序, 所以<code>configure</code>就会进行对所依赖的外部环境做检测. </p>
+<p>在<code>(2)</code>的过程中, 根据<code>makefile</code>文件, 构建应用程序. </p>
+<p>那么回答最初的文件 – <code>configure</code>, 这个文件难道一定是默认就会提供的吗? 不一定. 手工编写这个文件是一个很复杂和麻烦的过程. 所以一般都直接使用开发工具进行生成. 如果下载的源码包是没有提供这些文件的.我们就要使用工具进行生成:</p>
+<ul>
+<li><code>autoconf</code> : 生成<code>configure</code>脚本</li>
+<li><code>automake</code>: 生成<code>Makefile.in</code></li>
+</ul>
+<p>对于有些软件可能不需要进行<code>configure</code>, 直接<code>make</code>就行, 而有些软件可能<code>make</code>之后直接就是二进制, 直接复制到别的地方就可以使用了.</p>
+<p>所以说: <strong>建议在安装前查看INSTALL文档(如果没有查看README)</strong></p>
+<p>在进行编译<code>C</code>的源代码的时候, 是有以下的前提的: ( configure就会进行检查 )</p>
+<ul>
+<li>开发工具: <code>make</code>, <code>gcc</code></li>
+<li>开发环境: 开发库, 头文件 <ul>
+<li><code>glibc</code> : 标准库</li>
+</ul>
+</li>
+</ul>
+<p>接下来就来详细一点的说明一下那三个步骤:</p>
+<p><strong>第一步:</strong> <code>configure</code>脚本</p>
+<ul>
+<li><p>选项: 指定安装位置, 指定启用的特性</p>
+</li>
+<li><p>常见的选项: </p>
+</li>
+<li><pre><code class="bash">--prefix=/PATH/TO/SOMEWHERE: 指定默认安装位置
+--sysconfig=/PATH/TO/SOMEWHERE: 配置文件的安装位置
+Optional Features: 可选特性
+    --disable-FEATURE
+    --enable-FEATURE[=ARG]
+Optional Packages: 可选包
+    --with-PACKAGE[=ARG]
+    --without-PACKAGE
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">**第二步:** `make`</span><br><span class="line"></span><br><span class="line">**第三步:** `make install`</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">**7月14号的更新:** </span><br><span class="line"></span><br><span class="line">上面说的就是最基本的源码编译了, 现在我们再多说一点.</span><br><span class="line"></span><br><span class="line">如果有一份这样的[文件](http://linux.vbird.org/linux_basic/0520source/main.tgz): 他们之间存在函数依赖关系并且还调用了外部库.那么在直接编译的时候就会报错.</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line">main.c:(.text+0x61): undefined reference to `haha&#x27;</span><br><span class="line">sin_value.c:(.text+0x2f): undefined reference to `sin&#x27;</span><br><span class="line">...()</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+<p>缺少库的解决方法就是在编译的时候加上<code>-lm</code>参数 如果你的库不在标准的库路径里面, 那么就需要再指定 <code>-L/path</code>  对于文件间的依赖关系, 就需要先把他们编译成对象文件, 再一起进行链接.</p>
+<p>就像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW c]<span class="comment"># gcc -c main.c </span></span><br><span class="line">[root@WWW c]<span class="comment"># gcc -c sin_value.c </span></span><br><span class="line">[root@WWW c]<span class="comment"># gcc -c cos_value.c </span></span><br><span class="line">[root@WWW c]<span class="comment"># gcc -c haha.c </span></span><br><span class="line">[root@WWW c]<span class="comment"># ls</span></span><br><span class="line">cos_value.c  cos_value.o  haha.c  haha.o  main.c  main.o  sin_value.c  sin_value.o</span><br><span class="line">[root@WWW c]<span class="comment"># gcc -o main main.o haha.o sin_value.o cos_value.o -lm</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以看到编译之后的文件了.</p>
+<p>这样果然很烦人呢. 有没有一种方法能够直接自动化的进行依赖的解决呢? 这个就是我们要说的make了, 之前只是简单的说了一下, 现在我们就少未来具体的说一说这个.</p>
+<p>首先就是我们的makefile的编写. makefile是最终执行make的重要参考, 因此现在我们来了解下这个文件的基本语法吧, 先用上面的那一只当一个范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">makefile</span><br><span class="line">main: main.o haha.o sin_value.o cos_value.o</span><br><span class="line">	gcc -o main main.o haha.o sin_value.o cos_value.o -lm</span><br></pre></td></tr></table></figure>
+
+<p>先把之前生成的文件都删掉, 再执行一次make命令试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">rm</span> -rf *.o main</span><br><span class="line">[root@localhost c]<span class="comment"># make</span></span><br><span class="line">cc    -c -o main.o main.c</span><br><span class="line">cc    -c -o haha.o haha.c</span><br><span class="line">cc    -c -o sin_value.o sin_value.c</span><br><span class="line">cc    -c -o cos_value.o cos_value.c</span><br><span class="line">gcc -o main main.o haha.o sin_value.o cos_value.o -lm</span><br><span class="line">[root@localhost c]<span class="comment"># ls</span></span><br><span class="line">cos_value.c  cos_value.o  haha.c  haha.o  main  main.c  main.o  makefile  sin_value.c  sin_value.o</span><br></pre></td></tr></table></figure>
+
+<p>这样就很方便的进行了多文件的编译. 但是你可能要说了, 我可以使用脚本来代替这个过程啊, 为什么非要编写这样的一个文件呢? 看下面的例子吧:</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost c]<span class="comment"># make</span></span><br><span class="line">make: `main<span class="string">&#x27; is up to date.</span></span><br><span class="line"><span class="string">[root@localhost c]# vim haha.c</span></span><br><span class="line"><span class="string">[root@localhost c]# make</span></span><br><span class="line"><span class="string">cc    -c -o haha.o haha.c</span></span><br><span class="line"><span class="string">gcc -o main main.o haha.o sin_value.o cos_value.o -lm</span></span><br></pre></td></tr></table></figure>
+
+<p>发现了吗, 只要这个文件没有发生改变我们就不会再去消耗CPU去编译他, (编译是一件很吃性能的事情啊) 而且当文件发生了变化, 他也可以安装相关关系来按需编译, 也就是按照相依性来更新执行文件.</p>
+<p>现在也许你尝试着进行了<code>make clean</code> 的操作但是发现失败了. 来看一下报错吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost c]<span class="comment"># make clean</span></span><br><span class="line">make: *** No rule to make target `clean<span class="string">&#x27;.  Stop.</span></span><br></pre></td></tr></table></figure>
+
+<p>他说没有对应的规则来执行. 那么什么才是make的规则呢. 是这样的, 我们的makefie的基本组成是这样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">目标(target): 目标文件1 目标文件2</span><br><span class="line">&lt;tab&gt;gcc -o 新建的可执行文件 目标文件1 目标文件2</span><br><span class="line">target:</span><br><span class="line">&lt;tab&gt;operation</span><br><span class="line">target:</span><br><span class="line">&lt;tab&gt;operation</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+
+<p>现在我们加上这样的两行:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost c]<span class="comment"># echo -e &quot;clean:\n\trm -rf main.o haha.o sin_value.o cos_value.o&quot; &gt;&gt; makefile </span></span><br></pre></td></tr></table></figure>
+
+<p>好了, 再执行一次clean吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost c]<span class="comment"># make clean</span></span><br><span class="line"><span class="built_in">rm</span> -rf main.o haha.o sin_value.o cos_value.o</span><br></pre></td></tr></table></figure>
+
+<p>但是现在我们发现, 这个makefile也太难看了, 参数都是一样的, 有什么办法来优化一下啊.</p>
+<p>makefile和我们的shell script一样, 我们可以使用变量来进行文件内容的精简.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">makefile</span><br><span class="line">LIBS = -lm</span><br><span class="line">OBJS = main.o haha.o sin_value.o cos_value.o</span><br><span class="line">main: <span class="variable">$&#123;OBJS&#125;</span></span><br><span class="line">	gcc -o main <span class="variable">$&#123;OBJS&#125;</span> <span class="variable">$&#123;LIBS&#125;</span></span><br><span class="line">clean:</span><br><span class="line">	<span class="built_in">rm</span> -f main <span class="variable">$&#123;OBJS&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就看起来清爽多了.</p>
+<p>最后再说一下, 软件的更新,如果使用的是rpm包进行的安装, 那么很容易就可以进行更新. 但是,源码包呢? 这是个问题. 事实上, 只要没有大改架构, 那么小范围的更新都是很方便的就可以进行更新的, 你想蛤, 其实仅仅是几段代码的差距罢了, 这个和我们的git有点像啊. 所以是不是有什么灵感呢? 由一个工具很方便的可以得到这些差距; <code>diff</code></p>
+<p>软件包的更新就依赖于这个, 由一个命令<code>patch</code>就是用来配合diff做这个事情的, 看一下下面的实例就懂了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># echo &quot;This is version 1.0&quot; &gt; 1</span></span><br><span class="line">[root@localhost ~]<span class="comment"># echo &quot;This is version 2.0&quot; &gt; 2</span></span><br><span class="line">[root@localhost ~]<span class="comment"># diff -u 1 2</span></span><br><span class="line">--- 1	2017-07-14 12:07:53.520429252 +0800</span><br><span class="line">+++ 2	2017-07-14 12:07:58.752424592 +0800</span><br><span class="line">@@ -1 +1 @@</span><br><span class="line">-This is version 1.0</span><br><span class="line">+This is version 2.0</span><br><span class="line">[root@localhost ~]<span class="comment"># diff -u 1 2 &gt; test.patch</span></span><br><span class="line">[root@localhost ~]<span class="comment"># patch -p0 &lt; test.patch </span></span><br><span class="line">patching file 1</span><br><span class="line">[root@localhost ~]<span class="comment"># cat 1</span></span><br><span class="line">This is version 2.0</span><br></pre></td></tr></table></figure>
+
+<p>只要将unified的diff输出重定向到一个文件, 接着就可以用patch进行更新和还原了, 这个在我们进行内核编译的时候是有很大用处的.</p>
+<p>当然基于这个原理, 如果软件的架构发生了变化, 这样就不太能行得通了, 这个方法也只能在提供了patch文件才可以.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%89%AF%E6%89%AF%E5%88%AB%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">先扯扯别的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E5%8C%85-RPM"><span class="toc-number">2.</span> <span class="toc-text">程序包(RPM)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%A8%8B%E5%BA%8F%E5%8C%85"><span class="toc-number">3.</span> <span class="toc-text">管理程序包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%A8%8B%E5%BA%8F%E5%8C%85"><span class="toc-number">3.1.</span> <span class="toc-text">获取程序包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS%E7%9A%84rpm"><span class="toc-number">3.2.</span> <span class="toc-text">CentOS的rpm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%A8%8B%E5%BA%8F%E5%8C%85%E5%B7%A5%E5%85%B7YUM"><span class="toc-number">4.</span> <span class="toc-text">管理程序包工具YUM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5yum%E7%9A%84%E4%B8%96%E7%95%8C"><span class="toc-number">4.1.</span> <span class="toc-text">进入yum的世界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8-1"><span class="toc-number">4.2.</span> <span class="toc-text">yum的基本使用(1)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E7%9A%84%E5%8C%85%E7%BB%84%E7%AE%A1%E7%90%86"><span class="toc-number">4.3.</span> <span class="toc-text">yum的包组管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8-2"><span class="toc-number">4.4.</span> <span class="toc-text">yum的基本使用(2)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E7%A8%8B%E5%BA%8F%E5%8C%85"><span class="toc-number">5.</span> <span class="toc-text">编译安装程序包</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&text=Linux程序包管理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&is_video=false&description=Linux程序包管理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux程序包管理&body=Check out this article: https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&title=Linux程序包管理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&name=Linux程序包管理&description=&lt;p&gt;令人头疼的程序包管理….学习笔记在此.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;来自未来的评论: 现在看来Linux的程序包管理是最轻松的, 比Mac, Windows好管理太多了&lt;/strong&gt;&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/&t=Linux程序包管理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

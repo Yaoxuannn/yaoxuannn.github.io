@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="我们要始终假设自己的系统处在高危状态.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="监控系统与Zabbix">
+<meta property="og:url" content="https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="我们要始终假设自己的系统处在高危状态.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/Zabbix_Architecture.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/Zabbix_logical_diagram.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_login_page.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_example_node2.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_node2_item_configuration.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_node2_itemvalues_graph.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_node2_inbound_trigger_graph.png">
+<meta property="article:published_time" content="2020-08-21T17:04:35.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Zabbix">
+<meta property="article:tag" content="Monitor">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/Zabbix_Architecture.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>监控系统与Zabbix</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/05/30/NoSQL%E6%A6%82%E5%BF%B5%E5%92%8CMongoDB/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&text=监控系统与Zabbix"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&is_video=false&description=监控系统与Zabbix"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=监控系统与Zabbix&body=Check out this article: https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&name=监控系统与Zabbix&description=&lt;p&gt;我们要始终假设自己的系统处在高危状态.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&t=监控系统与Zabbix"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%91%E6%8E%A7%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">监控的概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%87%E6%A0%B7"><span class="toc-number">1.1.</span> <span class="toc-text">采样</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8"><span class="toc-number">1.2.</span> <span class="toc-text">存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%95%E7%A4%BA"><span class="toc-number">1.3.</span> <span class="toc-text">展示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%A5%E8%AD%A6"><span class="toc-number">1.4.</span> <span class="toc-text">报警</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Zabbix"><span class="toc-number">2.</span> <span class="toc-text">Zabbix</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zabbix%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD"><span class="toc-number">2.1.</span> <span class="toc-text">Zabbix的核心功能</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        监控系统与Zabbix
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-08-21T17:04:35.000Z" class="dt-published" itemprop="datePublished">2020-08-21</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Monitor/" rel="tag">Monitor</a>, <a class="p-category" href="/tags/Zabbix/" rel="tag">Zabbix</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>我们要始终假设自己的系统处在高危状态.</p>
+<span id="more"></span>
+
+<h2 id="监控的概念"><a href="#监控的概念" class="headerlink" title="监控的概念"></a>监控的概念</h2><p>为什么要做监控? 我们的系统上线后, 可能随时都会遇到各种各样的问题, 因此我们需要监控各种指标, 从而能够及时发现问题. 那么这些指标有哪些呢? 例如CPU, 他的负荷量是否长期居高(90+)不下, 中断次数是否过多? 磁盘IO?内存使用量? 是否一直在swap? 软件层面上, 例如Nginx是否正常运行? 最重要的, 业务层面上, 并发量, 响应时间, 每秒钟的事务量等等, 这些都是我们需要进行考量.</p>
+<p>所以监控的第一步, 我们需要得到这些数据, 也就是<strong>采样</strong>. 但是这些数据, 获取单一时间点的值的意义不大, 我们需要将获取的数据进行<strong>存储</strong>, 持续采样, 得到历史数据和趋势数据. 得到了这些数据之后, 我们需要进行<strong>展示</strong>. 当数据出现异常, 我们首要做的是就是<strong>报警</strong>. 由此, 我们就得到了一个完整的监控系统所必须的几个功能: 采样, 存储, 展示, 报警.</p>
+<p>监控管理是贯穿在整个运维过程中的, 对于不同类型的系统, 主机, 我们对应的监控系统也是不一样的.</p>
+<h3 id="采样"><a href="#采样" class="headerlink" title="采样"></a>采样</h3><p>对于上面的几个过程, 采样就是周期性的获取某个关注指标相关的数据. 现在回忆一下我们之前看过的Ansible和Puppet, 我们可以使用ssh通道, 也可以在目标主机上安装一个agent. 这里甚至也可以是一个传感器. 当然啦, 这里也不一定非要是主机, 我们的被监控对象也可以使交换机路由器这些网络设备, 还有UPS也可以被监控. </p>
+<p>因此一般, 我们会在网络中存放一个NMS, 也就是监控机. 通过agent或者是通道来发送命令. 再使用通道的情况下, 很多数据的获取, 我们需要管理员权限才可以获取, 这种时候我们如果目标主机的sudo权限设定的不当的话, 监控可能会失败, 如果使用管理员账号, 可能又会有信息泄露的风险, 不安全. 而如果使用agent来与NMS进行交互的话, agent可以在本地发起子进程来进行调用. 因此使用agent的方式更加安全.</p>
+<p>除了使用ssh&#x2F;telnet通道, master&#x2F;agent这两种, 我们还有哪些采样的通道嘞? 硬件接口, 例如IPMI, 智慧平台管理接口, 很多厂商都有实现, 例如DELL的DRAC, HP的Integrated Lights-Out等等. 另外还有一个大家都很熟悉的东西, 那就是<strong>SNMP</strong>, 简单网络管理协议, 这个古老的协议使得很多设备都自带一个它的agent. 例如在windows上, 我们可以找到可选功能安装页面, 启用之就行了. 在Linux上, 我们需要安装一个软件包就行了:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# yum info net-snmp</span><br><span class="line">Loaded plugins: fastestmirror</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line"> * base: mirrors.usinternet.com</span><br><span class="line"> * epel: mirror.steadfastnet.com</span><br><span class="line"> * extras: ftp.ussg.iu.edu</span><br><span class="line"> * updates: mirror.genesisadaptive.com</span><br><span class="line">Available Packages</span><br><span class="line">Name        : net-snmp</span><br><span class="line">Arch        : x86_64</span><br><span class="line">Epoch       : 1</span><br><span class="line">Version     : 5.7.2</span><br><span class="line">Release     : 48.el7_8.1</span><br><span class="line">Size        : 332 k</span><br><span class="line">Repo        : updates/7/x86_64</span><br><span class="line">Summary     : A collection of SNMP protocol tools and libraries</span><br><span class="line">URL         : http://net-snmp.sourceforge.net/</span><br><span class="line">License     : BSD</span><br><span class="line">Description : SNMP (Simple Network Management Protocol) is a protocol used for</span><br><span class="line">            : network management. The NET-SNMP project includes various SNMP tools:</span><br><span class="line">            : an extensible agent, an SNMP library, tools for requesting or setting</span><br><span class="line">            : information from SNMP agents, tools for generating and handling SNMP</span><br><span class="line">            : traps, a version of the netstat command which uses SNMP, and a Tk/Perl</span><br><span class="line">            : mib browser. This package contains the snmpd and snmptrapd daemons,</span><br><span class="line">            : documentation, etc.</span><br><span class="line">            : </span><br><span class="line">            : You will probably also want to install the net-snmp-utils package,</span><br><span class="line">            : which contains NET-SNMP utilities.</span><br></pre></td></tr></table></figure>
+
+<p>有一个封装了SNMP协议功能的开源监控项目, 叫做<code>cacti</code>. 他将数据存储到了一个叫做<code>RRDTool</code>的数据日志和可视化系统中.</p>
+<p>另外还有一个叫做JMX的玩意, 全称是Java management extension. 这个数据管理接口可以采集Java虚拟机的各项指标.</p>
+<h3 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h3><p>至此我们就差不多说完了采样, 接下来我们来说说存储系统. 对于历史数据而言, 我们可能需要每次采样的结果, 保存时长三个月半年不能. 但对于趋势数据而言, 我们需要的就不会是每次的完整结果了, 我们可能需要的只是每个小时的最大最小和平均, 因此它的数据量远远小于历史数据, 也就是聚合数据, 我们可以保存时长较长周期.</p>
+<p>最为常见的存储系统就是FS了, 显然这是十分麻烦的. 首先我们的指标非常多, 这仅仅对于一个主机而言. 如果我们想要获得某一个时间的数据, 就需要将整个巨大的文件载入到内存中, 这显然是不合理的. 因此我们就想到了使用关系型数据库, 但是对于监控系统而言, 数据的插入是非常多的, 也就是写操作, 这就会造成每秒钟事务的非常多. 另外一种就是轮询数据库, 也就是我们刚才提到的<code>RRD</code>: RoundRobin DataBase. 我们可以在一开始直接获得一个环状的数据区域, 当整个环填满了之后, 新数据就会将旧数据覆盖掉. 还有一种就是我们刚刚学习的NoSQL, 例如redis&#x2F;mongo.</p>
+<h3 id="展示"><a href="#展示" class="headerlink" title="展示"></a>展示</h3><p>展示就很简单了, 我们可以直接使用WebGUI, 或者是APP之类的.</p>
+<h3 id="报警"><a href="#报警" class="headerlink" title="报警"></a>报警</h3><p>报警就很好理解了, 我们可以使用邮件, 短信, 或者是微信等等等等, 任何能够到达用户的通知方法都可以. 一般情况下, 我们需要写脚本, 这样只要触发该脚本即可.</p>
+<h2 id="Zabbix"><a href="#Zabbix" class="headerlink" title="Zabbix"></a>Zabbix</h2><p>Zabbix可以使用我们刚才提到的各种数据采集方式, 同时可以进行阈值定义, 支持递进式的报警机制. 使用mysql&#x2F;pgsql来存储数据, 支持网络自动发现, 并且可以提供丰富的可视化选项. 我们可以使用布置监控代理来实现分布式监控. 同时, Zabbix提供了API, 我们还可以二次开发.</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/Zabbix_Architecture.png" alt="Zabbix_Architecture"></p>
+<p>Zabbix的架构如上图所示:</p>
+<p>其中最重要的组件就是Zabbix Server, 负责接受agent发送过来的各种数据. 同时各种配置信息也都保存在这里. 接着是Database, 听名字就知道这是个用于存储收集到的数据的组件.</p>
+<p>Zabbix可以使用两种方式进行数据监控, 也就是被动和主动, 被动也就是Zabbix server去拉取数据, 然后agent返回数据, 而主动也就是Zabbix的agent主动将数据推到server端.</p>
+<p>在Zabbix中, 我们可以把多个指标放在一个组中, 而这么一个组, 就叫做<code>application</code>, 而一个指标项就叫做<code>item</code>.</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/Zabbix_logical_diagram.png" alt="Zabbix_logical_diagram"></p>
+<p>从逻辑层面上, 我们可以得到这样的一张关系图. 主要的过程在右下角.</p>
+<p>安装Zabbix已经不能再简单了, 官方的网站上有着保姆级的教程, 并且配置文件的注释也十分的详细. 之后的配置都在WebGUI中进行.</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_login_page.png" alt="zabbix_login_page"></p>
+<p>配置完成之后就可以进行登录了, 默认的用户名是<code>Admin</code>, 密码是<code>zabbix</code>.</p>
+<p>剩下的使用GUI就没有什么难的了.</p>
+<p>另外, 我们可以安装一个zabbix的辅助程序叫做<code>zabbix-get</code>, 它相当于一个Zabbix接口的访问客户端. 例如:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# zabbix_get -s 192.168.10.102 -k &quot;net.if.in[ens33, packets]&quot;</span><br><span class="line">1010580</span><br><span class="line">[root@node1 ~]# zabbix_get -s 192.168.10.102 -k &quot;net.if.out[ens33, packets]&quot;</span><br><span class="line">1050160</span><br></pre></td></tr></table></figure>
+
+<p>这个时候可以去agent端验证一下, 由于我这边两个节点一直在发包, 所以就没办法获得相同的结果啦.</p>
+<h3 id="Zabbix的核心功能"><a href="#Zabbix的核心功能" class="headerlink" title="Zabbix的核心功能"></a>Zabbix的核心功能</h3><p>我们在添加item的页面, 可以看到zabbix agent提供了很多标准的item, 有些是不需要参数的, 而有些是需要我们加上参数的. 例如上面的流量监控, 就是需要我们提供网卡名称的. 例如CPU上下文切换: <code>system.cpu.switches</code> 就是一个不携带参数的item.</p>
+<p>这里我们贴个例子:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_example_node2.png" alt="zabbix_example_node2"></p>
+<p>可以看到, 我们在node2上设置了5个监控项, 并且zabbix为我们列出了上次检查的时间, 最新的数据以及变化量.</p>
+<p>具体的一个配置页面如下:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_node2_item_configuration.png" alt="zabbix_node2_item_configuration"></p>
+<p>首先是改监控项的名字, 接着选择使用何种方式进行数据采集, 这里我们一律使用的都是Zabbix agent. 接下来的key就是指明具体的监控项啦, 选择了监控项会决定下面的信息类型, 也就是数据类型啦, 有些可能返回的是个无符号整数, 有些可能是浮点型, 有些也可能是字符串. 接着我们还可以自定义数据的单位, 例如我们可以把网络流量每秒钟的出口报文这个一个key的单位自定义成为:<code>packets/sec</code>. 接着我们还可以设定间隔时间以及更加灵活的采集时间, 还可以进行schedule.</p>
+<p>接下来的两个配置用来指明我们存储数据的方式. 还记得之前说过的application吗. 也就是item的组, 如果是新建组就直接在文本框中写名字就好了, 如果是要分配到已有的组, 就在下面的Applications选择即可. 另外, 向上看, 我们有一个叫做<code>preprocessing</code>的tab, 在这里我们可以对数据在展示之前进行预处理, 包括文本替换, 数据结构修改, 数学运算(倍乘), 验证等等.</p>
+<p>经过一段时间之后, 我们可以前往数据页查看图表:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_node2_itemvalues_graph.png" alt="zabbix_node2_itemvalues_graph"></p>
+<p>但是这个时候你会发现, 我们只是获取了数据, 并且有了一个可视化的界面, 但是还有一个很重要的动作没有. 那就是设置<strong>触发器</strong>.</p>
+<p>目前我们只收集到了数据, 还没有做到当某个指标对应的数据超出合理范围的时候给相关人员发送警报. 简单的说, 触发器其实就是表达式, 用来定义阈值. </p>
+<p>触发器支持多个函数, 例如平均, 计算数量, 最大最小值, 数据存在性, 求和, 正则等等. 一个基本的触发器表达式就像这样:</p>
+<p><code>&#123;&lt;server&gt;:&lt;key&gt;.&lt;function&gt;(&lt;parameter&gt;)&#125;&lt;operator&gt;&lt;constant&gt;</code></p>
+<p>高度灵活, 所以我们创建出非常复杂的测试条件. 但是需要注意的是, 当条件满足的时候, TRUE表示的是PROBLEM状态, 反之, 就是OK状态.</p>
+<p>在设置triggers的页面, 我们可以不手写表达式, 让zabbix为我们生成, 例如我们添加一个这样的触发器:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;node2.zabbix.com:net.if.in[ens33, packets].last(#1)&#125;&gt;10000</span><br></pre></td></tr></table></figure>
+
+<p>这就是说, 当我们最后一个入站报文的值大于10000的时候, 就会被触发. 设置好了之后我们可以去图表页面看一下:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/zabbix_node2_inbound_trigger_graph.png" alt="zabbix_node2_inbound_trigger_graph"></p>
+<p>这里会看到一条红线, 这就是警戒线了. 平常我们的节点没啥流量, 所以只有十位数个位数的流量, 我们让他<code>yum update</code>一样, 瞬间这个值就会上去了. 然后我们可以去check一下problems页面就会看到红色闪烁的<code>PROBLEM</code>了, 当问题没有了之后, 状态就会变成<code>RESOLVED</code>. 而触发器的状态也会变成<code>OK</code>了.</p>
+<p>另外, 想象这样的一种情景. 我们的一天服务器上运行的Nginx出现问题不能提供服务了, 但是这是因为我们的服务器本身宕机了, 如果我们对Nginx和服务器本身都加了触发器, 那么Nginx的触发器在这种情况下是不是压根就没意义了呀? 所以这就叫做, 触发器之间的<strong>依赖关系</strong>. </p>
+<p>那么接下来, 我们就要定义Actions了.</p>
+<p>首先我们需要定义条件, 也就是何时才使用这个action, 接下来下一步就是定义要做的操作. 我们之前说过, Zabbix可以进行步进式的操作设定, 也就是通过设定步骤来指明操作的层级.</p>
+<p>例如我们在这里适用Linux的本地邮件来做个例子, 注意要先到Administration里面添加本地邮件这种Media Type和发送的消息内容(Zabbix有各种模板供你选用)才行, 另外还需要给你要发送的用户也配置上Media.</p>
+<p>这样, 当我们的触发器触发到了这一个Action的时候, 我们就可以看到:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# mail</span><br><span class="line">Heirloom Mail version 12.5 7/5/10.  Type ? for help.</span><br><span class="line">&quot;/var/spool/mail/root&quot;: 1 message</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">  1 zabbix@localhost.loc  Sun Aug 23 18:09  23/1060  <span class="string">&quot;Problem: ipps too high&quot;</span></span></span><br><span class="line">&amp; </span><br><span class="line">Message  1:</span><br><span class="line">From zabbix@localhost.localdomain  Sun Aug 23 18:09:45 2020</span><br><span class="line">Return-Path: &lt;zabbix@localhost.localdomain&gt;</span><br><span class="line">X-Original-To: root@localhost.localdomain</span><br><span class="line">Delivered-To: root@localhost.localdomain</span><br><span class="line">From: &lt;zabbix@localhost.localdomain&gt;</span><br><span class="line">To: &lt;root@localhost.localdomain&gt;</span><br><span class="line">Date: Sun, 23 Aug 2020 18:09:45 -0500</span><br><span class="line">Subject: Problem: ipps too high</span><br><span class="line">Content-Type: text/html; charset=&quot;UTF-8&quot;</span><br><span class="line">Status: RO</span><br><span class="line"></span><br><span class="line">&lt;b&gt;Problem started&lt;/b&gt; at 18:09:42 on 2020.08.23&lt;br&gt;&lt;b&gt;Problem name:&lt;/b&gt; ipps too high&lt;br&gt;&lt;b&gt;Host:&lt;/b&gt; node2&lt;br&gt;&lt;b&gt;Severity:&lt;/b&gt; High&lt;br&gt;&lt;b&gt;Operational data:&lt;/b&gt; 9.9 Kpackets/sec&lt;br&gt;&lt;b&gt;Original problem ID:&lt;/b&gt; 53&lt;br&gt;&amp; </span><br></pre></td></tr></table></figure>
+
+
+<p>接下来我们来说说Zabbix的主机配置模板, 我们可以设置一个链接至主机的模板, 从而实现主机的快速监控配置. 我们前往Configuration的Template里面,可以看到很多内置的模板. 模板可以导出, 也可以通过链接的方式进行模板之间的继承.</p>
+<p>模板支持使用宏, 也就是预设的文本替换. 宏也有等级, 一共有三种:</p>
+<ul>
+<li>优先级最高的, 全局宏, 在Administration中定义</li>
+<li>模板宏, 在模板配置中定义, 也可以进行链接继承. </li>
+<li>主机宏, 优先级最低, 在主机页面定义.</li>
+</ul>
+<p>我们一开始就介绍过Zabbix支持网络发现, Zabbix提供了多个网络发现方式, 例如使用HTTP, SSH, SMTP, Zabbix agent等等. 在扫描到之后就会添加到监控主机当中来.</p>
+<p>一旦发现主机, 就会产生发现事件, 也就是说我们的发现操作一共分为两步:</p>
+<ul>
+<li>discover</li>
+<li>actions: conditions, operations</li>
+</ul>
+<p>Zabbix定义了多种发现事件:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Event</th>
+<th align="left">Check of service result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><em>Service Discovered</em></td>
+<td align="left">The service is ‘up’ after it was ‘down’ or when discovered for the first time.</td>
+</tr>
+<tr>
+<td align="left"><em>Service Up</em></td>
+<td align="left">The service is ‘up’, consecutively.</td>
+</tr>
+<tr>
+<td align="left"><em>Service Lost</em></td>
+<td align="left">The service is ‘down’ after it was ‘up’.</td>
+</tr>
+<tr>
+<td align="left"><em>Service Down</em></td>
+<td align="left">The service is ‘down’, consecutively.</td>
+</tr>
+<tr>
+<td align="left"><em>Host Discovered</em></td>
+<td align="left">At least one service of a host is ‘up’ after all services of that host were ‘down’ or a service is discovered which belongs to a not registered host.</td>
+</tr>
+<tr>
+<td align="left"><em>Host Up</em></td>
+<td align="left">At least one service of a host is ‘up’, consecutively.</td>
+</tr>
+<tr>
+<td align="left"><em>Host Lost</em></td>
+<td align="left">All services of a host are ‘down’ after at least one was ‘up’.</td>
+</tr>
+<tr>
+<td align="left"><em>Host Down</em></td>
+<td align="left">All services of a host are ‘down’, consecutively.</td>
+</tr>
+</tbody></table>
+<p>其实也就是Host, Service和Up&#x2F;Down, Discovered&#x2F;Lost的组合.</p>
+<p>可以采取的行动有这些:</p>
+<ul>
+<li>Sending notifications</li>
+<li>Adding&#x2F;removing hosts</li>
+<li>Enabling&#x2F;disabling hosts</li>
+<li>Adding hosts to a group</li>
+<li>Removing hosts from a group</li>
+<li>Linking hosts to&#x2F;unlinking from a template</li>
+<li>Executing remote scripts</li>
+</ul>
+<p>因为我们先定义发现规则, 接着在设置发现事件触发之后采取的行动就可以了. 这里提个醒, 增加action的切换在左上角, 想吐槽一下这个UI, 真的好不明显啊.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%91%E6%8E%A7%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">监控的概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%87%E6%A0%B7"><span class="toc-number">1.1.</span> <span class="toc-text">采样</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8"><span class="toc-number">1.2.</span> <span class="toc-text">存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%95%E7%A4%BA"><span class="toc-number">1.3.</span> <span class="toc-text">展示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%A5%E8%AD%A6"><span class="toc-number">1.4.</span> <span class="toc-text">报警</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Zabbix"><span class="toc-number">2.</span> <span class="toc-text">Zabbix</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zabbix%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD"><span class="toc-number">2.1.</span> <span class="toc-text">Zabbix的核心功能</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&text=监控系统与Zabbix"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&is_video=false&description=监控系统与Zabbix"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=监控系统与Zabbix&body=Check out this article: https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&title=监控系统与Zabbix"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&name=监控系统与Zabbix&description=&lt;p&gt;我们要始终假设自己的系统处在高危状态.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/&t=监控系统与Zabbix"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

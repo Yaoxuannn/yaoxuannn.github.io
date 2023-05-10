@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="今天来了解下另一个缓存服务器应用 - Varnish.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Varnish初见">
+<meta property="og:url" content="https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="今天来了解下另一个缓存服务器应用 - Varnish.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/http_expire.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/varnish_arch.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/varnishstat.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/varnishtop.png">
+<meta property="article:published_time" content="2018-09-08T16:23:12.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:48:09.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Varnish">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/http_expire.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Varnish初见</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/09/10/Varnish%E7%9A%84%E7%8A%B6%E6%80%81%E5%BC%95%E6%93%8E%E5%92%8CVCL/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&text=Varnish初见"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&is_video=false&description=Varnish初见"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Varnish初见&body=Check out this article: https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&name=Varnish初见&description=&lt;p&gt;今天来了解下另一个缓存服务器应用 - Varnish.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&t=Varnish初见"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B0%B8%E8%BF%9C%E9%83%BD%E6%9C%89%E7%9A%84%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">永远都有的概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">2.</span> <span class="toc-text">缓存的概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E6%96%B0%E9%B2%9C%E5%BA%A6"><span class="toc-number">2.1.</span> <span class="toc-text">缓存新鲜度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Varnish%E5%88%9D%E8%A7%81"><span class="toc-number">3.</span> <span class="toc-text">Varnish初见</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Varnish%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-number">3.1.</span> <span class="toc-text">Varnish的安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Varnish%E7%9A%84%E7%BC%93%E5%AD%98%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.2.</span> <span class="toc-text">Varnish的缓存对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEVarnish"><span class="toc-number">3.3.</span> <span class="toc-text">配置Varnish</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Varnish%E7%9A%84%E6%97%A5%E5%BF%97"><span class="toc-number">3.4.</span> <span class="toc-text">Varnish的日志</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Varnish初见
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-09-08T16:23:12.000Z" class="dt-published" itemprop="datePublished">2018-09-08</time>
+        
+        (Updated: <time datetime="2020-11-30T01:48:09.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/Varnish/" rel="tag">Varnish</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>今天来了解下另一个缓存服务器应用 - Varnish.</p>
+<span id="more"></span>
+
+<p>先前我们了解过Nginx了, 这是一个性能强大的反向代理服务器, 另外通过一些插件还可以成为一个缓存服务器, 只不过它只能支持一些静态文件的缓存了, 而我们今天说的这个Varnish就是一个专业的Cache服务, 当然也可以作为代理使用.</p>
+<h2 id="永远都有的概述"><a href="#永远都有的概述" class="headerlink" title="永远都有的概述"></a>永远都有的概述</h2><p>首先我们知道, 用户发送过来的请求在一个稍微好点的架构中, 都是先到达的我们的负载均衡器, 也就是Load Balancer. 接着根据用户所请求的资源的种类不同, 将会被负载均衡器送到不同的后端服务器组. 另外的, 用户所请求的资源主要是分成结构化数据和非结构化数据. 如果是结构化的数据, 我们会把数据存放在数据库中, 根据情况我们还会做数据库的读写分离, 所有读数据的请求都会被发到读数据库, 而所有的写请求都会被发送到写数据库, 这就是基本的读写分离了. </p>
+<p>但是这样随之而来就会有一个问题, 应用程序如何知道该访问哪一个位置的数据库系统呢. 如果是硬编码到程序中这就显得耦合度很高了, 因此在这种情况下我们应该使用中间件来处理, 这个中间件可以理解成是一种查询路由或者连接池, 如果发送过来的请求超过了后台数据库系统的最大负载能力, 这个中间件还可以作为消息队列来放松后端数据库系统的压力.</p>
+<p>如果是非结构化的数据就是被存储在文件系统上的, 这样就很大程度上会依赖磁盘的IO能力, 举个例子, 如果我们的数据是很大量的图片文件, 这种情况下的简单本地文件系统读取会造成很大的压力, 这种情况下, 我们可能会通过分布式, SAN存储网络等等来解决问题. </p>
+<p>上面说的都是动态资源服务的一些情况, 而对于我们的HTML文本格式文档, JavaScript脚本文件, CSS层叠样式表等等, 他们都可以以较高的压缩比来进行压缩, 而且更新的频度都要比图片高. 在这种情况下, 他们应该和图片服务器组分割开来.</p>
+<p>但是不管是这种文本格式文档还是图片静态资源 他们都可以被<strong>缓存</strong>从而提高服务效率, 并且减轻后台资源(文件系统)的压力</p>
+<h2 id="缓存的概念"><a href="#缓存的概念" class="headerlink" title="缓存的概念"></a>缓存的概念</h2><p>对于<strong>缓存</strong>, 我们都知道数据和资源之所以可以缓存, 是因为程序的时间局部性和空间局部性. 并且被缓存的资源可以以非常快速的方式被访问到, 这是因为他们采用<code>Key-Value</code>的方式存储的. </p>
+<p>另外由于我们的数据繁多, 不可能所有的数据都被缓存, 我们优先需要缓存的资源都是所谓的热点资源, 也就是那些会被访问的比较多的数据. 而且, 我们缓存的东西也是会过期的, 我们的缓存对象(Cache Object)是存在生命周期的. 当我们的缓存空间已经满了的时候, 自然需要把那些最旧的或者使用最小的缓存对象清掉然后替换成新的. 这里一般所用的都是LRU算法, 而且这种替换一般都是一个单独的进程来进行的. </p>
+<p>同样的道理,  我们所缓存的数据一般情况下只需要缓存那些公共的数据, 对于用户的私有数据我们是不需要缓存的, 而且也不应该缓存.</p>
+<p>接下来我们来看一下缓存的处理步骤:</p>
+<blockquote>
+<p>接受请求 –&gt; 解析请求 (提取请求中的URL和各种首部) –&gt; 查询缓存 –&gt; 新鲜度检测 –&gt; 创建响应报文 –&gt;  发送响应 –&gt; 记录日志</p>
+</blockquote>
+<h3 id="缓存新鲜度"><a href="#缓存新鲜度" class="headerlink" title="缓存新鲜度"></a>缓存新鲜度</h3><p>这里面有一个至关重要的一步叫做新鲜度检测. 在HTTP版本是1.0, 会使用到一个响应首部来检测(HTTP&#x2F;1.1中也有这个), 叫做Expire. 我们可以来随便访问一个网站看一下.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/http_expire.png" alt="http_expire"></p>
+<p>这个是百度的logo, 可以看到高亮的部分就写了在10年后才会过期. 不过你应该也注意到了一个地方, 这里所使用的时间是个绝对的时间, 但是我们是存在时差这个东西的, 也就是说有可能一个新鲜度时间对用户来说由于时差的影响并不新鲜, 因此在HTTP&#x2F;1.1版本 中, 我们使用一个另外一个响应头部来得到缓存时间是多久, 那就是上面图中的<code>Cache-Control</code>. </p>
+<p>这个属性的的一个典型的值就是像上面所使用的<code>max-age</code>. 我不需要来决定具体的过期时间了, 只要告诉客户端从当前开始, 这个资源有效的时间是多长时间(s). 至于到底什么时候会过期, 有客户端自己去计算就好了.</p>
+<p>这里我们是从客户端的角度来看的, 其实在我们的缓存服务器和真实的资源服务器之间还存在一个有效性再验证: <code>revalidate</code>.  这里就会分成三种情况了:</p>
+<ul>
+<li>如果原始内容没有发生改变, 响应的主体部分不会被附带, 状态码是304 (Not modified)</li>
+<li>如果内容发生了改变, 则正常响应, 响应码200</li>
+<li>如果内容已经不存在于资源服务器上, 则会直接响应404. 接着缓存服务器也会删除cache object.</li>
+</ul>
+<p>另外, 还有一些我们在HTTP协议的学习中了解到的一些条件式请求头部:</p>
+<ul>
+<li>If-Modified-since: 基于请求的时间戳做验证</li>
+<li>If-Unmodified-since</li>
+<li>If-Match: 基于Etag来做验证, 这个Etag就像是一个文件校验码一样的概念, 上面的百度logo请求中也有这个属性</li>
+<li>If-None-Match</li>
+</ul>
+<h2 id="Varnish初见"><a href="#Varnish初见" class="headerlink" title="Varnish初见"></a>Varnish初见</h2><p>接下来就到了我们的主角的登场了, 关于Varnish的初步印象, 你可以用Squid来认识它. 而Varnish和Squid的关系其实就类似我们之前所学的Nginx和Apache httpd的关系. 两者之间在性能上, Varnish要稍占优势而稳定性上, Squid要比Varnish更加稳定. Squid可以说是很老牌的缓存代理了, 而Varnish由于采用了比较新的缓存技术, 因此性能优越, 使用量也是不错的.</p>
+<p>那么在引入了这样一个缓存组件进入我们的架构, 前端是一个负载均衡的调度器, 很显然这里就不能再使轮询之类的调度算法了, 因为这样下去的缓存几乎都是失效的.  一般情况下, 如果说我们的前端调度是HAproxy的话, 这里应该使用的调度算法显然应该使用URI来确保我们的缓存是有效的. </p>
+<blockquote>
+<p>另外, 还有更大型的缓存网络. 例如借助全局的DNS, 一个典型的例子就是我们的CDN和GSLB. CDN借由节点之间的内容缓存控制协议来实现在用户的请求到达我们的后端架构之前, 会先在一个缓存网络中进行查找, 每一个用户只会被路由到他最近的节点.</p>
+</blockquote>
+<p>我们来看看Varnish的架构图;</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/varnish_arch.png" alt="varnish_arch"></p>
+<p>Varnish也同样使用DSL(domain-specific language, 领域特定语言)来进行配置, 这里就叫做VCL, 也就是Varnish Configuration Language. 可以看到Varnish 主要分成两个部分, 主进程:也叫做管理进程, 子进程, 也即是缓存进程, 首先是主进程通过读取我们所编写的Varnish配置文件通过VCL编译器将他们编译成C代码, 接着通过C编译器得到<code>*.so</code>. 然后叫做子进程来进行真正的缓存操作.</p>
+<p>而主进程可以通过我们的命令行界面或者telnet, 或者Web接口. 说起来 这里我们只使用CLI的方式, telnet太不安全应该已经被废弃, 而Web界面是Varnish所提供的需要付费的组件.</p>
+<p>对于Varnish所生成的日志文件, 我们可以从图的右侧看到, 有多种分析工具啥的. 值得一说的是: Varnish所生成的日志内存空间对于所有的子进程而言都是共享的, 并且这一段内存是一个环状的空间, 当最后一个日志填满了只会, 就会从头开始继续写入.</p>
+<p>稍微小结一下就是, Varnish的主进程主要负责监控Varnish, 管理子进程, 初始化Varnish, 以及提供CLI接口.</p>
+<p>而子进程分成以下这些组件:</p>
+<ul>
+<li>Accepter: 接收到的连接请求.</li>
+<li>worker threads: 处理用户请求</li>
+<li>Expiry: 清理缓存中的过期对象</li>
+</ul>
+<p>日志, 是一个共享的环状空间, 共享内存的大小一般默认是90MB, 前一部分是计数器, 后一部分请求相关的数据. </p>
+<p>另外, 如果需要配置Varnish进行工作, 我们需要使用vcl来进行, 是一个基于域的简单编程语言.</p>
+<p>Varnish的默认监听端口是<code>6081</code>.</p>
+<h3 id="Varnish的安装"><a href="#Varnish的安装" class="headerlink" title="Varnish的安装"></a>Varnish的安装</h3><p>如果是CentOS7的话, 只要你配置了epel源, 就可以直接通过yum进行下载和安装, 下载的大版本应该是4版本的. </p>
+<p>varnish之所以性能优越, 是因为他依赖了一个高效的并发<code>malloc</code>的软件包, 你可以看到关于这个软件包的相关介绍:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# rpm -q --whatrequires jemalloc</span><br><span class="line">varnish-4.0.5-1.el7.x86_64</span><br><span class="line">[root@VM-node0 ~]# rpm -qi jemalloc</span><br><span class="line">Name        : jemalloc</span><br><span class="line">Version     : 3.6.0</span><br><span class="line">Release     : 1.el7</span><br><span class="line">Architecture: x86_64</span><br><span class="line">Install Date: Fri 07 Sep 2018 02:58:20 PM CST</span><br><span class="line">Group       : System Environment/Libraries</span><br><span class="line">Size        : 324797</span><br><span class="line">License     : BSD</span><br><span class="line">Signature   : RSA/SHA256, Wed 02 Apr 2014 02:28:23 AM CST, Key ID 6a2faea2352c64e5</span><br><span class="line">Source RPM  : jemalloc-3.6.0-1.el7.src.rpm</span><br><span class="line">Build Date  : Tue 01 Apr 2014 06:33:02 AM CST</span><br><span class="line">Build Host  : buildvm-24.phx2.fedoraproject.org</span><br><span class="line">Relocations : (not relocatable)</span><br><span class="line">Packager    : Fedora Project</span><br><span class="line">Vendor      : Fedora Project</span><br><span class="line">URL         : http://www.canonware.com/jemalloc/</span><br><span class="line">Summary     : General-purpose scalable concurrent malloc implementation</span><br><span class="line">Description :</span><br><span class="line">General-purpose scalable concurrent malloc(3) implementation.</span><br><span class="line">This distribution is the stand-alone &quot;portable&quot; implementation of jemalloc.</span><br></pre></td></tr></table></figure>
+
+<p>接下来还是向往常一样, 我们来看看Varnis安装了啥:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# rpm -ql varnish</span><br><span class="line">/etc/logrotate.d/varnish</span><br><span class="line">/etc/varnish</span><br><span class="line">/etc/varnish/default.vcl</span><br><span class="line">/etc/varnish/varnish.params</span><br><span class="line">/run/varnish.pid</span><br><span class="line">/usr/bin/varnishadm</span><br><span class="line">/usr/bin/varnishhist</span><br><span class="line">/usr/bin/varnishlog</span><br><span class="line">/usr/bin/varnishncsa</span><br><span class="line">/usr/bin/varnishstat</span><br><span class="line">/usr/bin/varnishtest</span><br><span class="line">/usr/bin/varnishtop</span><br><span class="line">/usr/lib/systemd/system/varnish.service</span><br><span class="line">/usr/lib/systemd/system/varnishlog.service</span><br><span class="line">/usr/lib/systemd/system/varnishncsa.service</span><br><span class="line">/usr/sbin/varnish_reload_vcl</span><br><span class="line">/usr/sbin/varnishd</span><br><span class="line">...(omitted)</span><br><span class="line">/var/lib/varnish</span><br><span class="line">/var/log/varnish</span><br></pre></td></tr></table></figure>
+
+<p>可以看到它的配置文件是一个使用<code>*.vcl</code>来做结尾的文件, 还有一个以<code>*.params</code>结尾的文件. 这个文件是干什么的呢? </p>
+<p>打开看一下就能明白了, 其实就是一个存储一些变量值的文件, 就类似我们Shell的环境变量一样. 我们打开他的启动服务unit看一下就能明白了:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# cat /usr/lib/systemd/system/varnish.service</span><br><span class="line">[Unit]</span><br><span class="line">Description=Varnish Cache, a high-performance HTTP accelerator</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">If you want to make changes to this file, please copy it to</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/systemd/system/varnish.service and make your changes there.</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">This will override the file kept at /lib/systemd/system/varnish.service</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment"># Enviroment variables may be found in /etc/varnish/varnish.params</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"></span><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Maximum number of open files (<span class="keyword">for</span> <span class="built_in">ulimit</span> -n)</span></span><br><span class="line">LimitNOFILE=131072</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Locked shared memory (<span class="keyword">for</span> <span class="built_in">ulimit</span> -l)</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Default <span class="built_in">log</span> size is 82MB + header</span></span><br><span class="line">LimitMEMLOCK=82000</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">On systemd &gt;= 228 <span class="built_in">enable</span> this to avoid <span class="string">&quot;fork failed&quot;</span> on reload.</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">TasksMax=infinity</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Maximum size of the corefile.</span></span><br><span class="line">LimitCORE=infinity</span><br><span class="line"></span><br><span class="line">EnvironmentFile=/etc/varnish/varnish.params</span><br><span class="line"></span><br><span class="line">Type=forking</span><br><span class="line">PIDFile=/var/run/varnish.pid</span><br><span class="line">PrivateTmp=true</span><br><span class="line">ExecStart=/usr/sbin/varnishd \</span><br><span class="line">	-P /var/run/varnish.pid \</span><br><span class="line">	-f $VARNISH_VCL_CONF \</span><br><span class="line">	-a $&#123;VARNISH_LISTEN_ADDRESS&#125;:$&#123;VARNISH_LISTEN_PORT&#125; \</span><br><span class="line">	-T $&#123;VARNISH_ADMIN_LISTEN_ADDRESS&#125;:$&#123;VARNISH_ADMIN_LISTEN_PORT&#125; \</span><br><span class="line">	-S $VARNISH_SECRET_FILE \</span><br><span class="line">	-u $VARNISH_USER -g $VARNISH_GROUP \</span><br><span class="line">	-s $VARNISH_STORAGE \</span><br><span class="line"><span class="meta prompt_">	$</span><span class="language-bash">DAEMON_OPTS</span></span><br><span class="line"></span><br><span class="line">ExecReload=/usr/sbin/varnish_reload_vcl</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里就制定了环境配置文件是<code>/etc/varnish/varnish.params</code>. 而后面启动的参数有很多都是从这个文件获取的, 也就是说我们通过改变这个环境变量配置文件来实现不同的启动参数.</p>
+<h3 id="Varnish的缓存对象"><a href="#Varnish的缓存对象" class="headerlink" title="Varnish的缓存对象"></a>Varnish的缓存对象</h3><p>Varnish是如何存储他的缓存对象的呢? 我们接下来来了解一下.</p>
+<p>我们已经知道Nginx的缓存机制是通过目录层级建立在文件系统上的. 键保存在内存中. 这种做法的一个显然易见的缺点是会占用大量的inode. 而Varnish是不同的, 他只是用了一个文件, 单个大文件的感觉. 这个文件中使用Varnish自己的存储方式来进行整理. 但是同样的, Varnish在运行过程中是绝对不可以进行重启的, 因为为了能够识别这个文件, 需要在内存中维护一些识别数据, 只要重启了之后, 所有的缓存对象都会失效, 也就是说这种方式是不支持持久机制的.</p>
+<p>另外, Varnish还支持另外两种存储方式, 一种是基于内存的, 也就是使用malloc, 这种方式同样是不支持持久化的. 最后一种叫做<code>persistent</code>, 这个是存储在磁盘上的, 而且支持持久化, 有点类似之前的Nginx了, 但是这个功能在3版本 之前一直作为实验性功能不建议使用, 这种情况下, 对我们的磁盘IO能力就是一个考验了.</p>
+<h3 id="配置Varnish"><a href="#配置Varnish" class="headerlink" title="配置Varnish"></a>配置Varnish</h3><p>对于Varnish的配置方式, 我们刚刚已经在上面说过了, 可以通过修改那个环境变量文件来达到配置的效果. 这个只是Varnish的一种配置方式, 除此之外, 我们还可以通过在命令行接口中, 进行一些运行时参数的修改. </p>
+<p>另外, 还记得Varnish的vcl文件吗, 这个文件是用来进行Varnish缓存系统的一些缓存机制的 , 只不过, 使用这个文件一定要先编译, 之后才会生效, 同时你需要确保运行环境有gcc编译器才可以.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Main configuration file. You probably want to change it.</span></span><br><span class="line">VARNISH_VCL_CONF=/etc/varnish/default.vcl</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Default address and port to <span class="built_in">bind</span> to. Blank address means all IPv4</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">and IPv6 interfaces, otherwise specify a host name, an IPv4 dotted</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">quad, or an IPv6 address <span class="keyword">in</span> brackets.</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">VARNISH_LISTEN_ADDRESS=192.168.1.5</span></span><br><span class="line">VARNISH_LISTEN_PORT=6081</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Admin interface listen address and port</span></span><br><span class="line">VARNISH_ADMIN_LISTEN_ADDRESS=127.0.0.1</span><br><span class="line">VARNISH_ADMIN_LISTEN_PORT=6082</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Shared secret file <span class="keyword">for</span> admin interface</span></span><br><span class="line">VARNISH_SECRET_FILE=/etc/varnish/secret</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Backend storage specification, see Storage Types <span class="keyword">in</span> the varnishd(5)</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">man page <span class="keyword">for</span> details.</span></span><br><span class="line">VARNISH_STORAGE=&quot;malloc,256M&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">User and group <span class="keyword">for</span> the varnishd worker processes</span></span><br><span class="line">VARNISH_USER=varnish</span><br><span class="line">VARNISH_GROUP=varnish</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Other options, see the man page varnishd(1)</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">DAEMON_OPTS=<span class="string">&quot;-p thread_pool_min=5 -p thread_pool_max=500 -p thread_pool_timeout=300&quot;</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>在这个文件中, 我们可以看到监听地址, 端口, 管理CLI秘钥文件的, 存储方式等等的修改, 这里安装的版本默认使用了<code>malloc</code>的方式来进行缓存, 这个内存空间的大小是256M. 如果想改成文件方式该如何做呢 只要把这个参数的值修改成这个样子:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">VARNISH_STORAGE=&quot;file,/storage/data/varnish.bin,1G&quot;</span><br></pre></td></tr></table></figure>
+
+<p>类似这样就行了, 不解释也能看得懂吧.</p>
+<p>接下来就是vcl文件了</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Marker to tell the VCL compiler that this VCL has been adapted to the</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">new 4.0 format.</span></span><br><span class="line">vcl 4.0;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Default backend definition. Set this to point to your content server.</span></span><br><span class="line">backend default &#123;</span><br><span class="line">    .host = &quot;127.0.0.1&quot;;</span><br><span class="line">    .port = &quot;8080&quot;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sub vcl_recv &#123;</span><br><span class="line">    # Happens before we check if we have this in cache already.</span><br><span class="line">    #</span><br><span class="line">    # Typically you clean up the request here, removing cookies you don&#x27;t need,</span><br><span class="line">    # rewriting the request, etc.</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sub vcl_backend_response &#123;</span><br><span class="line">    # Happens after we have read the response headers from the backend.</span><br><span class="line">    #</span><br><span class="line">    # Here you clean the response headers, removing silly Set-Cookie headers</span><br><span class="line">    # and other mistakes your backend does.</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sub vcl_deliver &#123;</span><br><span class="line">    # Happens when we have all the pieces we need, and are about to send the</span><br><span class="line">    # response to the client.</span><br><span class="line">    #</span><br><span class="line">    # You can do accounting or modifying the final object here.</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>关于VCL的更多信息我们之后再说, 现在我们来配置一下后端主机.</p>
+<p>这里我把主机的地址改到了他自己的80端口, 接着我们先来启动Varnish. </p>
+<p>varnish的默认端口是6081, 我们访问一下试试.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo\Desktop</span><br><span class="line">λ curl 192.168.16.100:6081 -v</span><br><span class="line">* Rebuilt URL to: 192.168.16.100:6081/</span><br><span class="line">*   Trying 192.168.16.100...</span><br><span class="line">* TCP_NODELAY set</span><br><span class="line">* Connected to 192.168.16.100 (192.168.16.100) port 6081 (#0)</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">GET / HTTP/1.1</span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">Host: 192.168.16.100:6081</span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">User-Agent: curl/7.55.1</span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">Accept: */*</span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash">&lt; HTTP/1.1 200 OK</span></span><br><span class="line">&lt; Date: Sun, 09 Sep 2018 11:46:48 GMT</span><br><span class="line">&lt; Server: Apache/2.4.6 (CentOS) OpenSSL/1.0.2k-fips PHP/5.4.16</span><br><span class="line">&lt; Last-Modified: Fri, 20 Oct 2017 16:27:33 GMT</span><br><span class="line">&lt; ETag: &quot;19-55bfcf32d89d7&quot;</span><br><span class="line">&lt; Content-Length: 25</span><br><span class="line">&lt; Content-Type: text/html; charset=UTF-8</span><br><span class="line">&lt; X-Varnish: 65540 3</span><br><span class="line">&lt; Age: 65</span><br><span class="line">&lt; Via: 1.1 varnish-v4</span><br><span class="line">&lt; Connection: keep-alive</span><br><span class="line">&lt; Accept-Ranges: bytes</span><br><span class="line">&lt;</span><br><span class="line">Sorry, under maintenance</span><br><span class="line">* Connection #0 to host 192.168.16.100 left intact</span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 访问正常进行了, 而且我们还能看到响应头中写了经由Varnish代理服务器, 而处理请求的是Apache httpd.</p>
+<p>接下来我们保持Varnish的运行, 来看一下他的命令行管理工具.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# varnishadm -h</span><br><span class="line">varnishadm: invalid option -- &#x27;h&#x27;</span><br><span class="line">usage: varnishadm [-n ident] [-t timeout] [-S secretfile] -T [address]:port command [...]</span><br><span class="line">	-n is mutually exlusive with -S and -T</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们需要指定一下使用的秘钥文件位置和管理端口, 这里可以直接在后面发送相关的命令, 也可以不写进入交互式界面来进行操作. 现在就来试一下.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">root@VM-node0 ~]# varnishadm -S /etc/varnish/secret -T 127.0.0.1:6082</span><br><span class="line">200        </span><br><span class="line">-----------------------------</span><br><span class="line">Varnish Cache CLI 1.0</span><br><span class="line">-----------------------------</span><br><span class="line">Linux,3.10.0-862.11.6.el7.x86_64,x86_64,-smalloc,-smalloc,-hcritbit</span><br><span class="line">varnish-4.0.5 revision 07eff4c29</span><br><span class="line"></span><br><span class="line">Type &#x27;help&#x27; for command list.</span><br><span class="line">Type &#x27;quit&#x27; to close CLI session.</span><br><span class="line"></span><br><span class="line">help</span><br><span class="line">200        </span><br><span class="line">help [&lt;command&gt;]</span><br><span class="line">ping [&lt;timestamp&gt;]</span><br><span class="line">auth &lt;response&gt;</span><br><span class="line">quit</span><br><span class="line">banner</span><br><span class="line">status</span><br><span class="line">start</span><br><span class="line">stop</span><br><span class="line">vcl.load &lt;configname&gt; &lt;filename&gt;</span><br><span class="line">vcl.inline &lt;configname&gt; &lt;quoted_VCLstring&gt;</span><br><span class="line">vcl.use &lt;configname&gt;</span><br><span class="line">vcl.discard &lt;configname&gt;</span><br><span class="line">vcl.list</span><br><span class="line">param.show [-l] [&lt;param&gt;]</span><br><span class="line">param.set &lt;param&gt; &lt;value&gt;</span><br><span class="line">panic.show</span><br><span class="line">panic.clear</span><br><span class="line">storage.list</span><br><span class="line">vcl.show [-v] &lt;configname&gt;</span><br><span class="line">backend.list [&lt;backend_expression&gt;]</span><br><span class="line">backend.set_health &lt;backend_expression&gt; &lt;state&gt;</span><br><span class="line">ban &lt;field&gt; &lt;operator&gt; &lt;arg&gt; [&amp;&amp; &lt;field&gt; &lt;oper&gt; &lt;arg&gt;]...</span><br><span class="line">ban.list</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>成功了, 我们可以通过使用键入help来查看所有支持的命令.</p>
+<p>一些比较基础的看一下就能明白的, 就直接过一下就好了:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">ping</span><br><span class="line">200        </span><br><span class="line">PONG 1536493933 1.0</span><br><span class="line">status</span><br><span class="line">200        </span><br><span class="line">Child in state running</span><br><span class="line">vcl.list</span><br><span class="line">200        </span><br><span class="line">active          0 boot</span><br><span class="line"></span><br><span class="line">vcl.load test /etc/varnish/default.vcl </span><br><span class="line">200        </span><br><span class="line">VCL compiled.</span><br><span class="line">vcl.list</span><br><span class="line">200        </span><br><span class="line">active          0 boot</span><br><span class="line">available       0 test</span><br><span class="line"></span><br><span class="line">vcl.use test</span><br><span class="line">200        </span><br><span class="line">VCL &#x27;test&#x27; now active</span><br><span class="line">vcl.list</span><br><span class="line">200        </span><br><span class="line">available       0 boot</span><br><span class="line">active          0 test</span><br><span class="line"></span><br><span class="line">vcl.use boot</span><br><span class="line">200        </span><br><span class="line">VCL &#x27;boot&#x27; now active</span><br><span class="line">vcl.discard test</span><br><span class="line">200        </span><br><span class="line"></span><br><span class="line">vcl.list</span><br><span class="line">200        </span><br><span class="line">active          0 boot</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>上面就是对vcl文件的编译载入使用以及删除的演示, 其实还是挺简单的.</p>
+<p>接着往下, 我们可以通过<code>param</code>子命令来对一些运行参数进行修改, 并且可以通过<code>show</code>加上<code>-l</code>参数来查看所有配置选项详细的信息(很大量), 例如:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">param.show thread_pool_max</span><br><span class="line">200        </span><br><span class="line">thread_pool_max</span><br><span class="line">        Value is: 5000 [threads] (default)</span><br><span class="line">        Default is: 5000</span><br><span class="line">        Minimum is: 100</span><br><span class="line"></span><br><span class="line">        The maximum number of worker threads in each pool.</span><br><span class="line"></span><br><span class="line">        Do not set this higher than you have to, since excess worker</span><br><span class="line">        threads soak up RAM and CPU and generally just get in the way</span><br><span class="line">        of getting work done.</span><br><span class="line"></span><br><span class="line">        Minimum is 10 threads.</span><br><span class="line"></span><br><span class="line">        NB: This parameter may take quite some time to take (full)</span><br><span class="line">        effect</span><br></pre></td></tr></table></figure>
+
+<p>这就是显示这个配置选项的一些描述和值.</p>
+<p>有关这个管理工具更多和VCL引擎, 我们之后再说.</p>
+<h3 id="Varnish的日志"><a href="#Varnish的日志" class="headerlink" title="Varnish的日志"></a>Varnish的日志</h3><p>我们之前说Varnish有多个管理日志的工具, 现在就来直接查看一下效果吧.</p>
+<ul>
+<li>Varnishlog</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# varnishlog</span><br><span class="line">*   &lt;&lt; BeReq    &gt;&gt; 8         </span><br><span class="line">-   Begin          bereq 7 fetch</span><br><span class="line">-   Timestamp      Start: 1536494709.508570 0.000000 0.000000</span><br><span class="line">-   BereqMethod    GET</span><br><span class="line">-   BereqURL       /</span><br><span class="line">-   BereqProtocol  HTTP/1.1</span><br><span class="line">-   BereqHeader    Host: 192.168.16.100:6081</span><br><span class="line">-   BereqHeader    Upgrade-Insecure-Requests: 1</span><br><span class="line">-   BereqHeader    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36</span><br><span class="line">-   BereqHeader    Sec-Metadata: cause=forced, destination=document, target=top-level, site=cross-site</span><br><span class="line">-   BereqHeader    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8</span><br><span class="line">-   BereqHeader    Accept-Language: en,zh;q=0.9,zh-CN;q=0.8,en-US;q=0.7</span><br><span class="line">-   BereqHeader    X-Forwarded-For: 192.168.16.1</span><br><span class="line">-   BereqHeader    Accept-Encoding: gzip</span><br><span class="line">-   BereqHeader    X-Varnish: 8</span><br><span class="line">-   VCL_call       BACKEND_FETCH</span><br><span class="line">-   VCL_return     fetch</span><br><span class="line">-   BackendClose   18 default(127.0.0.1,,80) toolate</span><br><span class="line">-   BackendOpen    18 default(127.0.0.1,,80) 127.0.0.1 34012 </span><br><span class="line">-   Backend        18 default default(127.0.0.1,,80)</span><br><span class="line">-   Timestamp      Bereq: 1536494709.508876 0.000305 0.000305</span><br><span class="line">-   Timestamp      Beresp: 1536494709.510254 0.001684 0.001379</span><br><span class="line">-   BerespProtocol HTTP/1.1</span><br><span class="line">-   BerespStatus   200</span><br><span class="line">-   BerespReason   OK</span><br><span class="line">-   BerespHeader   Date: Sun, 09 Sep 2018 12:05:09 GMT</span><br><span class="line">-   BerespHeader   Server: Apache/2.4.6 (CentOS) OpenSSL/1.0.2k-fips PHP/5.4.16</span><br><span class="line">-   BerespHeader   Last-Modified: Fri, 20 Oct 2017 16:27:33 GMT</span><br><span class="line">-   BerespHeader   ETag: &quot;19-55bfcf32d89d7&quot;</span><br><span class="line">-   BerespHeader   Accept-Ranges: bytes</span><br><span class="line">-   BerespHeader   Content-Length: 25</span><br><span class="line">-   BerespHeader   Content-Type: text/html; charset=UTF-8</span><br><span class="line">-   TTL            RFC 120 -1 -1 1536494710 1536494710 1536494709 0 0</span><br><span class="line">-   VCL_call       BACKEND_RESPONSE</span><br><span class="line">-   VCL_return     deliver</span><br><span class="line">-   Storage        malloc s0</span><br><span class="line">-   ObjProtocol    HTTP/1.1</span><br><span class="line">-   ObjStatus      200</span><br><span class="line">-   ObjReason      OK</span><br><span class="line">-   ObjHeader      Date: Sun, 09 Sep 2018 12:05:09 GMT</span><br><span class="line">-   ObjHeader      Server: Apache/2.4.6 (CentOS) OpenSSL/1.0.2k-fips PHP/5.4.16</span><br><span class="line">-   ObjHeader      Last-Modified: Fri, 20 Oct 2017 16:27:33 GMT</span><br><span class="line">-   ObjHeader      ETag: &quot;19-55bfcf32d89d7&quot;</span><br><span class="line">-   ObjHeader      Content-Length: 25</span><br><span class="line">-   ObjHeader      Content-Type: text/html; charset=UTF-8</span><br><span class="line">-   Fetch_Body     3 length stream</span><br><span class="line">-   BackendReuse   18 default(127.0.0.1,,80)</span><br><span class="line">-   Timestamp      BerespBody: 1536494709.510310 0.001740 0.000056</span><br><span class="line">-   Length         25</span><br><span class="line">-   BereqAcct      506 0 506 272 25 297</span><br><span class="line">-   End            </span><br><span class="line"></span><br><span class="line">*   &lt;&lt; Request  &gt;&gt; 7         </span><br><span class="line">-   Begin          req 6 rxreq</span><br><span class="line">-   Timestamp      Start: 1536494709.508290 0.000000 0.000000</span><br><span class="line">-   Timestamp      Req: 1536494709.508290 0.000000 0.000000</span><br><span class="line">-   ReqStart       192.168.16.1 4715</span><br><span class="line">-   ReqMethod      GET</span><br><span class="line">-   ReqURL         /</span><br><span class="line">-   ReqProtocol    HTTP/1.1</span><br><span class="line">-   ReqHeader      Host: 192.168.16.100:6081</span><br><span class="line">-   ReqHeader      Connection: keep-alive</span><br><span class="line">-   ReqHeader      Cache-Control: max-age=0</span><br><span class="line">-   ReqHeader      Upgrade-Insecure-Requests: 1</span><br><span class="line">-   ReqHeader      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36</span><br><span class="line">-   ReqHeader      Sec-Metadata: cause=forced, destination=document, target=top-level, site=cross-site</span><br><span class="line">-   ReqHeader      Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8</span><br><span class="line">-   ReqHeader      Accept-Encoding: gzip, deflate</span><br><span class="line">-   ReqHeader      Accept-Language: en,zh;q=0.9,zh-CN;q=0.8,en-US;q=0.7</span><br><span class="line">-   ReqHeader      If-None-Match: &quot;19-55bfcf32d89d7&quot;</span><br><span class="line">-   ReqHeader      If-Modified-Since: Fri, 20 Oct 2017 16:27:33 GMT</span><br><span class="line">-   ReqHeader      X-Forwarded-For: 192.168.16.1</span><br><span class="line">-   VCL_call       RECV</span><br><span class="line">-   VCL_return     hash</span><br><span class="line">-   ReqUnset       Accept-Encoding: gzip, deflate</span><br><span class="line">-   ReqHeader      Accept-Encoding: gzip</span><br><span class="line">-   VCL_call       HASH</span><br><span class="line">-   VCL_return     lookup</span><br><span class="line">-   Debug          &quot;XXXX MISS&quot;</span><br><span class="line">-   VCL_call       MISS</span><br><span class="line">-   VCL_return     fetch</span><br><span class="line">-   Link           bereq 8 fetch</span><br><span class="line">-   Timestamp      Fetch: 1536494709.510330 0.002040 0.002040</span><br><span class="line">-   RespProtocol   HTTP/1.1</span><br><span class="line">-   RespStatus     200</span><br><span class="line">-   RespReason     OK</span><br><span class="line">-   RespHeader     Date: Sun, 09 Sep 2018 12:05:09 GMT</span><br><span class="line">-   RespHeader     Server: Apache/2.4.6 (CentOS) OpenSSL/1.0.2k-fips PHP/5.4.16</span><br><span class="line">-   RespHeader     Last-Modified: Fri, 20 Oct 2017 16:27:33 GMT</span><br><span class="line">-   RespHeader     ETag: &quot;19-55bfcf32d89d7&quot;</span><br><span class="line">-   RespHeader     Content-Length: 25</span><br><span class="line">-   RespHeader     Content-Type: text/html; charset=UTF-8</span><br><span class="line">-   RespHeader     X-Varnish: 7</span><br><span class="line">-   RespHeader     Age: 0</span><br><span class="line">-   RespHeader     Via: 1.1 varnish-v4</span><br><span class="line">-   VCL_call       DELIVER</span><br><span class="line">-   VCL_return     deliver</span><br><span class="line">-   Timestamp      Process: 1536494709.510346 0.002057 0.000016</span><br><span class="line">-   RespProtocol   HTTP/1.1</span><br><span class="line">-   RespStatus     304</span><br><span class="line">-   RespReason     Not Modified</span><br><span class="line">-   RespReason     Not Modified</span><br><span class="line">-   RespUnset      Content-Length: 25</span><br><span class="line">-   Debug          &quot;RES_MODE 0&quot;</span><br><span class="line">-   RespHeader     Connection: keep-alive</span><br><span class="line">-   Timestamp      Resp: 1536494709.511031 0.002742 0.000685</span><br><span class="line">-   Debug          &quot;XXX REF 2&quot;</span><br><span class="line">-   ReqAcct        605 0 605 307 0 307</span><br><span class="line">-   End            </span><br><span class="line"></span><br><span class="line">*   &lt;&lt; Session  &gt;&gt; 32770     </span><br><span class="line">-   Begin          sess 0 HTTP/1</span><br><span class="line">-   SessOpen       192.168.16.1 4716 :6081 192.168.16.100 6081 1536494709.487511 16</span><br><span class="line">-   SessClose      RX_TIMEOUT 5.095</span><br><span class="line">-   End            </span><br><span class="line"></span><br><span class="line">*   &lt;&lt; Session  &gt;&gt; 6         </span><br><span class="line">-   Begin          sess 0 HTTP/1</span><br><span class="line">-   SessOpen       192.168.16.1 4715 :6081 192.168.16.100 6081 1536494709.487469 14</span><br><span class="line">-   Link           req 7 rxreq</span><br><span class="line">-   SessClose      RX_TIMEOUT 5.095</span><br><span class="line">-   End            </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个是记录的比较详细的一个了.</p>
+<ul>
+<li>varnishncsa</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# varnishncsa</span><br><span class="line">192.168.16.1 - - [09/Sep/2018:20:06:00 +0800] &quot;GET http://192.168.16.100:6081/ HTTP/1.1&quot; 304 0 &quot;-&quot; &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36&quot;</span><br><span class="line">192.168.16.1 - - [09/Sep/2018:20:06:03 +0800] &quot;GET http://192.168.16.100:6081/ HTTP/1.1&quot; 304 0 &quot;-&quot; &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36&quot;</span><br><span class="line">192.168.16.1 - - [09/Sep/2018:20:06:03 +0800] &quot;GET http://192.168.16.100:6081/ HTTP/1.1&quot; 304 0 &quot;-&quot; &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个日志显示的就和我们的httpd很相似, 也很简略.</p>
+<ul>
+<li>varnishstat</li>
+</ul>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/varnishstat.png" alt="varnishstat"></p>
+<p>这个结果也是即时刷新的.</p>
+<ul>
+<li>varnishtop</li>
+</ul>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/varnishtop.png" alt="varnishtop"></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B0%B8%E8%BF%9C%E9%83%BD%E6%9C%89%E7%9A%84%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">永远都有的概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">2.</span> <span class="toc-text">缓存的概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E6%96%B0%E9%B2%9C%E5%BA%A6"><span class="toc-number">2.1.</span> <span class="toc-text">缓存新鲜度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Varnish%E5%88%9D%E8%A7%81"><span class="toc-number">3.</span> <span class="toc-text">Varnish初见</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Varnish%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-number">3.1.</span> <span class="toc-text">Varnish的安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Varnish%E7%9A%84%E7%BC%93%E5%AD%98%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.2.</span> <span class="toc-text">Varnish的缓存对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEVarnish"><span class="toc-number">3.3.</span> <span class="toc-text">配置Varnish</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Varnish%E7%9A%84%E6%97%A5%E5%BF%97"><span class="toc-number">3.4.</span> <span class="toc-text">Varnish的日志</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&text=Varnish初见"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&is_video=false&description=Varnish初见"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Varnish初见&body=Check out this article: https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&title=Varnish初见"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&name=Varnish初见&description=&lt;p&gt;今天来了解下另一个缓存服务器应用 - Varnish.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/08/Varnish%E5%88%9D%E8%A7%81/&t=Varnish初见"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

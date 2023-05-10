@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="文件共享服务 – 应用层的FTP, 工作在内核的nfs(难以跨平台), 跨平台的文件服务samba(在Linux上实现SMB).">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FTP协议和vsftpd">
+<meta property="og:url" content="https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="文件共享服务 – 应用层的FTP, 工作在内核的nfs(难以跨平台), 跨平台的文件服务samba(在Linux上实现SMB).">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-09-28T00:41:36.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:25:25.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="FTP">
+<meta property="article:tag" content="vsftpd">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>FTP协议和vsftpd</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/30/NFS%E5%92%8CSamba/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/25/SHELL%E8%84%9A%E6%9C%AC%E7%BC%96%E7%A8%8B%E5%8F%8A%E5%AD%97%E7%AC%A6%E6%93%8D%E4%BD%9C/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&text=FTP协议和vsftpd"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&is_video=false&description=FTP协议和vsftpd"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=FTP协议和vsftpd&body=Check out this article: https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&name=FTP协议和vsftpd&description=&lt;p&gt;文件共享服务 – 应用层的FTP, 工作在内核的nfs(难以跨平台), 跨平台的文件服务samba(在Linux上实现SMB).&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&t=FTP协议和vsftpd"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#FTP%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.</span> <span class="toc-text">FTP协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E5%93%8D%E5%BA%94%E7%A0%81"><span class="toc-number">2.</span> <span class="toc-text">FTP协议的响应码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E8%AE%A4%E8%AF%81"><span class="toc-number">3.</span> <span class="toc-text">用户认证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vsftpd"><span class="toc-number">4.</span> <span class="toc-text">vsftpd</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vsftpd%E9%85%8D%E7%BD%AE"><span class="toc-number">5.</span> <span class="toc-text">vsftpd配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BF%E5%90%8D%E7%94%A8%E6%88%B7"><span class="toc-number">5.1.</span> <span class="toc-text">匿名用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E7%94%A8%E6%88%B7%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">5.2.</span> <span class="toc-text">本地用户的配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E7%94%A8%E6%88%B7%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">5.3.</span> <span class="toc-text">虚拟用户的配置</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        FTP协议和vsftpd
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-28T00:41:36.000Z" class="dt-published" itemprop="datePublished">2017-09-27</time>
+        
+        (Updated: <time datetime="2020-11-30T01:25:25.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/FTP/" rel="tag">FTP</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/vsftpd/" rel="tag">vsftpd</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>文件共享服务 – 应用层的FTP, 工作在内核的nfs(难以跨平台), 跨平台的文件服务samba(在Linux上实现SMB).</p>
+<span id="more"></span>
+
+<p>先来说说我们的存储模型有哪些呢? DAS, NAS, SAN. 我们所使用的磁盘其实就是DAS模型, 而NAS其实就是专门用作存储的设备, 其内核对SAMBA, NFS等有特别的优化. 至于SAN, 他和NAS的区别就在于他是基于块的存储, 而NAS是基于文件共享的.</p>
+<h2 id="FTP协议"><a href="#FTP协议" class="headerlink" title="FTP协议"></a>FTP协议</h2><p>FTP的全称是(File Transfer Protocol), 也就是文件传输协议. 基于应用层协议来实现. 是一个C&#x2F;S架构的协议. FTP是使用Socket进行的通信, 所以那也就会有端口的绑定. 但是FTP的连接却不像其他的服务一样(只监听一个端口), 它首先监听了21号端口. 但是FTP是很复杂的协议, 起码和HTTP协议比起来是复杂了很多. 因为它涉及到很多文件的管理功能. 例如创建, 改变权限, 复制, 移动等等. 所以他需要很多很多命令. 这样FTP就需要传输两类命令, 或者说两种数据:</p>
+<ul>
+<li>命令连接: 用来进行命令的传输</li>
+<li>数据连接: 用来传输用户所请求的上传和下载文件, 按需创建和关闭连接</li>
+</ul>
+<p>当客户端想要进行访问FTP服务端的时候, 它先将请求发送到服务器端的21号端口. 鉴于之前说过的FTP需要传输两种数据. 所以他需要在接收到客户端命令之后(例如, 下载一个文件)从磁盘上获取, 接着<strong>另起一个连接</strong>. 这个连接和之前的session已经不是一样的了. 所以他需要再次通过一个套接字将数据发送. 发送结束之后, 结束这个新的Session.</p>
+<p>同HTTP协议一样, FTP在传输非文本数据的时候也有问题, 例如图片, 如果启用字符传输机制, 对方可能看到的是一堆乱码. 而如果使用的是二进制的传输形式, 对方可能无法理解得到的结果. 所以FTP既支持文本传输也支持二进制传输格式, 这个是依靠传输数据的格式来判断的.</p>
+<p>另外, FTP有个麻烦的模式: 主动和被动. 之所有会有这个, 是因为客户端请求下载一个文件的时候, 我们说需要一个新的数据连接, 这个连接谁来创建? 如果是服务器端, 这就是主动模式. 但是这个是存在一个问题的, 服务器端主动发送请求, 但是我们都知道一次连接是需要知道对方打开的端口是多少的. 这个时候客户端是随机的端口, 服务端怎么发送请求? </p>
+<p>所以, 其实在<strong>主动模式</strong>下, 客户端选择一个随机端口. 连接服务器端的21号端口. 接着服务器端会将自己的20号端口去和客户端的随机端口+1的那个端口建立连接, 如果被占用就继续加一. 后者的这个连接上就是数据传输通道, 而前者就是命令传输端口. 其实在一开始命令连接的时候 客户端也会告诉服务器端, 自己打开的端口是哪一个. </p>
+<p>然而, 这样是有很大的安全隐患的. 因为我们知道客户端主动打开了一个端口等着我, 如果加以构造, 服务端是可以随意向客户端发送数据的. 所以客户端是需要防火墙的, 但是这又出现了问题, 我们怎么知道开启那个端口使得服务端连接过来呢?</p>
+<p>这么麻烦, 所以催生了后来的被动模式, 不管是命令还是数据传输都有客户端来负责建立连接. 这样客户端使用一个随机端口连接到服务器端的21端口, 接着再有客户端连接到20端口发起数据传输请求. 接着就可以将服务器端的随机端口托付过来传输数据就行了. 服务端发送过来端口形式是XXX,XX这样的形式 这个是需要进行计算的: XXX * 256 + XX.</p>
+<p>可是, 服务器端也有防火墙啊? 他怎么知道服务器端的那个随机端口是哪一个呢? 关于这个, 在随后的iptables中在看. ( 连接追踪 )</p>
+<p>简单的说说FTP协议, 接下来看看有那些典型的FTP软件:</p>
+<ul>
+<li>wu-ftpd</li>
+<li>proftpd</li>
+<li>pureftpd</li>
+<li>vsftpd</li>
+<li>ServU ( Windows )</li>
+</ul>
+<p>以上是服务器端, 而客户端也有很多, 例如:</p>
+<ul>
+<li>wget</li>
+<li>lftp</li>
+<li>ftp</li>
+<li>curl</li>
+<li>filezilla</li>
+<li>gftp ( GUI )</li>
+</ul>
+<h2 id="FTP协议的响应码"><a href="#FTP协议的响应码" class="headerlink" title="FTP协议的响应码"></a>FTP协议的响应码</h2><p><strong>1XX</strong>: 信息类的响应码</p>
+<p><strong>2XX</strong>: 成功类的响应码</p>
+<p><strong>3XX:</strong> 需要补充信息的状态码</p>
+<p><strong>4XX:</strong> 客户端错误</p>
+<p>**5XX: ** 服务端错误</p>
+<p>这个和HTTP的响应码几乎是一样的.</p>
+<h2 id="用户认证"><a href="#用户认证" class="headerlink" title="用户认证"></a>用户认证</h2><p>现在想想我们之前说过的MySQL, 和FTP有一点像么? 当然他们组织数据的方式是不一样的, MySQl提供的是结构化的数据.  对于用户认证, MySQL提供的验证机制和系统是不一样的, 用户需要提供账号和密码, 这些信息是保存在一个数据表中的. 这种认证方式 我们把这个叫做<strong>虚拟用户</strong> . 这个是为了和操作系统其他的资源隔离起来, 更加安全. 此用户仅仅是为了一个特定服务而存在.</p>
+<p>与MySQL应用层服务不同的是, FTP协议存在的非常早, 在互联网混沌初开的时候就已经存在了. 早期, FTP使用的是系统用户进行认证. 其实也是因为FTP提供的是系统文件服务, 所以才选择这样的策略 – 关联系统账号.</p>
+<p>现在的FTP已经完全支持虚拟用户了. 尽管默认使用的是系统用户, 但是可以非常方便的进行用户认证管理, 另外, 结合之前说过的MySQL, 我们还可以将用户账号信息丢到数据库中( 当然这里说的和mysql.user表是没有什么关系的 ). 这样更方便管理和组织.</p>
+<p>Linux上平台独有的一些验证技术, 比如说之前说过的PAM模块, 如果我们的FTP程序使用这个做为用户认证的依赖, 那么移植到Win平台就比较困难. 所以为了通用和跨平台, 就需要FTP程序自我实现验证. </p>
+<p>除了我们上面说的系统用户和虚拟用户, 还有一种匿名用户. 其实, 说到底虚拟用户和匿名用户还是系统用户的一个包装, 最终操作都需要系统用户去进行 这是由Linux系统决定的机制. </p>
+<h2 id="vsftpd"><a href="#vsftpd" class="headerlink" title="vsftpd"></a>vsftpd</h2><p>现在就来说说这个典型的FTP程序, 按照惯例, 安装完了之后我们先看看安装了哪些文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpm -ql vsftpd</span></span><br><span class="line">/etc/logrotate.d/vsftpd</span><br><span class="line">/etc/pam.d/vsftpd</span><br><span class="line">/etc/vsftpd</span><br><span class="line">/etc/vsftpd/ftpusers</span><br><span class="line">/etc/vsftpd/user_list</span><br><span class="line">/etc/vsftpd/vsftpd.conf</span><br><span class="line">/etc/vsftpd/vsftpd_conf_migrate.sh</span><br><span class="line">/usr/lib/systemd/system-generators/vsftpd-generator</span><br><span class="line">/usr/lib/systemd/system/vsftpd.service</span><br><span class="line">/usr/lib/systemd/system/vsftpd.target</span><br><span class="line">/usr/lib/systemd/system/vsftpd@.service</span><br><span class="line">/usr/sbin/vsftpd</span><br><span class="line">...(omitted)</span><br><span class="line">/var/ftp</span><br><span class="line">/var/ftp/pub</span><br></pre></td></tr></table></figure>
+
+<p>首先就看到了我们的日志滚动配置和PAM用户认证配置文件.</p>
+<p>接着就是systemd的服务Unit. 主配置文件: &#x2F;etc&#x2F;vsftpd&#x2F;vsftpd.conf</p>
+<p>接着还有用户控制配置文件, 以及主程序. 最后的两个路径, 就像是HTTP服务的共享资源目录一样, 匿名用户的资源位置就是这个目录. 其实这个匿名用户就是ftp用户的映射:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># finger ftp</span></span><br><span class="line">Login: ftp            			Name: FTP User</span><br><span class="line">Directory: /var/ftp                 	Shell: /sbin/nologin</span><br><span class="line">Never logged <span class="keyword">in</span>.</span><br><span class="line">No mail.</span><br><span class="line">No Plan.</span><br></pre></td></tr></table></figure>
+
+<p>其实就是家目录.</p>
+<p>而虚拟用户就需要我们进行制定映射系统目录了 ( 系统用户的家目录 )</p>
+<p>直接启动试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># systemctl start vsftpd.service</span></span><br><span class="line">[root@WWW ~]<span class="comment"># ss -antp</span></span><br><span class="line">State       Recv-Q Send-Q                                        Local Address:Port                                                       Peer Address:Port              </span><br><span class="line">LISTEN      0      10                                           192.168.56.101:53                                                                    *:*                   <span class="built_in">users</span>:((&quot;named&quot;,pid=<span class="number">1035</span>,fd=<span class="number">22</span>))</span><br><span class="line">LISTEN      0      10                                                127.0.0.1:53                                                                    *:*                   <span class="built_in">users</span>:((&quot;named&quot;,pid=<span class="number">1035</span>,fd=<span class="number">21</span>))</span><br><span class="line">LISTEN      0      128                                          192.168.56.101:22                                                                    *:*                   <span class="built_in">users</span>:((&quot;sshd&quot;,pid=<span class="number">1004</span>,fd=<span class="number">3</span>))</span><br><span class="line">LISTEN      0      128                                               127.0.0.1:953                                                                   *:*                   <span class="built_in">users</span>:((&quot;named&quot;,pid=<span class="number">1035</span>,fd=<span class="number">23</span>))</span><br><span class="line">ESTAB       0      52                                           192.168.56.101:22                                                         192.168.56.1:6533                <span class="built_in">users</span>:((&quot;sshd&quot;,pid=<span class="number">12137</span>,fd=<span class="number">3</span>))</span><br><span class="line">LISTEN      0      32                                                       :::21                                                                   :::*                   <span class="built_in">users</span>:((&quot;vsftpd&quot;,pid=<span class="number">12421</span>,fd=<span class="number">3</span>))</span><br></pre></td></tr></table></figure>
+
+<p>现在服务已经起来了, 我们进入另外一台主机试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ftp 192.168.56.101</span></span><br><span class="line">Connected to 192.168.56.101 (192.168.56.101).</span><br><span class="line">220 (vsFTPd 3.0.2)</span><br><span class="line">Name (192.168.56.101:root): anonymous </span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; </span><br></pre></td></tr></table></figure>
+
+<p>我们使用匿名用户账号登录.(也可以使用ftp用户本身) 接着看到了2XX的成功信息:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ftp&gt; <span class="built_in">ls</span></span><br><span class="line">227 Entering Passive Mode (192,168,56,101,159,15).</span><br><span class="line">150 Here comes the directory listing.</span><br><span class="line">drwxr-xr-x    2 0        0               6 Aug 03 06:10 pub</span><br><span class="line">226 Directory send OK.</span><br></pre></td></tr></table></figure>
+
+<p>看到了pub目录, 还有进入了被动模式. 接下来快速的执行两次命令:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ftp&gt; ls</span><br><span class="line">227 Entering Passive Mode (192,168,56,101,25,251).</span><br><span class="line">150 Here comes the directory listing.</span><br><span class="line">drwxr-xr-x    2 0        0               6 Aug 03 06:10 pub</span><br><span class="line">226 Directory send OK.</span><br><span class="line">ftp&gt; ls</span><br><span class="line">227 Entering Passive Mode (192,168,56,101,243,212).</span><br><span class="line">150 Here comes the directory listing.</span><br><span class="line">drwxr-xr-x    2 0        0               6 Aug 03 06:10 pub</span><br><span class="line">226 Directory send OK.</span><br></pre></td></tr></table></figure>
+
+<p>端口是一次传输换一个, 另外这个时候快速的回到服务器端查看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TIME-WAIT   0      0                                     ::ffff:192.168.56.101:62420                                             ::ffff:192.168.56.103:41501              </span><br><span class="line">TIME-WAIT   0      0                                     ::ffff:192.168.56.101:6651                                              ::ffff:192.168.56.103:34982  </span><br></pre></td></tr></table></figure>
+
+<p>计算一下, 25 * 256 + 251 &#x3D; 6651, 果然是吧.</p>
+<p>可以使用help来查看所有支持的命令.</p>
+<p>接下来我们要看看vsftpd的配置文件了.</p>
+<h2 id="vsftpd配置"><a href="#vsftpd配置" class="headerlink" title="vsftpd配置"></a>vsftpd配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">anonymous_enable=YES</span><br><span class="line">local_enable=YES</span><br><span class="line">write_enable=YES</span><br><span class="line">local_umask=022</span><br></pre></td></tr></table></figure>
+
+<p>这几项都很好理解吧 </p>
+<p>我们在FTP服务器上进行一个用户的创建接下来看看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW vsftpd]<span class="comment"># useradd test</span></span><br><span class="line">[root@WWW vsftpd]<span class="comment"># echo &quot;test&quot; | passwd test --stdin</span></span><br><span class="line">Changing password <span class="keyword">for</span> user <span class="built_in">test</span>.</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br></pre></td></tr></table></figure>
+
+<p>接着我们在客户端尝试使用test用户进行连接:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ftp 192.168.56.101</span></span><br><span class="line">Connected to 192.168.56.101 (192.168.56.101).</span><br><span class="line">220 (vsFTPd 3.0.2)</span><br><span class="line">Name (192.168.56.101:root): <span class="built_in">test</span></span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; <span class="built_in">pwd</span></span><br><span class="line">257 <span class="string">&quot;/home/test&quot;</span></span><br><span class="line">ftp&gt; <span class="built_in">cd</span> /etc/</span><br><span class="line">250 Directory successfully changed.</span><br><span class="line">ftp&gt; <span class="built_in">ls</span></span><br><span class="line">227 Entering Passive Mode (192,168,56,101,170,58).</span><br><span class="line">150 Here comes the directory listing.</span><br><span class="line">-rw-r--r--    1 0        0            1240 Sep 28 08:40 passwd</span><br><span class="line">drwxr-xr-x    3 0        0             219 Jun 25 12:39 ppp</span><br><span class="line">lrwxrwxrwx    1 0        0              14 Jun 25 02:20 redhat-release -&gt; centos-release</span><br><span class="line">-rw-r--r--    1 0        0              30 Sep 28 07:47 resolv.conf</span><br><span class="line">----------    1 0        0             844 Sep 28 08:41 shadow</span><br><span class="line">drwxr-xr-x    3 0        0              54 Jun 25 12:39 udev</span><br><span class="line">drwxr-xr-x    2 0        0             111 Sep 28 08:38 vsftpd</span><br><span class="line">drwxr-xr-x    3 0        0              38 Jun 26 08:13 yum.repos.d</span><br><span class="line">226 Directory send OK.</span><br><span class="line">ftp&gt; </span><br></pre></td></tr></table></figure>
+
+<p>默认的目录会是自己的家目录, 这个我们之前就说过了, 但是, 在这情况下, 客户端可以随意的移动倒其他的目录, FTP是明文传输, 这样实在是太危险了. 所以我们必须把系统用户像匿名用户那样锁在一个目录中, 或者说根切换.</p>
+<p>接下来我们按照用户类型看一下配置项:</p>
+<h3 id="匿名用户"><a href="#匿名用户" class="headerlink" title="匿名用户"></a>匿名用户</h3><p>anonymous_enable&#x3D;YES<br>anon_upload_enable&#x3D;YES 匿名用户能不能进行文件上传<br>anon_mkdir_write_enable&#x3D;YES 匿名用户能否创建新目录<br>anon_other_write_enable&#x3D;YES 匿名用户能否进行其他写操作</p>
+<p>我们打开文件上传选项, 做个试验:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ftp&gt; put anaconda-ks.cfg </span><br><span class="line"><span class="built_in">local</span>: anaconda-ks.cfg remote: anaconda-ks.cfg</span><br><span class="line">227 Entering Passive Mode (192,168,56,101,30,146).</span><br><span class="line">553 Could not create file.</span><br></pre></td></tr></table></figure>
+
+<p>尽管开启了选项但是似乎没有起到作用?? 其实不是, 如果这个选项没有开启, 收到的信息应该是Permission Denied. 但现在的这个消息说明了什么信息呢?</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drwxr-xr-x   3 root root    17 Sep 28 02:27 ftp</span><br></pre></td></tr></table></figure>
+
+<p>没错, 是目录权限问题, 那怎么办? 直接修改权限? 肯定不行, 这样的话安全机制就荡然无存了呀, 所以这个时候我们可以这样做:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ftp]<span class="comment"># ls</span></span><br><span class="line">pub</span><br><span class="line">[root@WWW ftp]<span class="comment"># mkdir upload</span></span><br><span class="line">[root@WWW ftp]<span class="comment"># setfacl -m u:ftp:rwx upload/</span></span><br><span class="line">[root@WWW ftp]<span class="comment"># getfacl upload/</span></span><br><span class="line"><span class="comment"># file: upload/</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwx</span><br><span class="line">user:ftp:rwx</span><br><span class="line">group::r-x</span><br><span class="line">mask::rwx</span><br><span class="line">other::r-x</span><br></pre></td></tr></table></figure>
+
+<p>现在就可以了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ftp 192.168.56.101</span></span><br><span class="line">Connected to 192.168.56.101 (192.168.56.101).</span><br><span class="line">220 (vsFTPd 3.0.2)</span><br><span class="line">Name (192.168.56.101:root): ftp</span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; <span class="built_in">ls</span></span><br><span class="line">227 Entering Passive Mode (192,168,56,101,189,51).</span><br><span class="line">150 Here comes the directory listing.</span><br><span class="line">drwxr-xr-x    2 0        0               6 Aug 03 06:10 pub</span><br><span class="line">drwxrwxr-x    2 0        0               6 Sep 28 08:54 upload</span><br><span class="line">226 Directory send OK.</span><br><span class="line">ftp&gt; <span class="built_in">cd</span> upload</span><br><span class="line">250 Directory successfully changed.</span><br><span class="line">ftp&gt; put anaconda-ks.cfg </span><br><span class="line"><span class="built_in">local</span>: anaconda-ks.cfg remote: anaconda-ks.cfg</span><br><span class="line">227 Entering Passive Mode (192,168,56,101,91,5).</span><br><span class="line">150 Ok to send data.</span><br><span class="line">226 Transfer complete.</span><br><span class="line">1249 bytes sent <span class="keyword">in</span> 0.00625 secs (199.87 Kbytes/sec)</span><br></pre></td></tr></table></figure>
+
+<p>但是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ftp&gt; <span class="built_in">mkdir</span> <span class="built_in">test</span></span><br><span class="line">550 Permission denied.</span><br></pre></td></tr></table></figure>
+
+<p>无法创建目录, 这个时候就需要第三个选项了, 允许新建目录.</p>
+<p>可是刚把目录创建好, 又遇到了新的问题. 这个上传的文件和目录怎么删除不掉啊!!</p>
+<p>这就是第四个选项的功能, 启动之后再试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ftp&gt; <span class="built_in">rmdir</span> <span class="built_in">test</span></span><br><span class="line">250 Remove directory operation successful.</span><br><span class="line">ftp&gt; delete anaconda-ks.cfg </span><br><span class="line">250 Delete operation successful.</span><br></pre></td></tr></table></figure>
+
+<p>就可以了.</p>
+<p>以上的这些属性都是比较危险的选项, 开启时候要注意的.</p>
+<h3 id="本地用户的配置"><a href="#本地用户的配置" class="headerlink" title="本地用户的配置"></a>本地用户的配置</h3><p>local_enable&#x3D;YES<br>write_enable&#x3D;YES<br>local_umask&#x3D;022<br>chroot_local_user&#x3D;YES<br>allow_writeable_chroot&#x3D;YES<br>chroot_list_enable&#x3D;YES<br>chroot_list_file&#x3D;&#x2F;etc&#x2F;vsftpd&#x2F;chroot_list</p>
+<p>关于这些属性的意味我们在实验中展示: [ 前三个就省略了, 看看都明白了 ]</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ftp 192.168.56.101</span></span><br><span class="line">Connected to 192.168.56.101 (192.168.56.101).</span><br><span class="line">220 (vsFTPd 3.0.2)</span><br><span class="line">Name (192.168.56.101:root): <span class="built_in">test</span></span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; <span class="built_in">pwd</span></span><br><span class="line">257 <span class="string">&quot;/&quot;</span></span><br></pre></td></tr></table></figure>
+<p>原先我们使用系统用户进行登录的时候, 会显示对方的家目录, 但是开启了第四个选项之后就可以看到被禁锢到根下了. <strong>注意: 要和第五个选项同时开启,否则服务器会直接报错 拒绝连接</strong></p>
+<p>复原第四个选项, 我们开启第六和第七个选项, 先来创建一个新用户: ( 同样需要第五个选项 )</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ftp]<span class="comment"># useradd test2</span></span><br><span class="line">[root@WWW ftp]<span class="comment"># echo &quot;test&quot; | passwd test2 --stdin</span></span><br><span class="line">Changing password <span class="keyword">for</span> user test2.</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br></pre></td></tr></table></figure>
+
+<p>接着创建需要的那个列表文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW vsftpd]<span class="comment"># echo &quot;test2&quot; &gt; chroot_list</span></span><br></pre></td></tr></table></figure>
+
+<p>好了, 现在进行验证:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ftp 192.168.56.101</span></span><br><span class="line">Connected to 192.168.56.101 (192.168.56.101).</span><br><span class="line">220 (vsFTPd 3.0.2)</span><br><span class="line">Name (192.168.56.101:root): <span class="built_in">test</span></span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; <span class="built_in">pwd</span></span><br><span class="line">257 <span class="string">&quot;/home/test&quot;</span></span><br><span class="line">ftp&gt; <span class="built_in">bye</span></span><br><span class="line">221 Goodbye.</span><br><span class="line">[root@WWW ~]<span class="comment"># ftp 192.168.56.101</span></span><br><span class="line">Connected to 192.168.56.101 (192.168.56.101).</span><br><span class="line">220 (vsFTPd 3.0.2)</span><br><span class="line">Name (192.168.56.101:root): test2</span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system <span class="built_in">type</span> is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br><span class="line">ftp&gt; <span class="built_in">pwd</span></span><br><span class="line">257 <span class="string">&quot;/&quot;</span></span><br><span class="line">ftp&gt; </span><br></pre></td></tr></table></figure>
+
+<p>这就是指定chroot的用户.</p>
+<p>接下来我们继续看几个配置:</p>
+<p>dirmessage_enable&#x3D;YES</p>
+<p>这个选项允许你改变进入目录的提示信息, 在目录下新建一个.message文件就可以了, 有点像motd的感觉. 也有类似banner的选项就是: ftpd_banner&#x3D;Welcome to blah FTP service.</p>
+<p>xferlog_enable&#x3D;YES 这个看名字也知道是什么了吧, 即使开启记录日志, 和这个配置相互配合的还有几个选项:</p>
+<p>xferlog_file&#x3D;&#x2F;var&#x2F;log&#x2F;xferlog</p>
+<p>xferlog_std_format&#x3D;YES</p>
+<p>其实就是日志保存位置和是否使用标准格式. </p>
+<p>chown_uploads&#x3D;YES<br>chown_username&#x3D;whoever</p>
+<p>是否修改上传文件的属主, 如果启用, 指定系统上存在的一个用户就行. 下面两个和连接相关: </p>
+<p>idle_session_timeout&#x3D;600<br>data_connection_timeout&#x3D;120</p>
+<p>都是关于超时的设定.</p>
+<p>最后还有关于pam的设定, 我们看看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ls /etc/pam.d/vsftpd  -l</span></span><br><span class="line">-rw-r--r-- 1 root root 335 Aug  3 02:10 /etc/pam.d/vsftpd</span><br></pre></td></tr></table></figure>
+
+<p>后面还有一个userlist和一个tcp_wrapper. 先来说说这个userlist, 这个其实可以和pam归在一起. 可以使用这些选项来建立访问用户控制(白名单, 黑名单)</p>
+<p>例如:<br>在userlist文件中加上test:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Users that are not allowed to login via ftp</span></span><br><span class="line">root</span><br><span class="line">bin</span><br><span class="line">daemon</span><br><span class="line">adm</span><br><span class="line">lp</span><br><span class="line"><span class="built_in">sync</span></span><br><span class="line">shutdown</span><br><span class="line">halt</span><br><span class="line">mail</span><br><span class="line">news</span><br><span class="line">uucp</span><br><span class="line">operator</span><br><span class="line">games</span><br><span class="line">nobody</span><br><span class="line"><span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+
+<p>接着在另一台主机测试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ftp 192.168.56.101</span></span><br><span class="line">Connected to 192.168.56.101 (192.168.56.101).</span><br><span class="line">220 Welcome to blah FTP service.</span><br><span class="line">Name (192.168.56.101:root): <span class="built_in">test</span></span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password:</span><br><span class="line">530 Login incorrect.</span><br><span class="line">Login failed.</span><br></pre></td></tr></table></figure>
+
+<p>我确定我的密码输入的是正确的, 但是会被deny.</p>
+<p>这是一份黑名单, vsftpd借助pam模块实现. 但是其实他自己也有用户控制, 就是另外一个user_list文件. 这个更加灵活, 可以作为黑名单, 也可以作为白名单. 通过选项: userlist_deny&#x3D;YES|NO</p>
+<p>接着还有连接参数, 一些限制参数:</p>
+<p>max_clients: 最大并发连接数<br>max_per_ip: 每个IP可同时发起的并发请求.</p>
+<p>还有速率上的限制:</p>
+<p>anno_max_rate: 匿名用户的最大传输限制, 字节&#x2F;s<br>local_max_rate: 本地用户的最大传输限制, 字节&#x2F;s</p>
+<h3 id="虚拟用户的配置"><a href="#虚拟用户的配置" class="headerlink" title="虚拟用户的配置"></a>虚拟用户的配置</h3><p>虚拟用户需要映射到一个指定的系统账号. 所以每一个虚拟用户访问到的就是这个系统账号的家目录. 但是我们却可以赋予这些虚拟用户不同的权限, 这是依靠匿名用户进行的设定. </p>
+<p>关于账号的存储, 我们说过可以存储在文件中, 奇数偶数分别为用户名&#x2F;密码. 这个文件为了安全会被Hash, 但是我的每一次修改都要进行Hash计算, 所以很不方便.</p>
+<p>因此更好的方法是存储在数据库中. 而且这样还是即时的. 但是我们知道vsftpd是依靠于PAM的验证机制的, 如果想要访问数据库, 就需要PAM能够访问数据库. 这样就需要一个模块: pam-mysql, 这个模块是第三方的, 默认不会有, 所以就需要安装.</p>
+<p>这个模块在epel源中, 如果搜索不到需要建立yum源, 如果实在搜索不到就使用二进制的rpm包吧.</p>
+<p>安装完成之后会看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># yum list pam_mysql</span></span><br><span class="line">Installed Packages</span><br><span class="line">pam_mysql.x86_64                                                               1:0.8.1-0.22.el7.lux                                                               installed</span><br><span class="line">[root@WWW ~]<span class="comment"># rpm -ql pam_mysql</span></span><br><span class="line">/lib64/security/pam_mysql.so</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>只要出现了so对象就可以了. 接着就可以继续了.</p>
+<p>在pam_mysql的文档中, 我们可以看到官方给的一个示例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">An example of the configuration file:</span><br><span class="line">---------------------------------------------------------------</span><br><span class="line">auth       optional     pam_mysql.so user=root passwd=password</span><br><span class="line">account    required     pam_mysql.so user=root passwd=password</span><br><span class="line">---------------------------------------------------------------</span><br></pre></td></tr></table></figure>
+
+<p>后面还有更多的配置项. 接下来就直接来实现:</p>
+<p>准备2台主机, 一台作为ftp服务器, 另外一台mysql服务器.</p>
+<p>mysql准备好了之后进行用户添加和权限管理:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [mysql]&gt; create database vsftpd;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line">MariaDB [mysql]&gt; use vsftpd;</span><br><span class="line">Database changed</span><br><span class="line">MariaDB [vsftpd]&gt; grant <span class="keyword">select</span> on vsftpd.* to vsftpd@192.168.56.101 identified by <span class="string">&#x27;???&#x27;</span>;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line">MariaDB [vsftpd]&gt; flush privileges;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>接着在vsftpd的主机上进行连接测试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># mysql -u vsftpd -p -h 192.168.56.103</span></span><br><span class="line">Enter password: </span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection <span class="built_in">id</span> is 14</span><br><span class="line">Server version: 5.5.56-MariaDB MariaDB Server</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type <span class="string">&#x27;help;&#x27;</span> or <span class="string">&#x27;\h&#x27;</span> <span class="keyword">for</span> <span class="built_in">help</span>. Type <span class="string">&#x27;\c&#x27;</span> to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; </span><br></pre></td></tr></table></figure>
+
+<p>成功 ! 那我们继续. 接下来创建表和插入用户信息:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [vsftpd]&gt; desc <span class="built_in">users</span>;</span><br><span class="line">+----------+----------+------+-----+---------+----------------+</span><br><span class="line">| Field    | Type     | Null | Key | Default | Extra          |</span><br><span class="line">+----------+----------+------+-----+---------+----------------+</span><br><span class="line">| <span class="built_in">id</span>       | int(11)  | NO   | PRI | NULL    | auto_increment |</span><br><span class="line">| name     | char(20) | NO   |     | NULL    |                |</span><br><span class="line">| password | char(48) | NO   |     | NULL    |                |</span><br><span class="line">+----------+----------+------+-----+---------+----------------+</span><br><span class="line">3 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [vsftpd]&gt; insert <span class="built_in">users</span> values(default, <span class="string">&#x27;justin&#x27;</span>, password(<span class="string">&quot;????&quot;</span>));</span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br></pre></td></tr></table></figure>
+
+<p>这一步也完成之后, 我们就可以建立pam认证所需的文件了.</p>
+<p>关于文件的写法, 可以参考pam_mysql的说明文件.</p>
+<p>完成后的pam文件应该是这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auth required /lib64/security/pam_mysql.so user=vsftpd passwd=???? host=192.168.56.103 db=vsftpd table=<span class="built_in">users</span> usercolumn=name passwdcolumn=password crypt=mysql</span><br><span class="line">account required /lib64/security/pam_mysql.so user=vsftpd passwd=???? host=192.168.56.103 db=vsftpd table=<span class="built_in">users</span> usercolumn=name passwdcolumn=password crypt=mysql</span><br></pre></td></tr></table></figure>
+
+<p>接着在vsftpd的配置文件中指定:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pam_service_name=vsftpd.mysql</span><br><span class="line">guest_enable=YES</span><br><span class="line">guest_username=vuser</span><br></pre></td></tr></table></figure>
+
+<p>接着重启服务就完成了, 如果中间存在报错, 检查vsftpd的配置文件, 如果还不行, 查看secure日志吧.</p>
+<p>以上就是连接mysql虚拟用户的配置.  接下来我继续谈这个, 我们在数据库中插入一个新的用户:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">+----+--------+-------------------------------------------+</span><br><span class="line">| <span class="built_in">id</span> | name   | password                                  |</span><br><span class="line">+----+--------+-------------------------------------------+</span><br><span class="line">|  1 | justin | *29B43F519A224212716DDB7493DBE966B405D061 |</span><br><span class="line">|  2 | bieber | *29B43F519A224212716DDB7493DBE966B405D061 |</span><br><span class="line">+----+--------+-------------------------------------------+</span><br></pre></td></tr></table></figure>
+
+<p>现在的问题是, 我希望这些用户拥有不同的权限, 这怎么办呢?</p>
+<p>对于这个问题, vsftpd的解决方法是在一个单独的user_config目录下, 一个用户一个配置文件来实现管理, 我们实际操作一下就行了:<br>比方说我们把这个单独的目录放在和主配置文件一样的位置, 就在配置文件中加上这个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user_config_dir=/etc/vsftpd/vusers</span><br></pre></td></tr></table></figure>
+
+<p>接着创建之, 并且在里面写上对应的用户控制:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW vusers]<span class="comment"># ls</span></span><br><span class="line">bieber  justin</span><br></pre></td></tr></table></figure>
+
+<p>我是这样写的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW vusers]<span class="comment"># cat justin </span></span><br><span class="line">anon_upload_enable=YES</span><br><span class="line">anon_mkdir_write_enable=YES</span><br><span class="line">anon_other_write_enable=YES</span><br><span class="line">[root@WWW vusers]<span class="comment"># cat bieber </span></span><br><span class="line">anon_upload_enable=NO</span><br><span class="line">anon_mkdir_write_enable=NO</span><br><span class="line">anon_other_write_enable=NO</span><br></pre></td></tr></table></figure>
+
+<p>这样, justin用户可以进行写操作, 而bieber用户 不可以进行任何上传和写操作了.</p>
+<p>实验效果略.</p>
+<p>再插一句, 我们之前说过ftps是明文的,  而另外一个现在更加常用的文件传输 – sftp. 它是基于SSH协议的, 所以是加密传输的, 更加安全.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#FTP%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.</span> <span class="toc-text">FTP协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E5%93%8D%E5%BA%94%E7%A0%81"><span class="toc-number">2.</span> <span class="toc-text">FTP协议的响应码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E8%AE%A4%E8%AF%81"><span class="toc-number">3.</span> <span class="toc-text">用户认证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vsftpd"><span class="toc-number">4.</span> <span class="toc-text">vsftpd</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vsftpd%E9%85%8D%E7%BD%AE"><span class="toc-number">5.</span> <span class="toc-text">vsftpd配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BF%E5%90%8D%E7%94%A8%E6%88%B7"><span class="toc-number">5.1.</span> <span class="toc-text">匿名用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E7%94%A8%E6%88%B7%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">5.2.</span> <span class="toc-text">本地用户的配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E7%94%A8%E6%88%B7%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">5.3.</span> <span class="toc-text">虚拟用户的配置</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&text=FTP协议和vsftpd"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&is_video=false&description=FTP协议和vsftpd"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=FTP协议和vsftpd&body=Check out this article: https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&title=FTP协议和vsftpd"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&name=FTP协议和vsftpd&description=&lt;p&gt;文件共享服务 – 应用层的FTP, 工作在内核的nfs(难以跨平台), 跨平台的文件服务samba(在Linux上实现SMB).&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/&t=FTP协议和vsftpd"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

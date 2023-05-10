@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="100篇文章啦 ! ! 给自己鼓个掌, 然后今天就让我们来看一下Python的虚拟机框架吧. 我们从整个虚拟机的执行环境来看起来, 接着从命名空间和作用域的角度来切入看下Python虚拟机的运行时环境. 废话不说了, 开始吧!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python的虚拟机框架(1)">
+<meta property="og:url" content="https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="100篇文章啦 ! ! 给自己鼓个掌, 然后今天就让我们来看一下Python的虚拟机框架吧. 我们从整个虚拟机的执行环境来看起来, 接着从命名空间和作用域的角度来切入看下Python虚拟机的运行时环境. 废话不说了, 开始吧!">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-05-13T02:44:47.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="Source Code">
+<meta property="article:tag" content="Python VM">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python的虚拟机框架(1)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/07/08/Python%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E5%B0%8F%E7%BB%93/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&text=Python的虚拟机框架(1)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&is_video=false&description=Python的虚拟机框架(1)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python的虚拟机框架(1)&body=Check out this article: https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&name=Python的虚拟机框架(1)&description=&lt;p&gt;100篇文章啦 ! ! 给自己鼓个掌, 然后今天就让我们来看一下Python的虚拟机框架吧. 我们从整个虚拟机的执行环境来看起来, 接着从命名空间和作用域的角度来切入看下Python虚拟机的运行时环境.&lt;/p&gt;
+&lt;p&gt;废话不说了, 开始吧!&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&t=Python的虚拟机框架(1)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%9F%BA%E6%9C%AC%E8%AE%A4%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">Python的虚拟机基本认识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86%E5%B8%A7%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.</span> <span class="toc-text">认识帧对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5-%E2%80%94-%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="toc-number">3.</span> <span class="toc-text">Python的核心概念 — 命名空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5-%E2%80%94-%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">4.</span> <span class="toc-text">Python的核心概念 — 作用域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LGB%E8%A7%84%E5%88%99%E5%92%8CLEGB%E8%A7%84%E5%88%99"><span class="toc-number">4.1.</span> <span class="toc-text">LGB规则和LEGB规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E6%B5%8B%E9%AA%8C"><span class="toc-number">4.2.</span> <span class="toc-text">小测验</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%BF%90%E8%A1%8C%E6%97%B6%E7%8E%AF%E5%A2%83%E5%88%9D%E6%8E%A2"><span class="toc-number">5.</span> <span class="toc-text">Python虚拟机运行时环境初探</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python的虚拟机框架(1)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-05-13T02:44:47.000Z" class="dt-published" itemprop="datePublished">2018-05-12</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>, <a class="p-category" href="/tags/Python-VM/" rel="tag">Python VM</a>, <a class="p-category" href="/tags/Source-Code/" rel="tag">Source Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>100篇文章啦 ! ! 给自己鼓个掌, 然后今天就让我们来看一下Python的虚拟机框架吧. 我们从整个虚拟机的执行环境来看起来, 接着从命名空间和作用域的角度来切入看下Python虚拟机的运行时环境.</p>
+<p>废话不说了, 开始吧!</p>
+<span id="more"></span>
+
+<h2 id="Python的虚拟机基本认识"><a href="#Python的虚拟机基本认识" class="headerlink" title="Python的虚拟机基本认识"></a>Python的虚拟机基本认识</h2><p>说道这个虚拟机啊, 其实就和我们操作系统运行可执行程序差不多的设计. 以我们现在的x86运行可执行程序为例, 我们内存中会被组织成为一个个运行时栈, 随着一层层的调用关系, 一个个新的东西被压入栈.</p>
+<p>这个所谓的<strong>东西</strong>. 其实也是有个名字的, 叫做<strong>帧</strong>. 我们知道esp代表的是栈指针, 那帧指针就是ebp. 举个例子, 当我们进行了一次函数调用的时候, 系统保存上一个帧的栈指针和帧指针, 当内层函数执行结束之后, 就会按照记录的位置<strong>返回</strong>回去.  从而使得程序的运行空间回到了调用者的那个帧. </p>
+<p>Python的虚拟机执行, 和这个过程几乎无异. 我们在之前了解到了Python的字节码对象, 这个CodeObject包含了许多虚拟机执行字节码所需要的信息, 但是注意: CodeObject所包含的信息 都是<strong>静态</strong>的. 然而我们的程序执行是一个动态的过程, 一个静态的对象是无法携带动态信息的.</p>
+<p>什么是动态的信息? 举个例子, 我们最常见的一个动态环境就是 — 作用域(命名空间)了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    i = <span class="number">5</span></span><br><span class="line">	<span class="built_in">print</span>(i)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">i = <span class="number">1</span></span><br><span class="line"><span class="built_in">print</span>(i)</span><br><span class="line">foo()</span><br></pre></td></tr></table></figure>
+
+<p>上述代码作为一个可执行模块运行的时候, 会打印两次符号<code>i</code>的值, 但是这两个<code>i</code>的值是不一样的, 这是因为作用域不一样, 命名空间发生了切换, 所以同样的符号代表的东西不一样. 用之前我们对Python字节码和CodeObject的了解, 我们可以确定两个<code>print(i)</code>产生的字节码是一样, 同样的字节码, 执行的结果却不一样, 这就是因为引入了动态环境.</p>
+<p>用上面的说法来说就是, 新的执行环境被创建就是说新的帧被创建并且压入到了执行栈中.</p>
+<p>这么一个帧的抽象, 就是Python的帧对象 — <code>PyFrameObject</code></p>
+<h2 id="认识帧对象"><a href="#认识帧对象" class="headerlink" title="认识帧对象"></a>认识帧对象</h2><p>现在就让我们来看一下这个帧对象的定义是什么样子的吧.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">frame</span> &#123;</span></span><br><span class="line">    PyObject_VAR_HEAD</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> _<span class="title">frame</span> *<span class="title">f_back</span>;</span>	<span class="comment">/* previous frame, or NULL */</span></span><br><span class="line">    PyCodeObject *f_code;	<span class="comment">/* code segment */</span></span><br><span class="line">    PyObject *f_builtins;	<span class="comment">/* builtin symbol table (PyDictObject) */</span></span><br><span class="line">    PyObject *f_globals;	<span class="comment">/* global symbol table (PyDictObject) */</span></span><br><span class="line">    PyObject *f_locals;		<span class="comment">/* local symbol table (any mapping) */</span></span><br><span class="line">    PyObject **f_valuestack;	<span class="comment">/* points after the last local */</span></span><br><span class="line">    <span class="comment">/* Next free slot in f_valuestack.  Frame creation sets to f_valuestack.</span></span><br><span class="line"><span class="comment">       Frame evaluation usually NULLs it, but a frame that yields sets it</span></span><br><span class="line"><span class="comment">       to the current stack top. */</span></span><br><span class="line">    PyObject **f_stacktop;</span><br><span class="line">    PyObject *f_trace;		<span class="comment">/* Trace function */</span></span><br><span class="line">	...</span><br><span class="line">    PyThreadState *f_tstate;</span><br><span class="line">    <span class="type">int</span> f_lasti;		<span class="comment">/* Last instruction if called */</span></span><br><span class="line">    <span class="comment">/* As of 2.3 f_lineno is only valid when tracing is active (i.e. when</span></span><br><span class="line"><span class="comment">       f_trace is set) -- at other times use PyCode_Addr2Line instead. */</span></span><br><span class="line">    <span class="type">int</span> f_lineno;		<span class="comment">/* Current line number */</span></span><br><span class="line">    <span class="type">int</span> f_iblock;		<span class="comment">/* index in f_blockstack */</span></span><br><span class="line">    PyTryBlock f_blockstack[CO_MAXBLOCKS]; <span class="comment">/* for try and loop blocks */</span></span><br><span class="line">    PyObject *f_localsplus[<span class="number">1</span>];	<span class="comment">/* locals+stack, dynamically sized */</span></span><br><span class="line">&#125; PyFrameObject;</span><br></pre></td></tr></table></figure>
+
+<p>初次这么一看还真的是有一点复杂, 除了那个固定的头部, 下一个就是串联这些帧的, 像链表一样把这些帧联系起来.</p>
+<p>接着就是这个帧中的代码对象, 之后的就是<code>builtin</code>, <code>globals</code>, <code>locals</code>的命名空间. 所以现在我们稍微有点感觉了, 命名空间看起来其实就是一个字典. 关于命名空间我们再后面的小节继续看.</p>
+<p>关于这个对象的头部, 是Python的可变长对象的固定头部, 这就说明这个帧对象的长度是发生变化的, 来看上面代码定义的最后一行. 通过注释我们也可以搞清楚 这个就是这个帧对象所维护的一块动态内存, 包括变量, 对象集合还有运行时栈. 而且不仅如此, 这个帧对象的里面还包括一个代码对象呢.  不同的代码对象在执行的时候所需要的栈空间是不一样的, 一个代码对象所需要的空间到底有多大, 只有当我们编译这个CodeObject的时候才能知道, 这也就是为什么帧对象也是一个可变对象.</p>
+<p>现在就让我们近距离的接触一下这个对象吧, 尽管这是一个非常底层和私密的对象, 但是Python还是实现了一个C级别的方法, 可以让我们访问到这个对象, 来试试下面的代码:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>global_value = <span class="number">1</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">def</span> <span class="title function_">g</span>():</span><br><span class="line"><span class="meta">... </span>    frame = sys._getframe()</span><br><span class="line"><span class="meta">... </span>    <span class="built_in">print</span>(<span class="string">&quot;Current function is %s&quot;</span> % frame.f_code.co_name)</span><br><span class="line"><span class="meta">... </span>    caller = frame.f_back</span><br><span class="line"><span class="meta">... </span>    <span class="built_in">print</span>(<span class="string">&quot;Caller function is %s&quot;</span> % caller.f_code.co_name)</span><br><span class="line"><span class="meta">... </span>    <span class="built_in">print</span>(<span class="string">&quot;Caller&#x27;s local namespace: %s&quot;</span> % caller.f_locals)</span><br><span class="line"><span class="meta">... </span>    <span class="built_in">print</span>(<span class="string">&quot;Caller&#x27;s global namespace: %s&quot;</span> % caller.f_globals.keys())</span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">def</span> <span class="title function_">f</span>():</span><br><span class="line"><span class="meta">... </span>    local_value = <span class="number">2</span></span><br><span class="line"><span class="meta">... </span>    g()</span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line"><span class="meta">... </span>    f()</span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>main()</span><br><span class="line">Current function <span class="keyword">is</span> g</span><br><span class="line">Caller function <span class="keyword">is</span> f</span><br><span class="line">Calle<span class="string">r&#x27;s local namespace: &#123;&#x27;</span>local_value<span class="string">&#x27;: 2&#125;</span></span><br><span class="line"><span class="string">Caller&#x27;</span>s <span class="keyword">global</span> namespace: dict_keys([<span class="string">&#x27;__name__&#x27;</span>, <span class="string">&#x27;__doc__&#x27;</span>, <span class="string">&#x27;__package__&#x27;</span>, <span class="string">&#x27;__loader__&#x27;</span>, <span class="string">&#x27;__spec__&#x27;</span>, <span class="string">&#x27;__annotations__&#x27;</span>, <span class="string">&#x27;__builtins__&#x27;</span>, <span class="string">&#x27;sys&#x27;</span>, <span class="string">&#x27;global_value&#x27;</span>, <span class="string">&#x27;g&#x27;</span>, <span class="string">&#x27;f&#x27;</span>, <span class="string">&#x27;main&#x27;</span>])</span><br></pre></td></tr></table></figure>
+
+<p>;-) 很有趣吧 !</p>
+<p> 那么现在我们来关注一个小细节, 这个frame所维护的动态内存到底是由哪些东西组成的呢? 我们进入到这个帧新建的函数中: ( 删除了大量代码 )</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Py_ssize_t extras, ncells, nfrees;</span><br><span class="line">ncells = PyTuple_GET_SIZE(code-&gt;co_cellvars);</span><br><span class="line">nfrees = PyTuple_GET_SIZE(code-&gt;co_freevars);</span><br><span class="line">extras = code-&gt;co_stacksize + code-&gt;co_nlocals + ncells + nfrees;</span><br><span class="line">...</span><br><span class="line">extras = code-&gt;co_nlocals + ncells + nfrees;</span><br><span class="line">f-&gt;f_valuestack = f-&gt;f_localsplus + extras; <span class="comment">// 这个就是运行时栈的栈底</span></span><br><span class="line">f-&gt;f_stacktop = f-&gt;f_valuestack; <span class="comment">// 运行时栈的栈顶</span></span><br></pre></td></tr></table></figure>
+
+<p>说明一下, code就是我们之前研究的代码对象 - CodeObject.  你会发现上面的代码中的<code>extra</code>出现了重复赋值, 其实啊, 第一次的<code>extra</code>就是frameobject所维护的动态内存大小, 至于第二次的那个, 是为了计算初始化的时候运行时栈的栈顶, 从而计算出后面的栈底和栈顶.</p>
+<h2 id="Python的核心概念-—-命名空间"><a href="#Python的核心概念-—-命名空间" class="headerlink" title="Python的核心概念 — 命名空间"></a>Python的核心概念 — 命名空间</h2><p>我们在上面的访问帧对象的例子中展示了三个命名空间 - ( builtin, local, global ). 其实提到命名空间, 你一定想到了很多与之相关联的东西, 例如: 名字, 符号, 作用域这些. 接下来我们就来仔细的研究下这些和与之相关的话题吧.</p>
+<p>说到命名空间 我们就从Python程序最基础的结构 - 模块开始说起. 我们知道, 对于一个不小的Python项目, 我们不会把代码都放在一个模块里面, 而是分多个<code>.py</code>文件进行抽象, 模块化, 从而达到代码的复用, 其实除了这些, 我们还做了一件事情, 那就是<strong>划分命名空间</strong>. 在我们的Coding过程中, 每次声明一个变量, 声明一个函数或者创建一个类的时候, 其实都会提供一个名字, 这个名字倒不是很重要, 他只是一个单纯的名字, 真正重要的是名字背后的对象. 而找到这个对象的唯一途径, 就是通过这个名字.</p>
+<p>我们知道, Python程序的执行就是模块的加载, 而加载方式有两种, 一种就是通过我们执行<code>python main.py</code>这样的方式来加载主Module, 或者通过在模块中使用<code>import</code>关键字进行的动态加载, 而在执行动态加载的时候就会将模块中代码全部执行一遍.</p>
+<p>对了 在这里提一下, 我们的代码是逐行执行的, 也就是说:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p>这样子的代码, 会先执行<code>def foo():</code>再执行<code>pass</code>, 其实你可能会觉得奇怪, 为啥<code>def foo()</code>这样的语句也是可以执行的, 其实如果我们向底层的方向看去就不会认为这是不可执行的语句啦.</p>
+<p>事实上, 在Python中, <code>def foo():pass</code> 是一个<strong>赋值语句</strong>. 同样也是赋值语句的例子就是形如 <code>a = 10</code>.  他们在执行的时候都会和下面的过程想吻合:</p>
+<ul>
+<li>创建一个对象obj</li>
+<li>将obj “赋给” 一个名字(或者是符号) name</li>
+</ul>
+<p>除了这种简单的, 还有类似<code>import XXX</code> , <code>class Bar()</code>这样子的, 也都是<strong>赋值语句</strong>. 既然我们把这个obj和name建立了<strong>映射</strong>, 就会存在一种<strong>约束</strong>关系. 而这种约束就存在于我们的命名空间中.</p>
+<p>而我们之前在说帧对象的时候就说明了, 命名空间在Python虚拟机中是使用的PyDictObject来表示的, 向上面的例子, 存储起来就是: <code>(foo, function object), (a, 10)</code>. </p>
+<p>那么既然存在这种属性赋值的语句, 自然就存在需要使用这些赋予的值的 <strong>属性引用</strong> 语句. 这些语句就类似: <code>import A, print(A.a)</code> 在这里, <code>A.a</code>就是在访问A模块(module)所定义的命名空间中的<code>a</code>属性.</p>
+<p>注意哦, 这里我们讨论的是模块和模块之间的命名空间. 但是其实更复杂的是在模块中命名空间的相关规则. 其实你大概可以猜出来, 这种规则应该会嵌套的 !</p>
+<h2 id="Python的核心概念-—-作用域"><a href="#Python的核心概念-—-作用域" class="headerlink" title="Python的核心概念 — 作用域"></a>Python的核心概念 — 作用域</h2><p>按照我们刚刚在上一个节说的规则, 创建约束, 放到命名空间中, 这样看起来是可行的. 来看这么一段代码:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">10</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    a = <span class="number">100</span></span><br><span class="line">   	<span class="built_in">print</span>(a) <span class="comment"># 输出100</span></span><br><span class="line"><span class="built_in">print</span>(a) <span class="comment"># 输出10</span></span><br></pre></td></tr></table></figure>
+
+<p>如果说只要按照基本的规则, 这里输出的a应该值是一样的, 但是显然不是这样. 这就说明肯定是有两个约束被建立, 尽管他们的键是一样的! 但是这是不可能的, 因为一个字典的键不可能重复. 等等, 如果说有多个字典呢? </p>
+<p>这里我们就可以引入Python的作用域的概念啦! 其实大家都了解的, 关于作用域, 上述代码中的函数定义就建立了一个作用域, 我们说的约束, 就是在这个作用域中才可以起到作用, 当我们进行作用域的切换的时候, 约束的作用也在变化. 那么问题就来了, 我们怎么知道一个约束的效果是怎么起作用的呢? 我们的Python源程序说到底是纯文本, 也就是说在我们写好这个程序的时候, 作用域的位置就已经可以确定了(静态的). </p>
+<p>我们在上面的属性引用段落中, 使用了<code>A.a</code>这样子的语句, 这里就是明确指出使用A模块作用域中的<code>a</code>, 我们访问或者说引用的是A中的名字为a的对象. 但是说如果在B中也有一个a, 想要引用访问它, 我只需要写一个a就行了, 这就是<strong>直接引用</strong>. </p>
+<p>那假如说在上面代码中, 函数foo的定义中, 没有a的定义, 也就是删去第3行的代码. 那么当我打印a的时候会发生什么? 在foo所生成的作用域中, 没有名字为a的对象, 这个时候 我们就要到上一个级别的, 也就是嵌套的作用域. 由此, Python使用的是<strong>最内嵌套作用域规则</strong>, 即: 一个赋值语句所带来的作用域对它内部的作用域依然可见, 除非被引进同样名字的另一个赋值语句所<strong>遮蔽</strong>.</p>
+<h3 id="LGB规则和LEGB规则"><a href="#LGB规则和LEGB规则" class="headerlink" title="LGB规则和LEGB规则"></a>LGB规则和LEGB规则</h3><p>还记得我们一开始在帧对象的时候看到的几个命名空间吗: <code>locals, globals, builtins</code>. 所谓LGB, 其实就是说Python会沿着这个路线进行符号的检索, 所谓local, 就是类似我们一个函数所定义出来的区域, 而global就是一个模块的顶层命名空间, 最后, Python自己定义了一个最顶级的命名空间: builtin. 这里面就存在这我们的<code>range, dir, open</code>等等函数符号了.</p>
+<p>有的时候, 我们的local和global可能会是一样的, 例如我们上面的代码, 第二个<code>print(a)</code>. 所对应的local和global就是一样的, 说到底, 其实就是帧对象中的<code>f_locals</code>和<code>f_globals</code>对应的是同一个PyDictObject了.</p>
+<p>那么啥是LEGB, 这个E其实就是<code>enclosing</code>的意思, 其实就是<strong>闭包</strong>了, 很久之前我曾经写过关于Javascript的闭包问题. 其实这个地方是差不多的, 一个简单的例子就是:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">10</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    a = <span class="number">2</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">bar</span>():</span><br><span class="line">        <span class="built_in">print</span>(a)</span><br><span class="line">foo()</span><br></pre></td></tr></table></figure>
+
+<p>显然, 上述代码执行之后打印的结果是2. 其实按照我们之前说的道理还是可以说通的, 因为作用域是静态的 bar的定义在foo里面, 所以显然foo的名字对bar也是可见的. 其实Python在处理的时候, 是把<code>a=2</code>这一句赋值语句所创建的约束, 和下面定义的<code>bar</code>函数对象绑定在了一起, 这个绑定的东西其实就是闭包.</p>
+<h3 id="小测验"><a href="#小测验" class="headerlink" title="小测验"></a>小测验</h3><p>来看看到底有没有搞清楚这个神奇的作用域规则吧.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    <span class="built_in">print</span>(a)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">bar</span>():</span><br><span class="line">    <span class="built_in">print</span>(a)</span><br><span class="line">    a = <span class="number">2</span></span><br><span class="line">    <span class="built_in">print</span>(a)</span><br><span class="line">    </span><br><span class="line">foo()</span><br><span class="line">bar()</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码执行会发生什么? </p>
+<p>答案是: <strong>会抛出运行时异常.</strong></p>
+<p>原因就在bar所企图打印的第一个a, 还没有被赋值. 因为即使我们在global中存在a, 但是我们在bar中依然定义了a这个名字, 尽管, 他还暂时没有被赋值, 但是我们已经在命名空间中把它写入了. 如果你不信, 我们可以来看一下这一段的字节码.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> dis</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>src = <span class="built_in">open</span>(<span class="string">&quot;test.py&quot;</span>).read()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>code = <span class="built_in">compile</span>(src, <span class="string">&quot;test.py&quot;</span>, <span class="string">&quot;exec&quot;</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>code.co_consts</span><br><span class="line">(<span class="number">10</span>, &lt;code <span class="built_in">object</span> foo at <span class="number">0x102aaf8a0</span>, file <span class="string">&quot;test.py&quot;</span>, line <span class="number">11</span>&gt;, <span class="string">&#x27;foo&#x27;</span>, &lt;code <span class="built_in">object</span> bar at <span class="number">0x102acf420</span>, file <span class="string">&quot;test.py&quot;</span>, line <span class="number">14</span>&gt;, <span class="string">&#x27;bar&#x27;</span>, <span class="literal">None</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>dis.dis(code.co_consts[<span class="number">1</span>])</span><br><span class="line"> <span class="number">12</span>           <span class="number">0</span> LOAD_GLOBAL              <span class="number">0</span> (<span class="built_in">print</span>)</span><br><span class="line">              <span class="number">2</span> LOAD_GLOBAL              <span class="number">1</span> (a)</span><br><span class="line">              <span class="number">4</span> CALL_FUNCTION            <span class="number">1</span></span><br><span class="line">              <span class="number">6</span> POP_TOP</span><br><span class="line">              <span class="number">8</span> LOAD_CONST               <span class="number">0</span> (<span class="literal">None</span>)</span><br><span class="line">             <span class="number">10</span> RETURN_VALUE</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>dis.dis(code.co_consts[<span class="number">3</span>])</span><br><span class="line"> <span class="number">15</span>           <span class="number">0</span> LOAD_GLOBAL              <span class="number">0</span> (<span class="built_in">print</span>)</span><br><span class="line">              <span class="number">2</span> LOAD_FAST                <span class="number">0</span> (a)</span><br><span class="line">              <span class="number">4</span> CALL_FUNCTION            <span class="number">1</span></span><br><span class="line">              <span class="number">6</span> POP_TOP</span><br><span class="line"></span><br><span class="line"> <span class="number">16</span>           <span class="number">8</span> LOAD_CONST               <span class="number">1</span> (<span class="number">2</span>)</span><br><span class="line">             <span class="number">10</span> STORE_FAST               <span class="number">0</span> (a)</span><br><span class="line"></span><br><span class="line"> <span class="number">17</span>          <span class="number">12</span> LOAD_GLOBAL              <span class="number">0</span> (<span class="built_in">print</span>)</span><br><span class="line">             <span class="number">14</span> LOAD_FAST                <span class="number">0</span> (a)</span><br><span class="line">             <span class="number">16</span> CALL_FUNCTION            <span class="number">1</span></span><br><span class="line">             <span class="number">18</span> POP_TOP</span><br><span class="line">             <span class="number">20</span> LOAD_CONST               <span class="number">0</span> (<span class="literal">None</span>)</span><br><span class="line">             <span class="number">22</span> RETURN_VALUE</span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 在<code>foo</code>中和<code>bar</code>中的字节码根本不一样, 对于后者, 他所使用的是<code>LOAD_FAST</code>指令.</p>
+<p>其实这里也就是我们在上面所说的<strong>遮蔽</strong>了.  但是有的时候, 我确实是需要先打印globals中的a, 接着想要再次赋值, 这怎么办呢?  没关系, 通过使用python提供的<code>global</code>关键字, 就可以达到效果了.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    <span class="built_in">print</span>(a)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">bar</span>():</span><br><span class="line">    <span class="keyword">global</span> a</span><br><span class="line">    <span class="built_in">print</span>(a)</span><br><span class="line">    a = <span class="number">2</span></span><br><span class="line">    <span class="built_in">print</span>(a)</span><br><span class="line">    </span><br><span class="line">foo()</span><br><span class="line">bar()</span><br></pre></td></tr></table></figure>
+
+<p>以上就是对Python的名字引用的基础讨论了, 除了名字引用, 我们还有属性引用, 但是属性引用, 就显得很简单了, 他只会在当前的名字的名字的作用域中进行搜索, 有就是有了, 没有就没有.</p>
+<h2 id="Python虚拟机运行时环境初探"><a href="#Python虚拟机运行时环境初探" class="headerlink" title="Python虚拟机运行时环境初探"></a>Python虚拟机运行时环境初探</h2><p>我们之前讨论的都是执行环境, 而现在所涉及到的是叫做运行时环境. 在Python中, 通过模拟x86的栈帧来执行py程序. 那么整个程序是怎么开始执行的呢, 我们可以看一下在<code>ceval.c</code>中所定义的函数: <code>PyEval_EvalFrameEx</code>. 这是一个无比巨大的函数, 算上注释大概有2k+行, 其实本质上就是对Python虚拟机的实现, 实在是看不下去, 所以只能按照书中的, 简单的先看一下这个函数的整体架构和一些比较明显的动作.</p>
+<p>首先, 肯定是初始化操作:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">co = f-&gt;f_code;</span><br><span class="line">names = co-&gt;co_names;</span><br><span class="line">consts = co-&gt;co_consts;</span><br><span class="line">fastlocals = f-&gt;f_localsplus;</span><br><span class="line">freevars = f-&gt;f_localsplus + co-&gt;co_nlocals;</span><br><span class="line">first_instr = (<span class="type">unsigned</span> <span class="type">char</span>*) PyString_AS_STRING(co-&gt;co_code);</span><br><span class="line"><span class="comment">/* An explanation is in order for the next line.</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">	   f-&gt;f_lasti now refers to the index of the last instruction</span></span><br><span class="line"><span class="comment">	   executed.  You might think this was obvious from the name, but</span></span><br><span class="line"><span class="comment">	   this wasn&#x27;t always true before 2.3!  PyFrame_New now sets</span></span><br><span class="line"><span class="comment">	   f-&gt;f_lasti to -1 (i.e. the index *before* the first instruction)</span></span><br><span class="line"><span class="comment">	   and YIELD_VALUE doesn&#x27;t fiddle with f_lasti any more.  So this</span></span><br><span class="line"><span class="comment">	   does work.  Promise. */</span></span><br><span class="line">next_instr = first_instr + f-&gt;f_lasti + <span class="number">1</span>;</span><br><span class="line">stack_pointer = f-&gt;f_stacktop;</span><br><span class="line">assert(stack_pointer != <span class="literal">NULL</span>);</span><br><span class="line">f-&gt;f_stacktop = <span class="literal">NULL</span>;	<span class="comment">/* remains NULL unless yield suspends frame */</span></span><br></pre></td></tr></table></figure>
+
+<p>这里涉及到了我们之前所说的code对象和frame对象, 另外还做了一个超级重要的事情, 那就是初始化栈顶指针.我们可以看到这里面有三个变量: <code>first_instr</code>, <code>next_instr</code>, <code>f_lasti</code>. first所指向的, 就是这个字节码序列开始的地方, 而last永远指向上一条执行的指令位置, 至于next, 表示的就是下一条要指向的指令位置. 这些指针是怎么进行切换的呢, 我们来看 .</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (;;) &#123;</span><br><span class="line">    ...</span><br><span class="line">        f-&gt;f_lasti = INSTR_OFFSET();</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* line-by-line tracing support */</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (tstate-&gt;c_tracefunc != <span class="literal">NULL</span> &amp;&amp; !tstate-&gt;tracing) &#123;</span><br><span class="line">			<span class="comment">/* see maybe_call_line_trace</span></span><br><span class="line"><span class="comment">			   for expository comments */</span></span><br><span class="line">			f-&gt;f_stacktop = stack_pointer;</span><br><span class="line"></span><br><span class="line">			err = maybe_call_line_trace(tstate-&gt;c_tracefunc,</span><br><span class="line">						    tstate-&gt;c_traceobj,</span><br><span class="line">						    f, &amp;instr_lb, &amp;instr_ub,</span><br><span class="line">						    &amp;instr_prev);</span><br><span class="line">			<span class="comment">/* Reload possibly changed frame fields */</span></span><br><span class="line">			JUMPTO(f-&gt;f_lasti);</span><br><span class="line">			<span class="keyword">if</span> (f-&gt;f_stacktop != <span class="literal">NULL</span>) &#123;</span><br><span class="line">				stack_pointer = f-&gt;f_stacktop;</span><br><span class="line">				f-&gt;f_stacktop = <span class="literal">NULL</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (err) &#123;</span><br><span class="line">				<span class="comment">/* trace function raised an exception */</span></span><br><span class="line">				<span class="keyword">goto</span> on_error;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* Extract opcode and argument */</span></span><br><span class="line"></span><br><span class="line">		opcode = NEXTOP();</span><br><span class="line">		oparg = <span class="number">0</span>;   <span class="comment">/* allows oparg to be stored in a register because</span></span><br><span class="line"><span class="comment">			it doesn&#x27;t have to be remembered across a full loop */</span></span><br><span class="line">		<span class="keyword">if</span> (HAS_ARG(opcode))</span><br><span class="line">			oparg = NEXTARG();</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>一个for循环, 内部是一个巨大的switch&#x2F;case分支. 这里面出现了一些宏, 我们来看一下定义:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> INSTR_OFFSET()	((int)(next_instr - first_instr))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NEXTOP()	(*next_instr++)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NEXTARG()	(next_instr += 2, (next_instr[-1]&lt;&lt;8) + next_instr[-2])</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PEEKARG()	((next_instr[2]&lt;&lt;8) + next_instr[1])</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> JUMPTO(x)	(next_instr = first_instr + (x))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> JUMPBY(x)	(next_instr += (x))</span></span><br></pre></td></tr></table></figure>
+
+<p>其实这些就是在进行下一条指令指针的移动, Python在执行过程中会遇到不同的字节码指令, 接着就会会根据这些指令进行switch切换从而去实现不同的功能, 就是这样, 来进行程序的执行.</p>
+<p>现在就清晰多了吧 ! ! 最后我们再来提及一下这里面的一个神奇的变量, 叫做: <code>why</code>.</p>
+<p>这个是用来记录当指令执行遇到错误的时候, 也就是发生异常的时候 停止执行的原因是什么. 有这些:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Status code for main loop (reason for stack unwind) */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">why_code</span> &#123;</span></span><br><span class="line">		WHY_NOT =	<span class="number">0x0001</span>,	<span class="comment">/* No error */</span></span><br><span class="line">		WHY_EXCEPTION = <span class="number">0x0002</span>,	<span class="comment">/* Exception occurred */</span></span><br><span class="line">		WHY_RERAISE =	<span class="number">0x0004</span>,	<span class="comment">/* Exception re-raised by &#x27;finally&#x27; */</span></span><br><span class="line">		WHY_RETURN =	<span class="number">0x0008</span>,	<span class="comment">/* &#x27;return&#x27; statement */</span></span><br><span class="line">		WHY_BREAK =	<span class="number">0x0010</span>,	<span class="comment">/* &#x27;break&#x27; statement */</span></span><br><span class="line">		WHY_CONTINUE =	<span class="number">0x0020</span>,	<span class="comment">/* &#x27;continue&#x27; statement */</span></span><br><span class="line">		WHY_YIELD =	<span class="number">0x0040</span>	<span class="comment">/* &#x27;yield&#x27; operator */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>虽然说我们现在稍微清楚了一点关于栈帧的事情, 但是实际上从操作系统的层面上, 我们对执行的程序抽象其实是进程和线程. 那么对于这个, Python的运行模型是个什么样子呢? </p>
+<p>同样, Python运行时也会至少存在一条主线程, 而Python也实现了对多线程的支持, 对于Python来说 我们上面说的那个虚拟机框架对于Python而言, 其实就是一个软CPU, 而所谓多线程的实现其实就是不断的切换使用这个软CPU.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%9F%BA%E6%9C%AC%E8%AE%A4%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">Python的虚拟机基本认识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86%E5%B8%A7%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.</span> <span class="toc-text">认识帧对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5-%E2%80%94-%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="toc-number">3.</span> <span class="toc-text">Python的核心概念 — 命名空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5-%E2%80%94-%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">4.</span> <span class="toc-text">Python的核心概念 — 作用域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LGB%E8%A7%84%E5%88%99%E5%92%8CLEGB%E8%A7%84%E5%88%99"><span class="toc-number">4.1.</span> <span class="toc-text">LGB规则和LEGB规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E6%B5%8B%E9%AA%8C"><span class="toc-number">4.2.</span> <span class="toc-text">小测验</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%BF%90%E8%A1%8C%E6%97%B6%E7%8E%AF%E5%A2%83%E5%88%9D%E6%8E%A2"><span class="toc-number">5.</span> <span class="toc-text">Python虚拟机运行时环境初探</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&text=Python的虚拟机框架(1)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&is_video=false&description=Python的虚拟机框架(1)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python的虚拟机框架(1)&body=Check out this article: https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&title=Python的虚拟机框架(1)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&name=Python的虚拟机框架(1)&description=&lt;p&gt;100篇文章啦 ! ! 给自己鼓个掌, 然后今天就让我们来看一下Python的虚拟机框架吧. 我们从整个虚拟机的执行环境来看起来, 接着从命名空间和作用域的角度来切入看下Python虚拟机的运行时环境.&lt;/p&gt;
+&lt;p&gt;废话不说了, 开始吧!&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/&t=Python的虚拟机框架(1)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

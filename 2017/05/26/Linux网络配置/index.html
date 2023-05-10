@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Linux的网络配置: ifcfg系列和ip家族 :)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux网络配置">
+<meta property="og:url" content="https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Linux的网络配置: ifcfg系列和ip家族 :)">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/if.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/interfaces.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/dns.png">
+<meta property="article:published_time" content="2017-05-27T02:28:05.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:43:24.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/if.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux网络配置</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&sudo/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/05/21/First2Redis/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&text=Linux网络配置"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&is_video=false&description=Linux网络配置"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux网络配置&body=Check out this article: https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&name=Linux网络配置&description=&lt;p&gt;Linux的网络配置: ifcfg系列和ip家族 :)&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&t=Linux网络配置"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ifcfg%E7%B3%BB%E5%88%97"><span class="toc-number">1.</span> <span class="toc-text">ifcfg系列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9C%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">配置网络接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ip%E5%AE%B6%E6%97%8F"><span class="toc-number">2.</span> <span class="toc-text">ip家族</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#link"><span class="toc-number">2.1.</span> <span class="toc-text">link</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addr"><span class="toc-number">2.2.</span> <span class="toc-text">addr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#route"><span class="toc-number">2.3.</span> <span class="toc-text">route</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ss"><span class="toc-number">2.4.</span> <span class="toc-text">ss</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#udev"><span class="toc-number">3.</span> <span class="toc-text">udev</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%B1%9E%E6%80%A7%E9%85%8D%E7%BD%AE"><span class="toc-number">4.</span> <span class="toc-text">网络属性配置</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux网络配置
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-05-27T02:28:05.000Z" class="dt-published" itemprop="datePublished">2017-05-26</time>
+        
+        (Updated: <time datetime="2020-11-30T01:43:24.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/Network/" rel="tag">Network</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Linux的网络配置: ifcfg系列和ip家族 :)</p>
+<span id="more"></span>
+
+<p>现在有一台Linux主机, 并未接入互联网.</p>
+<p>如何将其接入呢?</p>
+<p>显然,我们要配置以下项目:</p>
+<ul>
+<li>IP&#x2F;mask</li>
+<li>路由: 默认网关</li>
+<li>DNS服务器</li>
+<li>主DNS</li>
+<li>次DNS</li>
+<li>第三DNS服务器(only4Linux)</li>
+</ul>
+<p>对于配置方式,有两种也就是;</p>
+<ul>
+<li>静态指定</li>
+<li>ifcfg系列 : ifconfig, route, netstat</li>
+<li>ip系列: object { link, addr, route }, ss, tc</li>
+<li>配置文件 </li>
+<li>以及一些前端可视化工具 (如: RedHat的Setup)</li>
+<li>动态分配( DHCP ) – (Dynamic Host Configuration Protocol)</li>
+</ul>
+<h2 id="ifcfg系列"><a href="#ifcfg系列" class="headerlink" title="ifcfg系列"></a>ifcfg系列</h2><h3 id="配置网络接口"><a href="#配置网络接口" class="headerlink" title="配置网络接口"></a>配置网络接口</h3><p>由kernel命名.</p>
+<p>命名规则:</p>
+<ul>
+<li>以太网: eth{0,1,2….} (<strong>在CentOS7中得到了重新命名,按照插口或者内核加载PCI时读取到的信息来命名</strong>)</li>
+<li>虚拟拨号设备: ppp{0,1,2,…}(点对点)</li>
+</ul>
+<p><strong>ifconfig</strong></p>
+<p>ifconfig 直接调用是就显示本机所有的接口, 在后面加上网卡的标识(也就是名字了)就可以对这张NIC进行单独的查看和配置.</p>
+<p>直接使用起来就像是这样:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/if.png" alt="if"></p>
+<p>基本上常规的信息都是可以看到的, 比如有:</p>
+<p>**inet:**标识IPv4地址<br>**mtu:**最大传输单元<br>**netmask:**子网掩码<br>**broadcast:**广播地址<br>**inet6:**标识IPv6地址<br>**ether&#x2F;HWaddr:**MAC地址</p>
+<p>在<code>flags</code>的后面能看到一些大写单词,这些表明当前这个设备的状态,</p>
+<p>使用ifconfig可以很方便的配置对应网卡, 直接在查询的后面跟上网卡的标识加上子命令就行了.</p>
+<p>最直接的就是网卡驱动程序的关闭和启用:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ifconfig eth0 down</span><br><span class="line">[root@WWW ~]$ ifconfig eth0 up</span><br></pre></td></tr></table></figure>
+
+<p>再比如修改本机IP和子网掩码,像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ifconfig eth0 172.16.100.10/16</span><br></pre></td></tr></table></figure>
+
+<p>注意,这样设置IP后面跟上的子网掩码的格式是不能改变的, 如果想使用类似<code>255.255.0.0</code>这样的, 需要单独使用<code>netmask</code>关键字来指定.</p>
+<p>像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ifconfig eth0 172.16.100.10 netmask 255.255.0.0</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意:修改立即生效, 重启失效</strong></p>
+<p>如果你在使用Xshell等远程连接工具, 请不要像我一样蠢, 真的敲了上面的命令..你会直接掉线的!</p>
+<p>虽然ifconfig支持许多配置项的修改, 但是大部分的修改我们是用不到的.</p>
+<p>其中有个<code>[-]promisc</code>这个选项是用来开启和关闭混杂模式的.而所谓混杂模式就是指不论目的地址是否指向他, 网卡都会将来自接口的所有数据捕获并交给他的驱动程序, 这种模式的应用比如说:<code>wireshark</code>.</p>
+<p><strong>route</strong></p>
+<p>路由管理命令–route</p>
+<p>使用route查看当前主机的路由表, 常用的参数就是<code>-n</code>, 不进行反向解析, 也就是全部显示ip而不是名字.</p>
+<p>来看一下这个输出,前几项直接翻译就好了嘛, 来看一下<code>FLAGS</code>, 这里会看到<code>U</code>和<code>G</code>两种, 如果添加主机路由, 会有<code>H</code>标识(<code>Host</code>). 像之前的<code>ifconfig</code>看到的一样, <code>U</code>表示<code>UP</code>已启用. <code>G</code>表示这是网关(<code>Gateway</code>)</p>
+<p>如果要进行路由的添加.使用<code>add</code>子命令.</p>
+<p>添加主机路由时, 由于目标ip直接定位到主机IP, 所以不需要添加子网掩码(其实也是可以写的,但是没有必要), 如果要添加的是一个网段的IP, 那么子网掩码是必须要指定的, 两种方法来指定, 一种是直接在后面接上子网长度, 或者明确表明关键字<code>netmask</code>加上子网IP. </p>
+<p>在最后添加<code>dev</code>关键字来指定网卡, 数据包发往哪一个硬件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ route add -host 210.**.151.73 gw 59.**.**.1 dev eth0</span><br><span class="line">[root@WWW ~]$ route add -net 210.**.151.0/24 gw 59.**.**.1 dev eth0</span><br><span class="line">[root@WWW ~]$ route add -net 210.**.151.0 netmask 255.255.255.0 gw 59.**.**.1 dev eth0</span><br></pre></td></tr></table></figure>
+<p>路由设置时要加入默认路由, 也就是找不到请求IP该发往哪里的救命稻草了.</p>
+<p>如果路由表被查了个遍也没有找到, 那么就会最后查找默认路由.</p>
+<p>默认路由的设定和一般设定几乎没有不同::</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ route add -net 0.0.0.0/0 gw 59.**.**.1 dev eth0</span><br><span class="line">[root@WWW ~]$ route add -net 0.0.0.0 netmask 0.0.0.0 gw 59.**.**.1 dev eth0</span><br></pre></td></tr></table></figure>
+
+<p>也可以直接简写成:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ route add default gw 59.**.**.1 dev eth0</span><br></pre></td></tr></table></figure>
+<p>能够添加自然就可以删除, route删除的语法要比添加容易.</p>
+<p>以下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ route del -host 192.168.19.2</span><br></pre></td></tr></table></figure>
+
+<p>这样,删除主机路由不需要添加子网掩码,直接指定目标即可</p>
+<p>但是在删除网络路由的时候:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ route del -net 192.168.0.0</span><br><span class="line">SIOCDELRT: Invalid argument</span><br></pre></td></tr></table></figure>
+<p>提示错误! 在删除网络路由的时候, 子网掩码是必须要添加的项目. </p>
+<p>让我们再试一次: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ route del -net 192.168.0.0/16</span><br></pre></td></tr></table></figure>
+<p>没有提示! Unix的哲学就是没有提示就是对的!</p>
+<p>route命令的添加和删除就是这样了,下面就进入DNS的配置了.</p>
+<p>传统意义上的DNS指定是通过修改配置文件进行的.</p>
+<p>这个配置文件就是位于<code>/etc/resolve.conf</code></p>
+<p>在其中直接指定<code>nameserver DNS&#39;s IP</code>即可, 如上文所说, 最多指定三个.</p>
+<p>在编辑了该文件后, 可以使用<code>nslookup</code>,<code>host</code>或者<code>dig</code>进行解析测试, 推荐使用<code>	dig</code>.</p>
+<blockquote>
+<p><code>dig</code>的简易使用教程:<br>从域名到IP的解析称为正向解析, 对应的dig操作为 dig -t A DOMAIN ( 也可以直接dig )<br>从IP到域名的解析成为反向解析, 对应的dig操作为 dig -x IP ( 有些IP并不能被反向解析 )</p>
+</blockquote>
+<p><strong>netstat</strong></p>
+<p><code>ifcfg</code>系列的最后一个就是<code>netstat</code>命令, 显示当前本机的端口占用情况.</p>
+<p>这是使用最多的功能之一~, 事实上<code>netstat</code>不仅可以查看端口, 他也可以查看本机路由表, 显示本机接口(NIC)的统计数据.</p>
+<p>有点像上面命令的综合.</p>
+<p>用法:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ netstat -r -n</span><br><span class="line">显示的信息和使用route -n看到的是一模一样的</span><br><span class="line">[root@WWW ~]$ netstat -i</span><br><span class="line">显示的内容和ifconfig相近</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>在查看TCP端口占用时, 常规上我都会加上<code>-antp</code>选项.</p>
+<p>另外, 在Linux的某些发行版上会有<code>ifup</code>和<code>ifdown</code>这两个小脚本, 个人实验结果:</p>
+<blockquote>
+<p>在CentOS7上, 是个普通的bash脚本<br>在Ubuntu Server 14.04 LTS上是个标准的动态链接64位执行程序.</p>
+</blockquote>
+<h2 id="ip家族"><a href="#ip家族" class="headerlink" title="ip家族"></a>ip家族</h2><p>ip这一整套的工具名字叫做<code>iproute</code>, 可以在你的主机下进行<code>rpm -qf `which ip`</code>.</p>
+<p>整个ip系列命令调用方式有点像Python3的urllib…通过整合了全部模块的<code>ip</code>, 使用子命令进行调用.</p>
+<p>我们也可以先看看<code>iproute</code>这个包都在我们的系统上装了什么.(以CentOS7为例)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ rpm -ql iproute</span><br><span class="line">....</span><br><span class="line">/usr/sbin/arpd</span><br><span class="line">/usr/sbin/bridge</span><br><span class="line">/usr/sbin/cbq</span><br><span class="line">/usr/sbin/ctstat</span><br><span class="line">/usr/sbin/devlink</span><br><span class="line">/usr/sbin/genl</span><br><span class="line">/usr/sbin/ifcfg</span><br><span class="line">/usr/sbin/ifstat</span><br><span class="line">/usr/sbin/ip</span><br><span class="line">/usr/sbin/lnstat</span><br><span class="line">/usr/sbin/nstat</span><br><span class="line">/usr/sbin/routef</span><br><span class="line">/usr/sbin/routel</span><br><span class="line">/usr/sbin/rtacct</span><br><span class="line">/usr/sbin/rtmon</span><br><span class="line">/usr/sbin/rtpr</span><br><span class="line">/usr/sbin/rtstat</span><br><span class="line">/usr/sbin/ss</span><br><span class="line">/usr/sbin/tc</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>整个ip命令的风格也是很统一的, 总的来说是这样的:</p>
+<p><code>ip [ OPTIONS ] OBJECT &#123; COMMAND | help &#125;</code></p>
+<p>其中的OBJECT就是 ip 的子命令.</p>
+<p>常用的OBJECT就是: <code>&#123; link | addr | route | ...&#125;</code></p>
+<p>就一个一个Object来说吧:</p>
+<h3 id="link"><a href="#link" class="headerlink" title="link"></a>link</h3><p>link是用来查看和配置网卡设备的, 使用<code>ip link [show]</code>来查看, 当前网卡驱动的状态.</p>
+<p>和上面的<code>ifconfig</code>类似, 	</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LOOPBACK 表明是本地回环</span><br><span class="line">BROADCAST 开启广播</span><br><span class="line">MULTICAST 组播( 集群使用 )</span><br><span class="line">UP 已启用</span><br></pre></td></tr></table></figure>
+
+<p>最简单的操作就是网卡的启用和关闭了. 使用<code>ip link</code>的<code>set</code>子命令就可以了.</p>
+<p>如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~] ip <span class="built_in">link</span> <span class="built_in">set</span> dev eth0 down</span><br></pre></td></tr></table></figure>
+<p>再使用<code>ifconfig</code>或者<code>ip link show</code>看一下, 就会发现UP的标识已经没有了.</p>
+<p>也可以使用该子命令进行网卡功能的开启和关闭.就像上面说过的混杂模式的开启和关闭.</p>
+<p>下面我们试着关闭网卡的多播功能:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ip <span class="built_in">link</span> <span class="built_in">set</span> dev eth0 multicast off</span><br></pre></td></tr></table></figure>
+<p>再开启的话即只要后面的off加上换成on就行了~.</p>
+<p>ip-link命令 主要用于网络设备的配置,因此不是太过于常用.</p>
+<p>与其说link子命令像ifconfig, 不如说addr子命令更像.因为它不仅显示了当前网卡的简要信息,还有当前的本机IP.</p>
+<h3 id="addr"><a href="#addr" class="headerlink" title="addr"></a>addr</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ip addr show</span><br></pre></td></tr></table></figure>
+
+<p><strong>值得一提的是, addr显示出的IP地址是通过DHCP协动态获取的.</strong></p>
+<p>使用addr常用的操作是进行IP地址的更换.添加.删除等.</p>
+<p>我们直接写上add关键字,在后面跟上IP地址以及设备名就可以了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ip addr add 192.168.42.33/16 dev eth0</span><br></pre></td></tr></table></figure>
+
+<p>修改后再show一次,你就会看到eth0网卡多了一个IP地址,这个地址是<strong>辅助地址</strong>.</p>
+<p>也就是说: 是留做备用的.除了这样增加地址, 也可以直接进行修改.</p>
+<p>使用<code>replace</code> 关键字来进行Ip地址的更换.</p>
+<p>删除IP的操作也很简单, 直接将上面的<code>add</code>改为<code>del</code>就行了.</p>
+<p>回到上面添加IP的操作. 还记得对于硬盘分区,除了通过UUID, 我们还可以通过为分区添加标签(LABEL).</p>
+<p>现在我们也可以给网卡添加LABEL了, 在你<code>add IP</code>时,可以选择在最后填上<code>label 标签名</code>.</p>
+<p>这样在进行<code>ifconfig</code>的时候, 你会发现显示出的不再是eth..这样的名字, 而是你取得LABEL,也可以认为这是别名.</p>
+<p>在<code>del</code>中也可以指定别名，但那就是在进行删除目标选定的操作了.</p>
+<p>接下来再来看一下作用域.(scope), 这个选项的值在进行<code>show</code>时候也是可以看见的.默认是global.</p>
+<p>也就意味该IP全局有效., 除了global(用于内核, IP属于内核)以外还有site(只用于IPv6), link(仅用于本设备[添加了这个IP的网卡]), host(仅用于本机[服务器]内部).</p>
+<p>如果想要清空一张网卡上的所有IP,一个一个<code>del	</code>未免太蠢了, 所以ip-address提供了<code>flush</code>命令, 直接就可以清空指定设备上的所有IP.</p>
+<h3 id="route"><a href="#route" class="headerlink" title="route"></a>route</h3><p>ip-route作为路由表管理工具, 支持了极多的路由管理和策略.</p>
+<p>然而常规操作依然就是<code>show</code>.<code>add</code>.<code>delete</code>.<code>flush</code>.</p>
+<p>但是在添加路由时,ip-route支持更多功能, 比如:原地址伪装.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ip route add 192.168.1.0/24 via 172.16.0.1 dev eth0 src 172.16.0.22</span><br></pre></td></tr></table></figure>
+
+<p>最后的的src就是伪装ip了, 建议不要乱写了, 其实乱写程序也会直接报错的.</p>
+<p><strong>注意:如果不明确注明子网掩码或者写明default,ip-route会都将其当做主机.</strong></p>
+<p>再删除路由时, 最好指明白要删除的路由的dest和netmask, 这样可以避免一些模糊的导致删除错误.</p>
+<h3 id="ss"><a href="#ss" class="headerlink" title="ss"></a>ss</h3><p>ss是一个网络状况查看工具, 当你的网络繁忙,网络连接情况十分复杂, 或者说连接数非常多的时候, <code>netstat</code>往往会比较卡.而<code>ss</code>就是一个取代<code>netstat</code>的工具. 他的速度基本上是<code>netstat</code>的10倍左右</p>
+<p><code>ss</code>命令的大体格式就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss [OPTION] ... [FILTER]</span><br></pre></td></tr></table></figure>
+<p>还是先从选项开始吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">-t : tcp</span><br><span class="line">-u : udp</span><br><span class="line">-w : raw 原始套接字</span><br><span class="line">-x : unix unix套接字</span><br><span class="line">-a : all 所有类型</span><br><span class="line">-n : numeric 不反解</span><br><span class="line">-p : program 显示程序和PID</span><br><span class="line">-e : extend 拓展输出</span><br><span class="line">-m : memory 显示内存占用</span><br><span class="line">-o : option 选项(e.g; timer, filter)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>原始套接字和标准套接字. 简单的说就是原始套接字更加底层, 它能够对较低层次的协议直接进行访问, 比如:IP,ICMP等,网络监听技术很大程度上依靠RAW SOCKET.<br>而原始套接字和标准套接字的区别就是原始套接字可以读取内核尚未处理的数据包, 而标准套接字例如流套接字就只能读取TCP协议的数据, 数据报套接字就只能读取UDP协议的数据.</p>
+</blockquote>
+<p>这些选项几乎和<code>netstat</code>一模一样.</p>
+<p>相较netstat更先进的地方是, ss提供了过滤器, 这样就不需要蠢蠢的再去用管道了.</p>
+<p>说到了过滤器, 我们就先看一下tcp的常见状态:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">LISTEN 监听 ( 处于服务状态 )</span><br><span class="line">ESTABLISHED 建立连接 ( 正在通信 )</span><br><span class="line">FIN_WAIT_1</span><br><span class="line">FIN_WAIT_2</span><br><span class="line">SYN_SENT</span><br><span class="line">SYN_RECV</span><br><span class="line">CLOSED 关闭了的 </span><br></pre></td></tr></table></figure>
+
+<p>基本上ss的过滤器格式为 <code>FILTER := [ state TCP-STATE ] [ EXPRESSION ]</code></p>
+<p>简单的表达式语法就是: <code>( dport := ssh or sport = :ssh )</code></p>
+<p><strong>特别注明一下:语法要求,两端括号一定要加上空格</strong></p>
+<p>这样一条合法的查询语句就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ss -antpo state established <span class="string">&#x27;( dport = :ssh or sport = :ssh )&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>关于state后的参数, ss有一个大坑,那就是没有listen状态, 而是listening.</strong></p>
+<p>其实常用的命令参数也就是那些相近的. </p>
+<p>以上就是ip家族的常用命令了.</p>
+<p>上面是在说使用命令配置Linux的网络,现在我们来看一下使用配置文件进行网络的控制.</p>
+<p>由于Linux的版本不同, 所以配置文件的位置也不一样.</p>
+<p><strong>来自一年后9.5的更新</strong></p>
+<p>说起来虽然说是配置文件有两种, 但是如果网络服务是由NetworkManager进行管理的, 应该配置属性到所谓旧的配置文件中, 新的配置文件似乎不会被读取到并且不会生效. 关于这个我还需要再看看. 不知道是网络配置服务根本就没有读取旧的配置文件还是说是先读取的旧配置文件但是又因为新的配置被洗掉了. </p>
+<p>总之, 网络属性配置到旧的配置文件总是没错的. 因为NetworkManager服务会根据这个位置的配置文件来写网络属性.</p>
+<hr>
+<p>早期的配置文件位于</p>
+<p><code>/etc/sysconfig/network-scripts/ifcfg-IFACE</code> &lt; - - IP,MASK,GW,DNS相关配置文件<br><code>/etc/sysconfig/network-scripts/route-IFACE</code> &lt; - - 路由相关配置文件. </p>
+<p>而在新版的Linux, 修改网络配置, 已经转移向了&#x2F;<code>etc/network/interfaces</code>这个文件中, 而DNS服务器的配置可以在<code>/etc/resolve.conf</code>中进行临时指定(开机重写文件).</p>
+<p>先说说旧版的配置文件中常见的或者常用的参数说明一下:</p>
+<p><strong>DEVICE</strong>: 此配置文件应用到的设备</p>
+<p><strong>HWADDR:</strong> 对应设备的<code>MAC</code>地址</p>
+<p><strong>BOOTPROTO:</strong> 激活此设备的地址配置协议</p>
+<p><strong>NM_CONTROLLED:</strong> 此网卡是否受<code>NetworkManager</code>的管理控制.</p>
+<p><strong>ONBOOT:</strong> 系统引导的时候是否激活此设备</p>
+<p><strong>TYPE</strong>: 接口类型, 常见的有<code>Ethernet</code>, <code>Bridge</code></p>
+<p><strong>UUID:</strong> 设备的唯一标识</p>
+<p><strong>IPADDR:</strong> 指明IP地址</p>
+<p><strong>NETMASK:</strong> 子网掩码</p>
+<p><strong>GATEWAY:</strong> 默认网关</p>
+<p><strong>DNS1:</strong> 第一个DNS服务器指向</p>
+<p><strong>DNS2:</strong> 第二个DNS服务器指向</p>
+<p><strong>USERCTL:</strong> 普通用户是否可控制此设备</p>
+<p><strong>PEERDNS:</strong> 如果BOOTPROTO是<code>dhcp</code>, 是否允许<code>dhcp seerver</code>分配的DNS服务器指向信息覆盖原来的<code>resolve.conf</code>.</p>
+<p>现在就以新版的配置文件来进行说明.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/interfaces.png" alt="interfaces"></p>
+<p>最简单的配置就是直接把这个文件的<code>static</code>换成<code>dhcp</code>即可, 将下面的配置全部删去就好了.</p>
+<p>如果配置静态IP,可以参照这个图来配置, 必要的属性就是下面的三项: <code>IP地址</code>, <code>网关</code>, <code>子网掩码</code>.</p>
+<p>如果要配置DNSSever, 要在&#x2F;etc&#x2F;resolve.conf, 这个文件配置的信息会在重启时被重写.</p>
+<p>之前说过Linux支持最多可以配置配三台DNSServer, 就这样写就可以了:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/dns.png" alt="dns"></p>
+<p>使用<code>nameserver</code>关键字来指定服务器地址.</p>
+<p>-<strong>来自不知道什么时候之后的一个更新</strong>- 对于CentOS系统, 一直使用的就是sysconfig下的配置文件, 而Ubuntu, Debian系的系统梗偏向于使用interfaces这种文件. 所以关于时间的说法是不对的. ( 我好菜啊 )</p>
+<p><strong>7.8 更新</strong>:</p>
+<p>进行主机名的设置, 除了可以通过使用<code>hostname</code>来进行临时的修改, 更好的方法是使用配置文件进行改变.</p>
+<p>这个配置文件就是<code>/etc/sysconfig/network在这里面加入</code>HOSTNAME&#96;的内容 改变将在下一次的重启生效. </p>
+<p><strong>来自一年后9.5的更新</strong>:</p>
+<p>修改主机名在CentOS7版本上还有一些方法, 使用hostnamectl进行主机名的管理:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# hostnamectl status</span><br><span class="line">   Static hostname: VM-node0</span><br><span class="line">         Icon name: computer-vm</span><br><span class="line">           Chassis: vm</span><br><span class="line">        Machine ID: 634a3b7ffdeb4c1382e3bd8666b10602</span><br><span class="line">           Boot ID: dfb2a2bb36414f5781a41bb8f51c2c0f</span><br><span class="line">    Virtualization: vmware</span><br><span class="line">  Operating System: CentOS Linux 7 (Core)</span><br><span class="line">       CPE OS Name: cpe:/o:centos:centos:7</span><br><span class="line">            Kernel: Linux 3.10.0-693.2.2.el7.x86_64</span><br><span class="line">      Architecture: x86-64</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>你也可以不加命令参数 同样是查看状态. 我们可以看到当前计算机的主机名是<code>VM-node0</code>. 有趣的是, 当我们使用之前说的<code>hostname</code>命令去修改主机名的时候会看到:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# hostname localhost</span><br><span class="line">[root@VM-node0 ~]# hostnamectl status</span><br><span class="line">   Static hostname: VM-node0</span><br><span class="line">Transient hostname: localhost</span><br><span class="line">         Icon name: computer-vm</span><br><span class="line">           Chassis: vm</span><br><span class="line">        Machine ID: 634a3b7ffdeb4c1382e3bd8666b10602</span><br><span class="line">           Boot ID: dfb2a2bb36414f5781a41bb8f51c2c0f</span><br><span class="line">    Virtualization: vmware</span><br><span class="line">  Operating System: CentOS Linux 7 (Core)</span><br><span class="line">       CPE OS Name: cpe:/o:centos:centos:7</span><br><span class="line">            Kernel: Linux 3.10.0-693.2.2.el7.x86_64</span><br><span class="line">      Architecture: x86-64</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>多了一个新的记录,  这个叫做瞬态的一个主机名 就像之前说过的, hostname修改的主机名是一个临时的结果 在重启之后会被重置. 重置的结果就是上面的一条记录所展示的<strong>静态主机名</strong>.</p>
+<p>那么怎么使用这个工具进行修改呢?</p>
+<p>其实也很简单 这个工具提供的修改命令特别好记:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Commands:</span><br><span class="line">  status                 Show current hostname settings</span><br><span class="line">  set-hostname NAME      Set system hostname</span><br><span class="line">  set-icon-name NAME     Set icon name for host</span><br><span class="line">  set-chassis NAME       Set chassis type for host</span><br><span class="line">  set-deployment NAME    Set deployment environment for host</span><br><span class="line">  set-location NAME      Set location for host</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>基本上我们只会使用到前两个了, 直接<code>set-hostname</code>就可以了.</p>
+<p><strong>7.25 的更新:</strong></p>
+<h2 id="udev"><a href="#udev" class="headerlink" title="udev"></a>udev</h2><p>网卡接口的传统命名都是以eth(Ethernet)开头的, 后面跟上[0,1,2,…]. 这样命名的弊端在于, 当我一个接口上面的网卡坏掉了, 接着我把一个新的网卡换上了, 他的命名依旧是同样的后缀. 而他们的HWADDR是不同的.  所以, CentOS7采用了一种可预测的, 统一的一种接口识别机制. udev从CentOS6就有了, CentOS7仍然沿用了这个.</p>
+<p>udev是从用户空间通过系统调用来探测硬件设备, 并进行配置的应用程序. 其中最重要的就是是可预测功能.</p>
+<p>在CentOS7上, udev支持多种不同的命名方案:</p>
+<ul>
+<li>Firmware 主板上的, 通过芯片</li>
+<li>或者是 PCI总线上的拓扑结构</li>
+</ul>
+<p>来说说网卡的命名机制, 其一也就是基于systemd, 再者就是通过bios的方式. 我们先来看一下systemd的方式.</p>
+<p>sysetmd的命名规则如下:</p>
+<blockquote>
+<p>(a) 如果主板上的固件或者BIOS为主板上的集成的设备提供的索引(就比如说PCI线上的哪个槽)可用, 并且可预测则根据次索引进行命名. e.g: eno1;</p>
+<p>(b) 如果固件或者BIOSweiPCI-E扩展槽所提供的索引信息可用, 且可预测, 则根据此索引进行命名, e.g: ens1</p>
+<p>(c) 如果硬件接口的物理位置先定下可用, 则根据此信息进行命名, e.g: enp2s0;</p>
+<p>(d) 如果用户显式启用, 也可以根据MAC地址进行命名: enx2387a1dc56;</p>
+<p>(e) 上述都不可用的时候, 则使用传统命名机制.</p>
+</blockquote>
+<p>上述命名机制中, 尽管我们说这是systemd的命名, 但有的仍然需要biosdevname程序的参与.这就意味我们需要安装这些程序并且启用之.</p>
+<p>现在我们来把接口的缩写搞得清楚一点: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">en == ethernet</span><br><span class="line">wl == wlan</span><br><span class="line">ww == wwan</span><br></pre></td></tr></table></figure>
+
+<p>而名称类型, 有这些:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">o&lt;index&gt; -- en | o | 1 -- 这里的index,我们把它叫做设备索引号</span><br><span class="line">s&lt;slot&gt; -- en | s | 0 -- 扩展插槽的索引</span><br><span class="line">x&lt;MAC&gt; -- en | x | 2387a1dc56 -- 基于MAC地址命名</span><br><span class="line">p&lt;bus&gt;s&lt;slot&gt; -- en | p | 0 | s | 3 -- 总线的标号并加上扩展槽的索引</span><br></pre></td></tr></table></figure>
+
+<p>有了这些, 我们就可以进行网卡设备的命名过程:</p>
+<p><strong>第一步</strong> : udev有一个辅助程序. 我们之前说Linux的内核编译和管理的时候, 提到过&#x2F;sys这么个伪文件系统, 其中的信息就是来源于udev这个机制, udev将内核识别的相关硬件及信息映射出来, 输出到用户空间. 从而能够加载相应地驱动和一些额外的服务. 辅助程序: &#x2F;lib&#x2F;udev&#x2F;rename_device. 这个程序会从&#x2F;usr&#x2F;lib&#x2F;udev&#x2F;rules.d&#x2F;60-net.rules来加载, 接着根据这个文件里的指令去查询 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-XXXX ( XXXX就是对应的网卡名)这个文件, 在前面的Linux网络配置中, 我们知道这个文件中有一个HWADDR对嘛 接着就会拿着这个网卡地址去进行匹配, 如果匹配到了 就会去读取配置文件中那个叫<code>DEVICE</code>的参数 于是就会将网命名成和DEVICE保持一致. 也就是说, 它取决于配置文件.</p>
+<p>如果第一步没能正常执行的话, 就会将进行<strong>第二步</strong>, 第二步进行的前提是安装了<code>biosdevname</code>并且在启动时的内核参数(我们说过grub在启动时是支持参数的, KERNEL后面)加上了biosdevname&#x3D;1, 也即是 <strong>安装了biosdevname, 并且没有禁用它</strong> 的话, biosdevname这个程序就会到 &#x2F;usr&#x2F;lib&#x2F;udev&#x2F;rules.d&#x2F;71-biosdevname.rules中定义的规则来进行网络接口重命名.</p>
+<p>如果说第二步也未能执行, 那么就会进入第三步.</p>
+<p><strong>第三步</strong>就是根据我们网卡自身所携带的信息来进行命名, 每一个设备都会带上一些属性. 这些都被映射到&#x2F;sys这个伪文件系统上 这个时候命名的规则文件就是&#x2F;usr&#x2F;lib&#x2F;udev&#x2F;rules.d&#x2F;75-net-description. 怎么进行命名呢? 这个即根据网卡加载时一些属性:ID_NET_NAME_ONBOARD, ID_NET_NAME_SLOT, ID_NET_NAME_PATH等等( 一般第一或者第二就足够把问题解决了实在没有的时候才会去找后面的 ), 这些都是变量, 由系统来赋予. 通过检查这些变量是否有值, 于是就会被命名成这些参数的值.</p>
+<p>如果第三步仍然失败了..那么就不会进行重命名. 保留之前的eth[0,1,2,..].</p>
+<p>如果现在想要保留原来的命名方式怎么做呢?  如果直接修改掉rules文件, udev会尽力进行自动重建( 有可能成功 也有可能失败 ) 但是为了彻底禁用, 我们则需要在内核后添加参数, 由于CentOS7使用的是grub2, 而不是旧的grub legacy, 所以和我们之前说的更改内核参数的方法并不一样. 具体的操作步骤如下:</p>
+<blockquote>
+<ul>
+<li>编辑&#x2F;etc&#x2F;default&#x2F;grub文件, 在GRUB_CMDLINE_LINUX这一行添加<code>net.ifname=0</code>. </li>
+<li>此时并不会被grub2读取, 所以我们要适应grub2自带的工具来重新生成一下配置文件</li>
+<li>也就是: <code>grub2-mkconfig -o /boot/grub2/grub2.cfg</code></li>
+<li>最后重启系统就行</li>
+</ul>
+</blockquote>
+<p>这样就可以回归传统的命名方式.</p>
+<h2 id="网络属性配置"><a href="#网络属性配置" class="headerlink" title="网络属性配置"></a>网络属性配置</h2><p>在先前的Linux网络配置中我们已经说了很多关于网络配置的话题. 但是这次的工具是一个专门用来管理NetworkManager的, 有着自己的一套语法. 主要体现在地址配置上. 现在来看一下: <code>nmcli</code></p>
+<p>这个命令和IP命令很相像. 也有很多自己的OBJECT, 命令组成是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmcli [OPTIONS...] &#123;<span class="built_in">help</span> | general | networking | radio | connection | device | agent | monitor&#125; [COMMAND] [ARGUMENTS...]</span><br></pre></td></tr></table></figure>
+
+<p>其中比较常用的就是connection和device这两个.</p>
+<p>首先是 <strong>general</strong>  这个是用来显示总体信息的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ nmcli g status <span class="comment"># g 就是general 可以进行简写</span></span><br><span class="line">STATE      CONNECTIVITY  WIFI-HW  WIFI     WWAN-HW  WWAN    </span><br><span class="line">connected  full          enabled  enabled  enabled  enabled </span><br><span class="line"><span class="comment"># 显示了连接状态 以及支持什么样的连接</span></span><br></pre></td></tr></table></figure>
+
+<p>不过general 的更多作用是要等到后面进行连接的时候才对显现出来. 我们先来看一下后面的一些OBJECT吧</p>
+<p><strong>radio</strong></p>
+<p>主要用来进行无线网络的配置, 一般我们也不太会用到呢..所以也先忽略掉.</p>
+<p><strong>connection</strong> – 类似于 ip 的 addr</p>
+<p>用来配置网络连接 因此是很重要的一个. 我们来看看他的子命令.</p>
+<p>和ip的addr相像, 使用起来也有近似之处.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ nmcli connection(c) &#123; show | up | down | add | modify | <span class="built_in">clone</span> | edit | delete | monitor | reload | load | import | <span class="built_in">export</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在我们把问题聚焦在改变IP地址的应用上 我们使用modify子命令, 过程如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ nmcli connection modify enp0s8 +ipv4.addresses 192.168.56.110/24</span><br><span class="line">[root@WWW ~]$ nmcli d show enp0s8</span><br><span class="line">GENERAL.DEVICE:                         enp0s8</span><br><span class="line">...</span><br><span class="line">IP4.ADDRESS[1]:                         192.168.56.102/24</span><br><span class="line">... <span class="comment"># 咦? 怎么没有生效 ?</span></span><br></pre></td></tr></table></figure>
+
+<p>和其他的IP修改一样, 这个时候都需要进行禁用之后立即启动的操作. 现在就是使用connection的子命令<code>up</code>和<code>down</code>的时候.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ nmcli c d enp0s8 ; nmcli c u enp0s8</span><br><span class="line">Connection <span class="string">&#x27;enp0s8&#x27;</span> successfully deactivated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/2)</span><br><span class="line">Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/3)</span><br><span class="line"><span class="comment"># 这个时候修改就成功了, 我们来看一下</span></span><br><span class="line">[root@WWW ~]$ nmcli d show enp0s8</span><br><span class="line">...</span><br><span class="line">IP4.ADDRESS[1]:                         192.168.56.103/24</span><br><span class="line">IP4.ADDRESS[2]:                         192.168.56.102/24</span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 修改成功了, 不如在再使用ip命令来看一下</span></span><br><span class="line">[root@WWW ~]$ ip addr show enp0s8</span><br><span class="line">3: enp0s8: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 08:00:27:cc:fe:<span class="built_in">dd</span> brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 192.168.56.102/24 brd 192.168.56.255 scope global dynamic enp0s8</span><br><span class="line">       valid_lft 952sec preferred_lft 952sec</span><br><span class="line">    inet 192.168.56.103/24 brd 192.168.56.255 scope global secondary enp0s8</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+
+<p>注意到那个[+]号了么? 其实也可以省略, 如果是要移除的时候就使用减号[-], 这个时候就不可以省略了.</p>
+<p>整个修改网络属性的语法格式是这样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ip connection modify IFACE [+|-] setting.property value </span><br><span class="line"><span class="comment"># 常用的一些setting.property有:</span></span><br><span class="line"><span class="comment"># ipv4.addresses</span></span><br><span class="line"><span class="comment"># ipv4.gateway</span></span><br><span class="line"><span class="comment"># ipv4.dns # 注意这里, 没有dns1,2这样的属性</span></span><br><span class="line"><span class="comment"># ipv4.method 如果使用DHCP动态主机配置协议的话,就使用这个属性,如果是静态的就配置成manual值</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>device</strong> – 类似于 ip 的 link</p>
+<p>device是用来配置网络接口的, 所以使用的场景多在网卡的连接和断开 另外这个device还可以配置wife~</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">device &#123;show|status|connect|disconnect|delete&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用方法基本上不需要进行说明. </p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ifcfg%E7%B3%BB%E5%88%97"><span class="toc-number">1.</span> <span class="toc-text">ifcfg系列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9C%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">配置网络接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ip%E5%AE%B6%E6%97%8F"><span class="toc-number">2.</span> <span class="toc-text">ip家族</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#link"><span class="toc-number">2.1.</span> <span class="toc-text">link</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addr"><span class="toc-number">2.2.</span> <span class="toc-text">addr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#route"><span class="toc-number">2.3.</span> <span class="toc-text">route</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ss"><span class="toc-number">2.4.</span> <span class="toc-text">ss</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#udev"><span class="toc-number">3.</span> <span class="toc-text">udev</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%B1%9E%E6%80%A7%E9%85%8D%E7%BD%AE"><span class="toc-number">4.</span> <span class="toc-text">网络属性配置</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&text=Linux网络配置"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&is_video=false&description=Linux网络配置"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux网络配置&body=Check out this article: https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&title=Linux网络配置"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&name=Linux网络配置&description=&lt;p&gt;Linux的网络配置: ifcfg系列和ip家族 :)&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/&t=Linux网络配置"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

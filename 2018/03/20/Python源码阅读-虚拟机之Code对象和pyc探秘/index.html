@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录. 从这一篇开始, 我们就要和Python的虚拟机打交道了, 在开始本篇的正式内容之前, 我们先来讨论下Python程序的执行是怎样进行的吧. 众所周知, Python是一个解释型语言. 而我上个学期学习了《编译原理》这门课, 再加上书中的说明, 现在我想说,Python和Java, C#一样, 都是需要编译的语言. 大家在写Py">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python源码阅读-虚拟机之Code对象和pyc探秘">
+<meta property="og:url" content="https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录. 从这一篇开始, 我们就要和Python的虚拟机打交道了, 在开始本篇的正式内容之前, 我们先来讨论下Python程序的执行是怎样进行的吧. 众所周知, Python是一个解释型语言. 而我上个学期学习了《编译原理》这门课, 再加上书中的说明, 现在我想说,Python和Java, C#一样, 都是需要编译的语言. 大家在写Py">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-03-21T00:59:35.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="Source Code">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python源码阅读-虚拟机之Code对象和pyc探秘</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/05/12/Python%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A1%86%E6%9E%B6-1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&text=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&is_video=false&description=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python源码阅读-虚拟机之Code对象和pyc探秘&body=Check out this article: https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&name=Python源码阅读-虚拟机之Code对象和pyc探秘&description=&lt;p&gt;这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.&lt;/p&gt;
+&lt;p&gt;从这一篇开始, 我们就要和Python的虚拟机打交道了, 在开始本篇的正式内容之前, 我们先来讨论下Python程序的执行是怎样进行的吧.&lt;/p&gt;
+&lt;p&gt;众所周知, Python是一个解释型语言. 而我上个学期学习了《编译原理》这门课, 再加上书中的说明, 现在我想说,&lt;strong&gt;Python和Java, C#一样, 都是需要编译的语言.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;大家在写Python的时候都会知道, 在我们执行过一个python程序之后, 会出现一个&lt;code&gt;.pyc&lt;/code&gt;文件. 这有没有想到什么? 没错, 有没有联想到Java的&lt;code&gt;.class&lt;/code&gt;文件? 事实上, 我们Python的执行过程仍然是类似Java的, 先通过解释器(interpreter)进行&lt;strong&gt;编译&lt;/strong&gt;, 生成&lt;code&gt;.pyc&lt;/code&gt;文件, 这个文件中就是源程序的字节码集合, 接着, 通过虚拟机(virtual machine)进行一条条字节码的执行, 从而完成执行过程.&lt;/p&gt;
+&lt;p&gt;只不过, 这里的虚拟机和我们的JVM仍然是有区别的, 那就是Python的虚拟机要更上层一点, 也就是离机器底层更远一点.&lt;/p&gt;
+&lt;p&gt;接下来我们就从Python的Code对象开始看起.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&t=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PYC%E7%9A%84%E8%B5%B7%E6%BA%90"><span class="toc-number">1.</span> <span class="toc-text">PYC的起源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Code%E5%AF%B9%E8%B1%A1%E5%88%9D%E6%8E%A2"><span class="toc-number">2.</span> <span class="toc-text">Code对象初探</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pyc%E6%96%87%E4%BB%B6%E5%88%9D%E6%8E%A2"><span class="toc-number">3.</span> <span class="toc-text">pyc文件初探</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA"><span class="toc-number">3.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD"><span class="toc-number">3.2.</span> <span class="toc-text">加载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E6%8E%A2%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8Cpyc%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">初探字节码和pyc文件解析</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python源码阅读-虚拟机之Code对象和pyc探秘
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-03-21T00:59:35.000Z" class="dt-published" itemprop="datePublished">2018-03-20</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>, <a class="p-category" href="/tags/Source-Code/" rel="tag">Source Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.</p>
+<p>从这一篇开始, 我们就要和Python的虚拟机打交道了, 在开始本篇的正式内容之前, 我们先来讨论下Python程序的执行是怎样进行的吧.</p>
+<p>众所周知, Python是一个解释型语言. 而我上个学期学习了《编译原理》这门课, 再加上书中的说明, 现在我想说,<strong>Python和Java, C#一样, 都是需要编译的语言.</strong></p>
+<p>大家在写Python的时候都会知道, 在我们执行过一个python程序之后, 会出现一个<code>.pyc</code>文件. 这有没有想到什么? 没错, 有没有联想到Java的<code>.class</code>文件? 事实上, 我们Python的执行过程仍然是类似Java的, 先通过解释器(interpreter)进行<strong>编译</strong>, 生成<code>.pyc</code>文件, 这个文件中就是源程序的字节码集合, 接着, 通过虚拟机(virtual machine)进行一条条字节码的执行, 从而完成执行过程.</p>
+<p>只不过, 这里的虚拟机和我们的JVM仍然是有区别的, 那就是Python的虚拟机要更上层一点, 也就是离机器底层更远一点.</p>
+<p>接下来我们就从Python的Code对象开始看起.</p>
+<span id="more"></span> 
+
+<h2 id="PYC的起源"><a href="#PYC的起源" class="headerlink" title="PYC的起源"></a>PYC的起源</h2><p>在我们使用Python的编译器进行代码编译的时候, 会产生许多信息, 包含字符串, 常量, 一些特殊操作等等, 在编译过程中, 这些静态信息就会被编译器收集起来, 储存到一个地方. 这个地方是哪里呢? 现在我们要想的稍微动态一点了, 因为现在我们开始研究虚拟机了嘛, 这个虚拟机可是在你的程序运行的时候一直也在运行的, 所以说这些信息其实也是存储在一个动态的运行时对象身上的. 这个对象就是我们待会要说的<code>PyCodeObject</code>. 另外, 有的时候, 在我们结束Python程序的运行时, 会多出来一个叫做<code>.pyc</code>的文件, 这个文件就是我们的<code>PyCodeObject</code>对象的序列化.</p>
+<p>所以其实说白了, 这个<code>.pyc</code>文件就是<code>PyCodeObject</code>对象在磁盘上的表现形式, 他们所代表的东西都是一样的. 这样做的一个好处就是, 在下一次执行Python程序的时候, 虚拟机可以通过读取这个文件从而直接在内存中build出Code对象.</p>
+<h2 id="Code对象初探"><a href="#Code对象初探" class="headerlink" title="Code对象初探"></a>Code对象初探</h2><p>接下来我们就来看下这个<code>PyCodeObject</code>是个什么样子的:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    <span class="type">int</span> co_argcount;		<span class="comment">/* #arguments, except *args */</span></span><br><span class="line">    <span class="type">int</span> co_nlocals;		<span class="comment">/* #local variables */</span></span><br><span class="line">    <span class="type">int</span> co_stacksize;		<span class="comment">/* #entries needed for evaluation stack */</span></span><br><span class="line">    <span class="type">int</span> co_flags;		<span class="comment">/* CO_..., see below */</span></span><br><span class="line">    PyObject *co_code;		<span class="comment">/* instruction opcodes */</span></span><br><span class="line">    PyObject *co_consts;	<span class="comment">/* list (constants used) */</span></span><br><span class="line">    PyObject *co_names;		<span class="comment">/* list of strings (names used) */</span></span><br><span class="line">    PyObject *co_varnames;	<span class="comment">/* tuple of strings (local variable names) */</span></span><br><span class="line">    PyObject *co_freevars;	<span class="comment">/* tuple of strings (free variable names) */</span></span><br><span class="line">    PyObject *co_cellvars;      <span class="comment">/* tuple of strings (cell variable names) */</span></span><br><span class="line">    <span class="comment">/* The rest doesn&#x27;t count for hash/cmp */</span></span><br><span class="line">    PyObject *co_filename;	<span class="comment">/* string (where it was loaded from) */</span></span><br><span class="line">    PyObject *co_name;		<span class="comment">/* string (name, for reference) */</span></span><br><span class="line">    <span class="type">int</span> co_firstlineno;		<span class="comment">/* first source line number */</span></span><br><span class="line">    PyObject *co_lnotab;	<span class="comment">/* string (encoding addr&lt;-&gt;lineno mapping) */</span></span><br><span class="line">    <span class="type">void</span> *co_zombieframe;     <span class="comment">/* for optimization only (see frameobject.c) */</span></span><br><span class="line">&#125; PyCodeObject;</span><br></pre></td></tr></table></figure>
+
+<p>现在我们也不是很了解这些都是起到什么作用的, 所以就先不细看了. 不过一个Code对象到底代表什么呢? 是一段代码? 还是一个py文件?</p>
+<p>事实上, Python编译器在对Python源文件进行编译的的时候, 是将一个代码块就抽象成一个Code对象的. 那么什么是一个代码块(Code Block), 这个概念在其他的语言里面也有哦, 虽然有的时候意思发生了一点改变, 在这里代码块的意思是一个<strong>命名空间</strong>就是一个代码块了, 简单的说可以认为一个作用域的出现就是一个代码块的出现了, 例如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>():</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = A()</span><br><span class="line">foo()</span><br></pre></td></tr></table></figure>
+
+<p>这一段代码运行的时候就会产生3个代码对象, 一个对应整个Py源文件的, 一个是<code>class A</code>所带来的作用域, 一个是<code>def foo()</code>所带来的.</p>
+<p>命名空间将会是我们之后还会观察的东西, 在Python中, 一个符号所代表的意义是取决于命名空间的, 一个又一个的命名空间所生成的<strong>命名空间链</strong>, 虚拟机在执行的过程中, 会消耗一定量的时间和资源在这个链中检索, 从而寻找符号所代表的意义或者对象是什么.</p>
+<p>其实在Python中, 我们可以通过调用他设计的与C一级PyCodeObject对象的code对象来访问, 直接来试一下吧:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>source = <span class="built_in">open</span>(<span class="string">&quot;FloatRange.py&quot;</span>).read()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>co = <span class="built_in">compile</span>(source, <span class="string">&quot;FloatRange.py&quot;</span>, <span class="string">&quot;exec&quot;</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">type</span>(co)</span><br><span class="line">&lt;<span class="built_in">type</span> <span class="string">&#x27;code&#x27;</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">dir</span>(co)</span><br><span class="line">[<span class="string">&#x27;__class__&#x27;</span>, <span class="string">&#x27;__cmp__&#x27;</span>, <span class="string">&#x27;__delattr__&#x27;</span>, <span class="string">&#x27;__doc__&#x27;</span>, <span class="string">&#x27;__eq__&#x27;</span>, <span class="string">&#x27;__format__&#x27;</span>, <span class="string">&#x27;__ge__&#x27;</span>, <span class="string">&#x27;__getattribute__&#x27;</span>, <span class="string">&#x27;__gt__&#x27;</span>, <span class="string">&#x27;__hash__&#x27;</span>, <span class="string">&#x27;__init__&#x27;</span>, <span class="string">&#x27;__le__&#x27;</span>, <span class="string">&#x27;__lt__&#x27;</span>, <span class="string">&#x27;__ne__&#x27;</span>, <span class="string">&#x27;__new__&#x27;</span>, <span class="string">&#x27;__reduce__&#x27;</span>, <span class="string">&#x27;__reduce_ex__&#x27;</span>, <span class="string">&#x27;__repr__&#x27;</span>, <span class="string">&#x27;__setattr__&#x27;</span>, <span class="string">&#x27;__sizeof__&#x27;</span>, <span class="string">&#x27;__str__&#x27;</span>, <span class="string">&#x27;__subclasshook__&#x27;</span>, <span class="string">&#x27;co_argcount&#x27;</span>, <span class="string">&#x27;co_cellvars&#x27;</span>, <span class="string">&#x27;co_code&#x27;</span>, <span class="string">&#x27;co_consts&#x27;</span>, <span class="string">&#x27;co_filename&#x27;</span>, <span class="string">&#x27;co_firstlineno&#x27;</span>, <span class="string">&#x27;co_flags&#x27;</span>, <span class="string">&#x27;co_freevars&#x27;</span>, <span class="string">&#x27;co_lnotab&#x27;</span>, <span class="string">&#x27;co_name&#x27;</span>, <span class="string">&#x27;co_names&#x27;</span>, <span class="string">&#x27;co_nlocals&#x27;</span>, <span class="string">&#x27;co_stacksize&#x27;</span>, <span class="string">&#x27;co_varnames&#x27;</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span> co.co_name</span><br><span class="line">&lt;module&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span> co.co_filename</span><br><span class="line">FloatRange.py</span><br></pre></td></tr></table></figure>
+
+<h2 id="pyc文件初探"><a href="#pyc文件初探" class="headerlink" title="pyc文件初探"></a>pyc文件初探</h2><p>现在我们就要来研究下pyc文件了, 在此之前我们必须获取一个pyc才行, 那么说干就干随便写一段Python代码:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span> <span class="string">&quot;Hello&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>执行.</p>
+<p>接下来找一找它生成的<code>__pycache__</code>中的 <code>.pyc</code>. 哎? 怎么没有? </p>
+<p>事实上, 我们在日常的编码中也可以发现这个事情, 有点时候就会生成<code>__pycache__</code>有的时候就是没有. 至于原因, 或者说Python什么时候会生成pyc文件, 我简单的查了下知乎, 看了下文档. 大概就是:</p>
+<p>**<code>.pyc</code>的产生, 不是为了提升执行速度而存在的. 他只是为了能够更快的<code>load</code>. 也就是说, 如果这个<code>.py</code>不是为了load而存在的, 他就不需要存在于硬盘上(毕竟存到硬盘上还是要时间的啊). **</p>
+<p>什么样的<code>.py</code>会被load? 自然就是我们通过<code>import</code>进来的模块啥的, 那么我们再做一个实验:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#! /usr/bin/env python3</span></span><br><span class="line"><span class="comment">#######################################################################</span></span><br><span class="line"><span class="comment"># File Name: A.py</span></span><br><span class="line"><span class="comment"># Author:Justin</span></span><br><span class="line"><span class="comment"># mail:justin13wyx@gmail.com</span></span><br><span class="line"><span class="comment"># Created Time: Sun Mar 25 13:13:06 2018</span></span><br><span class="line"><span class="comment"># ==============================================================</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>():</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接着在另一个:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#! /usr/bin/env python3</span></span><br><span class="line"><span class="comment">#######################################################################</span></span><br><span class="line"><span class="comment"># File Name: B.py</span></span><br><span class="line"><span class="comment"># Author:Justin</span></span><br><span class="line"><span class="comment"># mail:justin13wyx@gmail.com</span></span><br><span class="line"><span class="comment"># Created Time: Sun Mar 25 13:13:29 2018</span></span><br><span class="line"><span class="comment"># ==============================================================</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> A <span class="keyword">import</span> A</span><br><span class="line"></span><br><span class="line">instance_a = A()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>此时执行一下B.py就可以出发这个机制了, 你会看到熟悉的<code>__pycache__</code>和<code>A.cpython-36.pyc</code>. 因为A被load了.</p>
+<p>其实在Python运行过程中, 如果遇到<code>import XXX</code>这样的语句, 就会先去设定好的路径里面找<code>XXX.pyc</code>或者<code>XXX.dll</code>. 如果说找到了, 就会先对比时间戳, 如果有必要就会重新生成. 如果没有, 就会先去编译<code>XXX.py</code> 再将编译生成的PyCodeObject中间结果创建成<code>.pyc</code>文件. 最后再加载生成的<code>.pyc</code>就像前面说的, 将从这个<code>.pyc</code>中PyCodeObject在内存中复制出来.</p>
+<p>但是我们也可以手动的生成pyc或者pyo文件, 通过使用Python提供的编译工具:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">➜  /tmp python</span><br><span class="line">Python <span class="number">3.6</span><span class="number">.3</span> (v3<span class="number">.6</span><span class="number">.3</span>:2c5fed86e0, Oct  <span class="number">3</span> <span class="number">2017</span>, <span class="number">00</span>:<span class="number">32</span>:08)</span><br><span class="line">[GCC <span class="number">4.2</span><span class="number">.1</span> (Apple Inc. build <span class="number">5666</span>) (dot <span class="number">3</span>)] on darwin</span><br><span class="line"><span class="type">Type</span> <span class="string">&quot;help&quot;</span>, <span class="string">&quot;copyright&quot;</span>, <span class="string">&quot;credits&quot;</span> <span class="keyword">or</span> <span class="string">&quot;license&quot;</span> <span class="keyword">for</span> more information.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> <span class="built_in">compile</span></span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File <span class="string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">ModuleNotFoundError: No module named <span class="string">&#x27;compile&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> py_compile</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>py_compile.<span class="built_in">compile</span>(<span class="string">&quot;./demo.py&quot;</span>)</span><br><span class="line"><span class="string">&#x27;./__pycache__/demo.cpython-36.pyc&#x27;</span></span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这样就会生成<code>.pyc</code>了.</p>
+<p>接下来就到了解开<code>.pyc</code>神秘面纱的时候了, 再次之前 我们必须要看看PyCodeObject有哪些域, 这样才可以理解pyc的格式.</p>
+<p>还是把之前的Code对象的声明列出来, 这一次我们就写上每一个域的意义:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    <span class="type">int</span> co_argcount;位置参数的个数</span><br><span class="line">    <span class="type">int</span> co_nlocals;局部变量的个数</span><br><span class="line">    <span class="type">int</span> co_stacksize;执行这个CodeBlock所需要的栈大小</span><br><span class="line">    <span class="type">int</span> co_flags;		<span class="comment">/* CO_..., see below */</span></span><br><span class="line">    PyObject *co_code;字节码指令, 存在形式是PyStringObject</span><br><span class="line">    PyObject *co_consts;所有常量</span><br><span class="line">    PyObject *co_names;所有符号</span><br><span class="line">    PyObject *co_varnames;局部变量集合</span><br><span class="line">    PyObject *co_freevars;闭包的实现</span><br><span class="line">    PyObject *co_cellvars;局部变量, 仅仅用于内部嵌套函数</span><br><span class="line">    <span class="comment">/* The rest doesn&#x27;t count for hash/cmp */</span></span><br><span class="line">    PyObject *co_filename;该Code Block对应的.py文件中的起始行</span><br><span class="line">    PyObject *co_name;CodeBlock的名字</span><br><span class="line">    <span class="type">int</span> co_firstlineno;该CodeBlock对应的起始行</span><br><span class="line">    PyObject *co_lnotab;字节码指令和源代码行数的映射</span><br><span class="line">    <span class="type">void</span> *co_zombieframe;</span><br><span class="line">&#125; PyCodeObject;</span><br></pre></td></tr></table></figure>
+
+<p>有意思的是哪个字节码和源码行号的映射. Python不是简单的直接记录, 而是采取增量式的记录方式, 例如: <code>0, 1, 6, 1, 44, 5</code>这个的意思就是:</p>
+<p>字节码偏移0位, 对应源代码第1行, 字节码偏移0+6位, 对应源代码第1+1行, 字节码偏移0+6+44位, 对应源代码1+1+5行.</p>
+<p>OK, 现在就让我们来看下pyc到底是怎么被创建的吧.</p>
+<h3 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h3><p>首先我们来到<code>/Python/import.c</code>这个文件 (还记得吗, import触发pyc写入), 找到这个函数:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">write_compiled_module</span><span class="params">(PyCodeObject *co, <span class="type">char</span> *cpathname, <span class="type">time_t</span> mtime)</span></span><br><span class="line">&#123;</span><br><span class="line">	FILE *fp;</span><br><span class="line"></span><br><span class="line">	fp = open_exclusive(cpathname);</span><br><span class="line">	<span class="keyword">if</span> (fp == <span class="literal">NULL</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (Py_VerboseFlag)</span><br><span class="line">			PySys_WriteStderr(</span><br><span class="line">				<span class="string">&quot;# can&#x27;t create %s\n&quot;</span>, cpathname);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	PyMarshal_WriteLongToFile(pyc_magic, fp, Py_MARSHAL_VERSION);</span><br><span class="line">	<span class="comment">/* First write a 0 for mtime */</span></span><br><span class="line">	PyMarshal_WriteLongToFile(<span class="number">0L</span>, fp, Py_MARSHAL_VERSION);</span><br><span class="line">	PyMarshal_WriteObjectToFile((PyObject *)co, fp, Py_MARSHAL_VERSION);</span><br><span class="line">	<span class="keyword">if</span> (fflush(fp) != <span class="number">0</span> || ferror(fp)) &#123;</span><br><span class="line">		<span class="keyword">if</span> (Py_VerboseFlag)</span><br><span class="line">			PySys_WriteStderr(<span class="string">&quot;# can&#x27;t write %s\n&quot;</span>, cpathname);</span><br><span class="line">		<span class="comment">/* Don&#x27;t keep partial file */</span></span><br><span class="line">		fclose(fp);</span><br><span class="line">		(<span class="type">void</span>) unlink(cpathname);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/* Now write the true mtime */</span></span><br><span class="line">	fseek(fp, <span class="number">4L</span>, <span class="number">0</span>);</span><br><span class="line">	assert(mtime &lt; LONG_MAX);</span><br><span class="line">	PyMarshal_WriteLongToFile((<span class="type">long</span>)mtime, fp, Py_MARSHAL_VERSION);</span><br><span class="line">	fflush(fp);</span><br><span class="line">	fclose(fp);</span><br><span class="line">	<span class="keyword">if</span> (Py_VerboseFlag)</span><br><span class="line">		PySys_WriteStderr(<span class="string">&quot;# wrote %s\n&quot;</span>, cpathname);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先 Python唯一性的打开一个文件, 总之就是各种尝试排他性的打开文件.</p>
+<p>接着就是关键部分了, 这个函数写入了三个关键信息到了pyc文件中, 分别是:</p>
+<ul>
+<li>幻数</li>
+<li>时间信息</li>
+<li>PyCodeObject</li>
+</ul>
+<p>所谓幻数, 其实就是一个约定好的整数值, 不同版本的Python会约定不同的幻数, 这其实就是为了保证兼容性的. </p>
+<p>例如说, 当python尝试加载一个pyc文件中的CodeObject的时候, 会先检查文件中的幻数是否一致. 如果不一致就会拒绝加载. 那么为啥同样都是Python , 会出现不兼容的情况呢? 其实想来也很简单了. Python的版本迭代中, 字节码指令时会发生变化的, 可能旧版本的某些指令到了新版本, 发生了变化或者直接被舍弃了.</p>
+<p>那么Python的幻数都是什么样子的呢, 我们可以在<code>import.c</code>文件中看到</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> MAGIC (62131 | ((long)<span class="string">&#x27;\r&#x27;</span>&lt;&lt;16) | ((long)<span class="string">&#x27;\n&#x27;</span>&lt;&lt;24))</span></span><br></pre></td></tr></table></figure>
+
+<p>并且在上面的注释中, 我们可以看到当前版本Python所有的幻数的值.</p>
+<p>接着这里, 我们会发现一个有意思的细节, 关于时间的写入, 先是写了一个0占了一个位置, 接着写完对象文件之后才去写入的真实时间戳. </p>
+<p>关于Python写入这些数据到文件, 所有涉及到的函数和方法实现都存在在<code>marshal.c</code>这个文件中. 总结一下的话, 其实就是下面的这些:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> w_byte(c, p) <span class="keyword">if</span> (((p)-&gt;fp)) putc((c), (p)-&gt;fp); \</span></span><br><span class="line"><span class="meta">		      <span class="keyword">else</span> <span class="keyword">if</span> ((p)-&gt;ptr != (p)-&gt;end) *(p)-&gt;ptr++ = (c); \</span></span><br><span class="line"><span class="meta">			   <span class="keyword">else</span> w_more(c, p)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">w_long</span><span class="params">(<span class="type">long</span> x, WFILE *p)</span></span><br><span class="line">&#123;</span><br><span class="line">	w_byte((<span class="type">char</span>)( x      &amp; <span class="number">0xff</span>), p);</span><br><span class="line">	w_byte((<span class="type">char</span>)((x&gt;&gt; <span class="number">8</span>) &amp; <span class="number">0xff</span>), p);</span><br><span class="line">	w_byte((<span class="type">char</span>)((x&gt;&gt;<span class="number">16</span>) &amp; <span class="number">0xff</span>), p);</span><br><span class="line">	w_byte((<span class="type">char</span>)((x&gt;&gt;<span class="number">24</span>) &amp; <span class="number">0xff</span>), p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>另外, 对于Object写入, 源代码实在是太长了, 这里就不列出来了, 不过实现的逻辑倒是十分简单的, 就是对应不同的PythonObject类型, 传入不同参数的调用底层<code>w_byte</code>.</p>
+<p>例如说, 当写入一个列表对象的时候, 就是将这个列表的内容写入到pyc中, 当加载的时候, 再根据这些数据进行列表对象的重新创建.</p>
+<p>所以截取其中写入CodeObject的代码, 就是这个样子的:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (PyCode_Check(v)) &#123;</span><br><span class="line">		PyCodeObject *co = (PyCodeObject *)v;</span><br><span class="line">		w_byte(TYPE_CODE, p);</span><br><span class="line">		w_long(co-&gt;co_argcount, p);</span><br><span class="line">		w_long(co-&gt;co_nlocals, p);</span><br><span class="line">		w_long(co-&gt;co_stacksize, p);</span><br><span class="line">		w_long(co-&gt;co_flags, p);</span><br><span class="line">		w_object(co-&gt;co_code, p);</span><br><span class="line">		w_object(co-&gt;co_consts, p);</span><br><span class="line">		w_object(co-&gt;co_names, p);</span><br><span class="line">		w_object(co-&gt;co_varnames, p);</span><br><span class="line">		w_object(co-&gt;co_freevars, p);</span><br><span class="line">		w_object(co-&gt;co_cellvars, p);</span><br><span class="line">		w_object(co-&gt;co_filename, p);</span><br><span class="line">		w_object(co-&gt;co_name, p);</span><br><span class="line">		w_long(co-&gt;co_firstlineno, p);</span><br><span class="line">		w_object(co-&gt;co_lnotab, p);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>嗯 其实就是把他的属性都写了一遍.</p>
+<p>当你在阅读源代码的时候, 你会发现这个文件中还有很多写入函数和方法, 而且他们都有一个共同点, 那就是他们会在写入真正的数据之前写入一个似乎是表示类型的宏进去.</p>
+<p>这是在干什么? 我们知道, <code>w_byte</code>写入的是字节流, 这样做的一个最大的影响就是 所有的数据都是一个样的, Python无法从这些字节流中分析出这些内容是什么对象的. 这就是类型标识的作用, 通过写入这些约定的类型标识, 我们就可以重建对象.</p>
+<p>关于这些类型, 也都定义在文件中了:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_NULL		<span class="string">&#x27;0&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_NONE		<span class="string">&#x27;N&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_FALSE		<span class="string">&#x27;F&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_TRUE		<span class="string">&#x27;T&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_STOPITER		<span class="string">&#x27;S&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_ELLIPSIS   	<span class="string">&#x27;.&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_INT		<span class="string">&#x27;i&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_INT64		<span class="string">&#x27;I&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_FLOAT		<span class="string">&#x27;f&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_BINARY_FLOAT	<span class="string">&#x27;g&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_COMPLEX		<span class="string">&#x27;x&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_BINARY_COMPLEX	<span class="string">&#x27;y&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_LONG		<span class="string">&#x27;l&#x27;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPE_STRING		<span class="string">&#x27;s&#x27;</span></span></span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+
+<p>关于数值写入, 是最简单的了, 只需要写入一下类型, 接着把数值丢进去就行了.</p>
+<p>但是对于字符串,可能就会有一点麻烦了.</p>
+<p>首先我们来关注一下和pyc交互的时候, 有个关键的结构体, 叫做<code>WFILE</code>. 简单的看, 就是一个对文件的简单的封装, 其中有一个域:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PyObject *strings; <span class="comment">/* dict on marshal, list on unmarshal */</span></span><br></pre></td></tr></table></figure>
+
+<p>根据后面的注释, 我们可以看出来, 在写入到pyc的时候, 这是一个字典对象, 当读出的时候, 这是一个列表对象.</p>
+<p>可以在下面的代码看到, 在实际写入之前, 这个域就被创建了:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">PyMarshal_WriteObjectToFile</span><span class="params">(PyObject *x, FILE *fp, <span class="type">int</span> version)</span></span><br><span class="line">&#123;</span><br><span class="line">	WFILE wf;</span><br><span class="line">	wf.fp = fp;</span><br><span class="line">	wf.error = <span class="number">0</span>;</span><br><span class="line">	wf.depth = <span class="number">0</span>;</span><br><span class="line">	wf.strings = (version &gt; <span class="number">0</span>) ? PyDict_New() : <span class="literal">NULL</span>;</span><br><span class="line">	wf.version = version;</span><br><span class="line">	w_object(x, &amp;wf);</span><br><span class="line">	Py_XDECREF(wf.strings);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么接下来我们具体的看下在<code>w_object</code>函数中, 是怎么写入字符串的:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (PyString_Check(v)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (p-&gt;strings &amp;&amp; PyString_CHECK_INTERNED(v)) &#123;</span><br><span class="line">        PyObject *o = PyDict_GetItem(p-&gt;strings, v);</span><br><span class="line">        <span class="keyword">if</span> (o) &#123;</span><br><span class="line">            <span class="type">long</span> w = PyInt_AsLong(o);</span><br><span class="line">            w_byte(TYPE_STRINGREF, p);</span><br><span class="line">            w_long(w, p);</span><br><span class="line">            <span class="keyword">goto</span> <span class="built_in">exit</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">int</span> ok;</span><br><span class="line">            o = PyInt_FromSsize_t(PyDict_Size(p-&gt;strings));</span><br><span class="line">            ok = o &amp;&amp;</span><br><span class="line">                PyDict_SetItem(p-&gt;strings, v, o) &gt;= <span class="number">0</span>;</span><br><span class="line">            Py_XDECREF(o);</span><br><span class="line">            <span class="keyword">if</span> (!ok) &#123;</span><br><span class="line">                p-&gt;depth--;</span><br><span class="line">                p-&gt;error = <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            w_byte(TYPE_INTERNED, p);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        w_byte(TYPE_STRING, p);</span><br><span class="line">    &#125;</span><br><span class="line">    n = PyString_GET_SIZE(v);</span><br><span class="line">    <span class="keyword">if</span> (n &gt; INT_MAX) &#123;</span><br><span class="line">        <span class="comment">/* huge strings are not supported */</span></span><br><span class="line">        p-&gt;depth--;</span><br><span class="line">        p-&gt;error = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    w_long((<span class="type">long</span>)n, p);</span><br><span class="line">    w_string(PyString_AS_STRING(v), (<span class="type">int</span>)n, p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>还记得我们之前在说String的时候, 提到的Intern机制吗, 这里又要用到了. 写入过程主要的分成了三个判断:</p>
+<ul>
+<li>非Intern字符串写入</li>
+<li>Intern字符串的首次写入</li>
+<li>Intern字符串的非首次写入</li>
+</ul>
+<p>我们先从最简单的来看, 那就是写入普通的字符串, 也就是非Intern的字符串.</p>
+<p>就做了两件事情, 写入长度和写入字符串本身. 很简单.</p>
+<p>问题主要是关于Interned的字符串的, 我们发现这个地方分成首次和非首次写入两种情况. 为什么要这么分类呢? 先不直接解答, 我们看一下非首次写入的Intern字符串, 处理起来很简单, 先是写入了类型信息, 接着是一个long值, 也就是从字典中年获得的值.</p>
+<p>另外一种判断情况, 我们发现这里的很多操作都和上面提到的那个<code>strings</code>域有关系, 我们说这个东西在写入的时候是个字典, 那么这个字典到底写了什么内容? 来看一下代码:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> ok;</span><br><span class="line">o = PyInt_FromSsize_t(PyDict_Size(p-&gt;strings));</span><br><span class="line">ok = o &amp;&amp;</span><br><span class="line">    PyDict_SetItem(p-&gt;strings, v, o) &gt;= <span class="number">0</span>;</span><br><span class="line">Py_XDECREF(o);</span><br><span class="line">...</span><br><span class="line">w_byte(TYPE_INTERNED, p);</span><br></pre></td></tr></table></figure>
+
+<p>这里我们把错误处理也都略去了, 关键的代码其实就是这么一行:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PyDict_SetItem(p-&gt;strings, v, o) &gt;= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<p>v是什么? 字符串本体, o是什么? 长度 其实也可以理解成是序号的概念. </p>
+<p>这里主要的疑问就是为啥Python要这么设计, 这个序号有什么意义吗.</p>
+<p>我们假设现在的字典里已经有了一个字符串, 为了解释方便就叫做string吧, 他的值是0, 接着又来了一个新的字符串, 叫做stringstring, 给它编号为1, 这个时候string又来了, 尽管我们之前曾经存了一个, 但是这个时候我又把它作为序号2加了进来, 先不说这里出现了键的冲突, 如果说这个string在之后又出现了多次, 那么这个<code>WFILE</code>的string就会充满很多对于的信息, 我们并不需要存储这么多的无用信息. 也就是说 这就是区分的原因, 当已经有过字典中可以查询到的时候, 不如直接就把这个字符串的某个标识符给拿过来, 最简单的标识符 就是顺序标记的<strong>序号</strong>了. 这就是这么个部分的大体思想.</p>
+<p>就这么结束了? 并不是 , 还记得之前提到的这个神奇的域吗:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PyObject *strings; /* dict on marshal, list on unmarshal */</span><br></pre></td></tr></table></figure>
+
+<p>写入的时候是个字典, 读取的时候是个列表.</p>
+<p>仔细想想, 这个序号 也只有在我们需要加载pyc构建对象的时候才会使用, 而这, 正好列表对象是可以支持索引的而字典是不可以的, 有没有一种巧妙的感觉?</p>
+<h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><p>当我们加载pyc的时候, 我们会进行下面的操作:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">PyObject *</span><br><span class="line"><span class="title function_">PyMarshal_ReadObjectFromFile</span><span class="params">(FILE *fp)</span></span><br><span class="line">&#123;</span><br><span class="line">	RFILE rf;</span><br><span class="line">	PyObject *result;</span><br><span class="line">	rf.fp = fp;</span><br><span class="line">	rf.strings = PyList_New(<span class="number">0</span>);</span><br><span class="line">	rf.depth = <span class="number">0</span>;</span><br><span class="line">	rf.ptr = rf.end = <span class="literal">NULL</span>;</span><br><span class="line">	result = r_object(&amp;rf);</span><br><span class="line">	Py_DECREF(rf.strings);</span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 在这里我们把strings域变成了一个新的列表对象, 注意这个地方的对象已经不是WFILE了, 而是RFILE, 但是其实他们的结构几乎是一样的:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> WFILE RFILE; <span class="comment">/* Same struct with different invariants */</span></span><br></pre></td></tr></table></figure>
+
+<p>多么直接!</p>
+<p>这样就可以通过列表索引来直接获得位置上的字符串值了.</p>
+<p>我们又考虑到了一个问题, 比如之前做测试的那一段简简单单的代码:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>():</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">foo</span>():</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = A()</span><br><span class="line">foo()</span><br></pre></td></tr></table></figure>
+
+<p>这里只会产生3个代码对象. 如果我们把A类的定义写在另外一个文件中, 并且在当前文件中进行引用. 这样就会产生一个pyc文件, 但是问题来了, 3个代码对象怎么load, 写入到pyc文件中的, 只有A一个CodeObject呀?</p>
+<p>这里Python是这样设计的, 它将A代码块产生的codeobject写入到pyc时, 会将其他的两个代码对象作为值丢到<code>co_consts</code>这个域里面. 这样当进行加载的时候, 就会递归的进行load. 问题就这么解决了.</p>
+<p>源文件中是如何进行嵌套的, 那么在pyc文件这种二进制文件中, 其实也是存在这样的嵌套结构的.</p>
+<h2 id="初探字节码和pyc文件解析"><a href="#初探字节码和pyc文件解析" class="headerlink" title="初探字节码和pyc文件解析"></a>初探字节码和pyc文件解析</h2><p>现在就让我们来看看Python定义的字节码是什么样子的吧. 在<code>opcode.h</code>中定义了Python指定的字节码.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Instruction opcodes for compiled code */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> STOP_CODE	0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> POP_TOP		1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ROT_TWO		2</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ROT_THREE	3</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DUP_TOP		4</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ROT_FOUR	5</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NOP		9</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>序号并不是一直连续的, 一共最后排到了143号, 当然一共就定义了104条字节码指令.</p>
+<p>这些字节码, 有些需要参数传递, 有不需要, 这是怎么实现的呢.来看90号:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> HAVE_ARGUMENT	90	<span class="comment">/* Opcodes from here have an argument: */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> STORE_NAME	90	<span class="comment">/* Index in name list */</span></span></span><br><span class="line">...</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> HAS_ARG(op) ((op) &gt;= HAVE_ARGUMENT)</span></span><br></pre></td></tr></table></figure>
+
+<p>Python直接定义了一个宏, 用来判断是否是需要参数的, 只要是90号之后的都是需要参数的.</p>
+<p>接着我们来尝试解析一个Pyc文件. 事实上, Python提供了解析的工具, 叫做<code>dis</code>. 我们可以直接调用试试:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> dis</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>src = <span class="built_in">open</span>(<span class="string">&quot;test.py&quot;</span>).read()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>co = <span class="built_in">compile</span>(src, <span class="string">&quot;test.py&quot;</span>, <span class="string">&quot;exec&quot;</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>dis.dis(co)</span><br><span class="line">  <span class="number">8</span>           <span class="number">0</span> LOAD_CONST               <span class="number">0</span> (-<span class="number">1</span>)</span><br><span class="line">              <span class="number">3</span> LOAD_CONST               <span class="number">1</span> ((<span class="string">&#x27;A&#x27;</span>,))</span><br><span class="line">              <span class="number">6</span> IMPORT_NAME              <span class="number">0</span> (a)</span><br><span class="line">              <span class="number">9</span> IMPORT_FROM              <span class="number">1</span> (A)</span><br><span class="line">             <span class="number">12</span> STORE_NAME               <span class="number">1</span> (A)</span><br><span class="line">             <span class="number">15</span> POP_TOP</span><br><span class="line"></span><br><span class="line"> <span class="number">10</span>          <span class="number">16</span> LOAD_CONST               <span class="number">2</span> (&lt;code <span class="built_in">object</span> foo at <span class="number">0x1060b76b0</span>, file <span class="string">&quot;test.py&quot;</span>, line <span class="number">10</span>&gt;)</span><br><span class="line">             <span class="number">19</span> MAKE_FUNCTION            <span class="number">0</span></span><br><span class="line">             <span class="number">22</span> STORE_NAME               <span class="number">2</span> (foo)</span><br><span class="line"></span><br><span class="line"> <span class="number">14</span>          <span class="number">25</span> LOAD_NAME                <span class="number">1</span> (A)</span><br><span class="line">             <span class="number">28</span> CALL_FUNCTION            <span class="number">0</span></span><br><span class="line">             <span class="number">31</span> STORE_NAME               <span class="number">0</span> (a)</span><br><span class="line"></span><br><span class="line"> <span class="number">15</span>          <span class="number">34</span> LOAD_NAME                <span class="number">2</span> (foo)</span><br><span class="line">             <span class="number">37</span> CALL_FUNCTION            <span class="number">0</span></span><br><span class="line">             <span class="number">40</span> POP_TOP</span><br><span class="line">             <span class="number">41</span> LOAD_CONST               <span class="number">3</span> (<span class="literal">None</span>)</span><br><span class="line">             <span class="number">44</span> RETURN_VALUE</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意, 我这里使用的python2.7版本, 不同版本编译出来的字节码可能不会一样.</strong></p>
+<p>最左列是行数, 由于我之前有注释所以是从第8行开始的, 其实这个是代码的第一行. 对照着代码和这个字节码指令, 你会发现看起来也没有这么困难!</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PYC%E7%9A%84%E8%B5%B7%E6%BA%90"><span class="toc-number">1.</span> <span class="toc-text">PYC的起源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Code%E5%AF%B9%E8%B1%A1%E5%88%9D%E6%8E%A2"><span class="toc-number">2.</span> <span class="toc-text">Code对象初探</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pyc%E6%96%87%E4%BB%B6%E5%88%9D%E6%8E%A2"><span class="toc-number">3.</span> <span class="toc-text">pyc文件初探</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA"><span class="toc-number">3.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD"><span class="toc-number">3.2.</span> <span class="toc-text">加载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E6%8E%A2%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8Cpyc%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">初探字节码和pyc文件解析</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&text=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&is_video=false&description=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python源码阅读-虚拟机之Code对象和pyc探秘&body=Check out this article: https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&title=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&name=Python源码阅读-虚拟机之Code对象和pyc探秘&description=&lt;p&gt;这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.&lt;/p&gt;
+&lt;p&gt;从这一篇开始, 我们就要和Python的虚拟机打交道了, 在开始本篇的正式内容之前, 我们先来讨论下Python程序的执行是怎样进行的吧.&lt;/p&gt;
+&lt;p&gt;众所周知, Python是一个解释型语言. 而我上个学期学习了《编译原理》这门课, 再加上书中的说明, 现在我想说,&lt;strong&gt;Python和Java, C#一样, 都是需要编译的语言.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;大家在写Python的时候都会知道, 在我们执行过一个python程序之后, 会出现一个&lt;code&gt;.pyc&lt;/code&gt;文件. 这有没有想到什么? 没错, 有没有联想到Java的&lt;code&gt;.class&lt;/code&gt;文件? 事实上, 我们Python的执行过程仍然是类似Java的, 先通过解释器(interpreter)进行&lt;strong&gt;编译&lt;/strong&gt;, 生成&lt;code&gt;.pyc&lt;/code&gt;文件, 这个文件中就是源程序的字节码集合, 接着, 通过虚拟机(virtual machine)进行一条条字节码的执行, 从而完成执行过程.&lt;/p&gt;
+&lt;p&gt;只不过, 这里的虚拟机和我们的JVM仍然是有区别的, 那就是Python的虚拟机要更上层一点, 也就是离机器底层更远一点.&lt;/p&gt;
+&lt;p&gt;接下来我们就从Python的Code对象开始看起.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/&t=Python源码阅读-虚拟机之Code对象和pyc探秘"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

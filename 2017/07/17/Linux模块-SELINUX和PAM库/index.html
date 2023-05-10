@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="SELinux (Secure Enhanced Linux)PAM (Pluggable Authentication Modules)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux模块-SELinux和PAM库">
+<meta property="og:url" content="https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="SELinux (Secure Enhanced Linux)PAM (Pluggable Authentication Modules)">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://docs.oracle.com/cd/E26926_01/html/E25912/figures/pam.overview.1.png">
+<meta property="og:image" content="http://linux.vbird.org/linux_basic/0410accountmanager//pam-2.gif">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/selinux1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/selinux2.png">
+<meta property="article:published_time" content="2017-07-17T23:52:05.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:40:01.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta property="article:tag" content="SELinux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://docs.oracle.com/cd/E26926_01/html/E25912/figures/pam.overview.1.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux模块-SELinux和PAM库</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/07/20/Python%E6%93%8D%E4%BD%9CRabbitmq-Redis-MySQL/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&text=Linux模块-SELinux和PAM库"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&is_video=false&description=Linux模块-SELinux和PAM库"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux模块-SELinux和PAM库&body=Check out this article: https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&name=Linux模块-SELinux和PAM库&description=&lt;p&gt;SELinux (Secure Enhanced Linux)&lt;br&gt;PAM (Pluggable Authentication Modules)&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&t=Linux模块-SELinux和PAM库"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PAM"><span class="toc-number">1.</span> <span class="toc-text">PAM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SELinux"><span class="toc-number">2.</span> <span class="toc-text">SELinux</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nsswitch"><span class="toc-number">3.</span> <span class="toc-text">nsswitch</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux模块-SELinux和PAM库
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-07-17T23:52:05.000Z" class="dt-published" itemprop="datePublished">2017-07-17</time>
+        
+        (Updated: <time datetime="2020-11-30T01:40:01.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>, <a class="p-category" href="/tags/SELinux/" rel="tag">SELinux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>SELinux (Secure Enhanced Linux)<br>PAM (Pluggable Authentication Modules)</p>
+<span id="more"></span>
+
+<h2 id="PAM"><a href="#PAM" class="headerlink" title="PAM"></a>PAM</h2><p>PAM是一套程序编程接口, 它提供了一连串的验证机制, 只要将需求交给PAM, 然后PAM就会将验证的结果告知客户端. 就像这样:</p>
+<p><img src="https://docs.oracle.com/cd/E26926_01/html/E25912/figures/pam.overview.1.png" alt="PAM 与其他程序的相关性"></p>
+<p>有没有想到什么?对了这个就有一点像OAuth对不, 我们只要发起申请, 接着等到结果就行了, 当然OAuth是多对多, 和这个也是有区别的.但是他们的思想都是一样的, 使得账号密码或者其他的方式验证具有一致的结果, 使得程序员方便处理验证的问题.</p>
+<p>如图, PAM作为一个独立的API存在, 用来进行验证的部分叫做模块. 各个模块负责的事情也不一样. 比如在进行密码设置的时候, 会有检测密码强度的提示, 这个就来源于PAM的<code>pam_cracklib.so</code>模块 .</p>
+<p>我们就直接以一次密码验证的过程来说说程序调用PAM的工作流程:</p>
+<ol>
+<li>用户开始执行passwd程序, 输入密码</li>
+<li>PAM到&#x2F;etc&#x2F;pam.d&#x2F;寻找与程序同名的配置文件</li>
+<li>根据&#x2F;etc&#x2F;pam.d&#x2F;passwd内的设置, 引用相关的PAM模块逐步进行验证分析</li>
+<li>将验证的结果(成功,失败,其他信息)返回给调用者(passwd)</li>
+<li>passwd根据返回的结果进行下一步的操作.</li>
+</ol>
+<p>对于客户端而言, 编码过程和OAuth几乎是一样的.</p>
+<p>那么看起来最重要的即使&#x2F;etc&#x2F;pam.d&#x2F;下面的配置文件了, 我们来看一看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW pam.d]<span class="comment"># cat passwd</span></span><br><span class="line"><span class="comment">#%PAM-1.0</span></span><br><span class="line">auth       include	system-auth</span><br><span class="line">account    include	system-auth</span><br><span class="line">password   substack	system-auth</span><br><span class="line">-password   optional	pam_gnome_keyring.so use_authtok</span><br><span class="line">password   substack	postlogin</span><br></pre></td></tr></table></figure>
+
+<p>挨 又是自己的文件结构. 我们来逐行看一下</p>
+<blockquote>
+<p>除了第一行表示PAM的版本以外, 只要后面出现的<code>#</code>都会被视作注释. 显然易见的PAM将配置分成三个栏目, 分别是:</p>
+<ul>
+<li>验证类型  ( type )</li>
+<li>控制标准 ( control )</li>
+<li>PAM的模块和模块参数</li>
+</ul>
+</blockquote>
+<p>下面就结合这三个参数来说一下</p>
+<p><strong>第一个字段:: 验证类型</strong></p>
+<p>主要分成四种:</p>
+<p><strong>auth</strong>: 是authentication的缩写, 这种类型主要用来进行用户的身份验证,通常是使用的密码, 所以后面的模块是用来检验用户的身份的</p>
+<p><strong>account</strong>: 大部分是用来进行授权的, 主要用于进行用户是否具有正确的权限</p>
+<p><strong>session</strong>: 这个说来应该大家会很熟悉, 只要你经常使用su或者sudo, 当你使用这个进入sudoer的状态, 或者进入其他用户的状态而没有退出的时候, 你就处在一个session里面, 可以去&#x2F;var&#x2F;log&#x2F;secure里面看一下, 会有很多session open, session close的记录(close就说明你logout或者exit了)</p>
+<p><strong>password</strong>: 就是再说密码, 当进行密码的修改时候就是这个模块发挥威力的时候了</p>
+<p>一般情况下, 这些验证到的调用是有顺序的( 因为正常情况下, 你总是要先验证身份, 再进行授权, 接着才有登录, 而在运行时候改变密码 )</p>
+<p><strong>第二个字段:: 验证的控制标志</strong></p>
+<p>这些标志说白了就是验证的通过标准, 说之前提一下上面例子中的那个<code>include</code>, 这个不是控制标志哦, 只是说这个时候使用后面指定的配置文件的配置. 所以include不是控制标志.</p>
+<p>有这些控制标志:</p>
+<p><strong>required</strong>: 如果验证成功, 就带上一个success的标识, 如果验证失败则带上failure的标识, 但是不论验证结果是成功还是失败都继续验证下去, 这样对数据的日志有利. 所以PAM采用的最多的就是这个标志.</p>
+<p><strong>requisite</strong>: 如果失败立即返回failure的标志, 直接终止后序的验证流程, 如果成功就继续. 和required唯一的不同就在于处理失败</p>
+<p><strong>sufficient</strong>: 只要成功就立即回传success的标识, 同时结束验证过程. 但是验证失败的话,会继续过程. 和requisite正好相反.</p>
+<p><strong>optional</strong>: 不作具体的验证, 而是用来显示信息.</p>
+<p>用一张图来表示的话就是这样:</p>
+<p><img src="http://linux.vbird.org/linux_basic/0410accountmanager//pam-2.gif" alt="PAM 控制旗标所造成的回报流程"></p>
+<p>在新版的CentOS7上, 预装的PAM进行了更新, 多了这个控制位:</p>
+<p><strong>substack</strong> ：运行其他配置文件中的流程，并将整个运行结果作为该行的结果进行输出.该模式和 <code>include</code> 的不同点在于认证结果的作用域：如果某个流程栈 <code>include</code> 了一个带 <code>requisite</code> 的栈，这个 <code>requisite</code> 失败将直接导致认证失败，同时退出栈；而某个流程栈 <code>substack</code> 了同样的栈时，<code>requisite</code> 的失败只会导致这个子栈返回失败信号，母栈并不会在此退出.</p>
+<p>上面的这些叫做简单机制, 而还有一种叫做复杂机制, 也就是使用一个或者多个status&#x3D;action形式的组合表示.可以根据不同的返回状态来决定不同的action. 不过说实话啊, 这个机制真心..运维不需要手动的写吧. 能看就行了.</p>
+<p>行了, 这样我们就可以看懂这些配置文件了. 在系统的启动中我们说过了getmintty这个程序调用login来提供登录, 那么这个login会不会就在我们的配置文件中呢</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW pam.d]<span class="comment"># cat login </span></span><br><span class="line"><span class="comment">#%PAM-1.0</span></span><br><span class="line">auth [user_unknown=ignore success=ok ignore=ignore default=bad] pam_securetty.so</span><br><span class="line">auth       substack     system-auth</span><br><span class="line">auth       include      postlogin</span><br><span class="line">account    required     pam_nologin.so</span><br><span class="line">account    include      system-auth</span><br><span class="line">password   include      system-auth</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>login也调用了多次system-auth. 迫不及待的打开system-auth:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW pam.d]<span class="comment"># cat system-auth</span></span><br><span class="line"><span class="comment">#%PAM-1.0</span></span><br><span class="line"><span class="comment"># This file is auto-generated.</span></span><br><span class="line"><span class="comment"># User changes will be destroyed the next time authconfig is run.</span></span><br><span class="line">auth        required      pam_env.so</span><br><span class="line">auth        sufficient    pam_unix.so nullok try_first_pass</span><br><span class="line">auth        requisite     pam_succeed_if.so uid &gt;= 1000 quiet_success</span><br><span class="line">auth        required      pam_deny.so</span><br><span class="line"></span><br><span class="line">account     required      pam_unix.so</span><br><span class="line">account     sufficient    pam_localuser.so</span><br><span class="line">account     sufficient    pam_succeed_if.so uid &lt; 1000 quiet</span><br><span class="line">account     required      pam_permit.so</span><br><span class="line"></span><br><span class="line">password    requisite     pam_pwquality.so try_first_pass local_users_only retry=3 authtok_type=</span><br><span class="line">password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok</span><br><span class="line">password    required      pam_deny.so</span><br><span class="line"></span><br><span class="line">session     optional      pam_keyinit.so revoke</span><br><span class="line">session     required      pam_limits.so</span><br><span class="line">-session     optional      pam_systemd.so</span><br><span class="line">session     [success=1 default=ignore] pam_succeed_if.so service <span class="keyword">in</span> crond quiet use_uid</span><br><span class="line">session     required      pam_unix.so</span><br></pre></td></tr></table></figure>
+
+<p>这么多库, 他们都放置在<code>/lib64/security/*</code>里面 如果想要具体了解某些库提供的功能是什么, 还是要查看文档啊. 还是就以这个login为一个例子, 说一下相关的库吧.</p>
+<table>
+<thead>
+<tr>
+<th align="center">模块名</th>
+<th align="center">功能和用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">pam_securetty.so</td>
+<td align="center">限制root用户只能从安全的终端登入系统(安全终端就是在&#x2F;etc&#x2F;securetty里说明的)</td>
+</tr>
+<tr>
+<td align="center">pam_nologin.so</td>
+<td align="center">就是那个大名鼎鼎的nologin文件, 只要存在所有的用户(除了root和已经登录的)就不能再登录进系统了.</td>
+</tr>
+<tr>
+<td align="center">pam_selinux.so</td>
+<td align="center">可以将selinux(后面会说)暂时关闭, 由PAM来进行验证, 通过了之后就会恢复启动</td>
+</tr>
+<tr>
+<td align="center">pam_console.log</td>
+<td align="center">可以使用一些特殊的终端接口来登录系统</td>
+</tr>
+<tr>
+<td align="center">pam_loginuid.so</td>
+<td align="center">规范登录进系统的用户的UID(区分系统账号和用户账号)</td>
+</tr>
+<tr>
+<td align="center">pam_env.so</td>
+<td align="center">用来设定环境变量的库</td>
+</tr>
+<tr>
+<td align="center">pam_UNIX.so</td>
+<td align="center">这是一个复杂的模块了, 可以用于验证阶段的认证功能, 也可以在授权阶段进行账号的许可证管理, 并且在session阶段也可以进行日志的记录, 甚至可以进行密码的更新</td>
+</tr>
+<tr>
+<td align="center">pam_cracklib.so</td>
+<td align="center">之前也说过了, 这个是用来进行密码强度的检验的</td>
+</tr>
+<tr>
+<td align="center">pam_limits.so</td>
+<td align="center">ulimits的神奇能力都依靠于这个库</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<p>行了, 那么就可以来把login的过程讲清楚了.</p>
+<blockquote>
+<ol>
+<li>验证阶段(auth)：首先，(a)会先经过pam_securetty.so 判断，如果使用者是root 时，则会参考&#x2F;etc&#x2F;securetty 的设定； 接下来(b)经过pam_env.so 设定额外的环境变数；再(c)透过pam_unix.so 检验密码，若通过则回报login 程式；若不通过则(d)继续往下以pam_succeed_if.so 判断UID 是否大于1000 ，若小于1000则回报失败，否则再往下(e)以pam_deny.so 拒绝连接.</li>
+<li>授权阶段(account)：(a)先以pam_nologin.so 判断&#x2F;etc&#x2F;nologin 是否存在，若存在则不许一般使用者登入； (b)接下来以pam_unix.so 及pam_localuser.so 进行帐号管理，再以(c) pam_succeed_if.so 判断UID 是否小于1000 ，若小于1000 则不记录登录资讯.(d)最后以pam_permit.so 允许该帐号登录.</li>
+<li>密码阶段(password)：(a)先以pam_pwquality.so 设定密码仅能尝试错误3 次；(b)接下来以pam_unix.so 透过sha512, shadow 等功能进行密码检验，若通过则回报login 程序，若不通过则(c)以pam_deny.so 拒绝登录.</li>
+<li>会话阶段(session)：(a)先以pam_selinux.so 暂时关闭SELinux；(b)使用pam_limits.so 设定好使用者能够操作的系统资源； (c)登入成功后开始记录相关信息在登录文件中； (d)以pam_loginuid.so 规范不同的UID 权限；(e)开启pam_selinux.so 的功能.</li>
+</ol>
+</blockquote>
+<p>最后再说一句, 如果 关于这个出现了什么难以解决的不明问题, 最好的解决方法个人认为就是去查看日志, 也即是&#x2F;var&#x2F;log&#x2F;messages和&#x2F;var&#x2F;log&#x2F;secure.(不同发行版不同哦,不确定的话查看rsyslog的配置吧)</p>
+<h2 id="SELinux"><a href="#SELinux" class="headerlink" title="SELinux"></a>SELinux</h2><p>在开头说过了, SELinux是指安全加强的Linux. 他的来头很大,是美国国家安全委员会负责研发的. </p>
+<p>然而在实际的生产环境中却没有**1%**的人选择使用. </p>
+<blockquote>
+<p>美国国家安全委员会对操作系统进行了安全评分, 从最安全的A到最次的D. Windows Server的安全评级为C2, 也就是仅次于最差的D, 那么Linux呢? 和WinServer一样, 都是C2. 有些人总说使用Linux是因为安全, 其实这样是不合理的.只是说由于Linux的学习曲线陡峭导致Linux的用户都花了精力研究过的. 而Windows由于用户中多自然针对的攻击脚本也多.</p>
+</blockquote>
+<p>Selinux工作在内核中, 使用了一种强制访问控制(MAC). 原来的Linux使用的是一种自主访问控制.(DAC)自主访问控制就是说当你的文件想要让别人可以进行写操作的时候, 可以进行chmod, 这种操作Linux系统是不加限制的. 在之前说到进程的时候.说到了一个安全执行上下文的东西, 就是说决定进程能访问那些文件的时候. 我们首先看的是进程的属主, 检查文件的属主和进程的属主是否为同一个, 如果是应用属主权限否则就是其他用户权限.简单的说, 只要用户有权限那么进程就可以访问(有权限)</p>
+<p>这一点就给我们的系统带来了风险, 这样的设计已经违反了操作系统中安全法则中的最根本的: <strong>最小权限法则</strong> 也就是说一个进程在运行的时候, 如果一共仅需要访问10个文件, 那么最多他所获得的权限就是这10个文件的权限.  就好像说现在的沙箱, 即便进程脱离了我们的控制, 他所能够达到的范围就是这个沙箱的范围.这就没问题了, 但是难度就在于, 我们怎么根据不同的进程来创建不同的沙箱呢? 而且有可能由于SUID等原因, 进程也可能会从A沙箱切换到B沙箱, 因此这么一个安全机制是很麻烦复杂的.</p>
+<p>但是并不是所有的程序都需要进行这样的监控.一般像<code>ls</code>这样的程序被劫持的可能性几乎没有, 但是如果是	<code>httpd</code>就不一定了, 作为这种的服务进程应该是被重点关注的对象. 对于SELinux有两种种工作级别.</p>
+<ul>
+<li>strict 严格模式, 每一个进程都收到SELinux的监视</li>
+<li>targeted: 仅有限个进程收到SELinux的控制</li>
+</ul>
+<p>我们 知道进程也就是进行文件的读写操作, 但是进程是可以操作进程的就像是这样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">subject operate object</span><br><span class="line"> -subject: 进程</span><br><span class="line"> -object: 文件, 进程</span><br><span class="line"> -operate: 根据被操作对象的种类, 操作方式自然也是不同的.</span><br><span class="line">   文件: open, <span class="built_in">read</span>, write, close, <span class="built_in">chown</span>, <span class="built_in">chmod</span></span><br></pre></td></tr></table></figure>
+
+<p>我们可以考虑给进程加上一个域(domain)的概念; 接着再给object一个类型的概念.</p>
+<p>现在找一个非空的目录试一试, 使用<code>ls- Z</code> 会看到一列复杂的字串, 这个就是SELinux给文件分配的安全上下文环境, 也可以直接就说是文件的一个标签.同样使用<code>ps Z</code>也可以看到进程的标签.</p>
+<p>被冒号分割实际上一共有5项但只有前三个比较重要, 所以就先忽略最后面的两个吧.</p>
+<p>一个安全标签的基本组成是这样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">user:role:<span class="built_in">type</span>:...(omitted)</span><br><span class="line">这里的user不是在说Linux的系统用户呢, 是指SELinux的user</span><br></pre></td></tr></table></figure>
+
+<p>所以简单的说, SELinux的工作原理就是基于沙箱, 尽管你有权限访问该用户权限下的所有的文件, 但是你们的标签不符, 因此就会直接拒绝访问.对于进程而言, 第三个type就是进程的域.</p>
+<p>那么类型和域是怎么进行匹配的呢?那些类型和域又存在兼容呢?</p>
+<p>这些都依靠SELinux的规则库, SELinux事先有一些生成的规则, 你也可以进行规则的自定义.再说这个之前, 还是先谈一下SELinux的验证过程:</p>
+<blockquote>
+<p>当一个进程要去访问一个文件的时候会先开始进行属主的检查, 如果属主都没有权限访问就直接拒绝了, 接着开始进行规则集的匹配, 尝试进行类型和域的匹配. 匹配时还是会针对每一个操作进行权限检查(可以类比数据库) 如果该操作有匹配, 则可以进行 否则直接拒绝, 并进行日志记录.</p>
+<p>还有一条, 如果没有规则记录, 那么不论什么情况直接拒绝.</p>
+</blockquote>
+<p>那么就直接来看SELinux的配置吧 主要有这些设定: SELinux是否启用 给文件重新就打标签, 设定某些布尔型特性.</p>
+<p><strong>SELinux的启用和关闭</strong></p>
+<p>这个之前就提到过了, 在&#x2F;etc&#x2F;selinux下的config中, 可以配置三种状态:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># SELINUX= can take one of these three values:</span></span><br><span class="line"><span class="comment">#     enforcing - SELinux security policy is enforced.</span></span><br><span class="line"><span class="comment">#     permissive - SELinux prints warnings instead of enforcing.</span></span><br><span class="line"><span class="comment">#     disabled - No SELinux policy is loaded.</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>enforcing; 强制, 每一个受限的进程都必然受限</li>
+<li>permissive: 启用, 每一个受限的进程违规操作都不会被禁, 但会被记录于审计日志</li>
+<li>disabled: 关闭</li>
+</ul>
+<p>只要从disabled到其他任意的状态, 都需要进行重新启动系统(因为要进行重新标签)</p>
+<p>相关的命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ getenforce <span class="comment"># 获取SELinux的状态</span></span><br><span class="line">[root@WWW ~]$ setenforce <span class="comment"># 设置SELinux的状态 0 | 1</span></span><br></pre></td></tr></table></figure>
+
+<p>这样设定的方法只有当时有效, 重启后会重新变成配置文件中的状态. 另外每次进行配置文件的修改都只有重启系统后才会生效.</p>
+<p><strong>安全上下文的修改</strong></p>
+<p>现在就将注意点聚焦到之前的<strong>类型</strong>吧. 一般是要到的情况也只是修改这个文件的类型. 相关的命令就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">chcon</span> <span class="comment"># 就是change context的意思</span></span><br><span class="line"><span class="comment">#       chcon [OPTION]... [-u USER] [-r ROLE] [-l RANGE] [-t TYPE] FILE...</span></span><br></pre></td></tr></table></figure>
+
+<p>那么修改这个类型有什么用处呢 ?	</p>
+<p>我们直接来看一个完整的实例就知道了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW html]<span class="comment"># ps auxZ | grep httpd</span></span><br><span class="line">system_u:system_r:httpd_t:s0    root      2440  0.0  0.1 228204  5104 ?        Ss   03:38   0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">system_u:system_r:httpd_t:s0    apache    2441  0.0  0.0 228340  3744 ?        S    03:38   0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">[root@WWW html]<span class="comment"># ll -Z</span></span><br><span class="line">drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 .</span><br><span class="line">drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 ..</span><br><span class="line">-rw-r--r--. root root unconfined_u:object_r:httpd_sys_content_t:s0 index.html</span><br><span class="line"><span class="comment"># 显然这是个httpd的子类型</span></span><br><span class="line">[root@WWW html]<span class="comment"># ll -Z ~/.bashrc</span></span><br><span class="line">-rw-r--r--. root root system_u:object_r:admin_home_t:s0 /root/.bashrc</span><br><span class="line"><span class="comment"># root用户的家目录内是这样的</span></span><br></pre></td></tr></table></figure>
+
+<p>现在直接访问的样子是这样的:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/selinux1.png" alt="selinux1"></p>
+<p>好, 一切正常, 那么现在将他改成root家目录下的类型:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW html]<span class="comment"># chcon -t admin_home_t index.html</span></span><br></pre></td></tr></table></figure>
+
+<p>刷新页面!</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/selinux2.png" alt="selinux2"></p>
+<p>出现了403! httpd进程没有访问index.html的权限了.</p>
+<blockquote>
+<p>如果你的页面没有发生变化, 就检查一下SELinux的开启状态(getenforce), 并且注意, 你的SELinux的状态必须是1才行.</p>
+</blockquote>
+<p>把他再改回去:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW html]<span class="comment"># chcon -t httpd_sys_content_t index.html </span></span><br></pre></td></tr></table></figure>
+
+<p>就可以访问了.</p>
+<p>如果需要递归的进行打标, 就加上<code>-R</code>参数就行了. </p>
+<p>如果要还原文件的默认标签就使用: <code>restorecon</code> SELinux为一些文件都存了默认的标签值, 因此可以很快的进行回复. 同样, 递归的回复的话 就使用<code>-R/-r</code>就行了</p>
+<p>接着是布尔型规则的设定, 他的设定和获取就是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ getsebool [-a] [boolean]</span><br><span class="line"><span class="comment"># e.g:</span></span><br><span class="line">[root@WWW html]<span class="comment"># getsebool tftp_home_dir</span></span><br><span class="line">tftp_home_dir --&gt; off</span><br><span class="line"><span class="comment"># 要查看所有的boolean值就直接加上-a就行了</span></span><br><span class="line">setsebool [ -PNV ] boolean value | bool1=val1 bool2=val2 ... <span class="comment"># 支持多布尔值同时设定</span></span><br><span class="line"><span class="comment"># P 写入磁盘</span></span><br><span class="line"><span class="comment"># N 仅写入磁盘, 不让内核重载(话说我觉得这个选项没啥用啊..)</span></span><br><span class="line">[root@WWW html]<span class="comment"># setsebool tftp_home_dir on # 也可使用 1 或者 true</span></span><br><span class="line">[root@WWW html]<span class="comment"># getsebool tftp_home_dir</span></span><br><span class="line">tftp_home_dir --&gt; on</span><br><span class="line"><span class="comment"># 如果要永久加上就加上 -P 选项就行了 会比较卡,因为会在策略库中遍历,找到之后还要转成二进制再写入进去</span></span><br></pre></td></tr></table></figure>
+
+<p>SELinux的日志文件都在<code>/var/log/audit</code>里面.</p>
+<p>由于现在使用SELuinx的场景越来越小了, 所以我也就不在展开了吧, 更多的东西就这里吧:</p>
+<p><a target="_blank" rel="noopener" href="http://linux.vbird.org/linux_basic/0440processcontrol.php#selinux">鸟哥!!</a></p>
+<p><strong>更新 17.10.05:</strong></p>
+<h2 id="nsswitch"><a href="#nsswitch" class="headerlink" title="nsswitch"></a>nsswitch</h2><p>除了上面说过的框架级别的认证服务PAM, 现在再介绍一个框架级别的服务, 即<strong>nsswitch</strong> 即网络服务交换. 这个服务主要负责进行名称解析 ( name:id )</p>
+<p> 和PAM一样, 或者说和所有框架级别的服务一样, 当我们需要进行解析的时候, 我们知道有很多种介质, 例如文件解析, MySQL数据库解析, LDAP解析, DNS解析等等. 如果想要支持这些解析, 那么就需要程序员在自己的程序中内置这些解析介质的驱动. 这显然并不好, 所以为了提供一个大家都能够进行解析的平台, 就这样出现了这样的一个通用层, 中间层. 也就是这个通用框架 – nsswitch. 但是我不一定会使用到所有的解析介质. 因此, nsswitch提供一个配置文件来指明解析顺序, 方式. 这样就会<strong>通用且灵活</strong>. 这种概念在整个计算机科学中各个地方都有体现.</p>
+<p>关于nsswitch服务的模块在<code>/usr/lib64/</code>下可以找到, 我们来看一眼:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW lib64]<span class="comment"># ls libnss*</span></span><br><span class="line">libnss3.so             libnss_db-2.17.so  libnss_dns-2.17.so    libnss_files.so.2       libnss_mymachines.so.2  libnss_nis.so     libnss_winbind.so</span><br><span class="line">libnssckbi.so          libnssdbm3.chk     libnss_dns.so         libnss_hesiod-2.17.so   libnss_nis-2.17.so      libnss_nis.so.2   libnss_winbind.so.2</span><br><span class="line">libnss_compat-2.17.so  libnssdbm3.so      libnss_dns.so.2       libnss_hesiod.so        libnss_nisplus-2.17.so  libnsspem.so      libnss_wins.so</span><br><span class="line">libnss_compat.so       libnss_db.so       libnss_files-2.17.so  libnss_hesiod.so.2      libnss_nisplus.so       libnsssysinit.so  libnss_wins.so.2</span><br><span class="line">libnss_compat.so.2     libnss_db.so.2     libnss_files.so       libnss_myhostname.so.2  libnss_nisplus.so.2     libnssutil3.so</span><br></pre></td></tr></table></figure>
+
+<p>其中有dns, nis, nisplus, wins, winbind等等等..</p>
+<p>直接切进nsswitch的配置文件吧, 一个<strong>条目</strong>占一行: 意思也很好懂, 就是什么的解析使用什么方式, 按照优先级(从左到右)来尝试.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hosts:      files dns myhostname</span><br><span class="line">ethers:     files</span><br><span class="line">netmasks:   files</span><br><span class="line">networks:   files</span><br><span class="line">protocols:  files</span><br><span class="line">rpc:        files</span><br></pre></td></tr></table></figure>
+
+<p>这里我们可以把这个和数据库做类比, 把左边的部分当做数据库名字, 右边的当做键. 所以, 尽管键都是files, 但他们对应的文件是不一样的, 因为数据库不同.</p>
+<p>其中有个命令可以来获得对应数据库的某个特定键的值, 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># getent passwd root</span></span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">[root@WWW ~]<span class="comment"># getent services http</span></span><br><span class="line">http                  80/tcp www www-http</span><br><span class="line">[root@WWW ~]<span class="comment"># getent services ftp</span></span><br><span class="line">ftp                   21/tcp</span><br></pre></td></tr></table></figure>
+
+<p>如果不加上特定的键, 就会将整个数据库的值输出. getent的意味: get entry</p>
+<p>当然, 找不到是有可能的. 那么找不到怎么办呢, 当然是返回了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">每种存储中查找的几种状态: STATUS =&gt; success | notfound | unavail | tryagain</span><br><span class="line">对应于每种状态所采取的行为: ACTION =&gt; <span class="built_in">return</span> | <span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
+
+<p>这样的一种应用是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hosts file nis [NOTFOUND=<span class="built_in">return</span>] dns</span><br></pre></td></tr></table></figure>
+
+<p>意思是说, 只要nis解析服务可用, 如果没有找到就不去找dns服务了, 而nis挂掉了, 那么就直接去找dns(因为此时nis的返回应该是unavail)</p>
+<p>关于nsswitch就是这样吧, 其实没什么</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PAM"><span class="toc-number">1.</span> <span class="toc-text">PAM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SELinux"><span class="toc-number">2.</span> <span class="toc-text">SELinux</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nsswitch"><span class="toc-number">3.</span> <span class="toc-text">nsswitch</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&text=Linux模块-SELinux和PAM库"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&is_video=false&description=Linux模块-SELinux和PAM库"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux模块-SELinux和PAM库&body=Check out this article: https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&title=Linux模块-SELinux和PAM库"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&name=Linux模块-SELinux和PAM库&description=&lt;p&gt;SELinux (Secure Enhanced Linux)&lt;br&gt;PAM (Pluggable Authentication Modules)&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/17/Linux%E6%A8%A1%E5%9D%97-SELINUX%E5%92%8CPAM%E5%BA%93/&t=Linux模块-SELinux和PAM库"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

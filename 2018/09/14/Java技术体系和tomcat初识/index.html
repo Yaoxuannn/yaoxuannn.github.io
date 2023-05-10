@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="拖了一个学期结果到最后还是要来学习一下的东西…现在看来Java还是绕不过去的一个技术点啊.   Write Once, Run Anywhere">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java技术体系和tomcat初识">
+<meta property="og:url" content="https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="拖了一个学期结果到最后还是要来学习一下的东西…现在看来Java还是绕不过去的一个技术点啊.   Write Once, Run Anywhere">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/jsp_processing.png">
+<meta property="article:published_time" content="2018-09-14T15:13:53.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:36:27.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Tomcat">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/jsp_processing.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Java技术体系和tomcat初识</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/09/10/Varnish%E7%9A%84%E7%8A%B6%E6%80%81%E5%BC%95%E6%93%8E%E5%92%8CVCL/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&text=Java技术体系和tomcat初识"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&is_video=false&description=Java技术体系和tomcat初识"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java技术体系和tomcat初识&body=Check out this article: https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&name=Java技术体系和tomcat初识&description=&lt;p&gt;拖了一个学期结果到最后还是要来学习一下的东西…现在看来Java还是绕不过去的一个技术点啊. &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Write Once, Run Anywhere&lt;/p&gt;
+&lt;/blockquote&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&t=Java技术体系和tomcat初识"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E7%9C%8B%E7%9C%8BJava"><span class="toc-number">1.</span> <span class="toc-text">来看看Java</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">Java体系结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JSP%E7%9A%84%E8%BF%90%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">2.1.</span> <span class="toc-text">JSP的运行过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat%E5%88%9D%E8%AF%86"><span class="toc-number">3.</span> <span class="toc-text">Tomcat初识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">Tomcat安装和使用</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Java技术体系和tomcat初识
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-09-14T15:13:53.000Z" class="dt-published" itemprop="datePublished">2018-09-14</time>
+        
+        (Updated: <time datetime="2020-11-30T01:36:27.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/Tomcat/" rel="tag">Tomcat</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>拖了一个学期结果到最后还是要来学习一下的东西…现在看来Java还是绕不过去的一个技术点啊. </p>
+<blockquote>
+<p>Write Once, Run Anywhere</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="来看看Java"><a href="#来看看Java" class="headerlink" title="来看看Java"></a>来看看Java</h2><p>如果说我们把编程语言分成两类: 系统级别和应用级别开发的话, 归属到系统级别的有C, C++, go, erlang等等. 而另外应用级别开发的, 我们可以把C#, Java, Python, Ruby, Perl这些放进去. 对于Ruby, Perl这些, 他们有自己的解释器, 而对于Java和python而言, 这一层面上有一点细微的不同, 他们的解释器或者说虚拟机, 更加底层. 这些虚拟机为这些语言提供了库级别的一些虚拟化.  </p>
+<p>说道Java, 想到的第一点关键字可能就是动态网站. 这里我们所说的动态网站有两种, 一种是客户端动态, 也就是下载源码到本地, 接着借由用户所安装的编译器或者是执行组件来在本地进行加载, 另外一种就是我们的服务端动态网站. 这一种涉及到了一个协议叫做<code>CGI</code> 也就是通用网关接口. 并且同时, 他还引入了webapp server的概念, 例如, 能够运行jsp的容器有: tomcat, jboss, jetty 运行PHP的php-fpm等等.</p>
+<p>Java也就是一种一个应用型语言, 最初是由SUN公司开发的. 并且Java语言诞生的缘由其实是为了开发机顶盒. 在上世纪90年代, web服务器技术正在兴起, 而HTML这种静态内容就显得不是这么满意, 于是这个环境下, 就希望能够获得一些动态的展示效果, 而Java一次编译到处运行的特点就显得十分合适, 只要安装了Java虚拟机, 就可以运行Java程序. </p>
+<p>但是, 这种情况下, 如果有人开发了一些恶意的程序试图劫持客户机的话, 是十分容易就会成功的, 因此这种Applet技术就很快的没有了.  由客户端运行不行, 但是由服务端就行了啊. 所以后来这种技术又重新被使用了起来.</p>
+<p>在1995年, 发布了Java的第一个版本Java1.0. 一年后发布了第一个版本的Java开发包, 即JDK. 并且包含了一个JVM, 但是这里的JVM性能低下启动速度缓慢, 此时包中包含了除了上面的JVM, 还包括Applet和AWT.</p>
+<p>Sun把Java分成了三个方向, 这个时候Java是第二版所以就是Java 2. 而这三个就是我们熟知的: <code>J2EE</code>, <code>J2SE</code>, <code>J2ME</code>. 这其中最失败就是最后一个, 也就是移动端. 事实上, 我们现在使用的Java虚拟机, 并不是上面出现的那个JVM, 我们把上面的那个虚拟机命名为<code>Sun Classic VM</code>. 我们现在使用的虚拟机主要是由HotSpot所研发的.</p>
+<p>到了2006年, Sun开源了Java技术, 遵循GPL规范, 并且建立了OpenJDK组织来管理这些代码. 到JDK1.7两者基本没有实质性的变化. 我们在Linux所下载的JDK版本其实就是OpenJDK版本的. </p>
+<h2 id="Java体系结构"><a href="#Java体系结构" class="headerlink" title="Java体系结构"></a>Java体系结构</h2><p>对于我们今天要说的Java体系结构, 主要有这些:</p>
+<ul>
+<li>Java编程语言</li>
+<li>Java Class文件格式</li>
+<li>Java API</li>
+<li>Java VM</li>
+</ul>
+<p>对于Java代码而言, 我们为了能够运行, 需要一个编译器的帮助, 将我们所编写的源代码编译成字节码文件, 也叫做Java类文件, 这些我们自己编写源代码生成的类文件可能也会需要引入java一些内置的类, 这些类也同样都是class文件. 接着我们的jvm同样引入这些字节码文件(其实就是api), 一起放在执行引擎里运行, 最后还是需要调用C库和系统调用来实现各项功能.</p>
+<p>考虑到不同操作系统的运行库不一样, 并且还有很多系统调用层面上的差异, 我们的Java API也是需要调用不同的本地方法的. 这样看来, Java的API就更像是一个<strong>翻译官</strong>. </p>
+<p>接下来我们就来看一下JVM的一些核心组成部分, 我们知道作为一个加载运行类文件肯定是要有一个<code>boot loader</code>和执行引擎的. 如果我们运行多个Java程序, 他们所使用的Java虚拟机都是一样的, 这些程序运行所需要的内存空间都是由JVM申请和管理的, 这也就意味着, 我们在写Java程序的时候是不需要考虑到内存空间的组织的, 但是对于Java程序而言, 由于这些内存空间的操作是由JVM来进行的, 也就是说程序员不要进行内存的管理. JVM有自己的垃圾回收机制, 主要面向堆空间, 因为我们的对象创建都在堆内存中.</p>
+<p>那么这个虚拟机运行时主要分成两种模式: 守护线程和非守护线程两种, 所有用户创建的都是作为非守护线程存在的, 只有那些类似垃圾回收机制的服务才是守护线程. 刚刚我们说了JVM的堆内存, 除了堆区域, JVM运行时区域还有别的:</p>
+<ul>
+<li>方法区: 线程共享, 用于存储被加载的类信息. 常量, 静态变量等等</li>
+<li>Java栈: 这些就是线程私有的, 存放线程自己的局部变量等信息</li>
+<li>PC寄存器: 线程独占的内存空间</li>
+<li>本地方法栈</li>
+</ul>
+<p>不过扯了这么多, 其实最后是想说的是对于Java服务端应用的实现, 是通过将html标签硬编码到应用程序中, 也就是我们熟悉的<code>JSP</code>. 而服务端想要实现这种, 就一定需要Web Container的帮助.  </p>
+<h3 id="JSP的运行过程"><a href="#JSP的运行过程" class="headerlink" title="JSP的运行过程"></a>JSP的运行过程</h3><p>首先来看这么一个过程图吧:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/jsp_processing.png" alt="jsp_processing"></p>
+<p>首先客户发出请求, 请求达到我们的包含JSP容器的Web服务器的时候, 会去从磁盘上取得请求的源文件, 接着通过翻译将我们的jsp代码转换成为java源文件, 最后通过编译会得到字节码文件, 继而将字节码文件回到JSP容器中执行得到结果返回给客户端.</p>
+<p>现在说来, 对于JSP容器的开源实现主要有三个, <code>Tomcat</code>, <code>Resin</code>和<code>jetty</code>. 其中就tomcat7.0,Jetty7和Resin3.1的比较, 相对来说Resin是性能最高的一个, 还支持负载均衡. 不过仅仅可用来做开源和学习目的. 而Jetty是相对来说性能最不好的那一个. </p>
+<p>接下来我们就来进入今天的主题吧, 来了解下Tomcat.</p>
+<h2 id="Tomcat初识"><a href="#Tomcat初识" class="headerlink" title="Tomcat初识"></a>Tomcat初识</h2><p>Tomcat包含了三个组件, 分别是迎来提供servlet容器的<code>Catalina</code>, 用来做HTTP协议的连接器的<code>Coyote</code>, 以及一个JSP引擎<code>Jasper</code>. 而Tomcat就是使用Java语言进行的开发. </p>
+<p>接下来我们来看一下Tomcat的组成部分, 首先最外层的肯定就是Server组件, 接着内层是一个服务提供组件, 再向内层就是engine组件, 而每一个engine又可以包含多个Host组件, 每一个Host中就是各种上下文环境的配置了, 而之前说的连接器则可以连接Server, Service和Engine, 接受解析用户的请求, 接着映射到内部组件中.</p>
+<p>由于Tomcat是使用Java语言进行开发的, 所以面向对象的思想会体现在Tomcat中. 例如, 我们上面说的Server就相当于是一个Tomcat实例, 每启动一个Tomcat就相当于是一个新的实例被生成.</p>
+<p>Tomcat最核心的组件就是engine组件, 他是用来执行jsp或者servlet代码的, 但是由于engine无法去接受和处理用户的请求, 所以就需要一个连接器来实现, 但是这个连接器接受并且解析到了用户的请求但是确保没有办法把这个传达给Engine, 所以这个时候就有需要一个辅助的组件, 也就是Service. Service负责将连接器处理的结果传达给engine组件. 一个engine组件可以拥有多个连接器, 但是一个连接器只能跟一个engine建立关系. 正因为此, 每一个Service里面只能有一个engine组件. 最后还差一个Host组件, 这个东西可以近乎用httpd中的虚拟主机来理解. 至于Context就是类似httpd中的alias.</p>
+<p>以上就是各个组件之间的关系. 每一个组件都使用<strong>类</strong>来实现.</p>
+<p>使用大概XML格式的配置文件来表示的话就是:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">service</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">connector</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">connector</span> /&gt;</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="tag">&lt;<span class="name">engine</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">host</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">context</span> /&gt;</span></span><br><span class="line">                ...</span><br><span class="line">            <span class="tag">&lt;/<span class="name">host</span>&gt;</span></span><br><span class="line">            ...</span><br><span class="line">        <span class="tag">&lt;/<span class="name">engine</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">service</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这也就是配置文件的组织结构框架.</p>
+<p>由于Tomcat是存在web server的, 所以支持standalone模式运行, 只不过说到底, tomcat需要维护内部的JSP代码运行, 如果还要再消耗资源来控制web服务器的并发的话, 是一件非常累的事情. ( 不过,tomcat的http server是使用Java内置的线程模型开发的, 所以并发效果还是可以的. 不过我们还是要专人专事的原则. ) 所以一般情况下, 我们使用反向代理的方式来运行. 例如在前端加上一个Nginx或者httpd. 更进阶的, 我们进行独立网络配置, 分开主机来进行, 只不过在这种时候, 我们就需要考虑之前说的关于session保持的问题了.</p>
+<p>事实上, 上面说的三种运行模式, 就是tomcat支持的三种运行模式:</p>
+<ul>
+<li>standalone: 通过内置的web server来处理用户请求</li>
+<li>proxy: 由专门的web server服务客户端的http请求<ul>
+<li>in-process: 同一主机</li>
+<li>network: 不同主机</li>
+</ul>
+</li>
+</ul>
+<h2 id="Tomcat安装和使用"><a href="#Tomcat安装和使用" class="headerlink" title="Tomcat安装和使用"></a>Tomcat安装和使用</h2><p>如果直接使用yum进行安装的话, 则使用的tomcat版本是7.0. 据说这个版本是目前比较稳定的一个. 如果嫌这个版本过于旧, 则可以到官方站点去下载二进制包直接解压使用. </p>
+<p>需要说明的是, 由于tomcat是使用Java开发的, 因此我们还需要下载Java的开发工具包, 不过这都是很简单的了, 我们直接跳过吧. 但是给个小提醒, Linux下当然是可以进行多版本的Java共存的:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# cd /usr/java/</span><br><span class="line">[root@VM-node0 java]# ls -lh</span><br><span class="line">total 0</span><br><span class="line">lrwxrwxrwx 1 root root  16 Sep 15 16:18 default -&gt; /usr/java/latest</span><br><span class="line">drwxr-xr-x 8 root root 258 Sep 15 16:18 jdk1.8.0_181-amd64</span><br><span class="line">lrwxrwxrwx 1 root root  28 Sep 15 16:18 latest -&gt; /usr/java/jdk1.8.0_181-amd64</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里有两个链接,  可以看到, 默认使用的就是最新版本的java, 而这个最新的指向就是我们安装的1.8版本. 另外, 和Windows一样, 你也需要配置环境变量, 我们在<code>/etc/profile.d</code>下面创建一个新的脚本文件:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/usr/java/default</span><br><span class="line">export PATH=$JAVA_HOME/bin:$PATH</span><br></pre></td></tr></table></figure>
+
+<p>这里我们使用的是默认版本的Java, 你也可以指向最新的或者是指定版本的. </p>
+<p>使用-version选项, 可以查看当前的Java版本和对应使用的虚拟机的版本. 例如我的:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# java -version</span><br><span class="line">java version &quot;1.8.0_181&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_181-b13)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.181-b13, mixed mode)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到使用的是混合模式的HotSpot虚拟机. </p>
+<p>除此之外, 我们还需要配置一下Catalina的环境变量, 也就是<code>CATALINA_HOME</code>. 配置结束之后, 我们重读一下刚刚创建的两个新shell脚本, 之后就可以使用tomcat的一些内置脚本了, 例如:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# version.sh </span><br><span class="line">Using CATALINA_BASE:   /usr/local/tomcat</span><br><span class="line">Using CATALINA_HOME:   /usr/local/tomcat</span><br><span class="line">Using CATALINA_TMPDIR: /usr/local/tomcat/temp</span><br><span class="line">Using JRE_HOME:        /usr/java/default</span><br><span class="line">Using CLASSPATH:       /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar</span><br><span class="line">Server version: Apache Tomcat/8.5.34</span><br><span class="line">Server built:   Sep 4 2018 22:28:22 UTC</span><br><span class="line">Server number:  8.5.34.0</span><br><span class="line">OS Name:        Linux</span><br><span class="line">OS Version:     3.10.0-862.11.6.el7.x86_64</span><br><span class="line">Architecture:   amd64</span><br><span class="line">JVM Version:    1.8.0_181-b13</span><br><span class="line">JVM Vendor:     Oracle Corporation</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这会显示当前tomcat的一些环境变量, 系统信息和使用的Java虚拟机版本.</p>
+<p>除此之外, 我们可以使用一个统一的脚本通过传递参数来实现不同的功能, 这个脚本就是<code>catalina.sh</code>.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 tomcat]# ls bin/</span><br><span class="line">bootstrap.jar  catalina-tasks.xml            configtest.bat  digest.bat        setclasspath.sh  startup.bat      tomcat-native.tar.gz  version.bat</span><br><span class="line">catalina.bat   commons-daemon.jar            configtest.sh   digest.sh         shutdown.bat     startup.sh       tool-wrapper.bat      version.sh</span><br><span class="line">catalina.sh    commons-daemon-native.tar.gz  daemon.sh       setclasspath.bat  shutdown.sh      tomcat-juli.jar  tool-wrapper.sh</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>也可以通过传递一个help参数来看看支持哪些:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 tomcat]# catalina.sh --help</span><br><span class="line">Using CATALINA_BASE:   /usr/local/tomcat</span><br><span class="line">Using CATALINA_HOME:   /usr/local/tomcat</span><br><span class="line">Using CATALINA_TMPDIR: /usr/local/tomcat/temp</span><br><span class="line">Using JRE_HOME:        /usr/java/default</span><br><span class="line">Using CLASSPATH:       /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar</span><br><span class="line">Usage: catalina.sh ( commands ... )</span><br><span class="line">commands:</span><br><span class="line">  debug             Start Catalina in a debugger</span><br><span class="line">  debug -security   Debug Catalina with a security manager</span><br><span class="line">  jpda start        Start Catalina under JPDA debugger</span><br><span class="line">  run               Start Catalina in the current window</span><br><span class="line">  run -security     Start in the current window with security manager</span><br><span class="line">  start             Start Catalina in a separate window</span><br><span class="line">  start -security   Start in a separate window with security manager</span><br><span class="line">  stop              Stop Catalina, waiting up to 5 seconds for the process to end</span><br><span class="line">  stop n            Stop Catalina, waiting up to n seconds for the process to end</span><br><span class="line">  stop -force       Stop Catalina, wait up to 5 seconds and then use kill -KILL if still running</span><br><span class="line">  stop n -force     Stop Catalina, wait up to n seconds and then use kill -KILL if still running</span><br><span class="line">  configtest        Run a basic syntax check on server.xml - check exit code for result</span><br><span class="line">  version           What version of tomcat are you running?</span><br><span class="line">Note: Waiting for the process to end and use of the -force option require that $CATALINA_PID is defined</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>之后我们来看看Tomcat的目录结构吧, 大体上都是见名知意的:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 tomcat]# tree . -L 1</span><br><span class="line">.</span><br><span class="line">├── bin</span><br><span class="line">├── BUILDING.txt</span><br><span class="line">├── conf</span><br><span class="line">├── CONTRIBUTING.md</span><br><span class="line">├── lib</span><br><span class="line">├── LICENSE</span><br><span class="line">├── logs</span><br><span class="line">├── NOTICE</span><br><span class="line">├── README.md</span><br><span class="line">├── RELEASE-NOTES</span><br><span class="line">├── RUNNING.txt</span><br><span class="line">├── temp</span><br><span class="line">├── webapps</span><br><span class="line">└── work</span><br><span class="line"></span><br><span class="line">7 directories, 7 files</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>其中, bin就是我们使用的脚本所在和启动时候需要使用到的类, lib就是他的类库,. 而conf则是配置文件存放目录, logs就是日志文件, webapps就是应用程序的默认部署目录, work则是将原始代码转化之后的存放目录, 每一次的源代码的变化就会导致这个目录内容的变化, 最后的temp就是临时文件目录.</p>
+<p>直接通过<code>catalina.sh start</code>就可以启动tomcat, 默认的监听端口是8080, 所以你要保证别出现冲突了.</p>
+<p>现在我们稍微来说一下关于Tomcat的配置文件, 至于更详细的配置我们下次再来说.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 tomcat]# tree conf/</span><br><span class="line">conf/</span><br><span class="line">├── Catalina</span><br><span class="line">│   └── localhost</span><br><span class="line">├── catalina.policy # 这个就是再执行安全管理的情况下加载的安全运行策略</span><br><span class="line">├── catalina.properties # 用于设定Java相关的参数和对于JVM的调优相关</span><br><span class="line">├── context.xml # 每一个webapp的默认配置, 如果在app自己的`WEB-INF`目录下没有自己的配置, 就会使用这个</span><br><span class="line">├── jaspic-providers.xml</span><br><span class="line">├── jaspic-providers.xsd</span><br><span class="line">├── logging.properties # 配置日志记录等</span><br><span class="line">├── server.xml # 主配置文件</span><br><span class="line">├── tomcat-users.xml # 对于用户认证的账号和密码配置</span><br><span class="line">├── tomcat-users.xsd</span><br><span class="line">└── web.xml # 为每个WebApp提供部署配置</span><br><span class="line"></span><br><span class="line">2 directories, 10 files</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E7%9C%8B%E7%9C%8BJava"><span class="toc-number">1.</span> <span class="toc-text">来看看Java</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">Java体系结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JSP%E7%9A%84%E8%BF%90%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">2.1.</span> <span class="toc-text">JSP的运行过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat%E5%88%9D%E8%AF%86"><span class="toc-number">3.</span> <span class="toc-text">Tomcat初识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">Tomcat安装和使用</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&text=Java技术体系和tomcat初识"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&is_video=false&description=Java技术体系和tomcat初识"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java技术体系和tomcat初识&body=Check out this article: https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&title=Java技术体系和tomcat初识"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&name=Java技术体系和tomcat初识&description=&lt;p&gt;拖了一个学期结果到最后还是要来学习一下的东西…现在看来Java还是绕不过去的一个技术点啊. &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Write Once, Run Anywhere&lt;/p&gt;
+&lt;/blockquote&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/&t=Java技术体系和tomcat初识"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

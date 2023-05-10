@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Python内置了很多模块,这些模块往往很有用.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python常用内置模块">
+<meta property="og:url" content="https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Python内置了很多模块,这些模块往往很有用.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-04-04T07:13:00.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python常用内置模块</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&text=Python常用内置模块"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&is_video=false&description=Python常用内置模块"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python常用内置模块&body=Check out this article: https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&name=Python常用内置模块&description=&lt;p&gt;Python内置了很多模块,这些模块往往很有用.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&t=Python常用内置模块"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4%E5%92%8C%E6%97%A5%E6%9C%9F%E2%80%93datetime"><span class="toc-number">1.</span> <span class="toc-text">处理时间和日期–datetime</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E7%9A%84%E5%8A%A0%E5%87%8F"><span class="toc-number">1.1.</span> <span class="toc-text">时间的加减</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#collections"><span class="toc-number">2.</span> <span class="toc-text">collections</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#base64"><span class="toc-number">3.</span> <span class="toc-text">base64</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hashlib"><span class="toc-number">4.</span> <span class="toc-text">hashlib</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#itertools"><span class="toc-number">5.</span> <span class="toc-text">itertools</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#count-%E8%BF%9B%E8%A1%8C%E8%87%AA%E5%A2%9E1%E7%9A%84%E8%BF%AD%E4%BB%A3"><span class="toc-number">5.1.</span> <span class="toc-text">count: 进行自增1的迭代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cycle-%E8%BF%9B%E8%A1%8C%E5%BE%AA%E7%8E%AF%E8%BF%AD%E4%BB%A3"><span class="toc-number">5.2.</span> <span class="toc-text">cycle: 进行循环迭代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#repeat-%E8%BF%9B%E8%A1%8C%E9%87%8D%E5%A4%8D%E8%BF%AD%E4%BB%A3-%E5%87%86%E7%A1%AE%E7%9A%84%E8%AF%B4-%E8%BF%99%E4%B9%9F%E5%8F%AF%E4%BB%A5%E4%B8%8D%E5%8F%AB%E5%81%9A%E6%97%A0%E9%99%90%E8%BF%AD%E4%BB%A3"><span class="toc-number">5.3.</span> <span class="toc-text">repeat: 进行重复迭代(准确的说,这也可以不叫做无限迭代)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pickle"><span class="toc-number">6.</span> <span class="toc-text">pickle</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python常用内置模块
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-04-04T07:13:00.000Z" class="dt-published" itemprop="datePublished">2017-04-04</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Python内置了很多模块,这些模块往往很有用.</p>
+<span id="more"></span>
+
+<h2 id="处理时间和日期–datetime"><a href="#处理时间和日期–datetime" class="headerlink" title="处理时间和日期–datetime"></a>处理时间和日期–datetime</h2><p>1.获取当前的时间–以datetime对象方式返回</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</span><br><span class="line">now = datetime.now()</span><br><span class="line">//now 是一个datetime对象</span><br><span class="line">//datetime.datetime(<span class="number">2017</span>, <span class="number">3</span>, <span class="number">30</span>, <span class="number">1</span>, <span class="number">53</span>, <span class="number">42</span>, <span class="number">679114</span>)</span><br><span class="line"><span class="built_in">print</span>(now)</span><br><span class="line">//<span class="number">2017</span>-03-<span class="number">30</span> 01:<span class="number">53</span>:<span class="number">42.679114</span></span><br></pre></td></tr></table></figure>
+<p>2.获取指定时间和日期,直接像构造一个datetime对象就行了.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">time = datetime(<span class="number">2018</span>,<span class="number">4</span>,<span class="number">10</span>,<span class="number">13</span>,<span class="number">21</span>,<span class="number">0</span>)</span><br><span class="line"><span class="built_in">print</span>(time)</span><br><span class="line">//<span class="number">2018</span>-04-<span class="number">10</span> <span class="number">13</span>:<span class="number">21</span>:<span class="number">00</span></span><br></pre></td></tr></table></figure>
+
+<p>3.时间戳</p>
+<p>为了解决不同时区的时间不同的问题,时间戳成为了统一全球的时间表达方式,并且,这也成为了计算机保存时间的统一方式.</p>
+<p>至于时间戳为什么能够达到统一,来看这个例子.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">timestamp = 0 = 1970-1-1 00:00:00 UTC+0:00 //标准时间</span><br><span class="line">timestamp = 0 = 1970-1-1 08:00:00 UTC+8:00 //北京时间</span><br></pre></td></tr></table></figure>
+
+<p>所以说,timestamp和时区根本就没有关系,只要timestamp定下来,其UTC时间就定下来了,转换到任意时区的时间也是完全固定的.在时间校准的情况下,全球各地的计算机在任意时刻的时间戳都是相同的.</p>
+<p>将一个datetime对象转换为时间戳形式很简单.</p>
+<p>直接调用<code>timestamp()</code>来构造一个<strong>浮点型</strong>的时间戳.</p>
+<blockquote>
+<p>注意:Python中的timestamp是一个浮点数,小数是指毫秒,你也许会问,为什么在JAVA,JavaScript中的时间戳是整数呢? 事实上,这些编程语言已经将其乘了1000.所以在表示时要注意进行转换.</p>
+</blockquote>
+<p>反过来,将一个timestamp转换成为datetime只要调用datetime的<code>fromtimestamp()</code>方法即可.</p>
+<p>4.字符串与时间的计算和转换</p>
+<p>转换的过程事实上是相似的,如同其他语言,都要使用格式化符号来表示年份,星期,月,日和具体的时间.</p>
+<p>字符串转datetime</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cday = datetime.strptime(<span class="string">&#x27;2018-6-1 18:19:59&#x27;</span>, <span class="string">&#x27;%Y-%m-%d %H:%M:%S&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(cday)</span><br><span class="line">//<span class="number">2018</span>-06-01 <span class="number">18</span>:<span class="number">19</span>:<span class="number">59</span></span><br></pre></td></tr></table></figure>
+
+<p>datetime转字符串</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">current = now.strftime(<span class="string">&quot;%a, %b %d %H:%M&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(current)</span><br><span class="line">//Thu March <span class="number">30</span> 02:<span class="number">55</span>  </span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior">官方文档:时间 格式化符号参考</a></p>
+<h3 id="时间的加减"><a href="#时间的加减" class="headerlink" title="时间的加减"></a>时间的加减</h3><p>由于计算机是使用的时间戳来存储的时间,那么就可用<code>+</code>或<code>-</code>来进行运算.</p>
+<p>但是,如果为了更好地迁移,可以使用这样的模块<code>timedelta</code>.</p>
+<p>例如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime, timedelta, timezone</span><br><span class="line">now = datetime.now()</span><br><span class="line">now + timedelta(hours=<span class="number">14</span>)</span><br><span class="line">now + timedelta(days=<span class="number">1</span>)</span><br><span class="line">now + timedelta(days=<span class="number">2</span>,hours=<span class="number">12</span>)//这些都是可行的</span><br></pre></td></tr></table></figure>
+
+<p>你会发现,我多import进来了一个timezone.<br>这个部件可将时间进行UTC时间的转换.</p>
+<p>如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">zone = timezone(timedelta(hours=<span class="number">8</span>))</span><br><span class="line">now = datetime.now()</span><br><span class="line">time = now.replace(tzinfo=zone) //就是timezone info啦</span><br><span class="line">time //强制设为UTC+8h</span><br></pre></td></tr></table></figure>
+
+<p>如果需要UTC时间,可以直接调用<code>datetime.utcnow()</code></p>
+<p>交换时区除了通过datetime对象的<code>replace</code>方法强制更改外,带有时区属性的datetime通过<code>astimezone()</code>方法,来进行转换.</p>
+<p>比如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">utc_dt = datetime.utcnow().replace(tzinfo=timezone.utc)</span><br><span class="line"><span class="built_in">print</span>(utc_dt)</span><br><span class="line">//<span class="number">2017</span>-03-<span class="number">29</span> <span class="number">18</span>:<span class="number">55</span>:<span class="number">04.681162</span>+<span class="number">00</span>:<span class="number">00</span></span><br><span class="line">bj_dt = utc_dt.astimezone(timezone(timedelta(hours=<span class="number">8</span>)))</span><br><span class="line"><span class="built_in">print</span>(bj_dt)</span><br><span class="line">//<span class="number">2017</span>-03-<span class="number">29</span> <span class="number">18</span>:<span class="number">56</span>:<span class="number">22.085203</span>+08:<span class="number">00</span></span><br></pre></td></tr></table></figure>
+<p>如果在获取datetime对象时,没有指定时区,就会被视作本地时间.</p>
+<p>所以,不如使用timestamp来存放datetime对象.</p>
+<h2 id="collections"><a href="#collections" class="headerlink" title="collections"></a>collections</h2><p>见名知意,内建的集合模块,封装了很多有用的集合类</p>
+<p>主要有:<code>namedtuple</code>,<code>deque</code>,<code>defaultdict</code>, <code>OrderedDict</code>, <code>Counter</code>….</p>
+<p><strong>namedtuple</strong>:</p>
+<p>假使我们构建一个元组:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">q = (<span class="number">1</span>,<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<p>并不能知道这个元组是干什么用的,在这种情况下,就到了namedtuple登场的时候了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Point = namedtuple(<span class="string">&quot;Point&quot;</span>, [<span class="string">&#x27;x&#x27;</span>, <span class="string">&#x27;y&#x27;</span>])</span><br><span class="line">p = Point(<span class="number">1</span>,<span class="number">2</span>)</span><br><span class="line">p.x</span><br><span class="line">// <span class="number">1</span></span><br><span class="line">p.y</span><br><span class="line">// <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<p>这样对象就得到了很好的管理,做个试验吧:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">isinstance(p,Point)</span><br><span class="line">isinstance(p,tuple)</span><br></pre></td></tr></table></figure>
+
+<p><strong>deque</strong>:</p>
+<p>双向队列,如同其他的语言,deque具有<code>append()</code>,<code>pop()</code>,还支持<code>appendleft()</code>和<code>popleft()</code>.</p>
+<p>例如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//导入</span><br><span class="line">q = deque([<span class="string">&#x27;a&#x27;</span>,<span class="string">&#x27;b&#x27;</span>,<span class="string">&#x27;c&#x27;</span>])</span><br><span class="line">q.append(<span class="string">&quot;D&quot;</span>)</span><br><span class="line">q // [<span class="string">&#x27;a&#x27;</span>,<span class="string">&#x27;b&#x27;</span>,<span class="string">&#x27;c&#x27;</span>,<span class="string">&#x27;D&#x27;</span>]</span><br><span class="line">q.appendleft(<span class="string">&quot;0&quot;</span>)</span><br><span class="line">q // [<span class="string">&#x27;0&#x27;</span>,<span class="string">&#x27;a&#x27;</span>,<span class="string">&#x27;b&#x27;</span>,<span class="string">&#x27;c&#x27;</span>,<span class="string">&#x27;D&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+<p><strong>defaultdict</strong>:</p>
+<p>专用来处理访问dict不存在key的一种方法.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dd = default(<span class="keyword">lambda</span>: <span class="string">&#x27;N/A&#x27;</span>) //default</span><br><span class="line">dd[<span class="string">&#x27;Key1&#x27;</span>] = <span class="string">&quot;Key1&quot;</span></span><br><span class="line">dd.<span class="string">&quot;Key2&quot;</span> // N/A</span><br></pre></td></tr></table></figure>
+
+<p>defaultdict,也可这样使用:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ldict = collections.defaultdict(<span class="built_in">list</span>)</span><br></pre></td></tr></table></figure>
+<p>这样生成的,<code>ldict</code>就会变成子元素都是<code>list</code>的一个defaultdict了.</p>
+<p>而defaultdict又是dict的子类,所以这个对象会变得非常灵活.(感觉上有点像泛型,虽然他们有质的区别)</p>
+<p><strong>OrderDict</strong></p>
+<p>我们都知道,dict的排列顺序是随机的,Key是无序的.</p>
+<p>为了能够在迭代时确认Key的顺序,我们便使用<code>OrderDict</code></p>
+<p><strong>Counter</strong></p>
+<p>Counter是一个简单的计数器,但他的用法却可以很灵活</p>
+<p>比如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line">c= Counter()</span><br><span class="line"><span class="keyword">for</span> char <span class="keyword">in</span> <span class="string">&#x27;Hello,World&#x27;</span>:</span><br><span class="line">  c[char] += <span class="number">1</span></span><br><span class="line"><span class="built_in">print</span>(c)</span><br></pre></td></tr></table></figure>
+
+<p><code>c</code>的输出为Counter<code>(&#123;&#39;l&#39;:3, &#39;o&#39;:2, .....&#125;)</code></p>
+<h2 id="base64"><a href="#base64" class="headerlink" title="base64"></a>base64</h2><p>先来简要介绍一下Base64编码的原理,Base64使用 a-z A-Z 0-9 + &#x2F; 这64个字符来表示二进制数据(不计等号,等号是用来补空位的),由于,计算机内的编码方式是2进制,2^6&#x3D;64,因此,便将6个比特映射到一个Base64可打印字符上,就可以进行转换了.</p>
+<p>比如:<code>man</code>这个字符串,转为Base64编码的过程为:</p>
+<table>
+<thead>
+<tr>
+<th align="center">文本</th>
+<th align="center">M</th>
+<th align="center">A</th>
+<th align="center">N</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">ASCII</td>
+<td align="center">77</td>
+<td align="center">97</td>
+<td align="center">110</td>
+</tr>
+</tbody></table>
+<p>ASCII转为二进制位:<br><code>01001101 01100001 01101110</code></p>
+<p>6比特分组:<br><code>010011 010110 000101 101110</code></p>
+<p>得到索引:<br><code>19  22  5  46</code></p>
+<p>查表进行Base64编码:<br><code>T	W	F	u</code></p>
+<p>所以,Base64编码后的数据比原始数据略长，为原来的4&#x2F;3.</p>
+<p>到这里就出现问题了,如果我二进制数据的长度不是6的整数倍怎么办呢?</p>
+<p>事实上,当原数据长度不是3的整数倍时, 如果最后剩下一个输入数据，在编码结果后加2个“&#x3D;”；如果最后剩下两个输入数据，编码结果后加1个“&#x3D;”；如果没有剩下任何数据，就什么都不加.</p>
+<p>现在就可以来看一下Python对Base64的支持了.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line">encoded = base64.b64encode(<span class="string">b&#x27;Hello,World&#x27;</span>)//注意这里是二进制格式化字符串</span><br><span class="line"><span class="built_in">print</span>(encoded)</span><br><span class="line">//<span class="string">b&#x27;SGVsbG8sV29ybGQ=&#x27;</span></span><br><span class="line"><span class="built_in">type</span>(encoded)</span><br><span class="line">//&lt;<span class="keyword">class</span> <span class="string">&#x27;byte&#x27;</span>&gt;</span><br><span class="line">//返回的也是二进制数据</span><br></pre></td></tr></table></figure>
+
+<h2 id="hashlib"><a href="#hashlib" class="headerlink" title="hashlib"></a>hashlib</h2><p>hashlib是python的摘要算法模块,提供常见的摘要算法如:SHA,MD5等等</p>
+<p>简单的说,摘要算法就是通过一个函数，把任意长度的数据转换为一个长度固定的数据串</p>
+<p>只要源数据有一丁点的改变,摘要(digest)就会有翻天覆地的变化.所以经常用来进行软件或信息的检验.</p>
+<p>摘要函数是一个单向函数，计算f(data)很容易，但通过digest反推data却非常困难。</p>
+<p>md5d的摘要示例:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line">md5 = hashlib.md5()</span><br><span class="line">md5.update(<span class="string">&quot;Hello,World&quot;</span>.encode(<span class="string">&quot;utf-8&quot;</span>))</span><br><span class="line">md5.update(<span class="string">&quot;This is Python!&quot;</span>.encode(<span class="string">&quot;utf-8&quot;</span>))</span><br><span class="line">md5.hexdigest()</span><br><span class="line">//<span class="string">&#x27;d6a6851cd4f390744645be4f5646b52a&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>还可以使用更加安全的SHA算法,调用方法基本类似.</p>
+<h2 id="itertools"><a href="#itertools" class="headerlink" title="itertools"></a>itertools</h2><p><strong>注意:当使用不当时.itertools极其容易无限迭代</strong></p>
+<p>因此做实验时建议考虑加上time.sleep()</p>
+<p>拥有无限迭代的迭代器有:</p>
+<h3 id="count-进行自增1的迭代"><a href="#count-进行自增1的迭代" class="headerlink" title="count: 进行自增1的迭代"></a>count: 进行自增1的迭代</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> itertools, time</span><br><span class="line">naturals = itertools.count(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> naturals:</span><br><span class="line">  <span class="built_in">print</span>(n)</span><br><span class="line">  time.sleep(<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<p>输出:<code>1 2 3 4 5 6 7.....</code></p>
+<h3 id="cycle-进行循环迭代"><a href="#cycle-进行循环迭代" class="headerlink" title="cycle: 进行循环迭代"></a>cycle: 进行循环迭代</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cycles = itertools.cycle(<span class="string">&quot;ABCD&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> <span class="built_in">str</span> <span class="keyword">in</span> cycles:</span><br><span class="line">  <span class="built_in">print</span>(<span class="built_in">str</span>)</span><br><span class="line">  time.sleep(<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<p>输出: <code>A B C D A B C D A....</code></p>
+<h3 id="repeat-进行重复迭代-准确的说-这也可以不叫做无限迭代"><a href="#repeat-进行重复迭代-准确的说-这也可以不叫做无限迭代" class="headerlink" title="repeat: 进行重复迭代(准确的说,这也可以不叫做无限迭代)"></a>repeat: 进行重复迭代(准确的说,这也可以不叫做无限迭代)</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">repeats = itertools.repeat(<span class="string">&quot;A&quot;</span>, <span class="number">3</span>)</span><br><span class="line"><span class="keyword">for</span> repeats <span class="keyword">in</span> cycles:</span><br><span class="line">  <span class="built_in">print</span>(repeats)</span><br></pre></td></tr></table></figure>
+
+<p>输出: <code>A A A</code></p>
+<p>一次迭代,迭代器就会失效!</p>
+<p>为了结束无限循环,可以使用<code>takewhile()</code>来截断出一个有限的序列:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">naturals = itertools.count(<span class="number">1</span>)</span><br><span class="line">ns = itertools.takewhile(<span class="keyword">lambda</span> x: x &lt;= <span class="number">10</span>, naturals)</span><br><span class="line">//在这里其实也可以直接遍历ns,因为itertools模块返回的都是迭代器Iterator</span><br><span class="line"><span class="built_in">list</span>(ns)</span><br><span class="line">//[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>,<span class="number">10</span>]</span><br></pre></td></tr></table></figure>
+
+<p>再说两个经常用的函数:<code>chain()</code>和<code>groupby()</code></p>
+<p>例如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">itertools.chain</span><br></pre></td></tr></table></figure>
+<p>将两个迭代器进行拼接,也可以理解成是在拓展一个迭代器.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> itertools.chain(<span class="string">&quot;ABC&quot;</span>, <span class="string">&quot;XYZ&quot;</span>):</span><br><span class="line">  <span class="built_in">print</span>(n)</span><br></pre></td></tr></table></figure>
+<p>输出: <code>&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;X&quot;,&quot;Y&quot;,&quot;Z&quot;</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">itertools.groupby()</span><br></pre></td></tr></table></figure>
+
+<p>有点像数据库查询的<code>GROUPBY</code>..将元素分组,可以这样接受数据:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> key,val <span class="keyword">in</span> itertools.groupby(<span class="string">&quot;AaaBbbCcc&quot;</span>, <span class="keyword">lambda</span> x : x.upper()):</span><br><span class="line">  <span class="built_in">print</span>(key, <span class="built_in">list</span>(val))</span><br><span class="line">///返回</span><br><span class="line">A [<span class="string">&quot;A&quot;</span>,<span class="string">&quot;a&quot;</span>,<span class="string">&quot;a&quot;</span>]</span><br><span class="line">B [<span class="string">&quot;B&quot;</span>,<span class="string">&quot;b&quot;</span>,<span class="string">&quot;b&quot;</span>]</span><br><span class="line">C [<span class="string">&quot;C&quot;</span>,<span class="string">&quot;c&quot;</span>,<span class="string">&quot;c&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>只要后面函数的返回值相同,那么元素就被认为是同组的,这个返回的值就是元素的组名.</p>
+<h2 id="pickle"><a href="#pickle" class="headerlink" title="pickle"></a>pickle</h2><p>pickle这个模块负责进行对象的持久化,或者叫序列化.</p>
+<p>一个对象的生命周期是不可能比一个Pyhton程序还长的,所以,为了使得这个对象在下次程序启动是仍能使用,pickle便提供了这样的接口.</p>
+<p>pickle的核心API就是<code>dump/dumps/load/loads</code>这四个.</p>
+<p>这是一个持久化的例子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">&#x27;a&#x27;</span>: [<span class="number">1</span>, <span class="number">2.0</span>, <span class="number">3</span>],</span><br><span class="line">    <span class="string">&#x27;b&#x27;</span>: (<span class="string">&quot;character string&quot;</span>, <span class="string">b&quot;byte string&quot;</span>),</span><br><span class="line">    <span class="string">&#x27;c&#x27;</span>: &#123;<span class="literal">None</span>, <span class="literal">True</span>, <span class="literal">False</span>&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;data.pickle&#x27;</span>, <span class="string">&#x27;wb&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)</span><br></pre></td></tr></table></figure>
+
+<p>将已序列化的对象复原:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;data.pickle&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    data = pickle.load(f)</span><br></pre></td></tr></table></figure>
+
+
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4%E5%92%8C%E6%97%A5%E6%9C%9F%E2%80%93datetime"><span class="toc-number">1.</span> <span class="toc-text">处理时间和日期–datetime</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E7%9A%84%E5%8A%A0%E5%87%8F"><span class="toc-number">1.1.</span> <span class="toc-text">时间的加减</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#collections"><span class="toc-number">2.</span> <span class="toc-text">collections</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#base64"><span class="toc-number">3.</span> <span class="toc-text">base64</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hashlib"><span class="toc-number">4.</span> <span class="toc-text">hashlib</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#itertools"><span class="toc-number">5.</span> <span class="toc-text">itertools</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#count-%E8%BF%9B%E8%A1%8C%E8%87%AA%E5%A2%9E1%E7%9A%84%E8%BF%AD%E4%BB%A3"><span class="toc-number">5.1.</span> <span class="toc-text">count: 进行自增1的迭代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cycle-%E8%BF%9B%E8%A1%8C%E5%BE%AA%E7%8E%AF%E8%BF%AD%E4%BB%A3"><span class="toc-number">5.2.</span> <span class="toc-text">cycle: 进行循环迭代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#repeat-%E8%BF%9B%E8%A1%8C%E9%87%8D%E5%A4%8D%E8%BF%AD%E4%BB%A3-%E5%87%86%E7%A1%AE%E7%9A%84%E8%AF%B4-%E8%BF%99%E4%B9%9F%E5%8F%AF%E4%BB%A5%E4%B8%8D%E5%8F%AB%E5%81%9A%E6%97%A0%E9%99%90%E8%BF%AD%E4%BB%A3"><span class="toc-number">5.3.</span> <span class="toc-text">repeat: 进行重复迭代(准确的说,这也可以不叫做无限迭代)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pickle"><span class="toc-number">6.</span> <span class="toc-text">pickle</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&text=Python常用内置模块"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&is_video=false&description=Python常用内置模块"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python常用内置模块&body=Check out this article: https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&title=Python常用内置模块"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&name=Python常用内置模块&description=&lt;p&gt;Python内置了很多模块,这些模块往往很有用.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/&t=Python常用内置模块"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

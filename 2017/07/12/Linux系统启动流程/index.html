@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Linux(CentOS5&amp;6)的系统启动流程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS5和6的启动流程">
+<meta property="og:url" content="https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Linux(CentOS5&amp;6)的系统启动流程">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://linux.vbird.org/linux_basic/0510osloader//osloader-flow-initramfs.jpg">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/login.png">
+<meta property="article:published_time" content="2017-07-12T22:22:12.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:41:34.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta property="article:tag" content="bootloader">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://linux.vbird.org/linux_basic/0510osloader//osloader-flow-initramfs.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>CentOS5和6的启动流程</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/07/14/BootLoader-GRUB/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&text=CentOS5和6的启动流程"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&is_video=false&description=CentOS5和6的启动流程"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CentOS5和6的启动流程&body=Check out this article: https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&name=CentOS5和6的启动流程&description=&lt;p&gt;Linux(CentOS5&amp;amp;6)的系统启动流程&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&t=CentOS5和6的启动流程"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#CentOS-5%E5%92%8C6-%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">CentOS 5和6 的启动流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E8%8F%9C"><span class="toc-number">1.1.</span> <span class="toc-text">前菜</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A3%E9%A4%90"><span class="toc-number">1.2.</span> <span class="toc-text">正餐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%9A%84%E5%A4%A9%E4%B8%8B"><span class="toc-number">1.3.</span> <span class="toc-text">内核的天下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x2F-sbin-x2F-init"><span class="toc-number">1.4.</span> <span class="toc-text">&#x2F;sbin&#x2F;init</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#chkconfig-amp-rc%E8%84%9A%E6%9C%AC"><span class="toc-number">1.5.</span> <span class="toc-text">chkconfig &amp; rc脚本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS6%E5%92%8C5%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.6.</span> <span class="toc-text">CentOS6和5的区别</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        CentOS5和6的启动流程
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-07-12T22:22:12.000Z" class="dt-published" itemprop="datePublished">2017-07-12</time>
+        
+        (Updated: <time datetime="2020-11-30T01:41:34.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>, <a class="p-category" href="/tags/bootloader/" rel="tag">bootloader</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Linux(CentOS5&amp;6)的系统启动流程</p>
+<span id="more"></span>
+
+<h2 id="CentOS-5和6-的启动流程"><a href="#CentOS-5和6-的启动流程" class="headerlink" title="CentOS 5和6 的启动流程"></a>CentOS 5和6 的启动流程</h2><h3 id="前菜"><a href="#前菜" class="headerlink" title="前菜"></a>前菜</h3><p>抛开底层的硬件不谈, 我们知道LInux最核心的两个部分就是**<code>kernel</code><strong>和</strong><code>rootfs</code>**了</p>
+<p>从内核的角度上说, 内核主要进行的工作有: 进程管理, 内存管理, 网络管理, 驱动程序, 文件系统, 安全功能</p>
+<p>对程序员而说, 不会直接选择进行系统调用而是对已经对系统调用进行了一层封装的库进行调用, 在Linux下这个标准库就是<code>glibc</code>  而这些库文件都放在<code>rootfs</code>里面.</p>
+<p>那么到底什么是库呢? 说白了就是一堆函数的集合, 而函数其实又只是一堆代码片段, 一个功能的实现,</p>
+<p>库文件也是可以执行的, 只不过他自己没有入口, 只能依靠别的程序来调用他.</p>
+<p>对于调用, 我们分为两种调用: <strong>过程调用</strong> 和 <strong>函数调用</strong>.</p>
+<p>过程调用就是没有返回值的调用 而函数调用一定是有返回值的.</p>
+<p>库之上就是我们真正生产能力的应用程序了.</p>
+<p>作为整个系统的核心, 内核有两种设计流派: <strong>单内核设计, 微内核设计</strong></p>
+<blockquote>
+<p>简单的说, 微内核就好像是联邦制, 每一个功能都有一个小系统,这样造成的结果就是效率略低, 但是却能在某些功能模块出现异常的情况下, 不会使得整个内核出现致命性的错误. 而单内核即使将所有的功能集成到同一个程序.</p>
+</blockquote>
+<p>这两种的典型例子: 单内核: Linux  微内核: Windows, Solaris.</p>
+<p>然而, Linux的内核特点: 支持模块化. *.ko ( 之前说过共享连接库的文件扩展名是*.so(shared), 而这里的k就是(kernel)) 也就是说, 你可以在线进行装载和卸载. </p>
+<p>进入<code>/boot</code>下, 会发现一些和你开机引导菜单同名的几个文件, 这些文件就是Linux的压缩系统映像, 版本号的格式和我们之前说过的软件包的命名是一样的.</p>
+<p>至于模块的位置都在<code>/lib/modules</code>下 , 同样, 系统的模块还是以版本号来进行的命名. (e.g : 在&#x2F;boot下有一个叫<code>vmlinuz-3.10.0-514.21.2.el7.x86_64</code>的系统映像, 那么他的模块就在<code>3.10.0-514.21.2.el7.x86_64</code>这个目录下)</p>
+<p>现在进入模块的目录里面来看一下:</p>
+<p>之前说过的<code>*.ko</code>文件都在模块目录下的kernel文件夹内, 这个位置<a href="">也是</a>真正的Linux内核模块所在.由于内核之间同样存在依赖关系, 所以也会有一些元信息文件.</p>
+<p>那么这些文件一共有多大呢?:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">du</span> -sh /lib/modules/3.10.0-514.21.2.el7.x86_64/</span><br><span class="line">127M	/lib/modules/3.10.0-514.21.2.el7.x86_64/</span><br></pre></td></tr></table></figure>
+
+<p>是不是大小超乎你的意料, 事实上这个大小还是可以继续缩减的.</p>
+<p>不知道大家有没有想象到这样的情况: 比如说在系统启动的时候我们要先加载内核进系统, 接着等到内核加载完就要开始加载根文件系统了, 这些东西都在哪里呢? 自然是在我们的硬盘上, 那么为了读取硬盘就需要硬盘驱动, 但是由于<code>Linux</code>是模块化的内核所以有可能这个驱动正好是被做了模块处理, 那么为了获得读取硬盘的能力, 就要先加载模块, 但是模块在哪呢? 在<code>/usr/lib/modules</code>下, 也是根文件系统, 这样就会出现矛盾.对于这种情况, 我们就需要一种外部的辅助手段: 把硬盘驱动先装在内核上, 让内核识别.</p>
+<p>这样就会有两种解决方法:</p>
+<ul>
+<li>直接把硬盘驱动编译进内核, 但是这样的问题显然易见, 不可能将所有的硬盘驱动都扔到内核里.</li>
+<li>加一个用来辅助的微型的文件系统, 仅包含内核需要的一些必要的驱动. 这么一个文件系统其实是一个LOOP设备, 也就是一个文件</li>
+</ul>
+<p>这么一个文件系统中的驱动显然是只用于当前用户的, 也就是说这个的内容并不是在最初就制作好的, 而是在安装操作系统的时候就生成的. 当然这么一个文件系统也不是必须的, 如果内核可以直接识别你的设备, 那么自然就不需要这么搞了.</p>
+<p>这么个生成的工具就是<code>ramdisk</code> 这个有两种格式, 在CentOS5上是模拟成的硬盘的, 而6,7上是文件系统, 这是因为文件系统更加快速, 提高效率.在CentOS5上表现的是: <code>/boot/initrd-VERSION-release.img</code>. CentOS6,7上就是: <code>/boot/initramfs-VERSION-release.img</code>. (基于内存的文件系统) 还可以看到,叫System.map开头的文件, 这个是内核放置到物理内存上的映射表.</p>
+<p>在完成加载驱动后, 就会进行根的切换, 因为上面的这个根是个假的. 如果没有这一步, 那么内核就会认为自己已经完成了根的加载了, 而放弃加载真实的根了.</p>
+<h3 id="正餐"><a href="#正餐" class="headerlink" title="正餐"></a>正餐</h3><p><strong>CentOS系统的启动流程:</strong> (x86)</p>
+<p>POST: <strong>加电自检</strong>: 当按下电源按钮, 这个时候会开始检查各个硬件是否存在以及他们能否正常工作(CPU, 风扇, 内存, 输入输出设备等等)  这些依靠ROM中的CMOS, BIOS加载CMOS,取得系统的硬件信息. BIOS程序的执行也依靠CPU. 所以说当我开机的时候, 主机激活CPU, 并且执行第一条指令: 叫醒 . 接着CPU就会去某ROM的某一个固定地址去加载那个地方的指令, 从而完成自检等等操作. 内存包括ROM+RAM, 在内存进行编址的时候, 都是先进行的ROM编址, 完成之后才进行的RAM编址.</p>
+<p>BIOS是进行主板设定的地方, 但并不是说我们每一次都要进行设定, 设定的结果是保存在CMOS中的 所以在开始时, 只提供一个菜单供用户选择. 任何一台电脑都需要操作系统对不.而操作系统都在哪呢? 显然是在我们外部的存储设备上(硬盘, USB闪存等等) 问题是, 多个硬盘的情况下, 我怎么知道哪一块才是我要进的OS所在呢?</p>
+<p>这就说到了一个Linux中非常重要的引导次序(BOOT Sequence). BIOS根据这个设置的引导次序来进行加载.决定因素就是设备需要存在并且有引导程序在. 比如: 我的引导次序是光盘, 网卡, 硬盘. 实际的系统在硬盘上.那么当开始进行引导的时候就会开始按照次序寻找: 首先是光盘, 发现当前电脑上并没有安装硬盘, 跳过. 接着是网卡, 网卡存在但是却没有引导程序, 跳过. 最后是硬盘, 存在并且在MBR分区中找到了引导程序. (How?*)开始加载相应的引导程序. 接着 这个bootloader所指向的操作系统是损坏的, 仍启动不起来.</p>
+<blockquote>
+<p>MBR分区内的引导程序寻找, 是依靠于磁盘设备的INT-13中断功能, 只要BIOS能够识别磁盘硬件就可以通过INT-13中断来获得磁盘第一扇区的MBR.</p>
+</blockquote>
+<p>这里提到了<code>bootloader</code> 见名知意:引导加载器 这个是一个程序.在操作系统安装完成就会自动装载到相应的位置上.Windows上的引导加载器叫做:<code>ntloader</code>. 不同版本的Win, 这个引导加载也是不一样的. 对于Linux而言, 他有两种引导加载:</p>
+<ul>
+<li><strong>LILO</strong>: LInux LOader 但是这种加载程序太古老了, 当时硬盘容量也太小了, 所以他不允许将操作系统安装在1024柱面之后. 而现在的硬盘动辄都是几万的柱面.吧</li>
+<li><strong>GRUB</strong>: GRand Uniform Bootloader, 统一引导加载器 这种更加常用.之所以叫统一, 是因为它支持启动Windows, Linux, BSD.当前的Linux使用的都是叫做<code>grub2</code>, 其实是grub1.X版本 和过去的grub相比, 这个更新是进行的完全重写, 和原来是完全不一样的. 我们把过去的GRUB叫做GRUB Legacy.</li>
+</ul>
+<blockquote>
+<p>这个程序就放在MBR中引导程序部分, 当然不同于原来的446个字节, grub采用了一个精巧的方式突破了这个限制. 接着是64字节的fat(磁盘分区表), 最后两个字节是<code>55aa</code>, 盘的有效标识.</p>
+</blockquote>
+<p>小结: bootloader功能就是提供一个菜单, 允许用户选择要启动的系统或者是不同的内核版本. 把用户选定的内核装载到内存的特定空间中, 解压, 展开, 之后将控制权转交给内核. 这个时候就是宣告了BIOS的使命结束.</p>
+<p>来补充一下刚刚说过的精巧的GRUB的解决446字节限制.整个grub分成两个过程:</p>
+<p><code>1st stage</code>: 第一阶段说白了什么都不做, 就是向磁盘上去寻真正的第二阶段, 只要能会识别硬件就可以实现了.</p>
+<p><code>1.5阶段</code>:  grub识别硬盘上的文件系统. 这个时候遇到了一个和上面一样的问题了, 首先明确grub是存在在文件系统上的, 为了访问磁盘分区, 我就要能够使用文件系统, 而使用文件系统我还要能够访问磁盘分区.</p>
+<p>所以说, 其实这个匹配的文件系统在系统安装的时候就已经装载在了MBR剩余的地方了.这样就解决了驱动的问题.</p>
+<p><code>2nd stage</code>: 由于硬盘上的容量远大于446字节, grub就可以任意施展了.</p>
+<h3 id="内核的天下"><a href="#内核的天下" class="headerlink" title="内核的天下"></a>内核的天下</h3><p>grub加载好内核之后, 就是kernel来统一天下了.</p>
+<p>首先, kernel进行自身的初始化: 探测可识别到的所有硬件设备, 加载硬件驱动程序(当然有可能借助于ramdisk加载驱动), 以只读的方式根文件系统. 接着运行用户空间的第一个应用程序: <code>/sbin/init | /usr/lib/systemd/systemd</code></p>
+<p>init程序可以是一个程序, 也有可能是一个脚本(CentOS5, 安卓)</p>
+<ul>
+<li><strong>SysV</strong>: init, CentOS 5 早期的init基本上是依靠脚本来启动的各个的服务, 这就导致每一个命令都会进行进程创建和销毁, 使得启动速度很慢, 而且不能并行并发启动服务, 因为服务间是存在依赖关系的 (配置文件&#x2F;etc&#x2F;inittab)</li>
+<li><strong>Upstart</strong>: (Ubuntu研发) CentOS 6的init,   采用了不太一样的启动方式, 当服务<strong>开始</strong>启动的时候就解决依赖关系. 兼容SysV, 但是CentOS6并没有发挥出Upstart的威力 (配置文件&#x2F;etc&#x2F;inittab &#x2F;etc&#x2F;init&#x2F;*.conf)</li>
+<li><strong>Systemd</strong>: 改名为systemd, 从Mac OS X中得到的灵感, Systemd不需要任何脚本来启动服务, 他自己就是一个解释器, 当要启动一个服务的时候, 如果不是必要的就只是标志启动, 但不实际上去启动它, 当第一次使用的时候才会去真正启动它. (&#x2F;usr&#x2F;lib&#x2F;systemd &#x2F;etc&#x2F;systemd&#x2F;system)</li>
+</ul>
+<p>现在再回来说说<code>ramdisk</code>: 上面说了使用模拟文件系统形式的ramdisk更加快速, 原因是什么呢?</p>
+<p>内核的特性之一是: 使用缓存和缓冲来加速磁盘文件访问.但这样就会有问题: RAM当中有一段内存是分配给内核的, 而ramdisk将文件加载到内存之中, 供内核读取, 而内核把这个的当做硬盘来看待, 而我们都知道硬盘远没有内存快, 所以内核会将这部分原来就已存在在内存的一块再加载到内存中.</p>
+<p>因此CentOS6之后就将<code>ramdisk --&gt; ramfs</code> 我们说过这些img镜像是由工具生成的.在CentOS5上是一个脚本,叫做mkinitrd, 而在CentOS6上虽然还有mkinitrd, 但现在我们更多在使用的是一个叫做dracut的工具.</p>
+<p>**系统初始化: **</p>
+<p>POST –&gt; BootSequence (BIOS) –&gt; Bootloader(MBR) –&gt; kernel(ramdisk) –&gt; rootfs(只读) –&gt; init&#x2F;systemd</p>
+<p>上一张图吧:</p>
+<p><img src="http://linux.vbird.org/linux_basic/0510osloader//osloader-flow-initramfs.jpg" alt="Boot"></p>
+<p><strong>关于上面的systemd, 是CentOS7所采用的init程序, 参考这里<a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">CentOS7启动流程</a></strong></p>
+<h3 id="x2F-sbin-x2F-init"><a href="#x2F-sbin-x2F-init" class="headerlink" title="&#x2F;sbin&#x2F;init"></a>&#x2F;sbin&#x2F;init</h3><p>在Windows上我们也许见过这样的问题, 升级了某些驱动之后再次进入系统会出现蓝屏的现象, 原因有很多,可能是驱动和硬件不兼容, 也有可能是驱动程序有Bug.但不管怎么说, 现在要进行修复了, 在Windows上我们会进入安全模式, 这个模式下只加载最基本的核心组件, 从而最低维持系统.(几乎失去生产能力), 而在Linux下这个被叫做运行级别(Run-level). 这个概念在CentOS7上已经发生了改变,  但在传统的CentOS5和6上依然保持了原本的意义.</p>
+<p>运行级别: 为了系统的运行和维护等应用目的而设定. 在原先的<a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/#more">Linux系统-服务管理学习笔记</a>也已经提过. 共划分7个等级.</p>
+<p>配置文件所在, 在上文已经提过了: <code>/etc/inittab</code> 每一行对应一个action以及与之对应的process(并不意味着<strong>一个</strong>进程) 由于我这部分的实验主机使用的是CentOS6, 因此实验结果没有5版本好.</p>
+<p>现在来看看配置文件都写了什么:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[root@livecd ~]<span class="comment"># cat /etc/inittab </span></span><br><span class="line"><span class="comment"># inittab is only used by upstart for the default runlevel.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># ADDING OTHER CONFIGURATION HERE WILL HAVE NO EFFECT ON YOUR SYSTEM.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># System initialization is started by /etc/init/rcS.conf</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Individual runlevels are started by /etc/init/rc.conf</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Ctrl-Alt-Delete is handled by /etc/init/control-alt-delete.conf</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Terminal gettys are handled by /etc/init/tty.conf and /etc/init/serial.conf,</span></span><br><span class="line"><span class="comment"># with configuration in /etc/sysconfig/init.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># For information on how to write upstart event handlers, or how</span></span><br><span class="line"><span class="comment"># upstart works, see init(5), init(8), and initctl(8).</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Default runlevel. The runlevels used are:</span></span><br><span class="line"><span class="comment">#   0 - halt (Do NOT set initdefault to this)</span></span><br><span class="line"><span class="comment">#   1 - Single user mode</span></span><br><span class="line"><span class="comment">#   2 - Multiuser, without NFS (The same as 3, if you do not have networking)</span></span><br><span class="line"><span class="comment">#   3 - Full multiuser mode</span></span><br><span class="line"><span class="comment">#   4 - unused</span></span><br><span class="line"><span class="comment">#   5 - X11</span></span><br><span class="line"><span class="comment">#   6 - reboot (Do NOT set initdefault to this)</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="built_in">id</span>:5:initdefault:</span><br></pre></td></tr></table></figure>
+
+<p>最后一行是说默认的runlevel设置为5. 格式就是: <code>id:runlevel:action:process</code> </p>
+<p>现在来聊下常用的action吧: wait(等待, 切换至此级别就运行一次), respawn(此process终止时候重启), initdefault(设定默认优先级别),sysinit(完成系统初始化, 一般指定为&#x2F;etc&#x2F;rc.d&#x2F;rc.sysinit )</p>
+<p>在CentOS5上, 下一项配置就是si::sysinit:&#x2F;etc&#x2F;rc.d&#x2F;rc.sysinit 这个是一个非常大的脚本, 加载了许多东西.(挂载&#x2F;etc&#x2F;fstab中的文件系统, 读取&#x2F;etc&#x2F;sysctl.conf的内核参数, 激活交换设备, 加载LVM分区, 网络设备, 系统时钟等等…)</p>
+<p>接着就根据不同的级别加载不同的程序了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">l0:0:<span class="built_in">wait</span>:/etc/rc.d/rc 0</span><br><span class="line">l1:1:<span class="built_in">wait</span>:/etc/rc.d/rc 1</span><br><span class="line">...(omitted)</span><br><span class="line">l6:6:<span class="built_in">wait</span>:/etc/rc.d/rc 6</span><br></pre></td></tr></table></figure>
+
+<p>后面意味着读取&#x2F;etc&#x2F;rc.d&#x2F;rcX.d&#x2F;下的所有脚本, 这些脚本分成了K开头和S开头的.并且都有数字, 这些数字决定了执行次序. 越小就越早执行. 所有K开头的都进行stop操作.而S开头的就进行start操作.</p>
+<p>有一个专门用来管理这些的工具, 叫做<code>chkconfig</code>, 它能够来查看和管理rcX.d下这些链接文件.</p>
+<p>使用–list来查看所有的自启动服务:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ chkconfig -list</span><br><span class="line">NetworkManager 	0:off	1:off	2:on	3:on	4:on	5:on	6:off</span><br><span class="line">acpid          	0:off	1:off	2:on	3:on	4:on	5:on	6:off</span><br><span class="line">atd            	0:off	1:off	2:off	3:off	4:off	5:off	6:off</span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 假设现在我们将级别5时候的NetworkManager关闭, 这样操作</span></span><br><span class="line">[root@WWW rc0.d]$ chkconfig --level 5 NetworkManager off</span><br><span class="line">[root@WWW rc0.d]$ chkconfig --list</span><br><span class="line">NetworkManager 	0:off	1:off	2:on	3:on	4:on	5:off	6:off</span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 看, 服务的自动启动已经被关闭了</span></span><br><span class="line">[root@WWW rc0.d]$ ll /etc/rc.d/rc5.d/</span><br><span class="line">total 0</span><br><span class="line">...(omitted)</span><br><span class="line">lrwxrwxrwx. 1 root root 24 Jul 10 16:11 K84NetworkManager -&gt; ../init.d/NetworkManager</span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 此时查看就会发现, 已经变成K开头的了.那么, 为什么是84呢?</span></span><br><span class="line"><span class="comment"># 要知道这个问题我们需要看一下NetworkManager的真正脚本</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">head</span> -10 /etc/init.d/NetworkManager </span><br><span class="line"><span class="comment">#!/bin/sh</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># NetworkManager:   NetworkManager daemon</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># chkconfig: - 23 84</span></span><br><span class="line"><span class="comment"># description:  This is a daemon for automatically switching network \</span></span><br><span class="line"><span class="comment">#               connections to the best available connection.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># processname: NetworkManager</span></span><br><span class="line"><span class="comment"># pidfile: /var/run/NetworkManager/NetworkManager.pid</span></span><br></pre></td></tr></table></figure>
+
+<p>除了这些文件, 在系统启动的时候还会加载&#x2F;etc&#x2F;sysconfig下的种种配置.</p>
+<h3 id="chkconfig-amp-rc脚本"><a href="#chkconfig-amp-rc脚本" class="headerlink" title="chkconfig &amp; rc脚本"></a>chkconfig &amp; rc脚本</h3><p>查看服务在所有级别的启动情况:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig [--list] [name]</span><br></pre></td></tr></table></figure>
+
+<p>添加:</p>
+<p>sysV的脚本放在&#x2F;etc&#x2F;rc.d&#x2F;init.d (&#x2F;etc&#x2F;init.d) </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --add name</span><br><span class="line"><span class="comment"># 脚本的开头只要满足格式就可以:</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># chkconfig: LLLL(写了就是S, 没写就是K) nn nn</span></span><br></pre></td></tr></table></figure>
+
+<p>将脚本按照格式写完放到&#x2F;etc&#x2F;rc.d&#x2F;init.d&#x2F;的下面, 并且赋予权限, 接着就可以通过<code>service XXX start</code>来运行.接着执行添加指令就可以在相应的位置上创建.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@livecd sysconfig]<span class="comment"># chkconfig --add test</span></span><br><span class="line">[root@livecd sysconfig]<span class="comment"># chkconfig --list test</span></span><br><span class="line"><span class="built_in">test</span>           	0:off	1:off	2:off	3:on	4:on	5:on	6:off</span><br><span class="line">[root@livecd sysconfig]$ <span class="built_in">ls</span> -l /etc/rc.d/rc0.d/K33test </span><br><span class="line">lrwxrwxrwx. 1 root root 14 Jul 10 16:45 /etc/rc.d/rc0.d/K33test -&gt; ../init.d/test</span><br></pre></td></tr></table></figure>
+
+<p>删除也很简单, 直接把<code>add</code>换成<code>del</code>就行了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@livecd sysconfig]<span class="comment"># chkconfig --del test</span></span><br><span class="line">[root@livecd sysconfig]<span class="comment"># chkconfig --list test</span></span><br><span class="line">service <span class="built_in">test</span> supports chkconfig, but is not referenced <span class="keyword">in</span> any runlevel (run <span class="string">&#x27;chkconfig --add test&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这个时候就会发现已经找不到对应的链接了.</p>
+<p>还可以对当前已经存在的连接修改等级:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ chkconfig [--level levels] name &lt;on|off|reset&gt;</span><br><span class="line">    --level LLLL 省略时默认为2345</span><br><span class="line"><span class="comment"># 比如说</span></span><br><span class="line">[root@WWW ~]$ chkconfig NetworkManager off</span><br><span class="line">[root@WWW ~]$ chkconfig --list NetworkManager</span><br><span class="line">NetworkManager 	0:off	1:off	2:off	3:off	4:off	5:off	6:off</span><br><span class="line">[root@WWW ~]$ chkconfig --level 2345 NetworkManager on</span><br><span class="line">[root@WWW ~]$ chkconfig --list NetworkManager</span><br><span class="line">NetworkManager 	0:off	1:off	2:on	3:on	4:on	5:on	6:off</span><br></pre></td></tr></table></figure>
+
+<p>接着在探索一下这一堆神奇的目录, 你会发现在2,3,4,5这四个等级的启动任务的最后都有一个叫S99local的链接, 更神奇的是, 它指向上级目录的一个叫<code>rc.local</code>的脚本. 进来看看是个什么东西:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">ls</span> -l /etc/rc.d/rc&#123;1,2,3,4,5,6&#125;.d/S99local</span><br><span class="line"><span class="built_in">ls</span>: cannot access /etc/rc.d/rc1.d/S99local: No such file or directory</span><br><span class="line"><span class="built_in">ls</span>: cannot access /etc/rc.d/rc6.d/S99local: No such file or directory</span><br><span class="line">lrwxrwxrwx. 1 root root 11 Dec 16  2011 /etc/rc.d/rc2.d/S99local -&gt; ../rc.local</span><br><span class="line">lrwxrwxrwx. 1 root root 11 Dec 16  2011 /etc/rc.d/rc3.d/S99local -&gt; ../rc.local</span><br><span class="line">lrwxrwxrwx. 1 root root 11 Dec 16  2011 /etc/rc.d/rc4.d/S99local -&gt; ../rc.local</span><br><span class="line">lrwxrwxrwx. 1 root root 11 Dec 16  2011 /etc/rc.d/rc5.d/S99local -&gt; ../rc.local</span><br><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> ../rc.local</span><br><span class="line"><span class="comment">#!/bin/sh</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># This script will be executed *after* all the other init scripts.</span></span><br><span class="line"><span class="comment"># You can put your own initialization stuff in here if you don&#x27;t</span></span><br><span class="line"><span class="comment"># want to do the full Sys V style init stuff.</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">touch</span> /var/lock/subsys/local</span><br></pre></td></tr></table></figure>
+
+<p>所以这就很显然了, 当你有一个想要开机执行的任务(不适合写成脚本)可以把它添加到这个脚本中.网上有很多教程介绍开机任务的时候都说过编辑&#x2F;etc&#x2F;rc.local, 有的却说编辑rc.d&#x2F;rc.local. 其实这个都是说一个文件etc的下的那个其实是一个软链.<code>/etc/rc.local -&gt; rc.d/local</code> .</p>
+<p>好了这个时候, 用户就要登录了.也就执行到了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1:2345:respawn:/sbin/mingetty tty1</span><br><span class="line">2:2345:respawn:/sbin/mingetty tty2</span><br><span class="line">...</span><br><span class="line">6:2345:respawn:/sbin/mingetty tty6</span><br><span class="line">x:5:respawn:/etc/X11/prefdm -nodaemon <span class="comment"># 图形界面</span></span><br></pre></td></tr></table></figure>
+
+<p>这个时候开始加载终端, 也就进入了我们看到的第一个画面: </p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/login.png" alt="login"></p>
+<p>这个界面的出现是因为<code>mingetty</code>之后调用了一个叫<code>login</code>的程序. <strong>Warning: 在远程连接的shell里执行这个指令远程主机就会关闭连接!</strong></p>
+<p>在SysV的inittab里的第一句话写了这么一句: <code>si::sysinit:/etc/rc.d/rc.sysinit</code>.在CentOS6上这个由于使用了startup所以没有出现在inittab中, 而是写在了别的配置文件中, 这意味着在实际运行之前还要再把整个系统的环境设置好.这个脚本做的初始化有哪些呢?</p>
+<p>这个脚本还是很大的(670行)主要做的事情有:</p>
+<ul>
+<li>获取主机名以及加载网络配置(如果没有就命名为localhost)</li>
+<li>设置和显示banner</li>
+<li>激活udev和selinux</li>
+<li>挂载&#x2F;etc&#x2F;fstab文件中定义的文件系统</li>
+<li>检测根文件系统, 并用读写的方式的方式重新挂载根文件系统</li>
+<li>设置系统时钟</li>
+<li>激活swap设备</li>
+<li>根据&#x2F;etc&#x2F;sysctl.conf文件来设置内核参数</li>
+<li>激活LVM和software raid设备</li>
+<li>加载额外设备的驱动</li>
+<li>清理操作</li>
+<li>…</li>
+</ul>
+<blockquote>
+<p>**总结:&#x2F;sbin&#x2F;init –&gt; (&#x2F;etc&#x2F;inittab) –&gt; 设置默认运行级别 –&gt; 运行系统初始脚本,完成系统的初始化 –&gt; 关闭对应下需要关闭的服务, 启动需要运行的服务 –&gt; 设置登录终端 **</p>
+</blockquote>
+<h3 id="CentOS6和5的区别"><a href="#CentOS6和5的区别" class="headerlink" title="CentOS6和5的区别"></a>CentOS6和5的区别</h3><p>init程序尽管更换为了startup, 但仍旧命名为init, 并且配置文件不是单一的inittab, 而是分了多个文件都放在<code>/etc/init</code>下, 每一个配置项都是一个*.conf的文件.</p>
+<p> 在这个目录下的rc.conf其实最终还是执行的<code>/etc/rc.d/rc $RUNLEVEL</code> 而负责执行脚本的rcS.conf实际上运行的也就是刚刚说过的<code>rc.sysinit</code>类似的, 大家也可以猜出来tty.conf实际上就是执行的<code>mingetty</code>. </p>
+<p><strong>注意: &#x2F;etc&#x2F;init&#x2F;*.conf文件语法, 遵循upstart配置文件的语法格式.</strong></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#CentOS-5%E5%92%8C6-%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">CentOS 5和6 的启动流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E8%8F%9C"><span class="toc-number">1.1.</span> <span class="toc-text">前菜</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A3%E9%A4%90"><span class="toc-number">1.2.</span> <span class="toc-text">正餐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%9A%84%E5%A4%A9%E4%B8%8B"><span class="toc-number">1.3.</span> <span class="toc-text">内核的天下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x2F-sbin-x2F-init"><span class="toc-number">1.4.</span> <span class="toc-text">&#x2F;sbin&#x2F;init</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#chkconfig-amp-rc%E8%84%9A%E6%9C%AC"><span class="toc-number">1.5.</span> <span class="toc-text">chkconfig &amp; rc脚本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS6%E5%92%8C5%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.6.</span> <span class="toc-text">CentOS6和5的区别</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&text=CentOS5和6的启动流程"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&is_video=false&description=CentOS5和6的启动流程"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CentOS5和6的启动流程&body=Check out this article: https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS5和6的启动流程"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&name=CentOS5和6的启动流程&description=&lt;p&gt;Linux(CentOS5&amp;amp;6)的系统启动流程&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&t=CentOS5和6的启动流程"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="DHCP服务器建立起来特别简单啦, 就当放松心情来搭建一个吧! 另外 这一次顺便来看看神奇的网络引导究竟是怎么实现的~">
+<meta property="og:type" content="article">
+<meta property="og:title" content="来,搭建一个DHCP服务器和PXE吧">
+<meta property="og:url" content="https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="DHCP服务器建立起来特别简单啦, 就当放松心情来搭建一个吧! 另外 这一次顺便来看看神奇的网络引导究竟是怎么实现的~">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/dhcptest.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pxe.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/centos6.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/installC6.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/Cobbler_first.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ks_mirror.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/cobbler_first_run.png">
+<meta property="og:image" content="https://www.zhangfangzhou.cn/wp-content/uploads/2017/11/centos7-bad-superblock-.png">
+<meta property="article:published_time" content="2017-10-08T01:33:47.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:49:42.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="DHCP">
+<meta property="article:tag" content="PXE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/dhcptest.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>来,搭建一个DHCP服务器和PXE吧</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/10/iptables/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&text=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&is_video=false&description=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=来,搭建一个DHCP服务器和PXE吧&body=Check out this article: https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&name=来,搭建一个DHCP服务器和PXE吧&description=&lt;p&gt;DHCP服务器建立起来特别简单啦, 就当放松心情来搭建一个吧! 另外 这一次顺便来看看神奇的网络引导究竟是怎么实现的~&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&t=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#DHCP"><span class="toc-number">1.</span> <span class="toc-text">DHCP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PXE"><span class="toc-number">2.</span> <span class="toc-text">PXE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cobbler%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.</span> <span class="toc-text">Cobbler的实现</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        来,搭建一个DHCP服务器和PXE吧
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-08T01:33:47.000Z" class="dt-published" itemprop="datePublished">2017-10-07</time>
+        
+        (Updated: <time datetime="2020-11-30T01:49:42.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/DHCP/" rel="tag">DHCP</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/PXE/" rel="tag">PXE</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>DHCP服务器建立起来特别简单啦, 就当放松心情来搭建一个吧! 另外 这一次顺便来看看神奇的网络引导究竟是怎么实现的~</p>
+<span id="more"></span>
+
+<h2 id="DHCP"><a href="#DHCP" class="headerlink" title="DHCP"></a>DHCP</h2><p>都到这个时候了, DHCP都在熟悉不过了, 不过还是简单的说一说吧, 以后自己看的时候也能顺便回忆一波~</p>
+<p>DHCP的全称是Dynamic Host Configure Protocol. 即为动态主机配置协议. 我们不可能手动配置局域网内每一台机器的网络属性, 所以, 这里就需要一个专门的东西来分发这些. </p>
+<p>需要特别说一下的是, DHCP绝对不是为主机分配IP地址的协议, 他分配的是网络属性, 最重要的几个属性是:</p>
+<ul>
+<li>IP&#x2F;Netmask</li>
+<li>Gateway</li>
+<li>DNS Server</li>
+</ul>
+<p>除此之外还有很多, 但一般使用到的就是上面这些.</p>
+<p>那么DHCP是如何工作的呢?</p>
+<p>DHCP协议的前身是Bootp协议, 也就是bootstrap protocol. 这些协议存在很久远了, 那个时候硬盘较小且昂贵, 所以不能为每一个工作站都配置上一块硬盘, 也就是说<strong>没有操作系统</strong> 这个时候, 就会有一台网络上的主机(服务器). 这个服务器为每一个工作站提供一个共享的磁盘空间. 也就是说这些主机的操作系统都安装在他们自己的共享空间中. 像这样是存在问题的. 你能想到吗?</p>
+<p>对了, 没有操作系统, 怎么会有IP地址? 没有地址, 如何通信?</p>
+<p>我们没有IP地址, 但是我们有MAC地址啊. 这个场景中就需要RARP协议的援助(当然现在RARP已经淘汰了), 在本地主机开机启动时, 我们的网卡就会发送一个RARP协议的广播报文, 当请求发送到服务器时, bootp协议就会开始工作. 他会根据MAC地址, 从自己维护的一个特定范围的地址池中取一个交给本地主机. 从而获得IP地址, 得以通信. 接着就会加载操作系统了.</p>
+<p>但是这样, 就又会存在一个问题了. 那就是每当我分配了一个IP地址, 这个IP地址就只能给这一台主机使用了, 为什么? 因为操作系统啊, 自己只能使用自己的操作系统啊. 所以这个IP是和操作系统绑定的.</p>
+<p>后来硬盘变得越来越廉价, 所以这些都成为历史. 现在无盘工作站已经越来越少了.</p>
+<p>不仅如此, 我们局域网中的机器也越来越多了, 有的时候总数量会超过我们可分配的地址范围, 那怎么办? 没关系, 只要保证在同一时间不会出现所有主机上线的情况就可以了. 这样bootp协议进行了升级, 也就是现在的DHCP协议.</p>
+<p>DHCP协议无非就是引入了一个新的租期(租约)的概念. 主机被分配的地址是有使用期限的. 一般是2Hours, 而每次经过50%的时间, 客户端就会进行续租操作 也就是1hour的时候, 重新变成了2hours.</p>
+<p>DHCP的流程也是很简单了, 我就以一个wireshark的包来做个展示吧:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/dhcptest.png" alt="dhcptest"></p>
+<p>过程共有4步, 从抓包的结果来看, 似乎每一次都是广播报文.</p>
+<p>接下来再说一个有用的技术, 叫做DHCP中继. 因为我们已经知道, 每一个DHCP报文都是广播报文, 但是路由器偏偏又是隔离广播域的一道天然屏障, 这样就没法跨路由器访问DHCP服务器了.</p>
+<p>所以为了能够访问到另一网络的DHCP服务器, 我们需要路由器将我们的广播请求转换成为单播.</p>
+<p>就是这样, 接下来看看我们的Linux时候怎么成为一台DHCP服务器的吧, 需要的软件就是<code>dhcp</code>这个名字了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># yum info dhcp</span></span><br><span class="line">Loaded plugins: fastestmirror, refresh-packagekit, security</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line"> * base: mirrors.cn99.com</span><br><span class="line"> * extras: mirrors.cn99.com</span><br><span class="line"> * updates: mirrors.cn99.com</span><br><span class="line">Available Packages</span><br><span class="line">Name        : dhcp</span><br><span class="line">Arch        : x86_64</span><br><span class="line">Epoch       : 12</span><br><span class="line">Version     : 4.1.1</span><br><span class="line">Release     : 53.P1.el6.centos.1</span><br><span class="line">Size        : 823 k</span><br><span class="line">Repo        : updates</span><br><span class="line">Summary     : Dynamic host configuration protocol software</span><br><span class="line">URL         : http://isc.org/products/DHCP/</span><br><span class="line">License     : ISC</span><br><span class="line">Description : DHCP (Dynamic Host Configuration Protocol) is a protocol <span class="built_in">which</span> allows</span><br><span class="line">            : individual devices on an IP network to get their own network</span><br><span class="line">            : configuration information (IP address, subnetmask, broadcast address,</span><br><span class="line">            : etc.) from a DHCP server. The overall purpose of DHCP is to make it</span><br><span class="line">            : easier to administer a large network.  The dhcp package includes the</span><br><span class="line">            : ISC DHCP service and relay agent.</span><br><span class="line">            : </span><br><span class="line">            : To use DHCP on your network, install a DHCP service (or relay agent),</span><br><span class="line">            : and on clients run a DHCP client daemon.  The dhcp package provides</span><br><span class="line">            : the ISC DHCP service and relay agent.</span><br></pre></td></tr></table></figure>
+
+<p>我们把它安装一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># rpm -ql dhcp</span></span><br><span class="line">/etc/dhcp</span><br><span class="line">/etc/dhcp/dhcpd.conf</span><br><span class="line">/etc/dhcp/dhcpd6.conf</span><br><span class="line">/etc/openldap/schema/dhcp.schema</span><br><span class="line">/etc/portreserve/dhcpd</span><br><span class="line">/etc/rc.d/init.d/dhcpd</span><br><span class="line">/etc/rc.d/init.d/dhcpd6</span><br><span class="line">/etc/rc.d/init.d/dhcrelay</span><br><span class="line">/etc/rc.d/init.d/dhcrelay6</span><br><span class="line">/etc/sysconfig/dhcpd</span><br><span class="line">/etc/sysconfig/dhcpd6</span><br><span class="line">/etc/sysconfig/dhcrelay</span><br><span class="line">/etc/sysconfig/dhcrelay6</span><br><span class="line">/usr/bin/omshell</span><br><span class="line">/usr/sbin/dhcpd</span><br><span class="line">/usr/sbin/dhcrelay</span><br><span class="line">...(omitted)</span><br><span class="line">/var/lib/dhcpd</span><br><span class="line">/var/lib/dhcpd/dhcpd.leases</span><br><span class="line">/var/lib/dhcpd/dhcpd6.leases</span><br></pre></td></tr></table></figure>
+
+<p>这是在CentOS6上的rpm包安装的文件, 显然存在两个daemon, 而且他们是不能同时启动的, 因为一个是做DHCP的, 一个是做DHCP中继的, 怎么可能同时跑呢.</p>
+<p>而且DHCP对IPv4和IPv6都有不同的配置.</p>
+<p>这个dhcp是一个重量级DHCP服务器程序, 而由一个非常轻量的程序也可以做到, 就是<code>dnsmasq</code> 听名字也可以看出来, 这个玩意还可以用来作为DNS服务器来搞, 配置很方便, 而且十分简单轻量. 但是这一次就先不说这个了, 还是来看看dhcp的使用.</p>
+<p>配置文件默认是空的, 但是它提供了一个配置模板, 我们复制过来看一下吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># cp -av /usr/share/doc/dhcp-4.1.1/dhcpd.conf.sample  /etc/dhcp/</span></span><br><span class="line">`/usr/share/doc/dhcp-4.1.1/dhcpd.conf.sample<span class="string">&#x27; -&gt; `/etc/dhcp/dhcpd.conf.sample&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>不同版本的内核, 可能dhcp程序的版本也不一致.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">option domain-name <span class="string">&quot;example.org&quot;</span>;</span><br><span class="line">option domain-name-servers ns1.example.org, ns2.example.org;</span><br></pre></td></tr></table></figure>
+
+<p>这就是在声明搜索域和DNS服务器啦, 当然使用的时候我们要改成IP才行.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">default-lease-time 600;</span><br><span class="line">max-lease-time 7200;</span><br></pre></td></tr></table></figure>
+
+<p>这就是两个常用的关于租期的全局属性. 而一个内网的配置是这样的: (或者说作用域)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">subnet 10.5.5.0 netmask 255.255.255.224 &#123;</span><br><span class="line">  range 10.5.5.26 10.5.5.30;</span><br><span class="line">  option domain-name-servers ns1.internal.example.org;</span><br><span class="line">  option domain-name <span class="string">&quot;internal.example.org&quot;</span>;</span><br><span class="line">  option routers 10.5.5.1;</span><br><span class="line">  option broadcast-address 10.5.5.31;</span><br><span class="line">  default-lease-time 600;</span><br><span class="line">  max-lease-time 7200;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中有很多option 这些都是可选项, 另外你发现在这个配置中还有之前说的关于租期的设置, 也就是说, 声明在外面的属性就对所有的subnet有效, 但是优先使用自己子网的配置项~</p>
+<p>除了subnet, 还有一种叫做host, 这个可以看作是保留的地址, 粗暴的说就是VIP地址, 仅仅分配给一台特定的主机.</p>
+<p>现在就来设置一下, 由于本机处于192.168.56.0&#x2F;24网络中, 所以就这样写:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">subnet 192.168.56.0 netmask 255.255.255.0 &#123;</span><br><span class="line">    range 192.168.56.10 192.168.56.20;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这就行了. 后面全部注释掉:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:.,<span class="variable">$s</span>/^[^<span class="comment">#]/#/</span></span><br></pre></td></tr></table></figure>
+
+<p>行了, 现在就开启服务吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># netstat -anup</span></span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   </span><br><span class="line">udp        0      0 0.0.0.0:67                  0.0.0.0:*                               1159/dhcpd  </span><br></pre></td></tr></table></figure>
+
+<p>监听在UDP的67号端口上.</p>
+<p>那么现在开启另外一台主机, 使用dhclient来强行通过这个来获得这个DHCP服务器分配的IP.</p>
+<p>在DHCP服务器上可以查看到日志:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Oct  8 13:53:21 node1 dhcpd: DHCPDISCOVER from 00:0c:29:a7:00:c1 via eth0</span><br><span class="line">Oct  8 13:53:21 node1 dhcpd: DHCPDISCOVER from 00:0c:29:a7:00:cb via eth0</span><br><span class="line">Oct  8 13:53:22 node1 dhcpd: DHCPOFFER on 192.168.230.100 to 00:0c:29:a7:00:c1 via eth0</span><br><span class="line">Oct  8 13:53:22 node1 dhcpd: DHCPOFFER on 192.168.230.135 to 00:0c:29:a7:00:cb via eth0</span><br><span class="line">Oct  8 13:53:22 node1 dhcpd: DHCPREQUEST <span class="keyword">for</span> 192.168.230.100 (192.168.230.133) from 00:0c:29:a7:00:c1 via eth0</span><br><span class="line">Oct  8 13:53:22 node1 dhcpd: DHCPACK on 192.168.230.100 to 00:0c:29:a7:00:c1 via eth0</span><br><span class="line">Oct  8 13:53:22 node1 dhcpd: DHCPREQUEST <span class="keyword">for</span> 192.168.230.135 (192.168.230.133) from 00:0c:29:a7:00:cb via eth0</span><br><span class="line">Oct  8 13:53:22 node1 dhcpd: DHCPACK on 192.168.230.135 to 00:0c:29:a7:00:cb via eth0</span><br></pre></td></tr></table></figure>
+
+<p>那么我怎么知道现在地址池分配的情况呢? 在<code>/var/lib/dhcpd/dhcpd.leases</code>. 这个文件中记录了当前租出去的IP情况, 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">lease 192.168.230.100 &#123;</span><br><span class="line">  starts 0 2017/10/08 05:53:22;</span><br><span class="line">  ends 0 2017/10/08 07:33:22;</span><br><span class="line">  cltt 0 2017/10/08 05:53:22;</span><br><span class="line">  binding state active;</span><br><span class="line">  next binding state free;</span><br><span class="line">  hardware ethernet 00:0c:29:a7:00:c1;</span><br><span class="line">&#125;</span><br><span class="line">lease 192.168.230.135 &#123;</span><br><span class="line">  starts 0 2017/10/08 05:53:22;</span><br><span class="line">  ends 0 2017/10/08 07:33:22;</span><br><span class="line">  cltt 0 2017/10/08 05:53:22;</span><br><span class="line">  binding state active;</span><br><span class="line">  next binding state free;</span><br><span class="line">  hardware ethernet 00:0c:29:a7:00:cb;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>同时, 回到客户端, 我们会发现他的resolve.conf文件内容也是重新生成的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># cat /etc/resolv.conf </span></span><br><span class="line"><span class="comment"># Generated by NetworkManager</span></span><br><span class="line">domain example.org</span><br><span class="line">search example.org</span><br><span class="line">nameserver 192.168.230.132</span><br></pre></td></tr></table></figure>
+
+<p>OK, 现在我们就沿着dhcp来说说PXE网络引导的相关.</p>
+<h2 id="PXE"><a href="#PXE" class="headerlink" title="PXE"></a>PXE</h2><p>在dhcp的配置选项中, 有两个配置选项分别叫做:</p>
+<ul>
+<li>filename: 指明引导文件的名称</li>
+<li>next-server: 提供引导文件的服务器的IP地址.</li>
+</ul>
+<p>通过配置这个就可以实现网络引导服务器的搭建, 除了这个, filename之所以说是名称而不说是路径, 是因为这个服务器同时是一台tftp服务器, 也就是说一般这个文件都放在tftp的根目录下. 所以才说是名称的.</p>
+<p>tftp我们之前也说过的, 即 简单文件传输协议( Trivial File Transfer Protocol ). 我们来看一下介绍:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># yum info tftp-server</span></span><br><span class="line">Loaded plugins: fastestmirror, refresh-packagekit, security</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line">Available Packages</span><br><span class="line">Name        : tftp-server</span><br><span class="line">Arch        : x86_64</span><br><span class="line">Version     : 0.49</span><br><span class="line">Release     : 8.el6</span><br><span class="line">Size        : 39 k</span><br><span class="line">Repo        : base</span><br><span class="line">Summary     : The server <span class="keyword">for</span> the Trivial File Transfer Protocol (TFTP)</span><br><span class="line">URL         : http://www.kernel.org/pub/software/network/tftp/</span><br><span class="line">License     : BSD</span><br><span class="line">Description : The Trivial File Transfer Protocol (TFTP) is normally used only <span class="keyword">for</span></span><br><span class="line">            : booting diskless workstations.  The tftp-server package provides the</span><br><span class="line">            : server <span class="keyword">for</span> TFTP, <span class="built_in">which</span> allows <span class="built_in">users</span> to transfer files to and from a</span><br><span class="line">            : remote machine. TFTP provides very little security, and should not be</span><br><span class="line">            : enabled unless it is expressly needed.  The TFTP server is run from</span><br><span class="line">            : /etc/xinetd.d/tftp, and is disabled by default.</span><br></pre></td></tr></table></figure>
+
+<p>安装完成了之后是这样的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># rpm -ql tftp-server</span></span><br><span class="line">/etc/xinetd.d/tftp</span><br><span class="line">/usr/sbin/in.tftpd</span><br><span class="line">/usr/share/doc/tftp-server-0.49</span><br><span class="line">/usr/share/doc/tftp-server-0.49/CHANGES</span><br><span class="line">/usr/share/doc/tftp-server-0.49/README</span><br><span class="line">/usr/share/doc/tftp-server-0.49/README.security</span><br><span class="line">/usr/share/doc/tftp-server-0.49/README.security.tftpboot</span><br><span class="line">/usr/share/man/man8/in.tftpd.8.gz</span><br><span class="line">/usr/share/man/man8/tftpd.8.gz</span><br><span class="line">/var/lib/tftpboot</span><br></pre></td></tr></table></figure>
+
+<p>很简单, 依靠xinetd来运行.</p>
+<p>首先在配置文件中将disable改为no 接着启动xinetd服务即可:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># vim /etc/xinetd.d/tftp </span></span><br><span class="line">[root@node1 ~]<span class="comment"># service xinetd restart</span></span><br><span class="line">Stopping xinetd:                                           [  OK  ]</span><br><span class="line">Starting xinetd:                                           [  OK  ]</span><br><span class="line">[root@node1 ~]<span class="comment"># netstat -anup</span></span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   </span><br><span class="line">udp        0      0 192.168.230.133:39950       192.168.230.1:53            ESTABLISHED 1573/ManagementAgen </span><br><span class="line">udp        0      0 0.0.0.0:67                  0.0.0.0:*                               2572/dhcpd          </span><br><span class="line">udp        0      0 0.0.0.0:68                  0.0.0.0:*                               1794/dhclient       </span><br><span class="line">udp        0      0 0.0.0.0:68                  0.0.0.0:*                               1796/dhclient       </span><br><span class="line">udp        0      0 0.0.0.0:69                  0.0.0.0:*                               3350/xinetd         </span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>接下来找一台主机安装tftp就行了, 使用方法不需要说什么, 因为实在是太简单了.</p>
+<p>有了这些铺垫, 我们就可以着手来搞一个PXE启动服务器了.</p>
+<p>首先还是先从PXE说起, 什么是PXE呢, PXE的全称是Preboot eXecute Environment. 他需要之前说的DHCP, tftp以及一个file 	server(yum repo)的帮助.</p>
+<p>首先为了能够达成引导的目的, 我们需要一个</p>
+<p>这个在syslinux包中有提供:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># yum info syslinux</span></span><br><span class="line">Loaded plugins: fastestmirror, refresh-packagekit, security</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line">Installed Packages</span><br><span class="line">Name        : syslinux</span><br><span class="line">Arch        : x86_64</span><br><span class="line">Version     : 4.02</span><br><span class="line">Release     : 4.el6</span><br><span class="line">Size        : 2.0 M</span><br><span class="line">Repo        : installed</span><br><span class="line">From repo   : base</span><br><span class="line">Summary     : Simple kernel loader <span class="built_in">which</span> boots from a FAT filesystem</span><br><span class="line">URL         : http://syslinux.zytor.com/wiki/index.php/The_Syslinux_Project</span><br><span class="line">License     : GPLv2+</span><br><span class="line">Description : SYSLINUX is a suite of bootloaders, currently supporting DOS FAT</span><br><span class="line">            : filesystems, Linux ext2/ext3 filesystems (EXTLINUX), PXE network boots</span><br><span class="line">            : (PXELINUX), or ISO 9660 CD-ROMs (ISOLINUX).  It also includes a tool,</span><br><span class="line">            : MEMDISK, <span class="built_in">which</span> loads legacy operating systems from these media.</span><br></pre></td></tr></table></figure>
+
+<p>它包含了一大堆引导程序, 支持各种文件系统, 网络, 光盘等等. 这里面由一个叫做<code>pxelinux.0</code>的文件我们会用到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/share/syslinux/pxelinux.0</span><br></pre></td></tr></table></figure>
+
+<p>现在 就来配置一下我们的DHCP服务器吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]<span class="comment"># cp /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/</span></span><br><span class="line">[root@node1 ~]<span class="comment"># rm -rf /var/lib/tftpboot/fstab </span></span><br><span class="line">[root@node1 ~]<span class="comment"># mount /dev/cdrom1 /media/</span></span><br><span class="line">mount: block device /dev/sr0 is write-protected, mounting read-only</span><br><span class="line">[root@node1 ~]<span class="comment"># cp -av /media/images/pxeboot/&#123;vmlinuz,initrd.img&#125; /var/lib/tftpboot/</span></span><br><span class="line">`/media/images/pxeboot/vmlinuz<span class="string">&#x27; -&gt; `/var/lib/tftpboot/vmlinuz&#x27;</span></span><br><span class="line">`/media/images/pxeboot/initrd.img<span class="string">&#x27; -&gt; `/var/lib/tftpboot/initrd.img&#x27;</span></span><br><span class="line">[root@node1 ~]<span class="comment"># cd /media/isolinux/</span></span><br><span class="line">[root@node1 isolinux]<span class="comment"># cp -av boot.cat vesamenu.c32 splash.jpg /var/lib/tftpboot/</span></span><br><span class="line">`boot.cat<span class="string">&#x27; -&gt; `/var/lib/tftpboot/boot.cat&#x27;</span></span><br><span class="line">`vesamenu.c32<span class="string">&#x27; -&gt; `/var/lib/tftpboot/vesamenu.c32&#x27;</span></span><br><span class="line">`splash.jpg<span class="string">&#x27; -&gt; `/var/lib/tftpboot/splash.jpg&#x27;</span></span><br><span class="line">[root@node1 isolinux]<span class="comment"># mkdir /var/lib/tftpboot/pxelinux.cfg</span></span><br><span class="line">[root@node1 isolinux]<span class="comment"># cp isolinux.cfg /var/lib/tftpboot/pxelinux.cfg/default</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来就可以修改DHCP配置文件了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">subnet 192.168.230.0 netmask 255.255.255.0 &#123;</span><br><span class="line">  range 192.168.230.100 192.168.230.200;</span><br><span class="line">  option routers 192.168.230.1;</span><br><span class="line">  filename <span class="string">&quot;pxelinux.0&quot;</span>;</span><br><span class="line">  next-server 192.168.230.133;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样重启服务之后, 新建一个虚拟机</p>
+<p>确保使用同一网络之后, 就会看到激动人心的画面:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pxe.png" alt="pxe"></p>
+<p>接着就神奇的进入了:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/centos6.png" alt="CentOS6"></p>
+<p>怎么样, 是不是很有趣. 等到加载完vmlinuz和initrd.img时候就可以进行安装了:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/installC6.png" alt="installC6"></p>
+<p>这是CentOS6的安装流程.</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>过程总结如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CentOS 6 PXE: </span><br><span class="line">  yum -y install syslinux tftp-server</span><br><span class="line"></span><br><span class="line">  <span class="built_in">cp</span> /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/</span><br><span class="line">  <span class="built_in">cp</span> /media/cdrom/images/pxelinux/&#123;vmlinuz,initrd.img&#125; /var/lib/tftp/boot/</span><br><span class="line">  <span class="built_in">cp</span> /media/cdrom/isolinux/&#123;boot.cfg,vesamenu.c32,splash.png&#125; /var/lib/tftp/boot/</span><br><span class="line">  <span class="built_in">mkdir</span> /var/lib/tftpboot/pxelinux.cfg/</span><br><span class="line">  <span class="built_in">cp</span> /media/cdrom/isolinux/isolinux.cfg /var/lib/tftpboot/pxelinux.cfg/default/</span><br></pre></td></tr></table></figure>
+
+<p>如果是CentOS7, 过程和C6不太一样, 但大体相同:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">CentOS 7 PXE:</span><br><span class="line">  yum -y install syslinux tftp-server</span><br><span class="line"></span><br><span class="line">  <span class="built_in">cp</span> /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/</span><br><span class="line">  <span class="built_in">cp</span> /media/cdrom/images/pxelinux/&#123;vmlinuz,initrd.img&#125; /var/lib/tftp/boot/</span><br><span class="line">  <span class="built_in">cp</span> /usr/share/syslinux/&#123;chain.c32,mboot.c32,menu.c32,memdisk&#125; /var/lib/tftpboot/</span><br><span class="line">  <span class="built_in">mkdir</span> /var/lib/tftpboot/pxelinux.cfg/</span><br><span class="line"></span><br><span class="line">  创建/var/lib/tftpboot/pxelinux.cfg/default</span><br><span class="line">  内容类似如下：</span><br><span class="line">  default menu.c32</span><br><span class="line">  prompt 5</span><br><span class="line">  <span class="built_in">timeout</span> 30</span><br><span class="line">  MENU TITLE CentOS 7 PXE Menu</span><br><span class="line"></span><br><span class="line">  LABEL linux</span><br><span class="line">  MENU LABEL Install CentOS 7 x86_64</span><br><span class="line">  KERNEL vmlinuz</span><br><span class="line">  APPEND initrd=initrd.img inst.repo=http://YUM_IP/centos7 ks=http://KS_IP/centos7.cfg	</span><br></pre></td></tr></table></figure>
+
+<h2 id="Cobbler的实现"><a href="#Cobbler的实现" class="headerlink" title="Cobbler的实现"></a>Cobbler的实现</h2><p>我们在上面已经实现了一个简单的PXE网络引导环境, 那么现在说的Cobbler又是个什么东西呢? 实际上, 这是一个对PXE的更高级封装, 包括了KS, YUM等等一统之下的系统集中部署的环境.</p>
+<p>这个玩意是使用Python实现的, 十分小巧. 我们来看一下他的架构和一些名词:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/Cobbler_first.png" alt="Cobbler_first.png"></p>
+<p>这里最重要的部分就是Profile了, 我们在上面都知道较完整的一个网络引导起码需要vmlinuz + initrd.img, YUM repo, KS文件等等. 而不同的发行版是需要不同的, 或者说对应版本的vmlinuz, initrd.img的, 我们不能将非对应版本的这些扔到一块去.</p>
+<p>所以Cobbler就把他们集合在一起而组成了一个个Profile, 例如我们可以制定这样的Profile:</p>
+<p><strong>用于Web的CentOS6</strong>: (CentOS6的)vmlinuz+initrd.img+kickstart_web+CentOS6的yum repo</p>
+<p><strong>用于数据库的CentOS7</strong>: (CentOS7的)vmlinuz+initrd.img+kickstart_db+CentOS7的yum repo</p>
+<p>等等. </p>
+<p>所以我们还是关注Cobbler的三个核心组件:</p>
+<ul>
+<li>repository<ul>
+<li>mirror: 指向一个yum源</li>
+<li>import: 导入一个yum源</li>
+</ul>
+</li>
+<li>distribution: cobbler可以从上面的repo中, 根据你的dist自动的抽出需要的文件. </li>
+<li>Profile: 用户编写产生</li>
+</ul>
+<p>过程变得这么简单, 所以才说连修鞋匠都会使用. 接下来我们就来安装看一下:</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@master ~]<span class="comment"># yum list epel cobbler*</span></span><br><span class="line">Loaded plugins: fastestmirror</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line"> * base: mirrors.sohu.com</span><br><span class="line"> * epel: mirrors.ustc.edu.cn</span><br><span class="line"> * extras: mirrors.cn99.com</span><br><span class="line"> * updates: mirrors.cn99.com</span><br><span class="line">Available Packages</span><br><span class="line">cobbler.x86_64                                                                  2.6.11-1.el6                                                              epel</span><br><span class="line">cobbler-web.noarch                                                              2.6.11-1.el6                                                              epel</span><br></pre></td></tr></table></figure>
+
+<p>两个软件包, 其中第二个是他的GUI接口, cobbler所有的功能都可以在他的命令行接口上实现, 所以直接安装第一个就行了.</p>
+<p>这样来执行安装步骤:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install cobbler pykickstart syslinux debmirror dhcp tftp-server</span><br></pre></td></tr></table></figure>
+
+<p>接着我们确保cobblerd服务启动, tftp-server服务启动, 为了防止出现问题, 我们事先把TFTProot中的文件删除到后者挪到别的地方. 而且把dhcp服务的配置文件中的next-server注释掉. </p>
+<p>接着就可以开始启动服务了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@master ~]<span class="comment"># systemctl start httpd</span></span><br><span class="line">[root@master ~]<span class="comment"># systemctl start tftp</span></span><br><span class="line">[root@master ~]<span class="comment"># systemctl start dhcpd</span></span><br><span class="line">[root@master ~]<span class="comment"># systemctl start cobblerd</span></span><br></pre></td></tr></table></figure>
+
+<p>在cobbler的配置文件<code>/etc/cobbler/settings</code>中找到<code>server</code>这一行, 将他的地址改成是其他主机可以发现的IP地址, 接着重启服务, 来执行check子命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@master ~]<span class="comment"># cobbler check</span></span><br><span class="line">The following are potential configuration items that you may want to fix:</span><br><span class="line"></span><br><span class="line">1 : For PXE to be functional, the <span class="string">&#x27;next_server&#x27;</span> field <span class="keyword">in</span> /etc/cobbler/settings must be <span class="built_in">set</span> to something other than 127.0.0.1, and should match the IP of the boot server on the PXE network.</span><br><span class="line">2 : SELinux is enabled. Please review the following wiki page <span class="keyword">for</span> details on ensuring cobbler works correctly <span class="keyword">in</span> your SELinux environment:</span><br><span class="line">    https://github.com/cobbler/cobbler/wiki/Selinux</span><br><span class="line">3 : change <span class="string">&#x27;disable&#x27;</span> to <span class="string">&#x27;no&#x27;</span> <span class="keyword">in</span> /etc/xinetd.d/tftp</span><br><span class="line">4 : Some network boot-loaders are missing from /var/lib/cobbler/loaders, you may run <span class="string">&#x27;cobbler get-loaders&#x27;</span> to download them, or, <span class="keyword">if</span> you only want to handle x86/x86_64 netbooting, you may ensure that you have installed a *recent* version of the syslinux package installed and can ignore this message entirely.  Files <span class="keyword">in</span> this directory, should you want to support all architectures, should include pxelinux.0, menu.c32, elilo.efi, and yaboot. The <span class="string">&#x27;cobbler get-loaders&#x27;</span> <span class="built_in">command</span> is the easiest way to resolve these requirements.</span><br><span class="line">5 : <span class="built_in">enable</span> and start rsyncd.service with systemctl</span><br><span class="line">6 : comment out <span class="string">&#x27;dists&#x27;</span> on /etc/debmirror.conf <span class="keyword">for</span> proper debian support</span><br><span class="line">7 : comment out <span class="string">&#x27;arches&#x27;</span> on /etc/debmirror.conf <span class="keyword">for</span> proper debian support</span><br><span class="line">8 : The default password used by the sample templates <span class="keyword">for</span> newly installed machines (default_password_crypted <span class="keyword">in</span> /etc/cobbler/settings) is still <span class="built_in">set</span> to <span class="string">&#x27;cobbler&#x27;</span> and should be changed, try: <span class="string">&quot;openssl passwd -1 -salt &#x27;random-phrase-here&#x27; &#x27;your-password-here&#x27;&quot;</span> to generate new one</span><br><span class="line">9 : fencing tools were not found, and are required to use the (optional) power management features. install cman or fence-agents to use them</span><br><span class="line"></span><br><span class="line">Restart cobblerd and <span class="keyword">then</span> run <span class="string">&#x27;cobbler sync&#x27;</span> to apply changes.</span><br></pre></td></tr></table></figure>
+
+<p>我们就根据他的提示来一步一步的看吧! 首先第一个, 我们需要在配置文件中指定<code>next_server</code>的地址. 接着第二个可以忽略, 我们先把SELINUX关闭就行了. 下一个, 我们可以通过chkconfig来执行, 或者直接修改配置文件.  第4个, 我们已经安装好了syslinux, 所以也没关系了. 第5个, 直接就启动和设置开机启动rsync服务就可以了. 接着下面两个都是为提供Debian系的支持, 按照他说的注释掉就行了. 接着第8个, 我们重新生成一个密码放到setting中, 使用openssl来做就行. 最后一个由于我们不需要STONITH设备 所以暂时忽略掉.</p>
+<p><strong>你的check不一定和我的完全一样, 所以还是要根据具体的输出来执行和解决.</strong></p>
+<p>执行之后我们就可以进行同步操作了, 来执行一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">[root@master ~]<span class="comment"># cobbler sync</span></span><br><span class="line">task started: 2017-12-11_201043_sync</span><br><span class="line">task started (<span class="built_in">id</span>=Sync, time=Mon Dec 11 20:10:43 2017)</span><br><span class="line">running pre-sync triggers</span><br><span class="line">cleaning trees</span><br><span class="line"><span class="built_in">mkdir</span>: /var/lib/tftpboot/pxelinux.cfg</span><br><span class="line"><span class="built_in">mkdir</span>: /var/lib/tftpboot/grub</span><br><span class="line"><span class="built_in">mkdir</span>: /var/lib/tftpboot/images</span><br><span class="line"><span class="built_in">mkdir</span>: /var/lib/tftpboot/s390x</span><br><span class="line"><span class="built_in">mkdir</span>: /var/lib/tftpboot/ppc</span><br><span class="line"><span class="built_in">mkdir</span>: /var/lib/tftpboot/etc</span><br><span class="line">removing: /var/lib/tftpboot/grub/images</span><br><span class="line">copying bootloaders</span><br><span class="line">trying hardlink /usr/share/syslinux/pxelinux.0 -&gt; /var/lib/tftpboot/pxelinux.0</span><br><span class="line">trying hardlink /usr/share/syslinux/menu.c32 -&gt; /var/lib/tftpboot/menu.c32</span><br><span class="line">trying hardlink /usr/share/syslinux/memdisk -&gt; /var/lib/tftpboot/memdisk</span><br><span class="line">copying distros to tftpboot</span><br><span class="line">copying images</span><br><span class="line">generating PXE configuration files</span><br><span class="line">generating PXE menu structure</span><br><span class="line">rendering TFTPD files</span><br><span class="line">generating /etc/xinetd.d/tftp</span><br><span class="line">cleaning <span class="built_in">link</span> caches</span><br><span class="line">running post-sync triggers</span><br><span class="line">running python triggers from /var/lib/cobbler/triggers/sync/post/*</span><br><span class="line">running python trigger cobbler.modules.sync_post_restart_services</span><br><span class="line">running shell triggers from /var/lib/cobbler/triggers/sync/post/*</span><br><span class="line">running python triggers from /var/lib/cobbler/triggers/change/*</span><br><span class="line">running python trigger cobbler.modules.scm_track</span><br><span class="line">running shell triggers from /var/lib/cobbler/triggers/change/*</span><br><span class="line">*** TASK COMPLETE ***</span><br><span class="line">[root@master ~]<span class="comment"># tree /var/lib/tftpboot/</span></span><br><span class="line">/var/lib/tftpboot/</span><br><span class="line">├── boot</span><br><span class="line">│   └── grub</span><br><span class="line">│       └── menu.lst</span><br><span class="line">├── etc</span><br><span class="line">├── grub</span><br><span class="line">│   ├── efidefault</span><br><span class="line">│   └── images -&gt; ../images</span><br><span class="line">├── images</span><br><span class="line">├── memdisk</span><br><span class="line">├── menu.c32</span><br><span class="line">├── ppc</span><br><span class="line">├── pxelinux.0</span><br><span class="line">├── pxelinux.cfg</span><br><span class="line">│   └── default</span><br><span class="line">└── s390x</span><br><span class="line">    └── profile_list</span><br><span class="line"></span><br><span class="line">9 directories, 7 files</span><br><span class="line">[root@master ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<p>看吧, Cobbler已经帮助我们把文件丢进去了.</p>
+<p>接下来, 我们就可以继续了, 创建一个repo. 这里我们选择导入(import)的方式, 通过挂载光盘来使得Cobbler自动建立文件树:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">[root@master ~]<span class="comment"># cobbler import --name=CentOS7_x86_64 --path=/media/</span></span><br><span class="line">task started: 2017-12-11_203518_import</span><br><span class="line">task started (<span class="built_in">id</span>=Media import, time=Mon Dec 11 20:35:18 2017)</span><br><span class="line">Found a candidate signature: breed=redhat, version=rhel6</span><br><span class="line">Found a candidate signature: breed=redhat, version=rhel7</span><br><span class="line">Found a matching signature: breed=redhat, version=rhel7</span><br><span class="line">Adding distros from path /var/www/cobbler/ks_mirror/CentOS7_x86_64:</span><br><span class="line">creating new distro: CentOS7-x86_64</span><br><span class="line">trying symlink: /var/www/cobbler/ks_mirror/CentOS7_x86_64 -&gt; /var/www/cobbler/links/CentOS7-x86_64</span><br><span class="line">creating new profile: CentOS7-x86_64</span><br><span class="line">associating repos</span><br><span class="line">checking <span class="keyword">for</span> rsync repo(s)</span><br><span class="line">checking <span class="keyword">for</span> rhn repo(s)</span><br><span class="line">checking <span class="keyword">for</span> yum repo(s)</span><br><span class="line">starting descent into /var/www/cobbler/ks_mirror/CentOS7_x86_64 <span class="keyword">for</span> CentOS7-x86_64</span><br><span class="line">processing repo at : /var/www/cobbler/ks_mirror/CentOS7_x86_64</span><br><span class="line">need to process repo/comps: /var/www/cobbler/ks_mirror/CentOS7_x86_64</span><br><span class="line">looking <span class="keyword">for</span> /var/www/cobbler/ks_mirror/CentOS7_x86_64/repodata/*comps*.xml</span><br><span class="line">Keeping repodata as-is :/var/www/cobbler/ks_mirror/CentOS7_x86_64/repodata</span><br><span class="line">*** TASK COMPLETE ***</span><br><span class="line">[root@master ~]<span class="comment"># cd /var/www/</span></span><br><span class="line">[root@master www]<span class="comment"># ls</span></span><br><span class="line">cgi-bin  cobbler  html</span><br><span class="line">[root@master www]<span class="comment"># cd /etc/httpd/conf.d/</span></span><br><span class="line">[root@master conf.d]<span class="comment"># ls</span></span><br><span class="line">autoindex.conf  cobbler.conf  README  userdir.conf  welcome.conf</span><br><span class="line">[root@master conf.d]<span class="comment"># head cobbler.conf</span></span><br><span class="line"><span class="comment"># This configuration file allows cobbler data</span></span><br><span class="line"><span class="comment"># to be accessed over HTTP.</span></span><br><span class="line"></span><br><span class="line">AliasMatch ^/cblr(?!/svc/)(.*)?$ <span class="string">&quot;/var/www/cobbler<span class="variable">$1</span>&quot;</span></span><br><span class="line">AliasMatch ^/cobbler_track(.*)?$ <span class="string">&quot;/var/www/cobbler<span class="variable">$1</span>&quot;</span></span><br><span class="line"><span class="comment">#AliasMatch ^/cobbler(.*)?$ &quot;/var/www/cobbler$1&quot;</span></span><br><span class="line">Alias /cobbler /var/www/cobbler</span><br><span class="line">Alias /cobbler_webui_content /var/www/cobbler_webui_content</span><br><span class="line"></span><br><span class="line">WSGIScriptAliasMatch ^/cblr/svc/([^/]*) /var/www/cobbler/svc/services.py</span><br></pre></td></tr></table></figure>
+
+<p>我们能看到, Cobbler已经构建了一个YUM源, 并且在httpd的配置文件中定制了别名, 我们现在已经可以访问到看看了.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ks_mirror.png" alt="ks_mirror.png"></p>
+<p>接着再次执行一次同步:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">[root@master ~]<span class="comment"># cobbler sync</span></span><br><span class="line">task started: 2017-12-11_203756_sync</span><br><span class="line">task started (<span class="built_in">id</span>=Sync, time=Mon Dec 11 20:37:56 2017)</span><br><span class="line">running pre-sync triggers</span><br><span class="line">cleaning trees</span><br><span class="line">removing: /var/www/cobbler/images/CentOS7-x86_64</span><br><span class="line">removing: /var/lib/tftpboot/pxelinux.cfg/default</span><br><span class="line">removing: /var/lib/tftpboot/grub/images</span><br><span class="line">removing: /var/lib/tftpboot/grub/efidefault</span><br><span class="line">removing: /var/lib/tftpboot/images/CentOS7-x86_64</span><br><span class="line">removing: /var/lib/tftpboot/s390x/profile_list</span><br><span class="line">copying bootloaders</span><br><span class="line">copying distros to tftpboot</span><br><span class="line">copying files <span class="keyword">for</span> distro: CentOS7-x86_64</span><br><span class="line">trying hardlink /var/www/cobbler/ks_mirror/CentOS7_x86_64/images/pxeboot/vmlinuz -&gt; /var/lib/tftpboot/images/CentOS7-x86_64/vmlinuz</span><br><span class="line">trying hardlink /var/www/cobbler/ks_mirror/CentOS7_x86_64/images/pxeboot/initrd.img -&gt; /var/lib/tftpboot/images/CentOS7-x86_64/initrd.img</span><br><span class="line">copying images</span><br><span class="line">generating PXE configuration files</span><br><span class="line">generating PXE menu structure</span><br><span class="line">copying files <span class="keyword">for</span> distro: CentOS7-x86_64</span><br><span class="line">trying hardlink /var/www/cobbler/ks_mirror/CentOS7_x86_64/images/pxeboot/vmlinuz -&gt; /var/www/cobbler/images/CentOS7-x86_64/vmlinuz</span><br><span class="line">trying hardlink /var/www/cobbler/ks_mirror/CentOS7_x86_64/images/pxeboot/initrd.img -&gt; /var/www/cobbler/images/CentOS7-x86_64/initrd.img</span><br><span class="line">Writing template files <span class="keyword">for</span> CentOS7-x86_64</span><br><span class="line">rendering TFTPD files</span><br><span class="line">generating /etc/xinetd.d/tftp</span><br><span class="line">processing boot_files <span class="keyword">for</span> distro: CentOS7-x86_64</span><br><span class="line">cleaning <span class="built_in">link</span> caches</span><br><span class="line">running post-sync triggers</span><br><span class="line">running python triggers from /var/lib/cobbler/triggers/sync/post/*</span><br><span class="line">running python trigger cobbler.modules.sync_post_restart_services</span><br><span class="line">running shell triggers from /var/lib/cobbler/triggers/sync/post/*</span><br><span class="line">running python triggers from /var/lib/cobbler/triggers/change/*</span><br><span class="line">running python trigger cobbler.modules.scm_track</span><br><span class="line">running shell triggers from /var/lib/cobbler/triggers/change/*</span><br><span class="line">*** TASK COMPLETE ***</span><br></pre></td></tr></table></figure>
+
+<p>接着我们重新打开另外一台主机. 就可以看到下面的画面:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/cobbler_first_run.png" alt="cobbler_first_run.png"></p>
+<p>但是这显然不够, 我们想要达成无人值守的自动化安装, 就需要kickstart文件的帮助.</p>
+<blockquote>
+<p>脱坑指南, 如果说你在这个时候尝试进入安装的时候出现了故障:</p>
+<p>dracut-initqueue: curl: (23) Failed writing body (11904 !&#x3D; 16384)<br>loop: module loaded<br>dracut-initqueue[579]: mount: wrong fs type, bad option, bad superblock on &#x2F;dev&#x2F;loop0<br>dracut-initqueue[579]: missing codepage or helper program, or other error<br>dracut-initqueue[579]: In some cases useful info is found in syslog - try<br>dracut-initqueue[579]: dmesg | tail or so.<br>dracut-initqueue[579]:Mumount: &#x2F;run&#x2F;initramfs&#x2F;squashfs: not mounted<br>dracut-initqueue[579]: &#x2F;sbin&#x2F;dmsquash-lice-root: line 273: printf: write error: No space left on device</p>
+<p><img src="https://www.zhangfangzhou.cn/wp-content/uploads/2017/11/centos7-bad-superblock-.png" alt="img"></p>
+<p>那么这个时候考虑<strong>升级内存, 起码要2G.</strong></p>
+</blockquote>
+<p>关于Kickstart文件的内容以及语法, 就参考红帽官方的文档就好: <a target="_blank" rel="noopener" href="https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/installation_guide/sect-kickstart-syntax#sect-kickstart-commands">KICKSTART 语法参考</a></p>
+<p>我给出的一个小样例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#version=DEVEL</span></span><br><span class="line">firewall --disabled</span><br><span class="line"><span class="comment"># System authorization information</span></span><br><span class="line">auth --enableshadow --passalgo=sha512</span><br><span class="line">text</span><br><span class="line"><span class="comment"># Network installation</span></span><br><span class="line">url --url=<span class="string">&quot;http://192.168.224.128/cobbler/ks_mirror/CentOS7_x86_64/&quot;</span></span><br><span class="line"><span class="comment"># Keyboard layouts</span></span><br><span class="line">keyboard --vckeymap=us --xlayouts=<span class="string">&#x27;us&#x27;</span></span><br><span class="line"><span class="comment"># System language</span></span><br><span class="line">lang en_US.UTF-8</span><br><span class="line"><span class="comment"># Root password</span></span><br><span class="line">rootpw --iscrypted $6$VyQYHVcM4r7uDUwN<span class="variable">$e1wqoecztBT05bXGiHE5p5rR4siqHstjlz6Hbpuav</span>/xUG0NqzC8Hrn478skCplkCtL0KJhQgue4G0CgKDBSkW0</span><br><span class="line"></span><br><span class="line">firstboot --<span class="built_in">disable</span></span><br><span class="line">selinux --<span class="built_in">disable</span></span><br><span class="line">zerombr</span><br><span class="line"><span class="comment"># System timezone</span></span><br><span class="line">timezone Asia/Shanghai</span><br><span class="line"><span class="comment"># System bootloader configuration</span></span><br><span class="line">bootloader --append=<span class="string">&quot; crashkernel=auto&quot;</span> --location=mbr --boot-drive=sda</span><br><span class="line"></span><br><span class="line">clearpart --all</span><br><span class="line"><span class="comment"># Partition</span></span><br><span class="line">part /boot --fstype=<span class="string">&quot;ext4&quot;</span> --size=200</span><br><span class="line">part / --fstype=<span class="string">&quot;xfs&quot;</span> --size=19456</span><br><span class="line">logging --level=info</span><br><span class="line"></span><br><span class="line">%packages</span><br><span class="line">@^minimal</span><br><span class="line">@core</span><br><span class="line">net-tools</span><br><span class="line">chrony</span><br><span class="line">kexec-tools</span><br><span class="line">%end</span><br><span class="line"></span><br><span class="line">%post --interpreter=/bin/bash</span><br><span class="line"></span><br><span class="line">/bin/hostname agent</span><br><span class="line">/usr/bin/cat <span class="string">&quot;HOSTNAME agent&quot;</span> &gt;&gt; /etc/sysconfig/network</span><br><span class="line"></span><br><span class="line">%end</span><br></pre></td></tr></table></figure>
+
+<p>但是好像有问题…hostname的修改没有生效..</p>
+<p>总之生成了这个文件之后我们就可以去改变profile的行为了, </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cobbler profile edit --name=CentOS7-x86_64 --kickstart=%你的kickstart文件路径%</span><br><span class="line">cobbler <span class="built_in">sync</span></span><br></pre></td></tr></table></figure>
+
+<p>接着我们重启机器就可以享受无人值守的PXE自动安装了</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#DHCP"><span class="toc-number">1.</span> <span class="toc-text">DHCP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PXE"><span class="toc-number">2.</span> <span class="toc-text">PXE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cobbler%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.</span> <span class="toc-text">Cobbler的实现</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&text=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&is_video=false&description=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=来,搭建一个DHCP服务器和PXE吧&body=Check out this article: https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&title=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&name=来,搭建一个DHCP服务器和PXE吧&description=&lt;p&gt;DHCP服务器建立起来特别简单啦, 就当放松心情来搭建一个吧! 另外 这一次顺便来看看神奇的网络引导究竟是怎么实现的~&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/07/%E6%9D%A5-%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AADHCP%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8CPXE%E5%90%A7/&t=来,搭建一个DHCP服务器和PXE吧"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

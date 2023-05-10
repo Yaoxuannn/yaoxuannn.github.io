@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="继续学习高可用集群啦.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Corosync&#x2F;Pacemaker集群配置">
+<meta property="og:url" content="https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="继续学习高可用集群啦.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-10-28T14:17:03.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:32:26.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Cluster">
+<meta property="article:tag" content="Corosync">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Corosync/Pacemaker集群配置</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/25/%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4%E4%B9%8BAnsible/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&text=Corosync/Pacemaker集群配置"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&is_video=false&description=Corosync/Pacemaker集群配置"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Corosync/Pacemaker集群配置&body=Check out this article: https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&name=Corosync/Pacemaker集群配置&description=&lt;p&gt;继续学习高可用集群啦.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&t=Corosync/Pacemaker集群配置"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%93%E9%AA%8CPCS"><span class="toc-number">1.</span> <span class="toc-text">体验PCS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#crmsh%E4%BD%93%E9%AA%8C"><span class="toc-number">2.</span> <span class="toc-text">crmsh体验</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8crmsh-corosync-pacemaker%E5%AE%9E%E7%8E%B0httpd%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">2.0.1.</span> <span class="toc-text">使用crmsh+corosync+pacemaker实现httpd高可用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#corosync%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">corosync的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pacemaker"><span class="toc-number">4.</span> <span class="toc-text">pacemaker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE-%E6%9E%84%E5%BB%BAWeb%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9C%8D%E5%8A%A1%E9%9B%86%E7%BE%A4"><span class="toc-number">5.</span> <span class="toc-text">项目: 构建Web高可用服务集群</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Corosync/Pacemaker集群配置
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-28T14:17:03.000Z" class="dt-published" itemprop="datePublished">2017-10-28</time>
+        
+        (Updated: <time datetime="2020-11-30T01:32:26.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cluster/" rel="tag">Cluster</a>, <a class="p-category" href="/tags/Corosync/" rel="tag">Corosync</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>继续学习高可用集群啦.</p>
+<span id="more"></span>
+
+<h2 id="体验PCS"><a href="#体验PCS" class="headerlink" title="体验PCS"></a>体验PCS</h2><p>之前就已经说过了, corosync是一个从Heartbeat V3中分出来的单独的messaging layer. 同时也是一个投票系统. 现在在CentOS7上, 我们使用Corosync+Pacemaker组合来构建服务.</p>
+<p>首先我们先来看一下pcs这个东西, 之前也已经说过了, 用于集群的全生命周期管理.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Available Packages</span><br><span class="line">Name        : pcs</span><br><span class="line">Arch        : x86_64</span><br><span class="line">Version     : 0.9.158</span><br><span class="line">Release     : 6.el7.centos</span><br><span class="line">Size        : 4.8 M</span><br><span class="line">Repo        : base/7/x86_64</span><br><span class="line">Summary     : Pacemaker Configuration System</span><br><span class="line">URL         : https://github.com/ClusterLabs/pcs</span><br><span class="line">License     : GPLv2</span><br><span class="line">Description : pcs is a corosync and pacemaker configuration tool.  It permits <span class="built_in">users</span> to</span><br><span class="line">            : easily view, modify and create pacemaker based clusters.</span><br></pre></td></tr></table></figure>
+
+<p>我们之前 都已经说了这么多了, 所以这次就直接来配置好了. 首先安装程序包吧, 由于pcs依赖corosync和pacemaker, 所以只需要安装pcs就行了, 为了方便我们建立一个ansible的服务器组(ha), 把他们VM-node1和VM-node2放进去吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ansible ha -m yum -a &#x27;name=pcs state=latest&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>这次准备的两个CentSOS7,  而且已经做好了密钥ssh登录, 主机名解析, 时间同步. </p>
+<p>安装完成之后, 会看到: pcs有个守护进程 这个我们需要启动起来接着设置成为开机启动:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ansible ha -m service -a &#x27;name=pcsd state=started enabled=yes&#x27;</span></span><br><span class="line"><span class="comment"># 查看一下</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># systemctl status pcsd</span></span><br><span class="line">● pcsd.service - PCS GUI and remote configuration interface</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/pcsd.service; enabled; vendor preset: disabled)</span><br><span class="line">   Active: active (running) since Sat 2017-10-28 14:04:32 CST; 17s ago</span><br><span class="line"> Main PID: 23944 (pcsd)</span><br><span class="line">   CGroup: /system.slice/pcsd.service</span><br><span class="line">           └─23944 /usr/bin/ruby /usr/lib/pcsd/pcsd &gt; /dev/null &amp;</span><br><span class="line"></span><br><span class="line">Oct 28 14:04:30 VM-node1 systemd[1]: Starting PCS GUI and remote configuration interface...</span><br><span class="line">Oct 28 14:04:32 VM-node1 systemd[1]: Started PCS GUI and remote configuration interface.</span><br></pre></td></tr></table></figure>
+
+<p>也确确实实的启动了. 是一个ruby程序呢 监听在2224&#x2F;tcp端口.</p>
+<p>除了这个pcsd守护进程, 我们还有一个叫做pcs的程序, 更改程序就通过pcsd来建立联系和交换信息. 但是pcs不可能随意的就进行信息的交换和决策. 一定是需要验证的, 所以我们一个用户来用作pcs的验证:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ansible ha -m shell -a &quot;echo &quot;test&quot; | passwd hacluster --stdin&quot;</span></span><br><span class="line">VM-node2 | SUCCESS | rc=0 &gt;&gt;</span><br><span class="line">Changing password <span class="keyword">for</span> user hacluster.</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br><span class="line"></span><br><span class="line">VM-node1 | SUCCESS | rc=0 &gt;&gt;</span><br><span class="line">Changing password <span class="keyword">for</span> user hacluster.</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br></pre></td></tr></table></figure>
+
+<p>这个用户也是存在的, 我们只需要保证密码是没有问题的就行了.</p>
+<p>现在我们就来认证两个节点, 首先, 我们说说pcs这个程序的命令格式 , 和ip类似, pcs也是有很多子模块&#x2F;子命令的, 接着这些模块各自又存在很多操作命令, 稍微看一下文档就明白了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Commands:</span><br><span class="line">    cluster     Configure cluster options and nodes.</span><br><span class="line">    resource    Manage cluster resources.</span><br><span class="line">    stonith     Manage fence devices.</span><br><span class="line">    constraint  Manage resource constraints.</span><br><span class="line">    property    Manage pacemaker properties.</span><br><span class="line">    acl         Manage pacemaker access control lists.</span><br><span class="line">    qdevice     Manage quorum device provider on the <span class="built_in">local</span> host.</span><br><span class="line">    quorum      Manage cluster quorum settings.</span><br><span class="line">    booth       Manage booth (cluster ticket manager).</span><br><span class="line">    status      View cluster status.</span><br><span class="line">    config      View and manage cluster configuration.</span><br><span class="line">    pcsd        Manage pcs daemon.</span><br><span class="line">    node        Manage cluster nodes.</span><br><span class="line">    alert       Manage pacemaker alerts.</span><br></pre></td></tr></table></figure>
+
+<p>这里我们使用cluster的auth命令来认证:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># ansible ha -a &quot;pcs cluster auth VM-node1 VM-node2 -u hacluster -p test&quot;</span></span><br><span class="line">VM-node2 | SUCCESS | rc=0 &gt;&gt;</span><br><span class="line">VM-node1: Authorized</span><br><span class="line">VM-node2: Authorized</span><br><span class="line"></span><br><span class="line">VM-node1 | SUCCESS | rc=0 &gt;&gt;</span><br><span class="line">VM-node1: Authorized</span><br><span class="line">VM-node2: Authorized</span><br></pre></td></tr></table></figure>
+
+<p>认证完成了之后, 我们就可以建立集群了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># pcs cluster setup --name testcluster VM-node1 VM-node2</span></span><br><span class="line">Destroying cluster on nodes: VM-node1, VM-node2...</span><br><span class="line">VM-node1: Stopping Cluster (pacemaker)...</span><br><span class="line">VM-node2: Stopping Cluster (pacemaker)...</span><br><span class="line">VM-node1: Successfully destroyed cluster</span><br><span class="line">VM-node2: Successfully destroyed cluster</span><br><span class="line"></span><br><span class="line">Sending <span class="string">&#x27;pacemaker_remote authkey&#x27;</span> to <span class="string">&#x27;VM-node1&#x27;</span>, <span class="string">&#x27;VM-node2&#x27;</span></span><br><span class="line">VM-node1: successful distribution of the file <span class="string">&#x27;pacemaker_remote authkey&#x27;</span></span><br><span class="line">VM-node2: successful distribution of the file <span class="string">&#x27;pacemaker_remote authkey&#x27;</span></span><br><span class="line">Sending cluster config files to the nodes...</span><br><span class="line">VM-node1: Succeeded</span><br><span class="line">VM-node2: Succeeded</span><br><span class="line"></span><br><span class="line">Synchronizing pcsd certificates on nodes VM-node1, VM-node2...</span><br><span class="line">VM-node1: Success</span><br><span class="line">VM-node2: Success</span><br><span class="line">Restarting pcsd on the nodes <span class="keyword">in</span> order to reload the certificates...</span><br><span class="line">VM-node1: Success</span><br><span class="line">VM-node2: Success</span><br></pre></td></tr></table></figure>
+
+<p>一路绿灯, 集群建立完毕, 这个时候会自动生成一份corosync的配置文件, 来看下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># grep &#x27;^[^[:space:]].*&#123;$&#x27; /etc/corosync/corosync.conf</span></span><br><span class="line">totem &#123;</span><br><span class="line">nodelist &#123;</span><br><span class="line">quorum &#123;</span><br><span class="line">logging &#123;</span><br></pre></td></tr></table></figure>
+
+<p>这个配置也是的分成了几段的,首先的totem中定义了使用的版本和协议, 集群的名字, 包括是否使用安全认证等等, 接着nodelist中 分成了一个一个node的内容块, 其实就是定义每一个节点的信息了, 再往后即使很熟悉的投票系统的设置, 包括使用哪边提供的voting system, 是否是两节点模型啊等等. 最后就是关于日志的记录了, 很容易就能看懂, 包括是否记录到文件, 是否记录到syslog中, 以及位置定义.</p>
+<p>好了现在我们就可以尝试启动集群了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># pcs cluster start --all</span></span><br><span class="line">VM-node2: Starting Cluster...</span><br><span class="line">VM-node1: Starting Cluster...</span><br></pre></td></tr></table></figure>
+
+<p>这样就启动完成了, 我们有多种方法查看当前集群的状态, 一个一个来看看吧.</p>
+<ul>
+<li>使用pcs的status查看</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># pcs status</span></span><br><span class="line">Cluster name: testcluster</span><br><span class="line">WARNING: no stonith devices and stonith-enabled is not <span class="literal">false</span></span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: VM-node1 (version 1.1.16-12.el7_4.4-94ff4df) - partition with quorum</span><br><span class="line">Last updated: Sat Oct 28 14:41:58 2017</span><br><span class="line">Last change: Sat Oct 28 14:40:29 2017 by hacluster via crmd on VM-node1</span><br><span class="line"></span><br><span class="line">2 nodes configured</span><br><span class="line">0 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node1 VM-node2 ]</span><br><span class="line"></span><br><span class="line">No resources</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Daemon Status:</span><br><span class="line">  corosync: active/disabled</span><br><span class="line">  pacemaker: active/disabled</span><br><span class="line">  pcsd: active/enabled</span><br></pre></td></tr></table></figure>
+
+<p>其中告诉了现在的信息传递层协议是corosync, 当前的DC是VM-node1 以及时间和当前的在线状态, 资源情况和守护进程的状态.</p>
+<p>还可以在后面加上其他的参数来查看不同的信息:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># pcs status corosync</span></span><br><span class="line"></span><br><span class="line">Membership information</span><br><span class="line">----------------------</span><br><span class="line">    Nodeid      Votes Name</span><br><span class="line">         1          1 VM-node1 (<span class="built_in">local</span>)</span><br><span class="line">         2          1 VM-node2</span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>corosync-cfgtool</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># corosync-cfgtool -s VM-node1</span></span><br><span class="line">Printing ring status.</span><br><span class="line">Local node ID 1</span><br><span class="line">RING ID 0</span><br><span class="line">	<span class="built_in">id</span>	= 192.168.206.9</span><br><span class="line">	status	= ring 0 active with no faults</span><br></pre></td></tr></table></figure>
+
+<p>没什么好说的, 就简单的信息输出, -s 就是status的意思吧 (我猜的)</p>
+<ul>
+<li>corosync-cmapctl</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># corosync-cmapctl </span></span><br><span class="line">...(omitted)</span><br><span class="line">runtime.totem.pg.mrp.srp.members.1.config_version (u64) = 0</span><br><span class="line">runtime.totem.pg.mrp.srp.members.1.ip (str) = r(0) ip(192.168.206.9) </span><br><span class="line">runtime.totem.pg.mrp.srp.members.1.join_count (u32) = 1</span><br><span class="line">runtime.totem.pg.mrp.srp.members.1.status (str) = joined</span><br><span class="line">runtime.totem.pg.mrp.srp.members.2.config_version (u64) = 0</span><br><span class="line">runtime.totem.pg.mrp.srp.members.2.ip (str) = r(0) ip(192.168.206.10) </span><br><span class="line">runtime.totem.pg.mrp.srp.members.2.join_count (u32) = 1</span><br><span class="line">runtime.totem.pg.mrp.srp.members.2.status (str) = joined</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>能够输出大量的运行时参数.</p>
+<p>我们可以使用<code>crm_verify</code>来验证当前的集群配置是否存在异常:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># crm_verify -LV</span></span><br><span class="line">   error: unpack_resources:	Resource start-up disabled since no STONITH resources have been defined</span><br><span class="line">   error: unpack_resources:	Either configure some or <span class="built_in">disable</span> STONITH with the stonith-enabled option</span><br><span class="line">   error: unpack_resources:	NOTE: Clusters with shared data need STONITH to ensure data integrity</span><br><span class="line">Errors found during check: config not valid</span><br></pre></td></tr></table></figure>
+
+<p>挨 出现了错误. 其实这个在之前也出现过了, 就是刚刚我们查看状态的时候显示的<code>WARNING</code>. 我们现在没有STONITH设备, 但是我们却开启了STNITH功能, 所以我们需要把它关闭, 关闭的方法也很简单, 我们使用pcs的property子命令来搞定:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># pcs property list --all</span></span><br><span class="line">  ..(omitted)</span><br><span class="line">  stonith-enabled: <span class="literal">true</span></span><br><span class="line">  ..(omitted)</span><br><span class="line">[root@VM-node1 ~]<span class="comment"># pcs property set stonith-enabled=false</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># crm_verify -LV</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>这就是pcs, 接下来我们再来试试crmsh.</p>
+<h2 id="crmsh体验"><a href="#crmsh体验" class="headerlink" title="crmsh体验"></a>crmsh体验</h2><p>刚刚使用的pcs是需要pcsd才可以进行管理的, 也即是我们之前说的有agent的, 而crmsh就不需要, 他通过ssh来进行管理, 直接yum install crmsh就可以, 如果没有就尝试找找其他的源吧. 接着我们需要安装pssh和python-pssh这两个包. 他们是为了提供并行的ssh和python的pssh接口.</p>
+<p>crmsh支持交互式模式, 而且还提供了类shell的操作方式, 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># crm</span></span><br><span class="line">crm(live)<span class="comment"># ls</span></span><br><span class="line">cibstatus        <span class="built_in">help</span>             site             </span><br><span class="line"><span class="built_in">cd</span>               cluster          quit             </span><br><span class="line">end              script           verify           </span><br><span class="line"><span class="built_in">exit</span>             ra               maintenance      </span><br><span class="line"><span class="built_in">bye</span>              ?                <span class="built_in">ls</span>               </span><br><span class="line">node             configure        back             </span><br><span class="line">report           cib              resource         </span><br><span class="line">up               status           corosync         </span><br><span class="line">options          <span class="built_in">history</span>       </span><br><span class="line">crm(live)<span class="comment"># resource</span></span><br><span class="line">crm(live)resource<span class="comment"># cd ..</span></span><br><span class="line">crm(live)<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>但是不得不说的是, 这个crmsh提供的子命令和子子命令实在是太多了, 让人眼花缭乱.</p>
+<p>我们直接用一个实例去学习吧.</p>
+<h4 id="使用crmsh-corosync-pacemaker实现httpd高可用"><a href="#使用crmsh-corosync-pacemaker实现httpd高可用" class="headerlink" title="使用crmsh+corosync+pacemaker实现httpd高可用"></a>使用crmsh+corosync+pacemaker实现httpd高可用</h4><p>再熟悉不过了, 我们需要的资源有:</p>
+<ul>
+<li>VIP</li>
+<li>httpd服务</li>
+</ul>
+<p>好了, 简单的部署一下, playbook如下:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">hosts:</span> <span class="string">ha</span></span><br><span class="line">  <span class="attr">remote_user:</span> <span class="string">root</span></span><br><span class="line">  <span class="attr">tasks:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Install</span> <span class="string">httpd</span> <span class="string">service</span></span><br><span class="line">    <span class="attr">yum:</span> <span class="string">name=httpd</span> <span class="string">state=latest</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Copy</span> <span class="string">index.html</span> <span class="string">to</span> <span class="string">nodes</span></span><br><span class="line">    <span class="attr">template:</span> <span class="string">src=/root/index.html</span> <span class="string">dest=/var/www/html/index.html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Start</span> <span class="string">httpd</span> <span class="string">service</span> <span class="string">and</span> <span class="string">disable</span> <span class="string">it</span></span><br><span class="line">    <span class="attr">service:</span> <span class="string">name=httpd</span> <span class="string">state=started</span> <span class="string">enabled=yes</span></span><br></pre></td></tr></table></figure>
+
+<p>模板文件很简单的一行:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;h1&gt;&#123;&#123; ansible_fqdn &#125;&#125;&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>接着我们要确定可以正常访问:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo\Desktop</span><br><span class="line">λ curl 192.168.206.9</span><br><span class="line">&lt;h1&gt;VM-node1&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo\Desktop</span><br><span class="line">λ curl 192.168.206.10</span><br><span class="line">&lt;h1&gt;VM-node2&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>你可能会觉得奇怪, 为什么我们这一次设置成了开机自动启动, 其实这是因为crmsh只能从enable的unit中找到资源.</p>
+<p>接下来就要开始配置了, 进入crmsh的RA模块:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># crm ra</span></span><br><span class="line">crm(live)ra<span class="comment"># classes</span></span><br><span class="line">lsb</span><br><span class="line">ocf / .isolation heartbeat openstack pacemaker</span><br><span class="line">service</span><br><span class="line">systemd</span><br><span class="line">crm(live)ra<span class="comment"># list ocf heartbeat</span></span><br><span class="line">IPaddr   IPaddr2     ...(omitted)</span><br><span class="line">crm(live)ra<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># configure</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive webip ocf:heartbeat:IPaddr params ip=192.168.206.11</span></span><br><span class="line">crm(live)configure<span class="comment"># show</span></span><br><span class="line">node 1: VM-node1</span><br><span class="line">node 2: VM-node2</span><br><span class="line">primitive webip IPaddr \</span><br><span class="line">	params ip=192.168.206.11</span><br><span class="line">property cib-bootstrap-options: \</span><br><span class="line">	have-watchdog=<span class="literal">false</span> \</span><br><span class="line">	dc-version=1.1.16-12.el7_4.4-94ff4df \</span><br><span class="line">	cluster-infrastructure=corosync \</span><br><span class="line">	cluster-name=testcluster \</span><br><span class="line">	stonith-enabled=<span class="literal">false</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># commit</span></span><br><span class="line">crm(live)configure<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: VM-node1 (version 1.1.16-12.el7_4.4-94ff4df) - partition with quorum</span><br><span class="line">Last updated: Sat Oct 28 15:54:58 2017</span><br><span class="line">Last change: Sat Oct 28 15:54:55 2017 by root via cibadmin on VM-node1</span><br><span class="line"></span><br><span class="line">2 nodes configured</span><br><span class="line">1 resource configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node1 VM-node2 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> webip	(ocf::heartbeat:IPaddr):	Stopped</span><br></pre></td></tr></table></figure>
+
+<p>资源就已经配置好了, 但是还没有启动.(过一小会再看就是Started的了) 我是怎么知道这些参数和格式的呢, 在之前的ra中, 我们可以使用info来查看每一个RA的参数配置.</p>
+<p>如何进行资源的迁移呢? 很简单, 只要把当前的节点变成备用的就行了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: VM-node1 (version 1.1.16-12.el7_4.4-94ff4df) - partition with quorum</span><br><span class="line">Last updated: Sat Oct 28 15:56:50 2017</span><br><span class="line">Last change: Sat Oct 28 15:54:55 2017 by root via cibadmin on VM-node1</span><br><span class="line"></span><br><span class="line">2 nodes configured</span><br><span class="line">1 resource configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node1 VM-node2 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> webip	(ocf::heartbeat:IPaddr):	Started VM-node1</span><br><span class="line"></span><br><span class="line">crm(live)<span class="comment"># node</span></span><br><span class="line">crm(live)node<span class="comment"># standby</span></span><br><span class="line">crm(live)node<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: VM-node1 (version 1.1.16-12.el7_4.4-94ff4df) - partition with quorum</span><br><span class="line">Last updated: Sat Oct 28 15:57:52 2017</span><br><span class="line">Last change: Sat Oct 28 15:57:46 2017 by root via crm_attribute on VM-node1</span><br><span class="line"></span><br><span class="line">2 nodes configured</span><br><span class="line">1 resource configured</span><br><span class="line"></span><br><span class="line">Node VM-node1: standby</span><br><span class="line">Online: [ VM-node2 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> webip	(ocf::heartbeat:IPaddr):	Started VM-node2</span><br></pre></td></tr></table></figure>
+
+<p>已经跑到VM-node2上去了. 不仅如此, 我们的VM-node1已经是软下线的状态了.</p>
+<p>接着我们把node1上线:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crm(live)<span class="comment"># node online</span></span><br></pre></td></tr></table></figure>
+
+<p>此时也许你的IP资源并没有回来 这是由于资源粘性导致的.</p>
+<p>接着我们来配置httpd服务资源:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">crm(live)<span class="comment"># configure</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive webserver systemd:httpd</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">WARNING: webserver: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> start is smaller than the advised 100</span><br><span class="line">WARNING: webserver: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> stop is smaller than the advised 100</span><br><span class="line">crm(live)configure<span class="comment"># commit</span></span><br><span class="line">WARNING: webserver: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> start is smaller than the advised 100</span><br><span class="line">WARNING: webserver: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> stop is smaller than the advised 100</span><br><span class="line">crm(live)configure<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: VM-node1 (version 1.1.16-12.el7_4.4-94ff4df) - partition with quorum</span><br><span class="line">Last updated: Sat Oct 28 16:35:17 2017</span><br><span class="line">Last change: Sat Oct 28 16:35:09 2017 by root via cibadmin on VM-node1</span><br><span class="line"></span><br><span class="line">2 nodes configured</span><br><span class="line">2 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node1 VM-node2 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> webip	(ocf::heartbeat:IPaddr):	Started VM-node2</span><br><span class="line"> webserver	(systemd:httpd):	Started VM-node1</span><br></pre></td></tr></table></figure>
+
+<p>忽略那个警告吧先…</p>
+<p>但是现在的IP和httpd服务不在一个节点上, 这显然不是我们希望的. 这怎么办呢? 对 定义组资源.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">crm(live)<span class="comment"># configure</span></span><br><span class="line">crm(live)configure<span class="comment"># group webservice webip webserver</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">WARNING: webserver: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> start is smaller than the advised 100</span><br><span class="line">WARNING: webserver: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> stop is smaller than the advised 100</span><br><span class="line">crm(live)configure<span class="comment"># commit</span></span><br><span class="line">crm(live)configure<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: VM-node1 (version 1.1.16-12.el7_4.4-94ff4df) - partition with quorum</span><br><span class="line">Last updated: Sat Oct 28 16:37:39 2017</span><br><span class="line">Last change: Sat Oct 28 16:37:33 2017 by root via cibadmin on VM-node1</span><br><span class="line"></span><br><span class="line">2 nodes configured</span><br><span class="line">2 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node1 VM-node2 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> Resource Group: webservice</span><br><span class="line">     webip	(ocf::heartbeat:IPaddr):	Started VM-node2</span><br><span class="line">     webserver	(systemd:httpd):	Started VM-node2</span><br></pre></td></tr></table></figure>
+
+<p>这样就OK啦. 访问测试也是没有问题的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo\Desktop</span><br><span class="line">λ curl 192.168.206.11</span><br><span class="line">&lt;h1&gt;VM-node2&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里, 定义组的时候的顺序是挺重要的, 他会决定资源的调度顺序.</p>
+<h2 id="corosync的配置"><a href="#corosync的配置" class="headerlink" title="corosync的配置"></a>corosync的配置</h2><p>刚刚我们使用pcs和crmsh进行了集群配置, 现在我们来手动配置corosync一下. 首先当然就是从corosync的配置文件入手了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># cp -v /etc/corosync/corosync.conf.example /etc/corosync/corosync.conf</span></span><br><span class="line"><span class="built_in">cp</span>: overwrite ‘/etc/corosync/corosync.conf’? y</span><br><span class="line">‘/etc/corosync/corosync.conf.example’ -&gt; ‘/etc/corosync/corosync.conf’</span><br></pre></td></tr></table></figure>
+
+<p>先覆盖掉之前生成的那个配置文件, 而且原来的是使用udpu协议的, 这次我们使用udp的广播试试.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">totem &#123;</span><br><span class="line">        version: 2 <span class="comment"># 使用的corosync版本</span></span><br><span class="line">        crypto_cipher: none <span class="comment"># 对称加密的算法 (aes256)</span></span><br><span class="line">        crypto_hash: none <span class="comment"># 单向哈希的算法 (sha1)</span></span><br><span class="line">        interface &#123; <span class="comment"># 配置交换信息的接口</span></span><br><span class="line">                ringnumber: 0 <span class="comment"># 为了防止出现环路, 按照0-&gt;1的顺序, 只要0在1就不会发送.</span></span><br><span class="line">                bindnetaddr: 192.168.1.0 <span class="comment"># 绑定的网络地址</span></span><br><span class="line">                mcastaddr: 239.255.1.1 <span class="comment"># 多播地址</span></span><br><span class="line">                mcastport: 5405 <span class="comment"># 多播端口</span></span><br><span class="line">                ttl: 1 <span class="comment"># 路由最大跳数,设置成1来防止环路</span></span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">logging &#123; <span class="comment"># 日志相关</span></span><br><span class="line">        fileline: off</span><br><span class="line">        to_stderr: no</span><br><span class="line">        to_logfile: <span class="built_in">yes</span></span><br><span class="line">        logfile: /var/log/cluster/corosync.log</span><br><span class="line">        to_syslog: no</span><br><span class="line">        debug: off</span><br><span class="line">        timestamp: on</span><br><span class="line">        logger_subsys &#123;</span><br><span class="line">                subsys: QUORUM</span><br><span class="line">                debug: off</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">quorum &#123; <span class="comment"># 定义投票系统</span></span><br><span class="line">        provider: corosync_votequorum</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们增加下安全认证, </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">crypto_cipher: aes128</span><br><span class="line">crypto_hash: sha1</span><br><span class="line">secauth: on</span><br></pre></td></tr></table></figure>
+
+<p>接着, 其实如果是V1这个地方我们可以不添加 nodelist的, 因为待会验证的主机都会自动加入的, 但是稳妥起见, 或者说更清晰一点, 还是写一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">nodelist &#123;</span><br><span class="line"></span><br><span class="line">        node &#123;</span><br><span class="line">                ring0_addr: 192.168.206.9</span><br><span class="line">                node_id:0</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        node &#123;</span><br><span class="line">                ring0_addr: 192.168.206.10</span><br><span class="line">                node_id:1</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来就要生成密钥文件了, 使用<code>corosync-keygen</code>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 corosync]<span class="comment"># corosync-keygen </span></span><br><span class="line">Corosync Cluster Engine Authentication key generator.</span><br><span class="line">Gathering 1024 bits <span class="keyword">for</span> key from /dev/random.</span><br><span class="line">Press keys on your keyboard to generate entropy.</span><br><span class="line">Press keys on your keyboard to generate entropy (bits = 920).</span><br><span class="line">Press keys on your keyboard to generate entropy (bits = 1000).</span><br><span class="line">Writing corosync key to /etc/corosync/authkey.</span><br></pre></td></tr></table></figure>
+
+<p>接着把这个文件和配置保持原有权限复制到各个节点上:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 corosync]<span class="comment"># scp -p authkey corosync.conf VM-node2:/etc/corosync/</span></span><br><span class="line">authkey                                                                                                                                  100%  128    66.4KB/s   00:00    </span><br><span class="line">corosync.conf                                                                                                                            100% 3015   981.5KB/s   00:00  </span><br></pre></td></tr></table></figure>
+
+<p>接下来我们试着手动启动服务, 如果没有问题就可以验证一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 corosync]<span class="comment"># tail /var/log/cluster/corosync.log </span></span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync info    [QB    ] server name: votequorum</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [SERV  ] Service engine loaded: corosync cluster quorum service v0.1 [3]</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync info    [QB    ] server name: quorum</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [TOTEM ] A new membership (192.168.206.9:16) was formed. Members joined: 3232288265</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [QUORUM] Members[1]: 3232288265</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [MAIN  ] Completed service synchronization, ready to provide service.</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [TOTEM ] A new membership (192.168.206.9:24) was formed. Members joined: 3232288266</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [QUORUM] This node is within the primary component and will provide service.</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [QUORUM] Members[2]: 3232288265 3232288266</span><br><span class="line">Oct 28 20:57:36 [34337] VM-node1 corosync notice  [MAIN  ] Completed service synchronization, ready to provide service.</span><br></pre></td></tr></table></figure>
+
+<p>接下来就可以启动pacemaker服务了, 启动之前, 我们来看一下他的配置.</p>
+<h2 id="pacemaker"><a href="#pacemaker" class="headerlink" title="pacemaker"></a>pacemaker</h2><p>直接进入启动环境配置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PCMK_logfile=/var/log/pacemaker.log</span><br></pre></td></tr></table></figure>
+
+<p>其他的选项又有什么大的必要开启. </p>
+<p>接着直接启动吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># systemctl start pacemaker</span></span><br></pre></td></tr></table></figure>
+
+<p>好了, 集群就这样启动了, 接下来只要配置一下资源就行了. 可以使用crmsh或者pcs啥的工具就行了.</p>
+<p>还可以使用 crm_verify来检查一下状态, 这个程序可不是crm提供的! 他是pacemaker自带的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># crm_verify -LV</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># rpm -qf `which crm_verify`</span></span><br><span class="line">pacemaker-cli-1.1.16-12.el7_4.4.x86_64</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="项目-构建Web高可用服务集群"><a href="#项目-构建Web高可用服务集群" class="headerlink" title="项目: 构建Web高可用服务集群"></a>项目: 构建Web高可用服务集群</h2><p>我们这次再加上一个节点, 用它来做NFS共享存储. 这样就应该是三个资源了.VIP+httpd+Filesystem</p>
+<p>先来规划一下, VIP: 192.168.206.11: ocf: heartbeat:IPaddr ; httpd: systemd; nfs shared storage: ocf: heartbeat:Filesystem</p>
+<p>先来配置一下NFS server:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]<span class="comment"># cat /etc/exports </span></span><br><span class="line">/data	192.168.206.0/24(rw,no_root_squash)</span><br><span class="line">[root@VM-node0 ~]<span class="comment"># cat /data/index.html </span></span><br><span class="line">&lt;h1&gt;Test page <span class="keyword">in</span> VM-node3&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>接着分别做测试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># systemctl start httpd</span></span><br><span class="line">[root@VM-node1 ~]<span class="comment"># mount -t nfs VM-node0:/data /var/www/html/</span></span><br><span class="line">----</span><br><span class="line">C:\Users\lenovo\Desktop</span><br><span class="line">λ curl 192.168.206.9</span><br><span class="line">&lt;h1&gt;Test page <span class="keyword">in</span> VM-node0&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>另外一个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node2 ~]<span class="comment"># systemctl start httpd </span></span><br><span class="line">[root@VM-node2 ~]<span class="comment"># mount -t nfs VM-node0:/data /var/www/html/</span></span><br><span class="line">----</span><br><span class="line">C:\Users\lenovo\Desktop</span><br><span class="line">λ curl 192.168.206.10</span><br><span class="line">&lt;h1&gt;Test page <span class="keyword">in</span> VM-node0&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>测试结束之后, 解除挂载和httpd服务.</p>
+<p>好了, 正式开始了!</p>
+<p>这一次我们不使用组资源, 而是通过资源约束的方式来配置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]<span class="comment"># crm</span></span><br><span class="line">crm(live)<span class="comment"># configure</span></span><br><span class="line">crm(live)configure<span class="comment"># show</span></span><br><span class="line">node 3232288264: VM-node0</span><br><span class="line">node 3232288265: VM-node1</span><br><span class="line">node 3232288266: VM-node2</span><br><span class="line">property cib-bootstrap-options: \</span><br><span class="line">	have-watchdog=<span class="literal">false</span> \</span><br><span class="line">	dc-version=1.1.16-12.el7_4.4-94ff4df \</span><br><span class="line">	cluster-infrastructure=corosync \</span><br><span class="line">	stonith-enabled=<span class="literal">false</span></span><br><span class="line">crm(live)configure<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># configure</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive webip ocf:heartbeat:IPaddr2 params ip=192.168.206.11 op monitor interval=30s timeout=20s</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive webserver systemd:httpd op start timeout=30s op stop timeout=30s op monitor interval=30s timeout=20s</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">WARNING: webserver: specified <span class="built_in">timeout</span> 30s <span class="keyword">for</span> start is smaller than the advised 100</span><br><span class="line">WARNING: webserver: specified <span class="built_in">timeout</span> 30s <span class="keyword">for</span> stop is smaller than the advised 100</span><br><span class="line">WARNING: webserver: specified <span class="built_in">timeout</span> 20s <span class="keyword">for</span> monitor is smaller than the advised 100</span><br><span class="line">crm(live)configure<span class="comment"># edit</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive webstore ocf:heartbeat:Filesystem params device=&quot;VM-node0:/data&quot; fstype=nfs directory=&quot;/var/www/html&quot;</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">WARNING: webstore: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> start is smaller than the advised 60</span><br><span class="line">WARNING: webstore: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> stop is smaller than the advised 60</span><br><span class="line">crm(live)configure<span class="comment"># edit</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># order store_after_ip Mandatory: webip webstore</span></span><br><span class="line">crm(live)configure<span class="comment"># order server_after_store Mandatory: webserver webstore</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># commit</span></span><br><span class="line">crm(live)configure<span class="comment"># exit</span></span><br><span class="line"><span class="built_in">bye</span></span><br><span class="line">[root@VM-node0 ~]<span class="comment"># crm status</span></span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: VM-node2 (version 1.1.16-12.el7_4.4-94ff4df) - partition with quorum</span><br><span class="line">Last updated: Sun Oct 29 07:49:31 2017</span><br><span class="line">Last change: Sun Oct 29 07:49:25 2017 by root via cibadmin on VM-node0</span><br><span class="line"></span><br><span class="line">3 nodes configured</span><br><span class="line">3 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node0 VM-node1 VM-node2 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> webip	(ocf::heartbeat:IPaddr2):	Started VM-node0</span><br><span class="line"> webserver	(systemd:httpd):	Started VM-node0</span><br><span class="line"> webstore	(ocf::heartbeat:Filesystem):	Started VM-node0</span><br></pre></td></tr></table></figure>
+
+<p>OK, 呼出一口气….来测试一下吧.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo\Desktop</span><br><span class="line">λ curl 192.168.206.11</span><br><span class="line">&lt;h1&gt;Web Page on NFS&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这样就大功告成啦!!</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%93%E9%AA%8CPCS"><span class="toc-number">1.</span> <span class="toc-text">体验PCS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#crmsh%E4%BD%93%E9%AA%8C"><span class="toc-number">2.</span> <span class="toc-text">crmsh体验</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8crmsh-corosync-pacemaker%E5%AE%9E%E7%8E%B0httpd%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">2.0.1.</span> <span class="toc-text">使用crmsh+corosync+pacemaker实现httpd高可用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#corosync%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">corosync的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pacemaker"><span class="toc-number">4.</span> <span class="toc-text">pacemaker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE-%E6%9E%84%E5%BB%BAWeb%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9C%8D%E5%8A%A1%E9%9B%86%E7%BE%A4"><span class="toc-number">5.</span> <span class="toc-text">项目: 构建Web高可用服务集群</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&text=Corosync/Pacemaker集群配置"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&is_video=false&description=Corosync/Pacemaker集群配置"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Corosync/Pacemaker集群配置&body=Check out this article: https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&title=Corosync/Pacemaker集群配置"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&name=Corosync/Pacemaker集群配置&description=&lt;p&gt;继续学习高可用集群啦.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/&t=Corosync/Pacemaker集群配置"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

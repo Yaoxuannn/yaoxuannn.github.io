@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="一切皆文件. 你也是.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux的文件和FHS &amp; sudo的使用">
+<meta property="og:url" content="https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&sudo/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="一切皆文件. 你也是.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/rm.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/rm2.png">
+<meta property="article:published_time" content="2017-06-08T16:07:21.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:40:30.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta property="article:tag" content="sudo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/rm.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux的文件和FHS &amp; sudo的使用</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/06/18/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86-Part1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/05/26/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&text=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&is_video=false&description=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux的文件和FHS &amp; sudo的使用&body=Check out this article: https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&name=Linux的文件和FHS &amp; sudo的使用&description=&lt;p&gt;一切皆文件. 你也是.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&t=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%B1%9E%E6%80%A7"><span class="toc-number">1.1.</span> <span class="toc-text">文件属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E4%B8%AD%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E7%9A%84%E9%87%8D%E8%A6%81%E6%84%8F%E4%B9%89"><span class="toc-number">1.2.</span> <span class="toc-text">Linux中文件权限的重要意义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">对于文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E%E7%9B%AE%E5%BD%95"><span class="toc-number">1.2.2.</span> <span class="toc-text">对于目录</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B%E5%92%8C%E6%89%A9%E5%B1%95%E5%90%8D"><span class="toc-number">1.3.</span> <span class="toc-text">文件类型和扩展名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%9A%84%E6%9D%83%E9%99%90%E8%A1%A5%E5%85%85"><span class="toc-number">1.4.</span> <span class="toc-text">文件的权限补充</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SUID"><span class="toc-number">1.5.</span> <span class="toc-text">SUID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SGID"><span class="toc-number">1.6.</span> <span class="toc-text">SGID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SBIT"><span class="toc-number">1.7.</span> <span class="toc-text">SBIT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E7%9B%AE%E5%BD%95%E9%85%8D%E7%BD%AE%E6%A0%87%E5%87%86-FHS"><span class="toc-number">2.</span> <span class="toc-text">Linux目录配置标准 ( FHS )</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sudo%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">sudo的简单使用</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux的文件和FHS &amp; sudo的使用
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-06-08T16:07:21.000Z" class="dt-published" itemprop="datePublished">2017-06-08</time>
+        
+        (Updated: <time datetime="2020-11-30T01:40:30.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>, <a class="p-category" href="/tags/sudo/" rel="tag">sudo</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>一切皆文件. 你也是.</p>
+<span id="more"></span>
+
+<p>说到文件系统必然会扯到权限问题, 这篇笔记中就只拣相关的来说一说.</p>
+<p>在不说到高级的权限管理的时候, Linux只有三种用户: </p>
+<ul>
+<li>root – 万能的用户</li>
+<li>同一Group – 统一用户组的用户</li>
+<li>Others – 其他用户</li>
+</ul>
+<p>相关的文件就是 &#x2F;etc&#x2F;passwd (所有用户) &#x2F;etc&#x2F;shadow (用户密码) &#x2F;etc&#x2F;groups (所有用户组)</p>
+<h2 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h2><h3 id="文件属性"><a href="#文件属性" class="headerlink" title="文件属性"></a>文件属性</h3><p>当时用<code>ls -l</code>查看目录的时候, 会列出文件的很多元信息. 其中就包括文件的类型和权限.</p>
+<p>文件权限区域数一数的话, 一共有10个字符.</p>
+<blockquote>
+<p><code>-|rwx|rw-|--- 1 root root 3231 Jun 4 17:21 install.log</code></p>
+</blockquote>
+<p>其中第一个是用来显示文件的类型的, 这些:</p>
+<ul>
+<li><strong>-</strong> regular文件</li>
+<li><strong>d</strong> 目录</li>
+<li><strong>l</strong> 链接文件</li>
+<li><strong>b</strong> 块文件 设备文件中的可供存储的接口设备.</li>
+<li><strong>c</strong> 特殊字符文件 设备文件中的串行端口设备</li>
+</ul>
+<p>接着的三个三个一组的就是文件权限属性, 常规的不说了.在这里说一说权限的重要意义.</p>
+<h3 id="Linux中文件权限的重要意义"><a href="#Linux中文件权限的重要意义" class="headerlink" title="Linux中文件权限的重要意义"></a>Linux中文件权限的重要意义</h3><h4 id="对于文件"><a href="#对于文件" class="headerlink" title="对于文件"></a>对于文件</h4><p><strong>(r)</strong> 读权限,拥有此权限就可以进行文件的读取, 例如读取文本文件的文字内容等.<br><strong>(w)</strong> 可以编辑,新增或者修改该文件的内容(不包括删除).</p>
+<blockquote>
+<p><del>插一句, 我在做测试的时候发现删除文件的时候竟然不需要权限?奇怪?</del></p>
+</blockquote>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/rm.png" alt="rm"></p>
+<p>上面的情况理解了,文件删除的权限取决于该文件上级文件夹的权限.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/rm2.png" alt="rm2"></p>
+<p><strong>(x)</strong> 改文件有被系统执行的权限.与Windows不同的是, Linux下全靠该权限来决定文件是否可被执行, 而不是文件后缀名, Linux的文件后缀名没有绝对的意义.</p>
+<p>事实上,权限是对于<strong>文件内容</strong>而言的,与文件名的存在与否是没有什么关系的.</p>
+<h4 id="对于目录"><a href="#对于目录" class="headerlink" title="对于目录"></a>对于目录</h4><p>目录的权限意义相比之下是比文件的权限更加重要的,所以也稍微复杂一点.<strong>目录也是文件呀!</strong></p>
+<p>一个一个来说一下:</p>
+<p><strong>(r)</strong> 代表你可以读取目录结构列表, 这也是目录的文件内容.简而言之, 具有读权限意味着你可以在目录中进行<code>ls</code>这样的操作.<br><strong>(w)</strong> 这个是对于目录和目录中的文件的最重要的权限.包含下列动作:</p>
+<ul>
+<li>新建文件 </li>
+<li>删除文件(不论该文件的权限如何), 这也是上面的疑问.</li>
+<li>进行对已存在的文件的重命名.</li>
+<li>转移该目录下的文件</li>
+</ul>
+<p>凡是会发生变动的, 都是**(w)**权限赋予的.</p>
+<p><strong>(x)</strong> 目录不可以执行, 那这个权限的意义是什么呢? 就是把目录当做你的工作目录啦. 通俗的说, 你可以<strong>进入</strong>该目录.</p>
+<hr>
+<p>接着说刚刚的文件元信息.</p>
+<p>后面的数字是指这个文件的引用计数, 说白了就是这个文件内容的硬连接数. ( 此处存个疑问, 目录的连接数为什么这么多?或者说, 目录的连接计数是怎么计算的呢? )</p>
+<blockquote>
+<p><strong>更新:</strong></p>
+<p>链接计数到底是怎么计算的呢? 我们已经知道Linux通过inode号码来进行文件索引, 而进入目录其实就是打开目录文件的操作. 你会发现除了目录文件, 你所创造的新文件都是链接计数为1的. 如果你做了硬链接的操作的话, 这个计数就会加1. 那么现在就来解决之前的疑问吧. 在创建目录文件的时候, 系统会自动在里面创建两个硬链接: <strong>.</strong> 和 <strong>..</strong> 这就是为什么你的新目录会有两个链接了, 其中一个是自己的硬链接啊!所以会自动加一. 因此 新的目录文件的连接数就是2. 同样的道理, 如果这个目录里面由一个目录的话, 他的连接数就是3 ( 2+1 ), 因为那个子目录也有一个**..**指向它. </p>
+<p><strong>因此,目录文件的连接数最小是2, 每创建个子目录,这个数字就加一.</strong></p>
+</blockquote>
+<p>接着,第三列和第四列分别是文件的所有者和所属组.</p>
+<p>接着就是文件内容的大小,单位就是<code>Byte</code>.</p>
+<p>再往后一栏是文件最近的修改时间.(默认显示)</p>
+<p>最后就是这个文件的文件名.如果文件名前携带”.”, 则表明该文件为隐藏文件.</p>
+<h3 id="文件类型和扩展名"><a href="#文件类型和扩展名" class="headerlink" title="文件类型和扩展名"></a>文件类型和扩展名</h3><p>尽管Linux中的文件扩展名没有绝对的意义, 但他们可以方便管理者进行方便的辨识, 因此后缀名是作为一种规范而存在的.</p>
+<p>先来说一下文件的种类.</p>
+<p>之前说过的几种文件类型, 我们可以把文件划分成这些:</p>
+<ul>
+<li><p>普通文件 ( Regular File )</p>
+</li>
+<li><p>纯文本文件 ( ASCII Text ) Linux系统中最多的文件种类</p>
+</li>
+<li><p>二进制文件 ( Binary File ) 可执行文件</p>
+</li>
+<li><p>数据格式文件 ( Data File ) 比如 <code>/etc/wtmp</code> 文件,直接读取是乱码,但是使用<code>last</code>命令可以读取.</p>
+</li>
+<li><p>目录 ( Directory )</p>
+</li>
+<li><p>第一个属性为<code>d</code></p>
+</li>
+<li><p>链接文件 ( Link )</p>
+</li>
+<li><p>第一个属性为<code>l</code>, 虽然类似Win下的shortcut, 但是原理完全不一样.</p>
+</li>
+<li><p>设备与设备文件 ( device )</p>
+</li>
+<li><p>块设备文件</p>
+</li>
+<li><p>特殊字符文件</p>
+</li>
+<li><p>套接字文件 ( sockets )</p>
+</li>
+<li><p>管道 ( FIFO, pipe )</p>
+</li>
+</ul>
+<p>关于Linux 的文件扩展名,一些基本的扩展名在这里说几个.</p>
+<ul>
+<li>*.sh 脚本或者批处理文件</li>
+<li>*.Z, *.tar, *.tar.gz, *.zip, *.tgz, 这些是经过打包的压缩文件.</li>
+<li>*.cfg, *.conf 配置相关文件</li>
+<li>*.php, *.html 网页相关文件</li>
+<li>*.socket, *.sock 套接字文件</li>
+<li>*.log 日志</li>
+<li>*.pid 记载进程号的文件</li>
+<li>*.so 库<br>….</li>
+</ul>
+<h3 id="文件的权限补充"><a href="#文件的权限补充" class="headerlink" title="文件的权限补充"></a>文件的权限补充</h3><p>先说一说文件的隐藏属性. 除了上面说过的那一排, 文件还存在一些隐藏属性.</p>
+<p>先来查看一波:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[ root@Ubuntu ~]$ lsattr <span class="built_in">test</span></span><br><span class="line">-------------e-- <span class="built_in">test</span></span><br><span class="line">[ root@Ubuntu ~]$ chattr +i <span class="built_in">test</span></span><br><span class="line">[ root@Ubuntu ~]$ <span class="built_in">rm</span> -rf <span class="built_in">test</span></span><br><span class="line"><span class="built_in">rm</span>: cannot remove ‘<span class="built_in">test</span>’: Operation not permitted</span><br><span class="line">$ 即使是root也不能删除!</span><br></pre></td></tr></table></figure>
+<p>文件的隐藏属性有一些很有趣的属性,像上面的<code>i</code>, 就是指<code>immutable</code>该文件不可写,不可改变,不可删除.只有root才可以进行该选项的设置.</p>
+<p>简单的列一些隐藏属性:</p>
+<p><strong>A</strong> 设置了A属性的文件,当对其进行访问时,他的访问时间(atime)并不会改变,这有利于减少磁盘的I&#x2F;O.<br><strong>a</strong> 设置了a之后, 这个文件只能增加数据,而不能删除或修改已有的数据 (只有root可进行设置)<br><strong>c</strong> 这个 对于大文件似乎有点作用,在文件存储在磁盘的时候,会自动进行压缩, 在读取时会自动解压.<br><strong>s</strong> 当设置了该属性, 文件数据会在删除的时候真的从磁盘上抹掉.</p>
+<p>最后再说一说文件的SUID,SGID和SBIT权限. ( 其实我觉得不是很常用 ),而且这些权限在使用不当的情况下会造成很严重的后果.</p>
+<h3 id="SUID"><a href="#SUID" class="headerlink" title="SUID"></a>SUID</h3><p>SUID很好理解, 仅可用于二进制可执行文件, 当赋予了该权限的文件被执行的时候, 执行者将会获得该文件所有者的权限(其实都是直接视作所有者).</p>
+<p>这个东西的一个最好理解的例子就是passwd命令.当你执行这个命令的时候, 你就获得了root权限(暂时), 然后就会有权限去修改passwd文件.</p>
+<h3 id="SGID"><a href="#SGID" class="headerlink" title="SGID"></a>SGID</h3><p>同理, SGID也只对二进制文件起效果, 执行者会暂时获得所属用户组的权限.</p>
+<h3 id="SBIT"><a href="#SBIT" class="headerlink" title="SBIT"></a>SBIT</h3><p>SBIT仅对目录起效果,简单的说就是, 该目录下创建的所有文件和目录文件, 都不能被创建者和root以外的人删除掉.</p>
+<p>这个三个权限的值分别为:4-&gt;GUID, 2-&gt;SGID, 1-&gt;SBIT</p>
+<hr>
+<h2 id="Linux目录配置标准-FHS"><a href="#Linux目录配置标准-FHS" class="headerlink" title="Linux目录配置标准 ( FHS )"></a>Linux目录配置标准 ( FHS )</h2><p>这就是重点了, FHS的全称是( Filesystem Hierarchy Standard ), 正是因为Linux的使用者,开发者太多了, 如果每一个Distribution都有自己的一套, 那岂不是学习成本飞涨? 正因为此, 大家都遵循这个规范设计, 这样就可以保持同样的目录架构.</p>
+<p>FHS是跟着历史不断改版的, 他将目录定义成下面的四种交互作用的形态.</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">可分享的(shareable)</th>
+<th align="center">不可分享的(unshareable)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">不变的(static)</td>
+<td align="center">&#x2F;usr</td>
+<td align="center">&#x2F;etc</td>
+</tr>
+<tr>
+<td align="center">不变的(static)</td>
+<td align="center">&#x2F;opt</td>
+<td align="center">&#x2F;boot</td>
+</tr>
+<tr>
+<td align="center">可变动的(variable)</td>
+<td align="center">&#x2F;var&#x2F;mail</td>
+<td align="center">&#x2F;var&#x2F;run</td>
+</tr>
+<tr>
+<td align="center">可变动的(variable)</td>
+<td align="center">&#x2F;var&#x2F;spool&#x2F;news</td>
+<td align="center">&#x2F;var&#x2F;lock</td>
+</tr>
+</tbody></table>
+<p>什么意思呢?</p>
+<p><strong>可分享的</strong>: 简单的说就是可以分享给其他系统( 网络其他主机 )挂载的目录</p>
+<p><strong>不可分享的</strong>: 本机上的设备文件或套接字, 这些都是本地机器有关.</p>
+<p><strong>不变的</strong>: 这些数据不会变动, 随<code>distribution</code>而不变动. 例如: 函数库, 文件说明, 系统管理员所管理的主机配置文件.</p>
+<p><strong>可变动的</strong>: 经常需要改变的数据, 例如登录文件, 新闻组等.</p>
+<p>这是FHS中对于三层目录下应该放置什么数据, 分别是: &#x2F; (root) , &#x2F;usr (UNIX software resource)[以前一直以为是user, 其实这个和user没有什么关系], &#x2F;var (variable) 与系统运作过程有关.</p>
+<p>FHS中规定, 根目录所在的分区,应该越小越好,应用程序安装的软件应该尽量避免与根目录放在同一分区中,这样不仅性能更好,根所在的文件系统也不那么容易发生问题.</p>
+<p>这是因为,根目录是整个系统最重要的一个目录.不但所有的目录都是从根目录中衍生出来的,同时根目录还是与开机,还原,系统修复等操作有关.由于开机时需要特定的开机软件.内核文件.开机所需程序.函数库等文件数据.因此当系统发生错误的时候,就需要根目录下的系统还原文件.</p>
+<p>FHS定义出根目录下面要有这些子目录才好, 这些目录是:</p>
+<blockquote>
+<p><strong>&#x2F;bin</strong> – 放置单用户模式下仍然能够被操作的命令, 主要有<code>cat</code>. <code>chmod</code>. <code>chown</code>, <code>date</code>. <code>mv</code>. <code>mkdir</code>. <code>cp</code>. <code>bash</code>等.<br><strong>&#x2F;boot</strong> – 放置开机会用到的文件,包括Linux的内核文件和开机菜单	所需的配置文件, 一般Linux的内核文件都是<code>vmlinuz</code>命名, 如果使用Grub进行的开机引导, 则还会存在&#x2F;boot&#x2F;grub这个目录<br><strong>&#x2F;etc</strong> – Linux下的配置文件所在地,几乎所有的配置文件都在这里,一般来说,该目录下的文件只有<code>root</code>可进行修改,<strong>FHS建议,该目录下不要存放可执行的二进制文件</strong>.<br><strong>&#x2F;home</strong> – 系统默认的用户家目录,默认的用户主文件会规范到这里来.<br><strong>&#x2F;lib</strong> – 这里放置了部分系统的函数库, 系统的函数库非常多,而这里放置的主要是系统开机的时候使用到的函数库以及<code>/bin</code>和<code>/sbin</code>会用到的函数库.另外,该目录下放置了Linux内核相关的模块(&#x2F;lib&#x2F;module).<br><strong>&#x2F;media</strong> – 简单的说,该目录下放置的是可删除的设备文件 ( 光盘 软盘 等等 )<br><strong>&#x2F;mnt</strong> – 用来进行暂时挂载的目录,早期和<code>/media</code>的用途相同.<br><strong>&#x2F;opt</strong> – 用来放置第三方的软件,不过现在的软件都更习惯安装在<code>/usr/local</code>这个目录下.<br><strong>&#x2F;root</strong> – 系统管理员的主文件夹,一般会把他和根目录挂挂载在同一个分区,这是因为单用户维修模式下,用户会拥有<code>root</code>的主文件夹, 此时只挂载根目录.<br><strong>&#x2F;sbin</strong> – 只有root才有权限进行的命令.<br><strong>&#x2F;srv</strong> – 服务程序所需要取用的数据目录,似乎不常用.<br><strong>&#x2F;tmp</strong> – 一般用户或者正在进行的程序或者暂时放置文件的目录.FHS甚至建议在开机时清空&#x2F;tmp目录</p>
+</blockquote>
+<p>除了FHS的标准,大部分的发行版都会在根目录下增加<code>/proc</code>.<code>/sys</code>以及<code>/lost+found</code>.</p>
+<p>这些目录也需要了解, <code>/proc</code>目录本身就是一个虚拟文件系统, 他的所有内容都是在内存中的, 所以本身不占任何磁盘空间.该目录下记载了系统内存 进程 外部设备的状态和网络状态.</p>
+<p><code>/sys</code>和<code>/proc</code>一样, 也是一个虚拟的文件系统,主要记录内核相关的信息:目前已加载的内核模块, 内核检测到的硬件设备信息.</p>
+<p><code>loast+found</code>仅在使用标准的<code>ext2/ext3</code>文件系统格式才会产生的目录.目的在于,当系统产生错误的时候, 会将一些丢失的目录片段丢到这里面.,当新装了一块硬盘的时候, 系统就会自动产生一个<code>lost+found</code>.</p>
+<p>根据上面所说, 开机时会加载很多函数 配置文件 开始菜单等等…所以,绝对不能把以下目录和根分开:</p>
+<ul>
+<li>&#x2F;etc  [配置文件]</li>
+<li>&#x2F;bin [重要执行文件]</li>
+<li>&#x2F;dev [设备文件]</li>
+<li>&#x2F;lib [函数库和内核模块]</li>
+<li>&#x2F;sbin [系统执行文件]</li>
+</ul>
+<p>除了根目录, <code>/var</code>和<code>/usr</code>下也有很多重要的子目录.</p>
+<p><code>/usr</code>下也有一个<code>bin</code>目录,和<code>/bin</code>的区别在于是否在开机时使用.</p>
+<p><code>/usr/src</code> 一般放置源码, 其中再深入一级的<code>/linux</code>放置的是Linux的系统源码.</p>
+<p><code>/usr/include</code> C&#x2F;C++的头文件,当使用tarball的方式进行软件安装的时候,就会用到这其中的头文件与包含文件.</p>
+<p><code>/usr/lib</code> 是软件的函数库和目标文件;</p>
+<p>而<code>/var</code>目录是一个随着系统运行会逐渐变大的目录.因为缓存 登录文件 程序文件( lock pid )都会出现在这里面:</p>
+<p><code>/var/cache</code>程序运行时产生的暂存文件.</p>
+<p><code>/var/log</code>里面保存的是登录文件和一些程序的日志.</p>
+<p><code>/var/run</code>下会放置一些服务和程序的pid文件.</p>
+<p><code>/var/lock</code>这里是为了确保程序或者软件在同一时间仅会有同一人在进行访问或操作而加的锁所放置的目录.</p>
+<h2 id="sudo的简单使用"><a href="#sudo的简单使用" class="headerlink" title="sudo的简单使用"></a>sudo的简单使用</h2><p>接触sudo之前, 我们知道有个叫su的命令. su其实就是switch-user. 使用时有点像SSH命令, 可以进行登录, 可以开一个子进程, 可以直接执行之后退出, 看下面的实例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># useradd test</span></span><br><span class="line">[root@WWW ~]<span class="comment"># su -l test</span></span><br><span class="line">Last login: Mon Sep 25 20:04:14 EDT 2017 on pts/0</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ <span class="built_in">logout</span></span><br><span class="line">[root@WWW ~]<span class="comment"># su test</span></span><br><span class="line">[<span class="built_in">test</span>@WWW root]$ <span class="built_in">logout</span></span><br><span class="line">bash: <span class="built_in">logout</span>: not login shell: use `<span class="built_in">exit</span><span class="string">&#x27;</span></span><br><span class="line"><span class="string">[test@WWW root]$ exit</span></span><br><span class="line"><span class="string">exit</span></span><br><span class="line"><span class="string">[root@WWW ~]# su test -c &#x27;</span><span class="built_in">ls</span> -a ~/<span class="string">&#x27;</span></span><br><span class="line"><span class="string">.  ..  .bash_history  .bash_logout  .bash_profile  .bashrc  .zshrc</span></span><br><span class="line"><span class="string">[root@WWW ~]# su -l test -c &#x27;</span><span class="built_in">ls</span> -a ~/<span class="string">&#x27;</span></span><br><span class="line"><span class="string">.  ..  .bash_history  .bash_logout  .bash_profile  .bashrc  .zshrc</span></span><br></pre></td></tr></table></figure>
+
+<p>使用-l参数就可以指定是否进行登录, 也可以使用-c参数直接执行.</p>
+<p>由于<code>su</code>直接进行的用户切换, 在很多场景下是不合适的. 所以这个时候就要使用<code>sudo</code> 了.</p>
+<p>sudo能够让一个用户不需要拥有另一个用户的密码就可以那个用户的权限运行. 只要另一个用户进行授权. 这样就可以进行操作的限制. 比su要灵活的. 这么一种机制的配置文件叫sudoer.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo [COMMAND]</span><br></pre></td></tr></table></figure>
+
+<p>我们来看看这个配置文件写了哪些内容.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># cat /etc/sudoers</span></span><br><span class="line"><span class="comment">## Sudoers allows particular users to run various commands as</span></span><br><span class="line"><span class="comment">## the root user, without needing the root password.</span></span><br><span class="line"><span class="comment">##</span></span><br><span class="line"><span class="comment">## Examples are provided at the bottom of the file for collections</span></span><br><span class="line"><span class="comment">## of related commands, which can then be delegated out to particular</span></span><br><span class="line"><span class="comment">## users or groups.</span></span><br><span class="line"><span class="comment">## </span></span><br><span class="line"><span class="comment">## This file must be edited with the &#x27;visudo&#x27; command.</span></span><br><span class="line">...(omitted)</span><br><span class="line">root	ALL=(ALL) 	ALL</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>这个文件主要定义了哪些用户可以得到什么操作的授权. 基本上就是上面的那种形式. 例如root的这一条就是说, 允许用户<strong>root</strong> 在<strong>任何主机</strong>上 以<strong>任何用户</strong>的身份, 执行<strong>所有命令</strong>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># sudo -u test whoami</span></span><br><span class="line"><span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+
+<p>使用-u参数可以具体制定以谁的身份执行.</p>
+<p>继续往后看配置文件, root的下面有个奇怪的用户:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%wheel	ALL=(ALL)	ALL</span><br></pre></td></tr></table></figure>
+
+<p>前面由一个百分号(%) , 这个表示的是组名的标记, 也就是说这个组别的所有用户.</p>
+<p>现在我们来做个实验, 可以新开一个SSH会话方便实验. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># su -l test</span></span><br><span class="line">Last login: Mon Sep 25 20:05:57 EDT 2017 on pts/0</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ fdisk -l</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo fdisk -l</span><br><span class="line"></span><br><span class="line">We trust you have received the usual lecture from the <span class="built_in">local</span> System</span><br><span class="line">Administrator. It usually boils down to these three things:</span><br><span class="line"></span><br><span class="line">    <span class="comment">#1) Respect the privacy of others.</span></span><br><span class="line">    <span class="comment">#2) Think before you type.</span></span><br><span class="line">    <span class="comment">#3) With great power comes great responsibility.</span></span><br><span class="line"></span><br><span class="line">[sudo] password <span class="keyword">for</span> <span class="built_in">test</span>: </span><br><span class="line"><span class="built_in">test</span> is not <span class="keyword">in</span> the sudoers file.  This incident will be reported.</span><br></pre></td></tr></table></figure>
+
+<p>他说test用户不在sudoers文件中, 此事将被报告.</p>
+<p>但是我们有个wheel组, 所以现在试着把test加入进去.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># usermod -a -G wheel test</span></span><br></pre></td></tr></table></figure>
+
+<p>再试一次:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">test</span>@WWW ~]$ sudo fdisk -l</span><br><span class="line">[sudo] password <span class="keyword">for</span> <span class="built_in">test</span>: </span><br><span class="line"><span class="built_in">test</span> is not <span class="keyword">in</span> the sudoers file.  This incident will be reported.</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ <span class="built_in">logout</span> </span><br><span class="line">[root@WWW ~]<span class="comment"># su -l test</span></span><br><span class="line">Last login: Mon Sep 25 20:19:05 EDT 2017 on pts/1</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo fdisk -l</span><br><span class="line">[sudo] password <span class="keyword">for</span> <span class="built_in">test</span>: </span><br><span class="line"></span><br><span class="line">Disk /dev/sda: 21.5 GB, 21474836480 bytes, 41943040 sectors</span><br><span class="line">Units = sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disk label <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x000c83cb</span><br></pre></td></tr></table></figure>
+
+<p>仍然不行, 这是因为我们需要进行重新登录. 重新登录之后就可以进行了.</p>
+<p>sudo的威力不知这样, 如果我们使用下面的命令, 影响是很大的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo su -</span><br><span class="line">Last login: Mon Sep 25 20:19:07 EDT 2017 on pts/0</span><br><span class="line">[root@WWW ~]<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<p>无需使用密码, 就可以直接登录管理员账号. 这就是加入wheel组带来的权限. 显然我们是要针对不同的用户进行不同的权限设置的, 这个时候就应该去编辑sudoer文件. 在sudoer文件的开头写了这么一段话:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## This file must be edited with the &#x27;visudo&#x27; command.</span></span><br></pre></td></tr></table></figure>
+
+<p>这样是可以检查语法错误的.</p>
+<p>我们来试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># visudo </span></span><br><span class="line"></span><br><span class="line">     80 </span><br><span class="line">     81 <span class="comment">## Next comes the main part: which users can run what software on</span></span><br><span class="line">     82 <span class="comment">## which machines (the sudoers file can be shared between multiple</span></span><br><span class="line">     83 <span class="comment">## systems).</span></span><br><span class="line">     84 <span class="comment">## Syntax:</span></span><br><span class="line">     85 <span class="comment">##</span></span><br><span class="line">     86 <span class="comment">##      user    MACHINE=COMMANDS</span></span><br><span class="line">     87 <span class="comment">##</span></span><br><span class="line">     88 <span class="comment">## The COMMANDS section may have other options added to it.</span></span><br><span class="line">     89 <span class="comment">##</span></span><br><span class="line">     90 <span class="comment">## Allow root to run any commands anywhere</span></span><br><span class="line">     91 root    ALL=(ALL)       ALL</span><br><span class="line">     92 <span class="built_in">test</span>    ALL=(root)      ALL</span><br></pre></td></tr></table></figure>
+
+<p>其实并没有这么死板, sudoer支持的写法有很多种:<br>第一配置项用户, 可以使用<strong>用户名, #uid, 用户别名, %用户组等等</strong> 如果有多个, 可以使用 逗号(,) 分割. 另外还支持取反, 使用!</p>
+<p>用户别名也是在这个文件中进行定义的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User_Alias NETADMIN = <span class="built_in">test</span>, test2, test3</span><br><span class="line">Cmnd_Alias NETWORKING = /sbin/route, /sbin/ifconfig, /bin/ping, /sbin/dhclient, /usr/bin/net, /sbin/iptables, /usr/bin/rfcomm, /usr/bin/wvdial, /sbin/iwconfig, /sbin/m    ii-tool</span><br></pre></td></tr></table></figure>
+
+<p>除了用户可以进行别名定义, 还有命令,主机也可以进行. 要注意的是, <strong>别名必须大写</strong> </p>
+<p>主机名称也是多种多样的形式, 可以使用<strong>IP地址, 主机名, 网络地址(&#x2F;掩码), 别名等</strong> 命令也是这样, 可以直接写<strong>命令名, 目录名(该目录下的所有命令都包括), 别名</strong></p>
+<p>到这里基本配置文件就是这样了,  现在来考虑这个问题, 如果现在经过了认证, 我如果想要立即再次执行同样的命令, 就要再次输入密码, 这样是不是有点繁琐了呢? 好在sudo考虑到了这个, 所以会提供一个免验证的令牌时间(5分钟) 只需要在一开始经过验证就行了.</p>
+<p>sudo还提供了其他的功能, 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo -l</span><br><span class="line">Matching Defaults entries <span class="keyword">for</span> <span class="built_in">test</span> on this host:</span><br><span class="line">    !visiblepw, always_set_home, env_reset, env_keep=<span class="string">&quot;COLORS DISPLAY HOSTNAME HISTSIZE KDEDIR LS_COLORS&quot;</span>, env_keep+=<span class="string">&quot;MAIL PS1 PS2 QTDIR USERNAME LANG LC_ADDRESS</span></span><br><span class="line"><span class="string">    LC_CTYPE&quot;</span>, env_keep+=<span class="string">&quot;LC_COLLATE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES&quot;</span>, env_keep+=<span class="string">&quot;LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE&quot;</span>, env_keep+=<span class="string">&quot;LC_TIME</span></span><br><span class="line"><span class="string">    LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY&quot;</span>, secure_path=/sbin\:/bin\:/usr/sbin\:/usr/bin</span><br><span class="line"></span><br><span class="line">User <span class="built_in">test</span> may run the following commands on this host:</span><br><span class="line">    (root) /sbin/route, /sbin/ifconfig, /bin/ping, /sbin/dhclient, /usr/bin/net, /sbin/iptables, /usr/bin/rfcomm, /usr/bin/wvdial, /sbin/iwconfig, /sbin/mii-tool</span><br><span class="line">    (ALL) ALL</span><br></pre></td></tr></table></figure>
+
+<p>这是当前登录的用户的权限一览. 如果这个时候你想要清除免密码的冷却, 使用<code>sudo -k</code> 就行了</p>
+<p>有趣的是,sudo还可以进行密码提示语的自定义.</p>
+<p>最后我们说一个禁止其他用户修改root密码的小技巧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo passwd</span><br><span class="line">[sudo] password <span class="keyword">for</span> <span class="built_in">test</span>: </span><br><span class="line">Changing password <span class="keyword">for</span> user root.</span><br><span class="line">New password: </span><br><span class="line">Retype new password: </span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br></pre></td></tr></table></figure>
+
+<p>怎么避免上面的情况呢?</p>
+<p>我们可以这样写:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root	ALL=(ALL) 	ALL</span><br><span class="line"><span class="built_in">test</span>	ALL=(root)	/bin/passwd [a-z0-9]*, !/bin/passwd root</span><br></pre></td></tr></table></figure>
+
+<p>测试一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo -l</span><br><span class="line">[sudo] password <span class="keyword">for</span> <span class="built_in">test</span>: </span><br><span class="line">Matching Defaults entries <span class="keyword">for</span> <span class="built_in">test</span> on this host:</span><br><span class="line">    !visiblepw, always_set_home, env_reset, env_keep=<span class="string">&quot;COLORS DISPLAY HOSTNAME HISTSIZE KDEDIR LS_COLORS&quot;</span>, env_keep+=<span class="string">&quot;MAIL PS1 PS2 QTDIR USERNAME LANG LC_ADDRESS</span></span><br><span class="line"><span class="string">    LC_CTYPE&quot;</span>, env_keep+=<span class="string">&quot;LC_COLLATE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES&quot;</span>, env_keep+=<span class="string">&quot;LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE&quot;</span>, env_keep+=<span class="string">&quot;LC_TIME</span></span><br><span class="line"><span class="string">    LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY&quot;</span>, secure_path=/sbin\:/bin\:/usr/sbin\:/usr/bin</span><br><span class="line"></span><br><span class="line">User <span class="built_in">test</span> may run the following commands on this host:</span><br><span class="line">    (root) /bin/passwd [a-z0-9]*, (root) !/bin/passwd root</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo passwd</span><br><span class="line">Sorry, user <span class="built_in">test</span> is not allowed to execute <span class="string">&#x27;/bin/passwd&#x27;</span> as root on WWW.</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo passwd root</span><br><span class="line">Sorry, user <span class="built_in">test</span> is not allowed to execute <span class="string">&#x27;/bin/passwd root&#x27;</span> as root on WWW.</span><br><span class="line">[<span class="built_in">test</span>@WWW ~]$ sudo passwd <span class="built_in">test</span></span><br><span class="line">Changing password <span class="keyword">for</span> user <span class="built_in">test</span>.</span><br><span class="line">New password: </span><br><span class="line">Retype new password: </span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%B1%9E%E6%80%A7"><span class="toc-number">1.1.</span> <span class="toc-text">文件属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E4%B8%AD%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E7%9A%84%E9%87%8D%E8%A6%81%E6%84%8F%E4%B9%89"><span class="toc-number">1.2.</span> <span class="toc-text">Linux中文件权限的重要意义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">对于文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E%E7%9B%AE%E5%BD%95"><span class="toc-number">1.2.2.</span> <span class="toc-text">对于目录</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B%E5%92%8C%E6%89%A9%E5%B1%95%E5%90%8D"><span class="toc-number">1.3.</span> <span class="toc-text">文件类型和扩展名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%9A%84%E6%9D%83%E9%99%90%E8%A1%A5%E5%85%85"><span class="toc-number">1.4.</span> <span class="toc-text">文件的权限补充</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SUID"><span class="toc-number">1.5.</span> <span class="toc-text">SUID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SGID"><span class="toc-number">1.6.</span> <span class="toc-text">SGID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SBIT"><span class="toc-number">1.7.</span> <span class="toc-text">SBIT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E7%9B%AE%E5%BD%95%E9%85%8D%E7%BD%AE%E6%A0%87%E5%87%86-FHS"><span class="toc-number">2.</span> <span class="toc-text">Linux目录配置标准 ( FHS )</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sudo%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">sudo的简单使用</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&text=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&is_video=false&description=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux的文件和FHS &amp; sudo的使用&body=Check out this article: https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&title=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&name=Linux的文件和FHS &amp; sudo的使用&description=&lt;p&gt;一切皆文件. 你也是.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/08/Linux%E7%9A%84%E6%96%87%E4%BB%B6%E5%92%8CFHS&amp;sudo/&t=Linux的文件和FHS &amp; sudo的使用"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

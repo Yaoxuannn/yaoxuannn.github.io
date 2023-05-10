@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Python编程技巧.[环境:Python3.6.0]">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python小技巧">
+<meta property="og:url" content="https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Python编程技巧.[环境:Python3.6.0]">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-04-24T03:08:57.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python小技巧</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/04/15/Linux%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4%E7%9A%84%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&text=Python小技巧"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&is_video=false&description=Python小技巧"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python小技巧&body=Check out this article: https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&name=Python小技巧&description=&lt;p&gt;Python编程技巧.[环境:Python3.6.0]&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&t=Python小技巧"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-1-%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8Ecollections"><span class="toc-number">1.</span> <span class="toc-text">Part 1 基本数据结构与collections</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4"><span class="toc-number">1.1.</span> <span class="toc-text">过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%BD%E5%90%8D-%E7%BB%9F%E8%AE%A1-%E5%AD%97%E5%85%B8%E6%8E%92%E5%BA%8F"><span class="toc-number">1.2.</span> <span class="toc-text">命名.统计.字典排序</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E5%90%8D"><span class="toc-number">1.2.1.</span> <span class="toc-text">命名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1"><span class="toc-number">1.2.2.</span> <span class="toc-text">统计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E5%85%B8%E6%8E%92%E5%BA%8F"><span class="toc-number">1.2.3.</span> <span class="toc-text">字典排序</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E5%85%B8%E5%85%AC%E5%85%B1%E9%94%AE"><span class="toc-number">1.3.</span> <span class="toc-text">字典公共键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8Deque%E6%9D%A5%E5%AE%9E%E7%8E%B0%E5%8E%86%E5%8F%B2%E8%AE%B0%E5%BD%95"><span class="toc-number">1.4.</span> <span class="toc-text">使用Deque来实现历史记录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3"><span class="toc-number">1.5.</span> <span class="toc-text">迭代</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python小技巧
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-04-24T03:08:57.000Z" class="dt-published" itemprop="datePublished">2017-04-23</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Python编程技巧.[环境:Python3.6.0]</p>
+<span id="more"></span>
+
+<h2 id="Part-1-基本数据结构与collections"><a href="#Part-1-基本数据结构与collections" class="headerlink" title="Part 1 基本数据结构与collections"></a>Part 1 基本数据结构与collections</h2><h3 id="过滤"><a href="#过滤" class="headerlink" title="过滤"></a>过滤</h3><p>过滤操作是一个很常用的操作,Python作为函数式编程语言,提供了非常好的解析支持.</p>
+<p>比如过滤负数,常规操作如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data = [-<span class="number">4</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">9</span>,<span class="number">10</span>,-<span class="number">2</span>]</span><br><span class="line">res = []</span><br><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> data:</span><br><span class="line">  <span class="keyword">if</span> n &gt;= <span class="number">0</span>:</span><br><span class="line">    res.append(n)</span><br></pre></td></tr></table></figure>
+
+<p>但事实上,仅仅需要<strong>一行</strong>就可以解决问题</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">res = [x <span class="keyword">for</span> x <span class="keyword">in</span> data <span class="keyword">if</span> x &gt;= <span class="number">0</span>]</span><br></pre></td></tr></table></figure>
+
+<p>如果使用<code>filter</code>函数,也仅仅需要<strong>一行</strong>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">res = <span class="built_in">filter</span>(<span class="keyword">lambda</span> x : x &gt;= <span class="number">0</span>, data)</span><br></pre></td></tr></table></figure>
+
+<p>经过测试,列表解析的速度更快,因此应该更多的使用解析的方式.</p>
+<p>同样,对于字典.集合等基本数据结构,解析方式都可以快速的进行过滤.</p>
+<p>请看:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> randint</span><br><span class="line">data = &#123;k: randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">22</span>)&#125; <span class="comment"># 随机生产一个字典</span></span><br><span class="line">res = &#123;k:v <span class="keyword">for</span> k,v <span class="keyword">in</span> data.items() <span class="keyword">if</span> v &gt;= <span class="number">90</span>&#125; <span class="comment"># 筛选出所有v &gt;= 90 的键值对.</span></span><br></pre></td></tr></table></figure>
+
+<p>对于集合:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">data = &#123;randint(-<span class="number">10</span>,<span class="number">10</span>) <span class="keyword">for</span> x <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>)&#125;</span><br><span class="line">res = &#123;x <span class="keyword">for</span> x <span class="keyword">in</span> data <span class="keyword">if</span> x &gt;= <span class="number">0</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其实只要理解了解析式,过滤操作就会变得很简单了.</p>
+<h3 id="命名-统计-字典排序"><a href="#命名-统计-字典排序" class="headerlink" title="命名.统计.字典排序"></a>命名.统计.字典排序</h3><h4 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h4><p>当我们用一个列表来存储一条类似数据库记录的对象时,会遇到这样的问题.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">student = (<span class="string">&#x27;Justin&#x27;</span>, <span class="number">19</span>, <span class="string">&#x27;male&#x27;</span>, <span class="string">&#x27;justin13wyx@gmail.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Name:&#x27;</span>,studnet[<span class="number">0</span>]) <span class="comment"># Is there anyone who can figure out what student[0] refer to ???</span></span><br></pre></td></tr></table></figure>
+
+<p>此时,如果我们想要取得student的姓名,就要通过数组下标的方式来查找,这样会大大降低程序的可读性.</p>
+<p>首先,我们想到了<code>C</code>的<code>#DEFINE</code>,即:常量声明.</p>
+<p>那么我们的程序就会变成这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">NAME = <span class="number">0</span></span><br><span class="line">AGE = <span class="number">1</span></span><br><span class="line">SEX = <span class="number">2</span></span><br><span class="line">MAIL = <span class="number">3</span></span><br><span class="line">student = (<span class="string">&#x27;Justin&#x27;</span>, <span class="number">19</span>, <span class="string">&#x27;male&#x27;</span>, <span class="string">&#x27;justin13wyx@gmail.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Name:&quot;</span>,student[NAME]) <span class="comment"># Now it is clear to see. Buuuut...,it is a little complicated,isn&#x27;t it ?? </span></span><br><span class="line"><span class="comment"># ---------------------------</span></span><br><span class="line">NAME, AGE, SEX, MAIL = <span class="built_in">range</span>(<span class="number">4</span>) <span class="comment"># This is a better way.</span></span><br></pre></td></tr></table></figure>
+
+<p>为了给元组中的每个元素命名,我们引入<code>collections</code>中的<code>namedtuple</code>.</p>
+<p>这个namedtuple构造器的方法签名是这样的:<code>namedtuple(typename, field_names, *, verbose=False, rename=False, module=None)</code></p>
+<p>其中,typename决定类型的名字(<strong>注意:这个名字决定返回的tuple子类的名字</strong>)<code>field_names</code>是一个列表.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> namedtuple</span><br><span class="line">Student = namedtuple(<span class="string">&#x27;Student&#x27;</span>, [<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;age&#x27;</span>, <span class="string">&#x27;sex&#x27;</span>, <span class="string">&#x27;mail&#x27;</span>])</span><br><span class="line">s = Student(<span class="string">&#x27;name&#x27;</span>, <span class="number">19</span>, <span class="string">&#x27;male&#x27;</span>, <span class="string">&#x27;mailAddr&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(s[<span class="string">&#x27;name&#x27;</span>])</span><br></pre></td></tr></table></figure>
+
+<p>此时使用<code>isinstance</code>来测试一下 <code>isinstance(s, tuple)</code>, 会返回<code>True</code><br>同样使用<code>isinstance(s,Student)</code>会返回<code>True</code>.<br>使用<code>type(s)</code>来看看, 会返回 <code>&lt;class &#39;__main__.Student&#39;&gt;</code>.</p>
+<p>所以,<code>namedtuple</code>是可以<strong>动态创建类</strong>的,这个创建的类是<code>tuple</code>的子类.</p>
+<h4 id="统计"><a href="#统计" class="headerlink" title="统计"></a>统计</h4><p>常规的统计方法是这样的:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> randint</span><br><span class="line">data = [randint(<span class="number">0</span>,<span class="number">10</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">20</span>)]</span><br><span class="line">counter = <span class="built_in">dict</span>.fromkeys(data, <span class="number">0</span>) <span class="comment"># 生成</span></span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> data:</span><br><span class="line">  counter[x] += <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>这样处理后的<code>counter</code>就是一个<code>data</code>的频度字典了.</p>
+<p>接着可以使用<code>sorted</code>	函数来进行从大到小的排序从而得到结果.</p>
+<p>一种更便利的方式是引入<code>collections</code>的<code>Counter</code>类</p>
+<p>Counter类继承于<code>dict</code>,适用方法如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">c = Counter(data)</span><br><span class="line">c.most_common(3) # 选出频度最高的三个元素</span><br></pre></td></tr></table></figure>
+
+<p><code>most_common</code>方法返回的是一个元素为<code>tuple</code>的<code>list</code>.</p>
+<p>如果要进行词频统计,我们需要正则模块<code>re</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line">f = <span class="built_in">open</span>(<span class="string">&#x27;./text&#x27;</span>, <span class="string">&#x27;r&#x27;</span>)</span><br><span class="line">txt = f.read()</span><br><span class="line"><span class="comment"># 现在就可以开始统计了</span></span><br><span class="line">c = Counter(re.split(<span class="string">&#x27;\W+&#x27;</span>, txt))</span><br><span class="line">c.most_common(<span class="number">10</span>) <span class="comment"># 选出最高的十个单词</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="字典排序"><a href="#字典排序" class="headerlink" title="字典排序"></a>字典排序</h4><p>如果曾经尝试过字典排序,你就会发现:<strong>字典中的可迭代对象是key</strong></p>
+<p>可以通过下面这段代码来验证</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> randint</span><br><span class="line">d = &#123; k:randint(<span class="number">0</span>,<span class="number">20</span>) <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>) &#125;</span><br><span class="line"><span class="built_in">list</span>(<span class="built_in">iter</span>(d)) <span class="comment"># 返回的是0,1,2,3...8,9.</span></span><br></pre></td></tr></table></figure>
+
+<p>但是更多的场景下,我们需要对字典的值进行排序.</p>
+<p>有以下几个point:</p>
+<ul>
+<li>使用sorted的key参数</li>
+<li>使用zip函数进行拼接</li>
+<li>可以变出来V-&gt;k这样的</li>
+<li>使用dict.items()变元组</li>
+<li>这样变出来的只能是K-&gt;V</li>
+</ul>
+<p>直接说一下<code>sorted</code>函数的使用吧,我们继续使用上面的字典<code>d</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sorted</span>(d.items(), key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>], reverse=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<p>也可以使用zip进行元组列表的拼接.</p>
+<h3 id="字典公共键"><a href="#字典公共键" class="headerlink" title="字典公共键"></a>字典公共键</h3><p>如何获取多个字典的公共键?</p>
+<p>说到这个问题,想想这么一种场景,有多个字典记载了不同场比赛球员的进球情况,现在需要得知谁在这三场比赛中都进了球.</p>
+<p>这样就需要获取复数个字典的公共键.</p>
+<p>获取键的方式是<code>dict.keys()</code>函数,他会返回一个<code>&lt;class &#39;dict_keys&#39;&gt;</code>对象.</p>
+<p>这个对象是可以像集合一样进行交并集操作的,这就为我们提供了一个思路.</p>
+<blockquote>
+<p>再在这里插一下快速获取测试数据的一种方法,使用random提供的randint和sample可以快速构建测试数据.</p>
+</blockquote>
+<p>请看下面的例子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> randint, sample</span><br><span class="line"><span class="comment"># 在本例中可以这样设计测试数据</span></span><br><span class="line">s1 = &#123; k:randint(<span class="number">1</span>,<span class="number">5</span>) <span class="keyword">for</span> k <span class="keyword">in</span> sample(<span class="string">&#x27;abcdef&#x27;</span>, randint(<span class="number">3</span>,<span class="number">6</span>)) &#125;</span><br></pre></td></tr></table></figure>
+
+<p>得到了测试数据<code>s1</code>,<code>s2</code>,<code>s3</code>,我们就可以开始编写代码了.</p>
+<p>首先,我们想到了使用<code>map</code>函数,为了遍历多个字典,那么如何将他们两两做处理呢?</p>
+<p>这就需要Python函数式编程另一个很常用的成员<code>reduce</code>了.</p>
+<p><code>reduce</code>是来源于<code>functools</code>包的,需要引入.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> reduce</span><br></pre></td></tr></table></figure>
+
+<p><code>reduce</code>接受一个<code>function</code>作为处理函数,后面是一个<code>sequence</code>.</p>
+<p>其处理流程就有点像递归(我觉得…),前一个的处理结果就是下一个的参数,</p>
+<p>那么有了这些前导函数的铺垫,我们就可以来看一下这个功能的实现啦.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">fromN random <span class="keyword">import</span> randint, sample</span><br><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> reduce</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">getData</span>():</span><br><span class="line">  <span class="keyword">return</span> &#123; k: randint(<span class="number">0</span>,<span class="number">4</span>) <span class="keyword">for</span> k <span class="keyword">in</span> sample(<span class="string">&#x27;abcdef&#x27;</span>, randint(<span class="number">3</span>,<span class="number">6</span>)) &#125;</span><br><span class="line">s1 = getData()</span><br><span class="line">s2 = getData()</span><br><span class="line">s3 = getData()</span><br><span class="line"><span class="comment"># 至此我们完成了准备工作</span></span><br><span class="line">reduce(<span class="keyword">lambda</span> a,b : a&amp;b, <span class="built_in">map</span>(<span class="built_in">dict</span>.keys, [s1,s2,s3]))</span><br><span class="line"><span class="comment"># Awesome! 只需要一行代码就可以解决问题 !</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="使用Deque来实现历史记录"><a href="#使用Deque来实现历史记录" class="headerlink" title="使用Deque来实现历史记录"></a>使用Deque来实现历史记录</h3><p><code>Deque</code>是一个双端队列(环形缓冲区),使用这么一个数据结构可以实现一个历史记录的功能.</p>
+<p>根据Deque的长度来决定历史记录的条数,多出来的记录会被删除,仅保留最新的N条.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> deque</span><br><span class="line">q = deque([], <span class="number">5</span>) <span class="comment"># 一定要声明!否则这个deque的最大长度是默认的NULL</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以得到一个deque对象了,接着我们存入数据:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">q.append(<span class="number">12</span>)</span><br><span class="line">q.append(<span class="number">23</span>)</span><br><span class="line">q.append(<span class="number">34</span>)</span><br><span class="line">q.append(<span class="number">45</span>)</span><br><span class="line">q.append(<span class="number">56</span>)</span><br><span class="line">q</span><br><span class="line"><span class="comment"># Out: [12,23,34,45,56]</span></span><br><span class="line">q.append(<span class="number">67</span>)</span><br><span class="line">q</span><br><span class="line"><span class="comment"># Out: [23,34,45,56,67]</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看出,第一个值已经被挤出去了.</p>
+<h3 id="迭代"><a href="#迭代" class="headerlink" title="迭代"></a>迭代</h3><p>这之中有两个极易混淆的东西,一个叫<strong>迭代器(iterator)</strong>,一个叫<strong>可迭代对象(iterable)</strong></p>
+<p>涉及到的核心方法和接口有<code>__iter__</code>和<code>__next__</code>.一个最最最简单的迭代实现就像是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">T</span>:</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__iter__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> Ter()</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Ter</span>:</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__next__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;0&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>调用时就像是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">t = T()</span><br><span class="line">ter = <span class="built_in">iter</span>(t) <span class="comment"># 因为t实现了iter接口</span></span><br><span class="line"><span class="built_in">next</span>(ter) <span class="comment"># ter实现了next接口</span></span><br><span class="line"><span class="comment"># Out:0</span></span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中,<code>ter</code>是迭代器,<code>t</code>是一个可迭代对象.也就是说,实现了<code>iter</code>接口的就是一个可迭代对象.</p>
+<p>对于字符串,我们都知道是一个可迭代的对象,如果你使用Python2,在检测时会发现:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">hasattr</span>(<span class="string">&quot;str&quot;</span>, <span class="string">&#x27;__iter__&#x27;</span>) <span class="comment"># 返回的是False</span></span><br><span class="line"><span class="comment"># 但是:</span></span><br><span class="line"><span class="built_in">hasattr</span>(<span class="string">&quot;str&quot;</span>, <span class="string">&#x27;__getitem__&#x27;</span>) <span class="comment"># 返回True</span></span><br></pre></td></tr></table></figure>
+<p>在Python3中你是看不到这个现象的,因为str对象已经实现了<code>__iter__</code>接口</p>
+<p>所以说,如果一个对象实现了<code>__getitem__</code>接口或者<code>__iter__</code>接口,它就是可迭代的.就可以使用<code>iter()</code>方法获得他的迭代器.</p>
+<p>接着,就可以使用<code>next()</code>方法对一个迭代器进行迭代.</p>
+<p>用迭代器实现一个小栗子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SmallLiZi</span>:</span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, start, end</span>):</span><br><span class="line">		self.start = start</span><br><span class="line">		self.end = end</span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__iter__</span>(<span class="params">self</span>):</span><br><span class="line">		<span class="keyword">return</span> SmallLiZier(self.start, self.end)</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SmallLiZier</span>:</span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, start, end</span>):</span><br><span class="line">		self.start = start</span><br><span class="line">		self.end = end</span><br><span class="line">		self.index = <span class="number">0</span></span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__next__</span>(<span class="params">self</span>):</span><br><span class="line">		self.index += <span class="number">1</span></span><br><span class="line">		<span class="comment"># print(self.index, self.end)</span></span><br><span class="line">		<span class="keyword">if</span> self.index &gt;= self.end:</span><br><span class="line">			<span class="keyword">raise</span> StopIteration</span><br><span class="line">		<span class="keyword">while</span> <span class="keyword">not</span> self.isPrime(self.index):</span><br><span class="line">			self.index += <span class="number">1</span>  </span><br><span class="line">		<span class="built_in">print</span>(self.index)</span><br><span class="line">		<span class="keyword">return</span> self.index</span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">isPrime</span>(<span class="params">self, num</span>):</span><br><span class="line">		<span class="keyword">for</span> n <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>,num):</span><br><span class="line">			<span class="keyword">if</span> num % n == <span class="number">0</span>:</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<p>这就是一个完全没有考虑算法的简单小程序,每次<code>next</code>得到一个素数.</p>
+<p>这个例子也可以通过**生成器(generator)**来实现, 一个简单的生成器的小栗子就像是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">f</span>():</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">1</span></span><br><span class="line">  <span class="keyword">yield</span> <span class="number">2</span></span><br><span class="line">  <span class="keyword">yield</span> <span class="number">3</span></span><br><span class="line">g = f()</span><br><span class="line"><span class="built_in">next</span>(g) <span class="comment"># 1</span></span><br><span class="line"><span class="built_in">next</span>(g) <span class="comment"># 2</span></span><br><span class="line"><span class="built_in">next</span>(g) <span class="comment"># 3</span></span><br></pre></td></tr></table></figure>
+
+<p>如果使用<code>type()</code>查看<code>g</code>对象, 就会发现他是一个生成器对象(<code>&lt;class &#39;generator&#39;&gt;</code>), 这个对象同时实现了<code>__iter__</code>.<code>__next__</code>接口.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;__iter__&quot;</span> <span class="keyword">in</span> <span class="built_in">dir</span>(g) <span class="comment"># True</span></span><br><span class="line"><span class="string">&quot;__next__&quot;</span> <span class="keyword">in</span> <span class="built_in">dir</span>(g) <span class="comment"># True</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>简单的迭代大家都会, 在这里说说反向迭代.</p>
+<p>反向迭代的意思就是倒序迭代, 譬如,给定一个列表我们可以反向(迭代)输出.</p>
+<p>实现的方法很多, 大家一定都已经想到了很多办法: 比如,使用<code>reverse</code>函数反向列表, 使用倒序切片<code>[::-1]</code>得到一个新的反向列表.</p>
+<p>但这样的方法都不是很好, 因为<code>reverse</code>改变了原来的列表,切片操作会得到新的列表, 太占用资源.</p>
+<p>这个时候就要使用<code>reversed()</code>来得到一个<code>反向迭代器</code>, 也就是<code>&lt;class &#39;list_reverseiterator&#39;&gt;</code>.</p>
+<p>我们已经知道, <code>iter()</code>方法调用的是<code>__iter__</code>接口, 那么<code>reversed</code>调用的是什么神奇的小东西呢?</p>
+<p>再次查看一个列表, 我们发现果然里面有一个<code>__reversed__</code>!</p>
+<p>那么, 我们就可以是用这个特性来写一个灵活的发生器了!</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">FloatRange</span>:          </span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, start,end,step</span>):</span><br><span class="line">	 self.start = start     </span><br><span class="line">	 self.end = end         </span><br><span class="line">	 self.step = step       </span><br><span class="line">	                        </span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__iter__</span>(<span class="params">self</span>):      </span><br><span class="line">	 n = self.start         </span><br><span class="line">	 <span class="keyword">while</span> n &lt; self.end:    </span><br><span class="line">	   <span class="keyword">yield</span> n              </span><br><span class="line">	   n += self.step       </span><br><span class="line">	                        </span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__reversed__</span>(<span class="params">self</span>):  </span><br><span class="line">	 d = self.end           </span><br><span class="line">	 <span class="keyword">while</span> d &gt; self.start:  </span><br><span class="line">	   <span class="keyword">yield</span> d              </span><br><span class="line">	   d -= self.step       </span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>Python中的一个强大特性就是<strong>切片操作</strong>, 然而,并不是每一个对象都可以进行切片的.</p>
+<p>比如, 我们以一个文件句柄来做举例:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">f = <span class="built_in">open</span>(<span class="string">&quot;./somefile&quot;</span>)</span><br><span class="line">f[<span class="number">10</span>:<span class="number">20</span>]</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File <span class="string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">TypeError: <span class="string">&#x27;_io.TextIOWrapper&#x27;</span> <span class="built_in">object</span> <span class="keyword">is</span> <span class="keyword">not</span> subscriptable.</span><br></pre></td></tr></table></figure>
+<p>很好, 他报错了.看样子文件句柄是不能直接迭代的.</p>
+<p>难道没有还是什么好的办法能够直接迭代读取文件呢?</p>
+<p>方法自然是有的. Python标准库<code>itertools</code>中提供了<code>islice</code>接口.</p>
+<p>来尝试一下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> islice</span><br><span class="line">f = <span class="built_in">open</span>(<span class="string">&quot;./somefile&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> islice(f, <span class="number">10</span>, <span class="number">20</span>):</span><br><span class="line">  <span class="built_in">print</span>(line)</span><br><span class="line"><span class="comment"># 哈哈有效果啦!</span></span><br></pre></td></tr></table></figure>
+
+<p>但是当继续迭代时:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> f.readlines():</span><br><span class="line">  <span class="built_in">print</span>(n)</span><br><span class="line"><span class="comment"># woc, 怎么不从头开始 ?!</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意, islice的操作并不能像原生的切片操作一样,事实上,这样的切片事实上还是迭代,只是将不合要求的部分舍去了.</strong></p>
+<p>可我就是想要原生切片的效果!</p>
+<p>好…那么先来看一下数组下标的实现.</p>
+<p>先来写一个小列表:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">l = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line">l[<span class="number">0</span>] <span class="comment"># 1</span></span><br><span class="line">l.__getitem__(<span class="number">0</span>) <span class="comment"># 1</span></span><br><span class="line">l.__getitem__(<span class="number">1</span>) <span class="comment"># 2</span></span><br></pre></td></tr></table></figure>
+
+<p>哦!原来是这样, 所谓下标就是调用了<code>__getitem__</code>方法.</p>
+<p>那么实现下标查找和切片就变得可能了.</p>
+<p>我们写一个这样的类:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span>:                 </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, file</span>): </span><br><span class="line">    self.file = file        </span><br><span class="line">    self.index = <span class="number">0</span>          </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__getitem__</span>(<span class="params">self, n</span>): </span><br><span class="line">    <span class="keyword">while</span> self.index &lt; n-<span class="number">1</span>:</span><br><span class="line">      f.readline()          </span><br><span class="line">      self.index += <span class="number">1</span>       </span><br><span class="line">    <span class="keyword">return</span> f.readline()</span><br></pre></td></tr></table></figure>
+
+<p>好了,现在它可以使用下标来读取文件了.</p>
+<p>接下来实现切片:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span>:</span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, file</span>):</span><br><span class="line">		self.file = file</span><br><span class="line">		self.index = <span class="number">0</span></span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">__getitem__</span>(<span class="params">self, n</span>):</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">isinstance</span>(n, <span class="built_in">int</span>):</span><br><span class="line">			<span class="keyword">while</span> self.index &lt; n - <span class="number">1</span>:</span><br><span class="line">				self.file.readline()</span><br><span class="line">				self.index += <span class="number">1</span></span><br><span class="line">			<span class="keyword">return</span> f.readline()</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">isinstance</span>(n, <span class="built_in">slice</span>):</span><br><span class="line">			start = n.start</span><br><span class="line">			end = n.stop</span><br><span class="line">			<span class="built_in">print</span>(end)</span><br><span class="line">			res = []</span><br><span class="line">			<span class="keyword">if</span> start <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">				start = <span class="number">0</span></span><br><span class="line">			<span class="keyword">for</span> line <span class="keyword">in</span> <span class="built_in">range</span>(end):</span><br><span class="line">				<span class="keyword">if</span> line &gt;= start:</span><br><span class="line">					res.append(self.file.readline())</span><br><span class="line">				<span class="keyword">else</span>:</span><br><span class="line">					self.file.readline()</span><br><span class="line">			<span class="keyword">return</span> res</span><br></pre></td></tr></table></figure>
+
+<p>好了,现在就可以对文件进行真正的切片了.</p>
+<p><strong>8.30的更新: 上述的两个文件读取的代码有误, 待重新开发.</strong></p>
+<p>顺便提一个问题, 重新获取文件描述符和移动文件指针哪一个更节省资源呢 ?</p>
+<p>我们知道操作系统对文件描述符的数量是有限制的. 而这个所谓描述符其实就是对应的就是一个整数来映射打开的目标文件. 而所谓文件指针其实就是结构体的一个属性而已. 那么就这样来看, 似乎是直接移动文件指针更好. 不知道这样想是否正确? </p>
+<hr>
+<p>之前在谈字典的迭代的时候, 我们提到了<code>zip</code>函数, 现在再来更细致的说一下它.</p>
+<p><code>zip</code>的基本功能就是返回一个<strong>迭代的</strong>zip对象, 一开始我都没有注意到, 以为只是拼接这么简单, 没想到返回的对象竟然是迭代对象.(后来看了一下, 真的呢..”<strong>next</strong>“ in dir(z)..True…)</p>
+<p>所以说在使用<code>list(z)</code>进行转列表时, <code>z</code>就会失去了作用.</p>
+<p>如果传入<code>zip</code>的列表长度不一致会怎么样呢 ? 自己做实验 ! (哈哈哈.难道你能把我的头放到键pan.cdsvfbgnrtjhe..</p>
+<p>如果传入<code>zip</code>的列表长度不一致,<code>zip</code>会选择最小长度的并且抛弃其他列表所有超出的元素..</p>
+<p>使用<code>zip</code>来进行一次并行迭代(在一个for循环进行多个对象的同时迭代):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> randint</span><br><span class="line">chi = [randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">44</span>)]</span><br><span class="line">math = [randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">44</span>)]</span><br><span class="line">eng = [randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">44</span>)]</span><br><span class="line"><span class="comment"># 得到测试数据</span></span><br><span class="line">total = []</span><br><span class="line"><span class="keyword">for</span> c,m,e <span class="keyword">in</span> <span class="built_in">zip</span>(chi):</span><br><span class="line">  total.append(c+m+e)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>说完了并行迭代, 我们再来看一下串行迭代.</p>
+<p>所谓串行迭代就是指按照顺序迭代多个可迭代对象.</p>
+<p>比如这样的一种情况:</p>
+<p>有四个班的成绩, 每个班的人数不一样, 现在想要统计英语大于90的人的总数, 怎么做呢?</p>
+<p>现在不能并行迭代了, 因为人数不一样的, 如果我们能够把他们拼到一起就好了,所以现在就来使用<code>itertools.chain</code>吧, 他能把多个<code>iterable</code>拼接到一起</p>
+<p>用法就像是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> chain</span><br><span class="line">total = chain(p1,p2,p3)</span><br></pre></td></tr></table></figure>
+
+<p>那么, 使用<code>chain</code>这个问题的一种可能的实施方案是这样的:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> randint</span><br><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> chain</span><br><span class="line">c1 = [randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">44</span>)]</span><br><span class="line">c2 = [randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">41</span>)]</span><br><span class="line">c3 = [randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">39</span>)]</span><br><span class="line">c4 = [randint(<span class="number">60</span>,<span class="number">100</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">43</span>)]</span><br><span class="line">count = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> stu <span class="keyword">in</span> chain(c1,c2,c3,c4):</span><br><span class="line">  <span class="keyword">if</span> stu &gt; <span class="number">90</span>:</span><br><span class="line">    count += <span class="number">1</span></span><br><span class="line">count <span class="comment"># 36(样例输出)</span></span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-1-%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8Ecollections"><span class="toc-number">1.</span> <span class="toc-text">Part 1 基本数据结构与collections</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4"><span class="toc-number">1.1.</span> <span class="toc-text">过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%BD%E5%90%8D-%E7%BB%9F%E8%AE%A1-%E5%AD%97%E5%85%B8%E6%8E%92%E5%BA%8F"><span class="toc-number">1.2.</span> <span class="toc-text">命名.统计.字典排序</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E5%90%8D"><span class="toc-number">1.2.1.</span> <span class="toc-text">命名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1"><span class="toc-number">1.2.2.</span> <span class="toc-text">统计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E5%85%B8%E6%8E%92%E5%BA%8F"><span class="toc-number">1.2.3.</span> <span class="toc-text">字典排序</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E5%85%B8%E5%85%AC%E5%85%B1%E9%94%AE"><span class="toc-number">1.3.</span> <span class="toc-text">字典公共键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8Deque%E6%9D%A5%E5%AE%9E%E7%8E%B0%E5%8E%86%E5%8F%B2%E8%AE%B0%E5%BD%95"><span class="toc-number">1.4.</span> <span class="toc-text">使用Deque来实现历史记录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3"><span class="toc-number">1.5.</span> <span class="toc-text">迭代</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&text=Python小技巧"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&is_video=false&description=Python小技巧"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python小技巧&body=Check out this article: https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&title=Python小技巧"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&name=Python小技巧&description=&lt;p&gt;Python编程技巧.[环境:Python3.6.0]&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/&t=Python小技巧"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

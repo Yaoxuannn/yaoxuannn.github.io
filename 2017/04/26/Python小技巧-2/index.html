@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Python编程技巧.[环境:Python3.6.0]">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python小技巧_2">
+<meta property="og:url" content="https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Python编程技巧.[环境:Python3.6.0]">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-04-26T23:46:17.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python小技巧_2</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/04/23/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&text=Python小技巧_2"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&is_video=false&description=Python小技巧_2"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python小技巧_2&body=Check out this article: https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&name=Python小技巧_2&description=&lt;p&gt;Python编程技巧.[环境:Python3.6.0]&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&t=Python小技巧_2"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">字符串处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0"><span class="toc-number">2.</span> <span class="toc-text">函数</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python小技巧_2
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-04-26T23:46:17.000Z" class="dt-published" itemprop="datePublished">2017-04-26</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Python编程技巧.[环境:Python3.6.0]</p>
+<span id="more"></span>
+
+<h2 id="字符串处理"><a href="#字符串处理" class="headerlink" title="字符串处理"></a>字符串处理</h2><p>字符串最主要的处理之一就是分割.</p>
+<p>最基础简单的分割方式就是使用<code>split</code>函数.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;Hello&quot;</span>.split(<span class="string">&quot;l&quot;</span>)</span><br><span class="line"><span class="comment"># [&quot;He&quot;, &quot;&quot;, &quot;o&quot;]</span></span><br></pre></td></tr></table></figure>
+<p>哎?出现了一个空字符串!, 这并不是我们想要的, 再讲如何消去它之前, 我们先来说一下为什么会产生.</p>
+<p>可以做做这样的小实验:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;aaaa&quot;</span>.split(<span class="string">&quot;a&quot;</span>)</span><br><span class="line"><span class="comment"># [&#x27;&#x27;,&#x27;&#x27;,&#x27;&#x27;,&#x27;&#x27;,&#x27;&#x27;]</span></span><br></pre></td></tr></table></figure>
+
+<p>产生了五个空字符串, 然而我们只传了四个呀. 那么就开始猜测, 会不会是两个字符串的叠加效果呢?(此时可以试试<code>&quot;a&quot;.split(&quot;a&quot;)</code>)</p>
+<p>所以说, 这个情况是在寻找符合条件的字符串的两边时,发现要么没有了, 要么还是原来的条件.</p>
+<p>现在提供一个可以快速消去空字符串的方法,不仅仅在这里适用,只要是为了剔除空数据, 都是可以的!</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[x <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="string">&quot;&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="string">&quot;Only&quot;</span>,<span class="string">&quot;&quot;</span>] <span class="keyword">if</span> x]</span><br><span class="line"><span class="comment"># [&quot;Only&quot;]</span></span><br></pre></td></tr></table></figure>
+
+<p>这种基本方法还是有一点的笨拙的, 如果遇到字符串中含有多个split点时, 就懵逼了.</p>
+<p>所以,还是要请出主角–<strong>正则表达式re模块</strong></p>
+<blockquote>
+<p>当你遇到了一个问题的时候, 为了解决它, 你想到了使用正则表达式, 这时, 你就有了两个问题. :)</p>
+</blockquote>
+<p>正则模块需要引入.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line">text = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> re.split(<span class="string">&quot;[,./|]&quot;</span>, <span class="string">&quot;Hel.lo,W|or/ld!&quot;</span>):</span><br><span class="line">    text += n</span><br><span class="line"><span class="built_in">print</span>(text)</span><br><span class="line"><span class="comment"># HelloWorld!</span></span><br></pre></td></tr></table></figure>
+
+<p>小结一下:当字符串不是很复杂的时候,仍然建议使用默认的字符串的<code>split</code>函数, 因为他更快速.如果遇到较为棘手的切割, 最好使用正则的切割.</p>
+<p>想象这么一种场景: 你需要获得文件的后缀名&#x2F;你想知道你个网址使用的协议是什么.</p>
+<p>抽象出来就是判断字符串的开头或者结尾.</p>
+<p>就如同方法名一样简单, 两个方法分别用来检测头和尾. <code>startswith</code>和<code>endswith</code>.</p>
+<p>举个例子:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os, stat</span><br><span class="line">os.listdir(<span class="string">&#x27;.&#x27;</span>)</span><br><span class="line"><span class="comment"># [&#x27;e.py&#x27;, &#x27;c.java&#x27;, &#x27;d.cpp&#x27;, &#x27;b.sh&#x27;, &#x27;f.sh&#x27;, &#x27;a.py&#x27;, &#x27;g.js&#x27;] 事先写好了有一些测试用数据</span></span><br><span class="line"><span class="comment"># 接下来使用列表解析找出所有的py和sh</span></span><br><span class="line">[ file <span class="keyword">for</span> file <span class="keyword">in</span> os.listdir(<span class="string">&#x27;.&#x27;</span>) <span class="keyword">if</span> file.endswith((<span class="string">&#x27;.py&#x27;</span>, <span class="string">&#x27;.sh&#x27;</span>)) ]</span><br><span class="line"><span class="comment"># [&#x27;e.py&#x27;, &#x27;b.sh&#x27;, &#x27;f.sh&#x27;, &#x27;a.py&#x27;]</span></span><br></pre></td></tr></table></figure>
+<p><strong>方法内可以传入元组进行多适配, 但一定不接受列表.</strong></p>
+<p>接下来就可以使用这样的方法找到一堆数据中所有的<code>ftp://</code>的服务器地址.(略 :) )</p>
+<p>下面说一个超实用的正则魔法!</p>
+<p><code>re.sub</code>可以进行替换, 如果继续利用正则的捕获组就能进行格式的变换,(比如把<code>04/05/2017</code>变成<code>2017-05-04</code>).</p>
+<p><code>sub</code>接受三个参数, 分别是<code>[&#39;正则表达式&#39;, &#39;替换后的字符串&#39;, &#39;需要替换的字符串&#39;]</code>.</p>
+<p>接下来再说一下什么是正则中的捕获组.</p>
+<p>捕获组简单的说就是一个小整体,还是用实例来说明下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line">log = <span class="built_in">open</span>(<span class="string">&quot;/var/log/nginx/access.log&quot;</span>, <span class="string">&#x27;r&#x27;</span>).read()</span><br><span class="line"><span class="built_in">print</span>(re.sub(<span class="string">r&#x27;(\d&#123;2&#125;)/([a-zA-Z]&#123;3&#125;)/(\d&#123;4&#125;)&#x27;</span>, <span class="string">r&#x27;\3-\2-\1&#x27;</span>, log))</span><br></pre></td></tr></table></figure>
+<p>一个一个来说明, <code>access.log</code>的文件类似</p>
+<p><code>5?.6?.2?.?1? - - [03/May/2017:23:19:25 +0800] &quot;GET /??/ HTTP/1.1&quot; 304 0 &quot;-&quot; &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36&quot;</code></p>
+<p>这个实例是将所有的时间改为<code>2017-May-03</code>的形式.</p>
+<p>接着来看一下捕获组, 就是那个用括号抱起来的东西. 被抱起来的从0开始计数, 在后面使用反斜线加上组号就可以进行引用.</p>
+<p>另外, 正则的捕获组可以添加名字的, 像这样使用: <code>?P&lt;名字&gt;</code>, 引用时这样: <code>\g&lt;名字&gt;</code>.</p>
+<p>将上面的例子进行一下更改就变成这样: <code>re.sub(r&#39;(?P&lt;day&gt;\d&#123;2&#125;)/(?P&lt;month&gt;[a-zA-Z]&#123;3&#125;)/(?P&lt;year&gt;\d&#123;4&#125;)&#39;, r&#39;\g&lt;day&gt;-\g&lt;month&gt;-\g&lt;year&gt;&#39;, log)</code>.</p>
+<p>说完了分割, 接下来再来看另一个重要的操作–拼接.</p>
+<p>传统的拼接方法上面也展示过了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">l = [<span class="string">&quot;Hel&quot;</span>, <span class="string">&quot;lo,&quot;</span>, <span class="string">&quot;Worl&quot;</span>, <span class="string">&quot;d&quot;</span>]</span><br><span class="line">greeting = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">for</span> part <span class="keyword">in</span> l:</span><br><span class="line">  greeting += part</span><br><span class="line"><span class="built_in">print</span>(greeting)</span><br><span class="line"><span class="comment"># Hello,World</span></span><br></pre></td></tr></table></figure>
+
+<p>这样拼接还是有一点麻烦的, 更好地方法是使用<code>str.join</code>方法.</p>
+<p>这个方法接受一个可迭代对象作为参数, 调用者(self)就是分割符, 比如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;,&quot;</span>.join([<span class="string">&#x27;Hello&#x27;</span>, <span class="string">&#x27;world&#x27;</span>])</span><br><span class="line"><span class="comment"># Hello,world</span></span><br></pre></td></tr></table></figure>
+
+<p>但是,我们遗漏了一种情况, 如果传入的可迭代对象包含多个类型的数据怎么办呢?</p>
+<p>先试一试吧:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;</span>.join([<span class="string">&#x27;123&#x27;</span>, <span class="number">456</span>, <span class="string">&#x27;789&#x27;</span>])</span><br></pre></td></tr></table></figure>
+<p>呀!报错了! 看样子还是要处理这个问题的.</p>
+<p>一种解决方法是使用列表解析:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">example = [<span class="string">&#x27;123&#x27;</span>, <span class="number">456</span>, <span class="string">&#x27;789&#x27;</span>]</span><br><span class="line"><span class="string">&quot;&quot;</span>.join([<span class="built_in">str</span>(x) <span class="keyword">for</span> x <span class="keyword">in</span> example])</span><br></pre></td></tr></table></figure>
+
+<p>这样虽然可以处理, 但如果数据很大的话, 会占用很多资源.</p>
+<p>所以, 使用<code>Generator</code>是更优的选择.</p>
+<p>因为他的开销更小.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">example = [<span class="string">&#x27;123&#x27;</span>, <span class="number">456</span>, <span class="string">&#x27;789&#x27;</span>]</span><br><span class="line"><span class="string">&quot;&quot;</span>.join((<span class="built_in">str</span>(x) <span class="keyword">for</span> x <span class="keyword">in</span> example))</span><br></pre></td></tr></table></figure>
+
+<p>接着再来说说文本的排版.</p>
+<p>我们经常遇到的一种情况是, 对一个字典进行输出.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;name&quot;:&#x27;J&#x27;,</span><br><span class="line">	&quot;age&quot;:22,</span><br><span class="line">	&quot;sex&quot;:1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们期望的输出是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name :  &#x27;J&#x27;</span><br><span class="line">age  :  22</span><br><span class="line">sex  :  1</span><br></pre></td></tr></table></figure>
+<p>由于键的长度并不一样, 所以直接输出是做不到的.</p>
+<p><code>str</code>有几个方法可以帮助我们达成这个目标.</p>
+<p>准确的说, 这些方法只是填充字符串而已.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">&#x27;abc&#x27;</span></span><br><span class="line">s.ljust(<span class="number">10</span>)</span><br><span class="line"><span class="comment"># &#x27;       abc&#x27;</span></span><br><span class="line">s.ljust(<span class="number">10</span>,<span class="string">&#x27;=&#x27;</span>)</span><br><span class="line"><span class="comment"># &#x27;=======abc&#x27;</span></span><br><span class="line">s.center(<span class="number">10</span>)</span><br><span class="line"><span class="comment"># &#x27;   abc    &#x27;</span></span><br></pre></td></tr></table></figure>
+<p>另外一个类似的方法是使用<code>format</code>函数, <code>format</code>接受一个字符串和格式字符串, 使用起来的效果就像是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">format</span>(s, <span class="string">&#x27;&gt;10&#x27;</span>)</span><br><span class="line"><span class="comment"># &#x27;       abc&#x27;</span></span><br><span class="line"><span class="built_in">format</span>(s,, <span class="string">&#x27;^10&#x27;</span>)</span><br><span class="line"><span class="comment"># &#x27;   abc    &#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>那么现在来完成开头提出的问题, 排版输出键值长度不一致的字典:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">kv = &#123;</span><br><span class="line">	<span class="string">&#x27;name&#x27;</span>:<span class="string">&#x27;Python&#x27;</span>,</span><br><span class="line">	<span class="string">&#x27;createTime&#x27;</span>:<span class="string">&#x27;2017-04-26&#x27;</span>,</span><br><span class="line">	<span class="string">&#x27;mtime&#x27;</span>:<span class="string">&#x27;2017-05-03&#x27;</span>,</span><br><span class="line">	<span class="string">&#x27;author&#x27;</span>:<span class="string">&#x27;Justin&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment"># 得到字典</span></span><br><span class="line">m = <span class="built_in">max</span>(<span class="built_in">map</span>(<span class="built_in">len</span>, kv.keys()))</span><br><span class="line"><span class="comment"># 得到键的最大长度</span></span><br><span class="line"><span class="keyword">for</span> k <span class="keyword">in</span> d:</span><br><span class="line">  <span class="built_in">print</span>(k.ljust(m), <span class="string">&quot;:&quot;</span>, kv[k])</span><br><span class="line"><span class="comment"># name       : Python</span></span><br><span class="line"><span class="comment"># createTime : 2017-04-26</span></span><br><span class="line"><span class="comment"># mtime      : 2017-05-03</span></span><br><span class="line"><span class="comment"># author     : Justin</span></span><br></pre></td></tr></table></figure>
+
+<p>除了分割和拼接, 字符串另一个重要的处理就是删除(叫剔除应该更好), </p>
+<p>比如剔除两端的空格, 剔除指定字符,等等..</p>
+<p>str类仍然封装了很多丰富的方法.</p>
+<p>*<strong>strip一类方法</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">&quot;!  ++Hello==  ?&quot;</span></span><br><span class="line">s.strip(<span class="string">&quot;? !&quot;</span>) <span class="comment"># &quot;++Hello==&quot;</span></span><br><span class="line">s.lstrip(<span class="string">&quot;+&quot;</span>) <span class="comment"># &quot;Hello==&quot;</span></span><br><span class="line">s.rstrip(<span class="string">&quot;=&quot;</span>) <span class="comment"># &quot;Hello&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>*strip不能搞定中间的字符, 我们可以通过切片加拼接的方式完成.</p>
+<p>比如:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">&quot;Hel:lo&quot;</span></span><br><span class="line">s = s[:<span class="number">3</span>] + s[<span class="number">4</span>:]</span><br><span class="line"><span class="built_in">print</span>(s)</span><br><span class="line"><span class="comment"># Hello</span></span><br></pre></td></tr></table></figure>
+<p>但是切片的方法略显笨重,来看一下字符串的<code>replace</code>方法(别忘了正则的<code>sub</code>方法呀.)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">&quot;123\n456\n789&quot;</span></span><br><span class="line">s = s.replace(<span class="string">&quot;\n&quot;</span>, <span class="string">&quot;&quot;</span>)</span><br><span class="line">s</span><br><span class="line"><span class="comment"># &quot;123456789&quot;</span></span><br></pre></td></tr></table></figure>
+<p>但是, 你现在也注意到了, <code>replace</code>方法只能匹配一个字符, 如果遇到多个就不行了.</p>
+<p>比如剔除字符串<code>s = &quot;123.456,789;&quot;</code>中所有的特殊字符.</p>
+<p>这个时候还是需要靠强大的正则了, 也就是之前说的<code>sub</code>函数.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">re.sub(<span class="string">&quot;[.,;]&quot;</span>, <span class="string">&quot;&quot;</span>,s)</span><br></pre></td></tr></table></figure>
+<p>就可以了.</p>
+<p>最后再来说一下<code>translate</code>方法, <code>str</code>和<code>re</code>, 他们的作用稍有不同, 我们分开来说.</p>
+<p>首先, <code>translate</code>方法可以实现 伪加密(更换顺序)和剔除指定字符的效果. 一个联动的函数是<code>str.maketrans</code>.</p>
+<p>其中, <code>translate</code>接受一个参数, 一个映射表(需要实现<code>__getitem__</code>接口), 这个映射表一般有<code>str.maketrans</code>产生.</p>
+<p><code>str.maketrans</code>最多接受三个参数, 前两个为映射字符串, 最后一个是将选定的字符串映射成<code>None</code>, 被映射成<code>None</code>的字符串会在<code>translate</code>的过程中被删除.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">&quot;123\n456\t789\r&quot;</span></span><br><span class="line">s.translate(<span class="built_in">str</span>.maketrans(<span class="string">&quot;123789&quot;</span>, <span class="string">&quot;789123&quot;</span>,<span class="string">&quot;\n\r\t&quot;</span>))</span><br><span class="line"><span class="comment"># &quot;789456123&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>到此, 字符串处理的基本就结束了.</p>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><p>Python有个特别好用的函数特性, 叫做<strong>装饰器</strong>.</p>
+<p>装饰器可以帮助我们减少大量代码的冗余, 使得函数的利用更加便利.</p>
+<p>一个非常的经典的例子就是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fib</span>(<span class="params">n</span>):</span><br><span class="line">  <span class="keyword">if</span> n &lt;= <span class="number">1</span>:</span><br><span class="line">    <span class="keyword">return</span> n</span><br><span class="line">  <span class="keyword">return</span> fib(n-<span class="number">1</span>) + fib(n-<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这是一个非常经典的斐波那契数列递归,但如果使用这个函数进行<code>fib(50)</code>的话, 也许你可以先去泡杯咖啡.</p>
+<p>一种优化方案是:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fib</span>(<span class="params">n, cache=<span class="literal">None</span></span>):</span><br><span class="line">  <span class="keyword">if</span> cache <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">    cache = &#123;&#125;</span><br><span class="line">  <span class="keyword">if</span> n &lt;= <span class="number">1</span>:</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">  <span class="keyword">if</span> n <span class="keyword">in</span> cache:</span><br><span class="line">    <span class="keyword">return</span> cache[n]</span><br><span class="line">  cache[n] = fib(n-<span class="number">1</span>, cache) + fib(n-<span class="number">2</span>, cache)</span><br><span class="line">  <span class="keyword">return</span> cache[n]</span><br></pre></td></tr></table></figure>
+
+<p>在这里,我们建立了一个缓存池(原函数缓慢的原因就是因为大量的重复计算, 计算得到的值都没有得到保存.), 如果能从缓存池中读取, 就不再计算而直接读取.</p>
+<p>对于这个问题,事实上好多递归函数都存在这个问题.</p>
+<p>比如爬楼梯问题:</p>
+<blockquote>
+<p>一个共有10个台阶的楼梯, 从下面走到上面, 一次只能迈1-3的阶梯, 在不能后退的情况下, 走完楼梯一共有多少种方法?</p>
+</blockquote>
+<p>传统的递归解法是:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">climb</span>(<span class="params">n, steps</span>):</span><br><span class="line">   <span class="keyword">if</span> n == <span class="number">0</span>:</span><br><span class="line">     <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">   count = <span class="number">0</span></span><br><span class="line">   <span class="keyword">if</span> n &gt;<span class="number">0</span>:</span><br><span class="line">     <span class="keyword">for</span> step <span class="keyword">in</span> steps:</span><br><span class="line">       count += climb(n - step, steps)</span><br><span class="line">   <span class="keyword">return</span> count</span><br></pre></td></tr></table></figure>
+<p>计算<code>climb(50, (1,2,3))</code>试试, 你的咖啡已经凉了.</p>
+<p>我们仍然可以考虑加上缓存的方法, 但是那就意味着还要再重新书写一遍近乎是一样的代码.</p>
+<p>这时引入装饰器, <strong>装饰器也是个函数, 接受一个函数, 在他的内部生产一个符合要求的函数(比如生成缓存池, 记录日志等等), 再调用参数(也就是传进来的函数), 接着将这个包装的函数返回出去.就成为了一个满足要求的函数.</strong></p>
+<p>本来的过程是这样的:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func = wraaper(func)</span><br></pre></td></tr></table></figure>
+
+<p>这样有点麻烦, 所以Python提供了这样的语法糖:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@wraaper</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">  <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p>为上述递归问题写一个装饰器就像是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">caching</span>(<span class="params">func</span>):</span><br><span class="line">  cache = &#123;&#125;</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">wrap</span>(<span class="params">*args</span>):</span><br><span class="line">    <span class="keyword">if</span> args <span class="keyword">not</span> <span class="keyword">in</span> cache:</span><br><span class="line">      cache[args] = func(*args)</span><br><span class="line">    <span class="keyword">return</span> cache</span><br><span class="line">  <span class="keyword">return</span> wrap</span><br></pre></td></tr></table></figure>
+
+<p>这样再调用<code>fib</code>和<code>climb</code>, 就可秒出结果.</p>
+<p>再比如说一个很常用的功能, 我想知道我的函数执行了多长时间.我就可以也写个装饰器:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">record</span>(<span class="params">func</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">wrap</span>(<span class="params">*args</span>):</span><br><span class="line">    start = time.time()</span><br><span class="line">    func(*args)</span><br><span class="line">    end = time.time()</span><br><span class="line">    <span class="built_in">print</span>(end-start)</span><br><span class="line">  <span class="keyword">return</span> wrap</span><br></pre></td></tr></table></figure>
+<p>但是这个装饰器不是太实用, 我们可以添加让他在超过一定时间就记录日志的功能.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time, logging, random</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">record</span>(<span class="params">func</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">wrapper</span>(<span class="params">*args</span>):</span><br><span class="line">    start = time.time()</span><br><span class="line">    res = func(*args)</span><br><span class="line">    used = time.time() - start</span><br><span class="line">    <span class="keyword">if</span> used &gt; <span class="number">2.0</span>:</span><br><span class="line">      logging.warn(<span class="string">&quot;%s : %s &gt; %s&quot;</span> % (func.__name__, <span class="built_in">str</span>(used), <span class="built_in">str</span>(<span class="number">2.0</span>)))</span><br><span class="line">    <span class="keyword">return</span> res</span><br><span class="line">  <span class="keyword">return</span> wrapper</span><br><span class="line"><span class="meta">@record</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>():</span><br><span class="line">  <span class="keyword">if</span> randint(<span class="number">0</span>,<span class="number">1</span>):</span><br><span class="line">    time.sleep(<span class="number">2.5</span>)</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;Test&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">  test()</span><br></pre></td></tr></table></figure>
+<p>接着运行的结果就像是这样:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Test                                         </span><br><span class="line">Test                                         </span><br><span class="line">WARNING:root:test : <span class="number">2.500215768814087</span> &gt; <span class="number">2.0</span>  </span><br><span class="line">Test                                         </span><br><span class="line">Test                                         </span><br><span class="line">Test                                         </span><br><span class="line">Test                                         </span><br><span class="line">Test                                         </span><br><span class="line">WARNING:root:test : <span class="number">2.501840591430664</span> &gt; <span class="number">2.0</span>  </span><br><span class="line">Test                                         </span><br><span class="line">WARNING:root:test : <span class="number">2.5007271766662598</span> &gt; <span class="number">2.0</span> </span><br><span class="line">Test                                         </span><br><span class="line">Test                                         </span><br><span class="line">WARNING:root:test : <span class="number">2.5005836486816406</span> &gt; <span class="number">2.0</span></span><br></pre></td></tr></table></figure>
+
+<p>但是这个装饰器仍然不够灵活, 他的时间阈值是个固定值,如果是个可调节的值就更好了.</p>
+<p>为了达成装饰器同样可以接受参数, 我们就需要写个三层嵌套的装饰器.</p>
+<p>也就是说: <strong>一个返回装饰器的函数.</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">log</span>(<span class="params">text</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">decorator</span>(<span class="params">func</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">wrapper</span>(<span class="params">*args **kw</span>):</span><br><span class="line">      <span class="built_in">print</span>(<span class="string">&quot;%s %s():&quot;</span> % (text, func.__name__))</span><br><span class="line">      res = func(*args, **kw)</span><br><span class="line">      <span class="keyword">return</span> res</span><br><span class="line">  <span class="keyword">return</span> wraaper</span><br><span class="line"><span class="keyword">return</span> decorator</span><br></pre></td></tr></table></figure>
+
+<p>这就是一个最简单的展示接受参数的装饰器.</p>
+<p>使用中你会发现这样的情况.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@log(&quot;execute&quot;)</span><br><span class="line">def now():</span><br><span class="line">  print(&quot;2017-05-05&quot;)</span><br><span class="line">now()</span><br><span class="line"># execute now():</span><br><span class="line"># 2017-05-05</span><br></pre></td></tr></table></figure>
+
+<p>看起来很正常是吗.但是如果你试试查看<code>now.__name__</code>的时候就会发现, <code>now</code>已经被<code>wrapper</code>污染了.</p>
+<p>所以返回的是<code>wrapper</code>.这并不是我们所希望的.</p>
+<p><code>Python</code>的<code>functools</code>包内的<code>wraps</code>提供了我们需要的功能.</p>
+<p>由于<code>wraps</code>也是一个装饰器, 所以使用起来也非常方便, 在原基础上加上这样的一行代码即可解决问题 :</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> functools</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">log</span>(<span class="params">text</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">decorator</span>(<span class="params">func</span>):</span><br><span class="line"><span class="meta">    @functools.wraps(<span class="params">func</span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">wrapper</span>(<span class="params">*args **kw</span>):</span><br><span class="line">      <span class="built_in">print</span>(<span class="string">&quot;%s %s():&quot;</span> % (text, func.__name__))</span><br><span class="line">      res = func(*args, **kw)</span><br><span class="line">      <span class="keyword">return</span> res</span><br><span class="line">  <span class="keyword">return</span> wraaper</span><br><span class="line"><span class="keyword">return</span> decorator</span><br></pre></td></tr></table></figure>
+
+
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">字符串处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0"><span class="toc-number">2.</span> <span class="toc-text">函数</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&text=Python小技巧_2"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&is_video=false&description=Python小技巧_2"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python小技巧_2&body=Check out this article: https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&title=Python小技巧_2"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&name=Python小技巧_2&description=&lt;p&gt;Python编程技巧.[环境:Python3.6.0]&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/26/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-2/&t=Python小技巧_2"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

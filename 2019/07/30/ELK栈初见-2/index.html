@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="我们在之前聊完了ELK栈第一个部分ElasticSearch的索引链程序Lucene , 也对搜索引擎有了一个大体的认知, 解下来就来看看剩下的组件吧.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ELK栈初见-2">
+<meta property="og:url" content="https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="我们在之前聊完了ELK栈第一个部分ElasticSearch的索引链程序Lucene , 也对搜索引擎有了一个大体的认知, 解下来就来看看剩下的组件吧.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/ELK_mspaint.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/kibana_discover_show_1.png">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/kibana_discover_show_1.png">
+<meta property="article:published_time" content="2019-07-30T17:22:23.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:25:25.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="ELK">
+<meta property="article:tag" content="Logstash">
+<meta property="article:tag" content="Kibana">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/ELK_mspaint.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>ELK栈初见-2</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/01/10/Kubernetes%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/07/25/ELK%E6%A0%88%E5%88%9D%E8%A7%81-1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&text=ELK栈初见-2"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&is_video=false&description=ELK栈初见-2"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ELK栈初见-2&body=Check out this article: https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&name=ELK栈初见-2&description=&lt;p&gt;我们在之前聊完了ELK栈第一个部分ElasticSearch的索引链程序Lucene , 也对搜索引擎有了一个大体的认知, 解下来就来看看剩下的组件吧.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&t=ELK栈初见-2"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ELK%E6%A0%88%E6%98%AF%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">ELK栈是怎么工作的?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Logstash"><span class="toc-number">2.</span> <span class="toc-text">Logstash</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Logstash%E7%9A%84%E5%90%84%E7%A7%8D%E6%8F%92%E4%BB%B6"><span class="toc-number">3.</span> <span class="toc-text">Logstash的各种插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Input"><span class="toc-number">3.1.</span> <span class="toc-text">Input</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#File"><span class="toc-number">3.1.1.</span> <span class="toc-text">File</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#udp"><span class="toc-number">3.1.2.</span> <span class="toc-text">udp</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#redis"><span class="toc-number">3.1.3.</span> <span class="toc-text">redis</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Filter"><span class="toc-number">3.2.</span> <span class="toc-text">Filter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Output"><span class="toc-number">3.3.</span> <span class="toc-text">Output</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#redis-1"><span class="toc-number">3.3.1.</span> <span class="toc-text">redis</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#elasticsearch"><span class="toc-number">3.3.2.</span> <span class="toc-text">elasticsearch</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ELK%E5%AE%9E%E4%BE%8B"><span class="toc-number">4.</span> <span class="toc-text">ELK实例</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        ELK栈初见-2
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-07-30T17:22:23.000Z" class="dt-published" itemprop="datePublished">2019-07-30</time>
+        
+        (Updated: <time datetime="2020-11-30T01:25:25.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/ELK/" rel="tag">ELK</a>, <a class="p-category" href="/tags/Kibana/" rel="tag">Kibana</a>, <a class="p-category" href="/tags/Logstash/" rel="tag">Logstash</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>我们在之前聊完了ELK栈第一个部分ElasticSearch的索引链程序Lucene , 也对搜索引擎有了一个大体的认知, 解下来就来看看剩下的组件吧.</p>
+<span id="more"></span>
+
+<h2 id="ELK栈是怎么工作的"><a href="#ELK栈是怎么工作的" class="headerlink" title="ELK栈是怎么工作的?"></a>ELK栈是怎么工作的?</h2><p>一图胜千言.</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/ELK_mspaint.png" alt="ELK_mspaint"></p>
+<p>我们在我们的Server上安装收集日志的Agent (也可以叫做shipper), 通过一个消息队列发送给Logstash, 这里的消息队列一般是redis, 当然也可以是其他典型的MQ. Logstash可以进行数据清洗, 接着把处理的数据发送到我们的ES集群中, 最后, 由Kibana提供一个美观用户友好的管理接口.</p>
+<p>接下来就来看看这个Logstash吧.</p>
+<h2 id="Logstash"><a href="#Logstash" class="headerlink" title="Logstash"></a>Logstash</h2><p>Logstash基于JRuby研发, 因此也是需要跑在JVM之上的. 对于Logstash的工作模式, 其实就是一个**<code>pipeline</code>**. 这个管道就是承载输入输出过滤操作的载体. 首先, 输入将事件发送到一个默认存在于内存中的中央队列(也可以是磁盘), 每一个pipeline工作线程过会从这个队列中抓取批量事件, 接着按照我们定义的过滤器来执行, 最后发送到输出中. 默认情况下, 这些事件都是存在于内存中的, 因此一旦发生错误, 数据就会丢失. 所以Logstash也可以将发送的事件持久化到磁盘上. 我们Logstash的Server端是严重基于插件工作的. 插件用来定义输入, 编码, 过滤器, 输出等等.</p>
+<p>安装Logstash很简单, 我们之前已经加入了elastic的yum仓库, 因此直接安装就可以了.</p>
+<p>安装完成后, 我们可以来看一下安装生成配置文件:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 logstash]# rpm -qc logstash</span><br><span class="line">/etc/logstash/jvm.options</span><br><span class="line">/etc/logstash/log4j2.properties</span><br><span class="line">/etc/logstash/logstash-sample.conf</span><br><span class="line">/etc/logstash/logstash.yml</span><br><span class="line">/etc/logstash/pipelines.yml</span><br><span class="line">/etc/logstash/startup.option</span><br></pre></td></tr></table></figure>
+
+<p>是不是感觉和Elasticsearch很类似? 这里我们主要关注的就是官方给出的conf示例和<code>logstash.yml</code>就行了.</p>
+<p>简单的看一下这个示例配置, 你会发现, 定义一个logstash最基本的方法就是给出一个输入和一个输出就好了.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# cat /etc/logstash/logstash-sample.conf </span><br><span class="line"># Sample Logstash configuration for creating a simple</span><br><span class="line"># Beats -&gt; Logstash -&gt; Elasticsearch pipeline.</span><br><span class="line"></span><br><span class="line">input &#123;</span><br><span class="line">  beats &#123;</span><br><span class="line">    port =&gt; 5044</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">  elasticsearch &#123;</span><br><span class="line">    hosts =&gt; [&quot;http://localhost:9200&quot;]</span><br><span class="line">    index =&gt; &quot;%&#123;[@metadata][beat]&#125;-%&#123;[@metadata][version]&#125;-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">    #user =&gt; &quot;elastic&quot;</span><br><span class="line">    #password =&gt; &quot;changeme&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里能很清楚的看到, 这个配置文件是域配置类型的, 很简单就能读懂, 通过beats来采集日志, 并且把它输出到一个本机的ES中. 我们可以仿照着这个配置文件写一个最基本的标准输入输出做两端的配置然后跑一下试试:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 logstash]# cat config/conf.d/simple.conf </span><br><span class="line">input &#123;</span><br><span class="line">	stdin &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">	stdout &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>效果如下:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Hello<span class="punctuation">,</span> Logstash!</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">          <span class="string">&quot;host&quot;</span> =&gt; <span class="string">&quot;node1&quot;</span><span class="punctuation">,</span></span><br><span class="line">       <span class="string">&quot;message&quot;</span> =&gt; <span class="string">&quot;Hello, Logstash!&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="string">&quot;@version&quot;</span> =&gt; <span class="string">&quot;1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="string">&quot;@timestamp&quot;</span> =&gt; <span class="number">2020</span><span class="number">-05</span><span class="number">-24</span>T21<span class="punctuation">:</span><span class="number">02</span><span class="punctuation">:</span><span class="number">44.793</span>Z</span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里面会显示来源主机, 完整信息, 版本号和时间戳.</p>
+<p>当然, 除了输入输出, 我们也可以配置过滤器. Logstash支持四种类型的插件配置:</p>
+<ul>
+<li>input</li>
+<li>filter</li>
+<li>codec</li>
+<li>output</li>
+</ul>
+<p>这些插件都会有各种配置项, 而这些配置项支持的数据类型有:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Array: [item1, item2, ...]</span><br><span class="line">Boolean: true: false</span><br><span class="line">Bytes</span><br><span class="line">Codec: 定义编码器</span><br><span class="line">Hash: 字典</span><br><span class="line">Number</span><br><span class="line">Password</span><br><span class="line">Path: 文件系统路径</span><br><span class="line">String: 字符串</span><br></pre></td></tr></table></figure>
+
+<p>另外也支持: 字段引用: [], 条件判断(包括正则和包含, 并且可以使用复合表达式)</p>
+<p>既然我们说Logstash是基于插件的, 因此我们要研究的东西就是插件了.</p>
+<h2 id="Logstash的各种插件"><a href="#Logstash的各种插件" class="headerlink" title="Logstash的各种插件"></a>Logstash的各种插件</h2><h3 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h3><h4 id="File"><a href="#File" class="headerlink" title="File"></a>File</h4><p>从指定的文件中读取事件流, 这个插件的工作性质类似于<code>tail -1 -f</code>. 这个插件使用FileWatch(Ruby Gem库)监听文件的变化. 而文件读取位置一些信息会被保存在一个叫做<code>.sincedb</code>的数据库, 这样就保证了不会出现漏读的情况.</p>
+<p>此外, File还可以识别日志的滚动, 跟随文件到最新的.</p>
+<p>一个最简单的例子:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">	file &#123;</span><br><span class="line">		path =&gt; [&quot;/var/log/messages&quot;]</span><br><span class="line">		type -&gt; &quot;system&quot;</span><br><span class="line">		start_position =&gt; &quot;beginning&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>type</code>属性是所有插件共用的, 对于file插件来说, 只有<code>path</code>是一个必要项. 接下来我们还是补充一个标准输出. 好让logstash可以运行.</p>
+<p>然后我们在另外一个SSH终端登出登入一下就会看到有变化了:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;@timestamp&quot; =&gt; 2020-05-24T22:49:49.574Z,</span><br><span class="line">       &quot;message&quot; =&gt; &quot;May 25 06:49:49 node1 systemd-logind: Removed session 31.&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;node1&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/var/log/messages&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">          &quot;type&quot; =&gt; &quot;system&quot;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">    &quot;@timestamp&quot; =&gt; 2020-05-24T22:49:57.715Z,</span><br><span class="line">       &quot;message&quot; =&gt; &quot;May 25 06:49:56 node1 systemd: Started Session 32 of user root.&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;node1&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/var/log/messages&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">          &quot;type&quot; =&gt; &quot;system&quot;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">    &quot;@timestamp&quot; =&gt; 2020-05-24T22:49:57.717Z,</span><br><span class="line">       &quot;message&quot; =&gt; &quot;May 25 06:49:56 node1 systemd-logind: New session 32 of user root.&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;node1&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/var/log/messages&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">          &quot;type&quot; =&gt; &quot;system&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="udp"><a href="#udp" class="headerlink" title="udp"></a>udp</h4><p>我们也可以通过udp协议从网络连接来读取message. 通过传递logstash需要监听的地址和端口就可以了. udp使用也很简单, 只需要指明必要的端口号即可.</p>
+<p>怎么测试效果呢?我们可以找另外一个主机然后安装一个<code>collectd</code>. 这个程序就可以周期性的发送收集到的系统信息. 通过配置一个Network插件, 配置上我们logstash的地址和端口就可以了. 这里就跳过了.</p>
+<h4 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h4><p>当然也可以从redis中读取数据, 支持redis channel和lists两种方式.</p>
+<p>目前logstash支持的输入插件十分繁多, 需要用时还是直接<a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/logstash/current/input-plugins.html">官网查询</a>就可.</p>
+<h3 id="Filter"><a href="#Filter" class="headerlink" title="Filter"></a>Filter</h3><p>接下来来看看过滤插件, 之前也说过了, filter是logstash在将event通过output发出之前对其实现某些处理功能. 插件繁多, 我们这里就先介绍一个: <code>grok</code>.</p>
+<p>grok可以说是在我们必然会使用到的一个插件, 他可以将非结构化的文本数据变成结构化的, 方便日后分析.</p>
+<p>另外, 还有另外一个也可以做到这一点的插件, 叫做<code>Dissect</code>. 区别是, 他不使用正则表达式, 因此更快速, 更适用于当日志文件是重复的情况下.</p>
+<p>默认情况下, logstash已经内置支持了大约120种的模式, 包括我们熟悉的mysql, nginx, apache httpd等等等等. 基于这些模式, 我们进行匹配就可以将文本信息进行拆解.</p>
+<p>举个例子, apache httpd的pattern就是这样的:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">HTTPDUSER %&#123;EMAILADDRESS&#125;|%&#123;USER&#125;</span><br><span class="line">HTTPDERROR_DATE %&#123;DAY&#125; %&#123;MONTH&#125; %&#123;MONTHDAY&#125; %&#123;TIME&#125; %&#123;YEAR&#125;</span><br><span class="line"></span><br><span class="line"># Log formats</span><br><span class="line">HTTPD_COMMONLOG %&#123;IPORHOST:clientip&#125; %&#123;HTTPDUSER:ident&#125; %&#123;HTTPDUSER:auth&#125; \[%&#123;HTTPDATE:timestamp&#125;\] &quot;(?:%&#123;WORD:verb&#125; %&#123;NOTSPACE:request&#125;(?: HTTP/%&#123;NUMBER:httpversion&#125;)?|%&#123;DATA:rawrequest&#125;)&quot; %&#123;NUMBER:response&#125; (?:%&#123;NUMBER:bytes&#125;|-)</span><br><span class="line">HTTPD_COMBINEDLOG %&#123;HTTPD_COMMONLOG&#125; %&#123;QS:referrer&#125; %&#123;QS:agent&#125;</span><br><span class="line"></span><br><span class="line"># Error logs</span><br><span class="line">HTTPD20_ERRORLOG \[%&#123;HTTPDERROR_DATE:timestamp&#125;\] \[%&#123;LOGLEVEL:loglevel&#125;\] (?:\[client %&#123;IPORHOST:clientip&#125;\] )&#123;0,1&#125;%&#123;GREEDYDATA:message&#125;</span><br><span class="line">HTTPD24_ERRORLOG \[%&#123;HTTPDERROR_DATE:timestamp&#125;\] \[%&#123;WORD:module&#125;:%&#123;LOGLEVEL:loglevel&#125;\] \[pid %&#123;POSINT:pid&#125;(:tid %&#123;NUMBER:tid&#125;)?\]( \(%&#123;POSINT:proxy_errorcode&#125;\)%&#123;DATA:proxy_message&#125;:)?( \[client %&#123;IPORHOST:clientip&#125;:%&#123;POSINT:clientport&#125;\])?( %&#123;DATA:errorcode&#125;:)? %&#123;GREEDYDATA:message&#125;</span><br><span class="line">HTTPD_ERRORLOG %&#123;HTTPD20_ERRORLOG&#125;|%&#123;HTTPD24_ERRORLOG&#125;</span><br><span class="line"></span><br><span class="line"># Deprecated</span><br><span class="line">COMMONAPACHELOG %&#123;HTTPD_COMMONLOG&#125;</span><br><span class="line">COMBINEDAPACHELOG %&#123;HTTPD_COMBINEDLOG&#125;</span><br></pre></td></tr></table></figure>
+
+<p>grok语法格式就是<code>%&#123;SYNTAX:SEMANTIC&#125;</code> 也就是预定义的模式名称和匹配到的文本的自定义标识符. 如果没有我们需要的, 就需要自定义了.</p>
+<p>我们来用一下试试. 首先写好配置文件:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 conf.d]# cat fromhttpd.conf </span><br><span class="line">input &#123;</span><br><span class="line">	file &#123;</span><br><span class="line">		path =&gt; &quot;/var/log/http/access_log&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">	grok &#123;</span><br><span class="line">		match =&gt; &#123; &quot;message&quot; =&gt; &quot;%&#123;HTTPD_COMMONLOG&#125;&quot; &#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">	stdout &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着我们随便访问一次看看:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">       <span class="string">&quot;@version&quot;</span> =&gt; <span class="string">&quot;1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="string">&quot;httpversion&quot;</span> =&gt; <span class="string">&quot;1.1&quot;</span><span class="punctuation">,</span></span><br><span class="line">       <span class="string">&quot;clientip&quot;</span> =&gt; <span class="string">&quot;192.168.10.101&quot;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="string">&quot;bytes&quot;</span> =&gt; <span class="string">&quot;4897&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="string">&quot;timestamp&quot;</span> =&gt; <span class="string">&quot;25/May/2020:07:48:47 +0800&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="string">&quot;message&quot;</span> =&gt; <span class="string">&quot;192.168.10.101 - - [25/May/2020:07:48:47 +0800] \&quot;GET / HTTP/1.1\&quot; 403 4897 \&quot;-\&quot; \&quot;curl/7.29.0\&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="string">&quot;verb&quot;</span> =&gt; <span class="string">&quot;GET&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="string">&quot;path&quot;</span> =&gt; <span class="string">&quot;/var/log/httpd/access_log&quot;</span><span class="punctuation">,</span></span><br><span class="line">       <span class="string">&quot;response&quot;</span> =&gt; <span class="string">&quot;403&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="string">&quot;auth&quot;</span> =&gt; <span class="string">&quot;-&quot;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="string">&quot;ident&quot;</span> =&gt; <span class="string">&quot;-&quot;</span><span class="punctuation">,</span></span><br><span class="line">     <span class="string">&quot;@timestamp&quot;</span> =&gt; <span class="number">2020</span><span class="number">-05</span><span class="number">-24</span>T23<span class="punctuation">:</span><span class="number">48</span><span class="punctuation">:</span><span class="number">47.965</span>Z<span class="punctuation">,</span></span><br><span class="line">        <span class="string">&quot;request&quot;</span> =&gt; <span class="string">&quot;/&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="string">&quot;host&quot;</span> =&gt; <span class="string">&quot;node1&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 整条信息会被当做message, 其他的已经被拆分出来了.</p>
+<h3 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h3><p>接下来我们再聊聊输出.</p>
+<h4 id="redis-1"><a href="#redis-1" class="headerlink" title="redis"></a>redis</h4><p>你会发现, redis既可以作为输入, 也可以作为输出. 回到我们一开始说的ELK的架构, 对于logstash的agent端而言, redis就是他的输出, 而对于server端, redis就是输入了. 简单的说, redis就是一个broker.</p>
+<p>redis的配置也是十分简单的. 一般情况下我们只要说明一下数据类型和key就可以.</p>
+<p>这里我们先略过, 来看一下另一个十分重要的output然后我们会在下一节综合使用这些插件.</p>
+<h4 id="elasticsearch"><a href="#elasticsearch" class="headerlink" title="elasticsearch"></a>elasticsearch</h4><p>重要的输出插件当然就是本家的ES了.  ES也没有什么必要的值, 一般情况下我们可以传递index的值以及es的位置就好了. 另外这个地方也可以使用https, 只要加上CA证书相关的配置就可以了.</p>
+<h2 id="ELK实例"><a href="#ELK实例" class="headerlink" title="ELK实例"></a>ELK实例</h2><p>接下来我们就来完整的把这个架构跑一下.</p>
+<p>首先我们来说下实验的环境, 我们使用2个节点, 其中:</p>
+<p>Node1 (192.168.10.101): httpd+logstash+redis</p>
+<p>Node2 (192.168.10.102): logstash+elasticsearch+kibana</p>
+<p>话不多说, 现在就开始配置两个节点.</p>
+<p>在节点1上, 我们配置logstash的配置文件像这样:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# cat /usr/share/logstash/config/conf.d/fromhttpd.conf </span><br><span class="line">input &#123;</span><br><span class="line">	file &#123;</span><br><span class="line">		path =&gt; &quot;/var/log/httpd/access_log&quot;</span><br><span class="line">		type =&gt; &quot;access&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">	grok &#123;</span><br><span class="line">		match =&gt; &#123; &quot;message&quot; =&gt; &quot;%&#123;HTTPD_COMMONLOG&#125;&quot; &#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">	redis &#123;</span><br><span class="line">		data_type =&gt; &quot;list&quot;</span><br><span class="line">		host =&gt; &quot;192.168.10.101&quot;</span><br><span class="line">		key =&gt; &quot;httpd-%&#123;type&#125;&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在节点2上, 我们的logstash配置像这样:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@node2 ~]# cat /usr/share/logstash/config/conf.d/toes.conf </span><br><span class="line">input &#123;</span><br><span class="line">	redis &#123;</span><br><span class="line">		host =&gt; &quot;192.168.10.101&quot;</span><br><span class="line">		data_type =&gt; &quot;list&quot;</span><br><span class="line">		key =&gt; &quot;httpd-access&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">	elasticsearch &#123;</span><br><span class="line">		hosts =&gt; [&quot;192.168.10.102&quot;]</span><br><span class="line">		index =&gt; &quot;elk-%&#123;+yyyy.MM.dd&#125;&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着我们启动所有程序, 刷新一下web page, 这样日志就会增加, 然后由node1的logstash进行了处理推到了redis中. 接着, node2的logstash从redis中拿取数据交给了ES节点. 然后由kibana进行展示.</p>
+<p>初次启动kibana需要让我们配置index和排序依据, 配置好了之后, 我们就可以看到记录了:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/kibana_discover_show_1.png" alt="kibana_discover_show_1"></p>
+<p>我们可以搜索筛选, 上面还有时间和数量的展示图. 左侧有我们所有的域. 此外, 我们还以使用kibana进行数据可视化.</p>
+<p>当然, 之前就说过, 我们可以使用kibana来对我们的集群进行管理, 监控</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/kibana_discover_show_1.png" alt="kibana_discover_show_1"></p>
+<p>以上.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ELK%E6%A0%88%E6%98%AF%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">ELK栈是怎么工作的?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Logstash"><span class="toc-number">2.</span> <span class="toc-text">Logstash</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Logstash%E7%9A%84%E5%90%84%E7%A7%8D%E6%8F%92%E4%BB%B6"><span class="toc-number">3.</span> <span class="toc-text">Logstash的各种插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Input"><span class="toc-number">3.1.</span> <span class="toc-text">Input</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#File"><span class="toc-number">3.1.1.</span> <span class="toc-text">File</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#udp"><span class="toc-number">3.1.2.</span> <span class="toc-text">udp</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#redis"><span class="toc-number">3.1.3.</span> <span class="toc-text">redis</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Filter"><span class="toc-number">3.2.</span> <span class="toc-text">Filter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Output"><span class="toc-number">3.3.</span> <span class="toc-text">Output</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#redis-1"><span class="toc-number">3.3.1.</span> <span class="toc-text">redis</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#elasticsearch"><span class="toc-number">3.3.2.</span> <span class="toc-text">elasticsearch</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ELK%E5%AE%9E%E4%BE%8B"><span class="toc-number">4.</span> <span class="toc-text">ELK实例</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&text=ELK栈初见-2"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&is_video=false&description=ELK栈初见-2"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ELK栈初见-2&body=Check out this article: https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&title=ELK栈初见-2"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&name=ELK栈初见-2&description=&lt;p&gt;我们在之前聊完了ELK栈第一个部分ElasticSearch的索引链程序Lucene , 也对搜索引擎有了一个大体的认知, 解下来就来看看剩下的组件吧.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2019/07/30/ELK%E6%A0%88%E5%88%9D%E8%A7%81-2/&t=ELK栈初见-2"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

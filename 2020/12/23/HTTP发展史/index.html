@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="面试的时候提到了关于HTTP协议的发展变化, 没答出来. 只记得之前在一些公众号文章中瞥过几眼, 现在来做个总结~ 万维网发明 - HTTP&#x2F;0.9这玩意就真的算是HTTP协议的祖宗了, 这个也叫做单行(one-line)协议. 他是和HTML, 浏览器, 服务器(httpd的前身)一起诞生的. 而这四个部分其实就构成了我们熟知的万维网. 那么这个协议既然是最初的, 相比很简单了. 那么">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP发展史">
+<meta property="og:url" content="https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="面试的时候提到了关于HTTP协议的发展变化, 没答出来. 只记得之前在一些公众号文章中瞥过几眼, 现在来做个总结~ 万维网发明 - HTTP&#x2F;0.9这玩意就真的算是HTTP协议的祖宗了, 这个也叫做单行(one-line)协议. 他是和HTML, 浏览器, 服务器(httpd的前身)一起诞生的. 而这四个部分其实就构成了我们熟知的万维网. 那么这个协议既然是最初的, 相比很简单了. 那么">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/http0.9_telnet_response.png">
+<meta property="og:image" content="https://www.pingdom.com/wp-content/uploads/2015/06/Sk%C3%A4rmavbild-2015-06-11-kl.-10.54.59.png">
+<meta property="og:image" content="https://kinsta.com/wp-content/uploads/2019/03/http2-stack-vs-http3-stack.png">
+<meta property="article:published_time" content="2020-12-24T02:56:42.000Z">
+<meta property="article:modified_time" content="2020-12-25T01:39:14.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/http0.9_telnet_response.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>HTTP发展史</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/08/21/%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F%E4%B8%8EZabbix/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&text=HTTP发展史"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&is_video=false&description=HTTP发展史"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=HTTP发展史&body=Check out this article: https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&name=HTTP发展史&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&t=HTTP发展史"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%87%E7%BB%B4%E7%BD%91%E5%8F%91%E6%98%8E-HTTP-x2F-0-9"><span class="toc-number">1.</span> <span class="toc-text">万维网发明 - HTTP&#x2F;0.9</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7-HTTP-x2F-1-0"><span class="toc-number">2.</span> <span class="toc-text">构建可扩展性 - HTTP&#x2F;1.0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E5%BB%BA%E7%AB%8B-HTTP-x2F-1-1"><span class="toc-number">3.</span> <span class="toc-text">标准建立 - HTTP&#x2F;1.1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%B1%95-%E8%BF%9B%E5%8C%96-HTTP-x2F-1-1-%E4%B8%8E-HTTP-x2F-2-0"><span class="toc-number">4.</span> <span class="toc-text">扩展, 进化 - HTTP&#x2F;1.1+ 与 HTTP&#x2F;2.0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%84%B6%E5%90%8E-%E2%80%93-HTTP-over-QUIC-HTTP-x2F-3"><span class="toc-number">5.</span> <span class="toc-text">然后? – HTTP over QUIC (HTTP&#x2F;3)?</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        HTTP发展史
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-12-24T02:56:42.000Z" class="dt-published" itemprop="datePublished">2020-12-23</time>
+        
+        (Updated: <time datetime="2020-12-25T01:39:14.000Z" class="dt-updated" itemprop="dateModified">2020-12-24</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/HTTP/" rel="tag">HTTP</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>面试的时候提到了关于HTTP协议的发展变化, 没答出来. 只记得之前在一些公众号文章中瞥过几眼, 现在来做个总结~</p>
+<h2 id="万维网发明-HTTP-x2F-0-9"><a href="#万维网发明-HTTP-x2F-0-9" class="headerlink" title="万维网发明 - HTTP&#x2F;0.9"></a>万维网发明 - HTTP&#x2F;0.9</h2><p>这玩意就真的算是HTTP协议的祖宗了, 这个也叫做<strong>单行(<code>one-line</code>)<strong>协议. 他是和<code>HTML</code>, 浏览器, 服务器(<code>httpd</code>的前身)一起诞生的. 而这四个部分其实就构成了我们熟知的</strong>万维网</strong>.</p>
+<p>那么这个协议既然是最初的, 相比很简单了. 那么有多简单呢?</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /index.html</span><br></pre></td></tr></table></figure>
+
+<p>没了.</p>
+<p>没有MIME信息, 没有长连接, 没有缓存, 没有cookie等等HTTP头部信息. 那么作为他的响应也很简单:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">HTML</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--Content--&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">HTML</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>除此之外, 客户端和服务端均使用ASCII流通信, 当文档传输结束之后, 连接就会被关闭. 有意思的是, 这个HTTP 0.9是个可以使用telnet的协议, 你可以尝试一下:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">telnet google.com 80</span><br><span class="line"></span><br><span class="line">Connected to XXX.XXX.XXX.XXX</span><br><span class="line"></span><br><span class="line">GET /about/</span><br></pre></td></tr></table></figure>
+
+<p>接着就可以看到HTTP响应了, 只不过是使用的1.0版本的:</p>
+<p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/http0.9_telnet_response.png" alt="http0"></p>
+<p>而且能看到, 我们的连接直接中断了. 由此我们可以稍微总结一下HTTP&#x2F;0.9的一些特点:</p>
+<ul>
+<li>只支持纯文本</li>
+<li>传输结束之后关闭连接</li>
+<li>无状态. (HTTP的无状态性的特点从一开始就有了)</li>
+</ul>
+<p>那么你可能好奇如果出错怎么办, 其实很简单, 返回一个描述错误信息的HTML.</p>
+<h2 id="构建可扩展性-HTTP-x2F-1-0"><a href="#构建可扩展性-HTTP-x2F-1-0" class="headerlink" title="构建可扩展性 - HTTP&#x2F;1.0"></a>构建可扩展性 - HTTP&#x2F;1.0</h2><p>随着浏览器和服务器的迅速发展, 包括HTML标准的更新, 而HTTP0.9的协议成为发展门槛, 因此人们渴求一个不单单发送超文本文档, 还可以提供更加丰富资源类型的请求和响应, 以及内容协商的协议. 因此在1996年成立了HTTP-WG(Working Group), 于是推出了一个草案版本.</p>
+<p>从这里开始, 我们需要在请求资源的后面加上协议版本了, 并且从这里开始引入了HTTP头的概念, 我们在发送请求的时候加上<code>User-Agent</code>了, 并且响应结果也得到了极大地信息补足, 一个典型的请求响应就像这样:</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/index.html</span> <span class="meta">HTTP/1.0</span></span><br><span class="line">User-Agent CERN-LineMode/2.15 libwww/2.17b3</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"></span><br><span class="line"><span class="language-http"><span class="meta">HTTP/1.0</span> <span class="number">200</span> OK</span></span><br><span class="line"><span class="language-http"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/plain</span></span><br><span class="line"><span class="language-http"><span class="attribute">Content-Length</span><span class="punctuation">: </span>137582</span></span><br><span class="line"><span class="language-http"><span class="attribute">Expires</span><span class="punctuation">: </span>Thu, 01 Dec 1997 16:00:00 GMT</span></span><br><span class="line"><span class="language-http"><span class="attribute">Last-Modified</span><span class="punctuation">: </span>Wed, 1 May 1996 12:45:26 GMT</span></span><br><span class="line"><span class="language-http"><span class="attribute">Server</span><span class="punctuation">: </span>Apache 0.84</span></span><br><span class="line"><span class="language-http"></span></span><br><span class="line"><span class="language-http"><span class="language-clojure">(<span class="name">text</span> response)</span></span></span><br><span class="line"><span class="language-clojure"><span class="language-http">(<span class="name">connection</span> closed)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 我们的响应头部中增加了<code>Content-Type</code>, 这意味着我们可以传输纯文本之外其他类型文档的能力了.</p>
+<blockquote>
+<p>其实HTTP&#x2F;1.0最具突破性的更新就是引入了HTTP头部, 有了这一段数据区, HTTP被赋予了巨大的可扩展性, 协议变得非常灵活.</p>
+</blockquote>
+<p>在返回的头部中, 我们还可以看到一些<code>Expires</code>, <code>Last-Modified</code>关于缓存的设计了, 并且我们在响应开始时发送了状态码, 这样浏览器就能了解这次请求的结果了, 这样就可以调整响应的行为, 例如更新缓存或者是使用本地缓存.</p>
+<p>另外, 此时的请求响应头部还是均使用的ASCII编码. 并且此时仍然是每次请求都需求一个新TCP连接, 这是十分浪费性能的. (参考三次握手以及TCP的慢开始)</p>
+<p>注意, HTTP&#x2F;1.0这是一个实验性质的草案版本, 没有作为官方标准来使用过, 因为当时还是有多种实现方案的.</p>
+<h2 id="标准建立-HTTP-x2F-1-1"><a href="#标准建立-HTTP-x2F-1-1" class="headerlink" title="标准建立 - HTTP&#x2F;1.1"></a>标准建立 - HTTP&#x2F;1.1</h2><p>从1997年开始, 为了解决1.0实现混乱, HTTP1.1标准发布, 消除了早先版本很多歧义内容, 并且引入了很多性能优化的特性, 例如长连接, 支持请求基于byte的范围资源, 更好的cache机制, 以及流水线(pipeline).</p>
+<p>那么现在一个完整的请求返回大家就很熟悉了:</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">$&gt; telnet website.org 80</span><br><span class="line">Connected to xxx.xxx.xxx.xxx</span><br><span class="line"></span><br><span class="line">GET /index.html HTTP/1.1 </span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>website.org</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4)... (snip)</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip,deflate,sdch</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>en-US,en;q=0.8</span><br><span class="line"><span class="attribute">Accept-Charset</span><span class="punctuation">: </span>ISO-8859-1,utf-8;q=0.7,*;q=0.3</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>__qca=P0-800083390... (snip)</span><br><span class="line"></span><br><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK </span><br><span class="line"><span class="attribute">Server</span><span class="punctuation">: </span>nginx/1.0.11</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>keep-alive</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">Via</span><span class="punctuation">: </span>HTTP/1.1 GWA</span><br><span class="line"><span class="attribute">Date</span><span class="punctuation">: </span>Wed, 25 Jul 2012 20:23:35 GMT</span><br><span class="line"><span class="attribute">Expires</span><span class="punctuation">: </span>Wed, 25 Jul 2012 20:23:35 GMT</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0, no-cache</span><br><span class="line"><span class="attribute">Transfer-Encoding</span><span class="punctuation">: </span>chunked</span><br><span class="line"></span><br><span class="line"><span class="language-yaml"><span class="number">100</span> </span></span><br><span class="line"><span class="language-yaml"><span class="string">&lt;!doctype</span> <span class="string">html&gt;</span></span></span><br><span class="line"><span class="language-yaml"><span class="string">(snip)</span></span></span><br><span class="line"><span class="language-yaml"></span></span><br><span class="line"><span class="language-yaml"><span class="number">100</span></span></span><br><span class="line"><span class="language-yaml"><span class="string">(snip)</span></span></span><br><span class="line"><span class="language-yaml"></span></span><br><span class="line"><span class="language-yaml"><span class="number">0</span> </span></span><br><span class="line"><span class="language-yaml"></span></span><br><span class="line"><span class="language-yaml"><span class="string">GET</span> <span class="string">/favicon.ico</span> <span class="string">HTTP/1.1</span> </span></span><br><span class="line"><span class="language-yaml"><span class="attr">Host:</span> <span class="string">www.website.org</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">User-Agent:</span> <span class="string">Mozilla/5.0</span> <span class="string">(Macintosh;</span> <span class="string">Intel</span> <span class="string">Mac</span> <span class="string">OS</span> <span class="string">X</span> <span class="string">10_7_4)...</span> <span class="string">(snip)</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Accept:</span> <span class="string">*/*</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Referer:</span> <span class="string">http://website.org/</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Connection:</span> <span class="string">close</span> </span></span><br><span class="line"><span class="language-yaml"><span class="attr">Accept-Encoding:</span> <span class="string">gzip,deflate,sdch</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Accept-Language:</span> <span class="string">en-US,en;q=0.8</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Accept-Charset:</span> <span class="string">ISO-8859-1,utf-8;q=0.7,*;q=0.3</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Cookie:</span> <span class="string">__qca=P0-800083390...</span> <span class="string">(snip)</span></span></span><br><span class="line"><span class="language-yaml"></span></span><br><span class="line"><span class="language-yaml"><span class="string">HTTP/1.1</span> <span class="number">200</span> <span class="string">OK</span> </span></span><br><span class="line"><span class="language-yaml"><span class="attr">Server:</span> <span class="string">nginx/1.0.11</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Content-Type:</span> <span class="string">image/x-icon</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Content-Length:</span> <span class="number">3638</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Connection:</span> <span class="string">close</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Last-Modified:</span> <span class="string">Thu,</span> <span class="number">19</span> <span class="string">Jul</span> <span class="number">2012 17:51:44 </span><span class="string">GMT</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Cache-Control:</span> <span class="string">max-age=315360000</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Accept-Ranges:</span> <span class="string">bytes</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Via:</span> <span class="string">HTTP/1.1</span> <span class="string">GWA</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Date:</span> <span class="string">Sat,</span> <span class="number">21</span> <span class="string">Jul</span> <span class="number">2012 21:35:22 </span><span class="string">GMT</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Expires:</span> <span class="string">Thu,</span> <span class="number">31</span> <span class="string">Dec</span> <span class="number">2037 23:55:55 </span><span class="string">GMT</span></span></span><br><span class="line"><span class="language-yaml"><span class="attr">Etag:</span> <span class="string">W/PSA-GAu26oXbDi</span></span></span><br><span class="line"><span class="language-yaml"></span></span><br><span class="line"><span class="language-yaml"><span class="string">(icon</span> <span class="string">data)</span></span></span><br><span class="line"><span class="language-yaml"><span class="string">(connection</span> <span class="string">closed)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>由于<code>Host</code>的引入, 我们现在可以把不同域名配置到同一个IP地址的服务器上了. 并且我们可以从头部信息中得到大量的信息, 例如:</p>
+<ul>
+<li>响应是分块的</li>
+<li>缓存机制有额外控制</li>
+<li>内容可以协商, 包括语言, 编码, 内容类型</li>
+<li>在一次连接中我们同时请求了HTML页面和一个图标文件</li>
+<li>在第二次连接中我们标明了<code>Connection: close</code>也就是说我们显式声明了结束连接</li>
+</ul>
+<p>事实上, 我们的HTTP&#x2F;1.1默认情况下就是长连接, 也就是说, 除非你带上了<code>Connection: Close</code>, 否则连接始终都是保持住的, 即时客户端没有带上<code>Connection: Keep-Alive</code>的头部. 但尽管如此, 众多浏览器还是会提供这个头部.</p>
+<h2 id="扩展-进化-HTTP-x2F-1-1-与-HTTP-x2F-2-0"><a href="#扩展-进化-HTTP-x2F-1-1-与-HTTP-x2F-2-0" class="headerlink" title="扩展, 进化 - HTTP&#x2F;1.1+ 与 HTTP&#x2F;2.0"></a>扩展, 进化 - HTTP&#x2F;1.1+ 与 HTTP&#x2F;2.0</h2><p>这个1.1+是我说的, 并不是官方说法. 我们刚刚在上面说过, HTTP头部信息的引入, 为HTTP带来了巨大的可扩展性,   因此从1997年开始, HTTP就一直在扩展.</p>
+<p>2000年, 状态层转换出现, 这也就是我们现在常说的<code>REST</code>, 我们通过基本的HTTP&#x2F;1.1方法里访问特定的URI. 起初, 最早的HTTP1.1有这些动词:</p>
+<ul>
+<li>GET</li>
+<li>POST</li>
+<li>PUT</li>
+<li>DELETE</li>
+<li>TRACE</li>
+<li>OPTIONS</li>
+<li>CONNECT</li>
+</ul>
+<p>接着从2010开始, 我们新增了<code>PATCH</code>来部分更新某些资源.</p>
+<p>并且从2005年开始, 针对于Web的API大大增加, 由此也引入了很多的新HTTP头部, 例如:</p>
+<ul>
+<li>CORS支持</li>
+<li>DNT隐私控制</li>
+<li>WebSocket以及<code>Upgrade</code>头部来进行协议升级</li>
+</ul>
+<p>经过了15年的发展, 现在到了2020年, 已然是HTTP&#x2F;2.0的时代了.</p>
+<p>为了应对当前越来越复杂的Web页面和Web应用, 数据量也越来越大, 为了能够更快速的传输数据, 早先谷歌使用了一种叫做<code>SPDY</code>的协议, 这可以被视为是HTTP&#x2F;2.0的雏形.</p>
+<p>相较于HTTP&#x2F;1.1, HTTP&#x2F;2最大的不同就是成为了二进制协议. 也就是说不能直接可读和手动创建, 除此之外, HTTP&#x2F;2是一个多路复用的协议, 我们将传输的信息分割成了更小的消息和帧, 然后对他们采用二进制格式的编码.</p>
+<p><img src="https://www.pingdom.com/wp-content/uploads/2015/06/Sk%C3%A4rmavbild-2015-06-11-kl.-10.54.59.png" alt="HTTP/2 – The new protocol on the block | Pingdom"></p>
+<p>HTTP&#x2F;2开始强调<strong>流</strong>的概念了. </p>
+<p>流(Stream) – 双向的字节流可以在一次建立的连接中传递多个信息(Message). </p>
+<p>信息(Message)在HTTP&#x2F;2中就是一个完整的帧(Frame)序列, 用来映射逻辑上的请求和响应消息</p>
+<p>帧(Frame)就是HTTP&#x2F;2中最小的单元了 , 每一个帧都包含着一个帧头部, 用来标明这个帧属于哪一个流.</p>
+<p>并且从图中我们也能看到, 流是多路复用的, 并且是有优先级的. 而这个二进制帧层也支持流之间的优先级别和依赖关系, 由此更有效率的请求和响应数据. 另外, HTTP&#x2F;2还可以支持流控和服务端的推流, 以及头部压缩.</p>
+<h2 id="然后-–-HTTP-over-QUIC-HTTP-x2F-3"><a href="#然后-–-HTTP-over-QUIC-HTTP-x2F-3" class="headerlink" title="然后? – HTTP over QUIC (HTTP&#x2F;3)?"></a>然后? – HTTP over QUIC (HTTP&#x2F;3)?</h2><p>QUIC的全称是<code>Quick UDP Internet Connections</code>, 也就是使用UDP的快速网络连接. 是由Google在2012年提出的, 相当于重新划分了一次网络分层, 请看:</p>
+<p><img src="https://kinsta.com/wp-content/uploads/2019/03/http2-stack-vs-http3-stack.png" alt="HTTP/2 stack vs HTTP/3 stack"></p>
+<p>我们刚刚说过, HTTP&#x2F;2提供了多路复用, 但是这实际上是被TCP限制了. 我们使用一个单一的TCP连接来进行多个流的同时传输, 如果这个时候哪怕只有一个流出现了报文丢失, 整个连接(当然包括该连接下所有的流)都会被劫持, 直到TCP重传. 这个时候, 哪怕是已经传输到目标节点的buffer中了, 也需要一同被阻塞, 直到丢失的报文被重传过来.</p>
+<p>而使用了QUIC的话, 就不存在这种问题了. 那么你可能会问, 我如何确保可靠性呢? QUIC同样是个可靠的协议, 不同于TCP的Seq Number, QUIC使用Packet Number来代替, 而每一个Package Number都是严格递增的, 由此避免了原先Seq的歧义性, 另外, QUIC使用Stream Offset来保证数据传输顺序.</p>
+<p>QUIC简单总结的话, 相当于是一个4+5+7层协议了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%87%E7%BB%B4%E7%BD%91%E5%8F%91%E6%98%8E-HTTP-x2F-0-9"><span class="toc-number">1.</span> <span class="toc-text">万维网发明 - HTTP&#x2F;0.9</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7-HTTP-x2F-1-0"><span class="toc-number">2.</span> <span class="toc-text">构建可扩展性 - HTTP&#x2F;1.0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E5%BB%BA%E7%AB%8B-HTTP-x2F-1-1"><span class="toc-number">3.</span> <span class="toc-text">标准建立 - HTTP&#x2F;1.1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%B1%95-%E8%BF%9B%E5%8C%96-HTTP-x2F-1-1-%E4%B8%8E-HTTP-x2F-2-0"><span class="toc-number">4.</span> <span class="toc-text">扩展, 进化 - HTTP&#x2F;1.1+ 与 HTTP&#x2F;2.0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%84%B6%E5%90%8E-%E2%80%93-HTTP-over-QUIC-HTTP-x2F-3"><span class="toc-number">5.</span> <span class="toc-text">然后? – HTTP over QUIC (HTTP&#x2F;3)?</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&text=HTTP发展史"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&is_video=false&description=HTTP发展史"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=HTTP发展史&body=Check out this article: https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&title=HTTP发展史"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&name=HTTP发展史&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/&t=HTTP发展史"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

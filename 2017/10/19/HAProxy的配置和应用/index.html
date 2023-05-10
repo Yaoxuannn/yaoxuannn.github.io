@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="说完了Nginx, 接下来就来看看另外一个性能优越的load balancer – HAProxy吧.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HAProxy的配置和应用">
+<meta property="og:url" content="https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="说完了Nginx, 接下来就来看看另外一个性能优越的load balancer – HAProxy吧.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/cookiereq.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/cookieres.png">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/HAProxy_mind.png">
+<meta property="article:published_time" content="2017-10-19T17:22:25.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:35:00.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="HAProxy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/cookiereq.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>HAProxy的配置和应用</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/20/keepalived%E4%B8%8Evrrp%E5%8D%8F%E8%AE%AE/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/18/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E7%BC%93%E5%AD%98%E5%8F%8A%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&text=HAProxy的配置和应用"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&is_video=false&description=HAProxy的配置和应用"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=HAProxy的配置和应用&body=Check out this article: https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&name=HAProxy的配置和应用&description=&lt;p&gt;说完了Nginx, 接下来就来看看另外一个性能优越的load balancer – HAProxy吧.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&t=HAProxy的配置和应用"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HAProxy"><span class="toc-number">1.</span> <span class="toc-text">HAProxy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">HAProxy的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#balance"><span class="toc-number">2.1.</span> <span class="toc-text">balance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bind"><span class="toc-number">2.2.</span> <span class="toc-text">bind</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mode"><span class="toc-number">2.3.</span> <span class="toc-text">mode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log"><span class="toc-number">2.4.</span> <span class="toc-text">log</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#maxconn"><span class="toc-number">2.5.</span> <span class="toc-text">maxconn</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#default-backend"><span class="toc-number">2.6.</span> <span class="toc-text">default_backend</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server"><span class="toc-number">2.7.</span> <span class="toc-text">server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#option"><span class="toc-number">2.8.</span> <span class="toc-text">option</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http-request"><span class="toc-number">2.9.</span> <span class="toc-text">http-request</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redirect-amp-acl"><span class="toc-number">2.10.</span> <span class="toc-text">redirect &amp; acl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#reqadd-rspadd"><span class="toc-number">2.11.</span> <span class="toc-text">reqadd rspadd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#timeout"><span class="toc-number">2.12.</span> <span class="toc-text">timeout</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8ECookie%E5%AE%9E%E7%8E%B0%E5%8D%95%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BB%91%E5%AE%9A"><span class="toc-number">3.</span> <span class="toc-text">基于Cookie实现单客户端绑定</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        HAProxy的配置和应用
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-19T17:22:25.000Z" class="dt-published" itemprop="datePublished">2017-10-19</time>
+        
+        (Updated: <time datetime="2020-11-30T01:35:00.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/HAProxy/" rel="tag">HAProxy</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>说完了Nginx, 接下来就来看看另外一个性能优越的load balancer – HAProxy吧.</p>
+<span id="more"></span>
+
+<h2 id="HAProxy"><a href="#HAProxy" class="headerlink" title="HAProxy"></a>HAProxy</h2><p>首先要说一下啊, 这个玩意虽然叫做HA, 但是他不是任何高可用服务器, 归结到底 HAProxy只是一个代理服务器罢了. 同时, 也是http层的一个负载均衡调度器. 既然这样, HAProxy为什么要叫做HA呢? 原因很简单, HAProxy能够在http层实现健康状态检测, 从而认为这也是能够提供高可用的一个能力, 从而将自己命名为HAProxy ( 我猜的hhh )</p>
+<p>说到代理, 我们说过有正向和反向两种. 由于之前解释过了, 所以这里就不再展开了. 来着重介绍今天的主角-HAProxy. 这个玩意<strong>是个非常纯正的http反向代理服务器, 不能进行缓存. 但是也额外支持对TCP通信的负载均衡.</strong></p>
+<p>继续说说HAProxy的特性, 由于Haproxy是基于事件驱动和单一进程模式的, 所以省去了进程间切换, 使得支持的并发连接数非常大 ( 但是用户也可以调整成为多进程的 ). 不过, Haproxy对于应用层的内容处理和动态资源和静态资源分离是做不到了. </p>
+<p>但是由于是单一进程, 所以所有的连接会话都由一个进程维护, 如果会话非常多, 那么存储的数据结构就是一个很重要的考虑部分. 不同的数据结构会很大程度上影响到检索存储在内存中的会话节点, 而且还会有增加, 删除, 修改的操作. HAProxy选择的数据结构是<strong>弹性二叉树</strong>. 由HAProxy作者自己研发的数据结构.</p>
+<p>还是直接装上看看吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 ~]<span class="comment"># rpm -ql haproxy</span></span><br><span class="line">/etc/haproxy</span><br><span class="line">/etc/haproxy/haproxy.cfg</span><br><span class="line">/etc/logrotate.d/haproxy</span><br><span class="line">/etc/sysconfig/haproxy</span><br><span class="line">/usr/bin/halog</span><br><span class="line">/usr/bin/iprange</span><br><span class="line">/usr/lib/systemd/system/haproxy.service</span><br><span class="line">/usr/sbin/haproxy</span><br><span class="line">/usr/sbin/haproxy-systemd-wrapper</span><br><span class="line">...(omitted)</span><br><span class="line">/usr/share/haproxy</span><br><span class="line">/usr/share/haproxy/400.http</span><br><span class="line">/usr/share/haproxy/403.http</span><br><span class="line">/usr/share/haproxy/408.http</span><br><span class="line">/usr/share/haproxy/500.http</span><br><span class="line">/usr/share/haproxy/502.http</span><br><span class="line">/usr/share/haproxy/503.http</span><br><span class="line">/usr/share/haproxy/504.http</span><br><span class="line">/usr/share/haproxy/README</span><br><span class="line">/usr/share/man/man1/halog.1.gz</span><br><span class="line">/usr/share/man/man1/haproxy.1.gz</span><br><span class="line">/var/lib/haproxy</span><br></pre></td></tr></table></figure>
+
+<p>从生成的文件也可以看出, haproxy是一个十分轻量化的程序, 除了配置文件和主程序其他就没有什么了.</p>
+<p>先来从配置文件入手, </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 haproxy]<span class="comment"># grep &quot;^[^#][^[:space:]].*$&quot; haproxy.cfg</span></span><br><span class="line">global</span><br><span class="line">defaults</span><br><span class="line">frontend  main *:5000</span><br><span class="line">backend static</span><br><span class="line">backend app</span><br></pre></td></tr></table></figure>
+
+<p>这就是配置文件的组成部分.</p>
+<p>其实很好理解层次结构, 例如前端(也就是自己了), 后端静态服务器组, 后端动态服务器组啥啥的.</p>
+<p>我们在Nginx中 是用了什么proxy_pass配合upstream来进行的调度, 而haproxy更好理解了, 直接使用frontend, backend来定义. 通过在前端中定义使用那些后端服务器组来建立联系, 另外这种联系还支持条件式建立, 还可以配置默认连接. default就是为frontend和backend设置的各个选项了. 总之, 熟悉了Nginx的我们, 现在肯定能炒鸡快速的上手Haproxy的.</p>
+<p>现在就直接来试试吧, 还是想之前那样, 我们开启两台Web服务器.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">frontend  main *:80</span><br><span class="line">    default_backend             webservers</span><br><span class="line"></span><br><span class="line">backend webservers</span><br><span class="line">    balance     roundrobin</span><br><span class="line">    server      static 192.168.206.21:80 check</span><br><span class="line">    server      static 192.168.206.22:80 check</span><br></pre></td></tr></table></figure>
+
+<p>这就是最简单的一个配置了, 我们启动haproxy服务, 访问试试.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">C:\Users\lenovo</span><br><span class="line">λ curl http://192.168.206.9/</span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>由于我们使用了roundrobin算法, 所以是轮询访问. </p>
+<h2 id="HAProxy的配置"><a href="#HAProxy的配置" class="headerlink" title="HAProxy的配置"></a>HAProxy的配置</h2><p>现在就来好好看看HAProxy的配置项吧, 首先第一行就是日志记录的配置. HAProxy和其他的不太一样, 他只能基于网络进行日志记录 :</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">global</span><br><span class="line">	<span class="built_in">log</span>         127.0.0.1 local2</span><br></pre></td></tr></table></figure>
+
+<p>所以, 为了使得日志能够记录下去. 我们还要配置一下rsyslog才行:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Provides UDP syslog reception</span></span><br><span class="line"><span class="variable">$ModLoad</span> imudp</span><br><span class="line"><span class="variable">$UDPServerRun</span> 514</span><br><span class="line">...(omitted)</span><br><span class="line">local2.*                                                /var/log/haproxy.log</span><br></pre></td></tr></table></figure>
+
+<p>首先开启监听, 接着要把我们的haproxy配置日志路径.</p>
+<p>接着重启服务, 访问一下. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 haproxy]<span class="comment"># tail /var/log/haproxy.log </span></span><br><span class="line">Oct 19 23:09:12 localhost haproxy[2764]: Proxy main started.</span><br><span class="line">Oct 19 23:09:12 localhost haproxy[2764]: Proxy webservers started.</span><br><span class="line">Oct 19 23:09:25 localhost haproxy[2765]: 192.168.206.1:5842 [19/Oct/2017:23:09:25.979] main webservers/static 0/0/2/5/7 200 319 - - ---- 1/1/0/1/0 0/0 <span class="string">&quot;GET / HTTP/1.1&quot;</span></span><br><span class="line">Oct 19 23:09:26 localhost haproxy[2765]: 192.168.206.1:5843 [19/Oct/2017:23:09:26.645] main webservers/static 0/0/1/2/3 200 298 - - ---- 1/1/0/0/0 0/0 <span class="string">&quot;GET / HTTP/1.1&quot;</span></span><br><span class="line">Oct 19 23:09:27 localhost haproxy[2765]: 192.168.206.1:5844 [19/Oct/2017:23:09:27.228] main webservers/static 0/0/1/2/3 200 319 - - ---- 1/1/0/0/0 0/0 <span class="string">&quot;GET / HTTP/1.1&quot;</span></span><br><span class="line">Oct 19 23:09:27 localhost haproxy[2765]: 192.168.206.1:5845 [19/Oct/2017:23:09:27.809] main webservers/static 0/0/1/3/4 200 298 - - ---- 1/1/0/0/0 0/0 <span class="string">&quot;GET / HTTP/1.1&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就有日志了.</p>
+<p>接着往后看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">global</span><br><span class="line">    <span class="built_in">log</span>         127.0.0.1 local2 <span class="comment"># 日志</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">chroot</span>      /var/lib/haproxy <span class="comment"># 根切换, 这样更加安全</span></span><br><span class="line">    pidfile     /var/run/haproxy.pid <span class="comment"># pid文件</span></span><br><span class="line">    maxconn     4000 <span class="comment"># 最大连接数</span></span><br><span class="line">    user        haproxy <span class="comment"># 运行用户</span></span><br><span class="line">    group       haproxy <span class="comment"># 运行组</span></span><br><span class="line">    daemon <span class="comment"># 标记为后台守护进程</span></span><br><span class="line"></span><br><span class="line">    stats socket /var/lib/haproxy/stats <span class="comment"># 访问本地的时候基于共享内存进行socket通信</span></span><br></pre></td></tr></table></figure>
+
+<p>但是, 可以使用的参数还有很多.  比如<code>quiet</code>, <code>debug</code>, 还可以调整连接参数, 运行参数等等. 但是很多参数都不建议修改, 可能会用到的参数很少, 例如: 上面列出来的这些, 还有<code>spread-check</code>: 这个是用来修改健康状态检查的延时的 ( 因为大量同时的检查可能会拥塞网络, 这个选项可以进行随机的后退. )</p>
+<h3 id="balance"><a href="#balance" class="headerlink" title="balance"></a>balance</h3><p>首先来看balance关键字. 这个是用来指定调度算法的, HAProxy支持的调度算法也很多, 并且也分成动态和静态两类. HAProxy理解的动态静态是根据是否可进行权重的改变. 能够则被认为是动态的.</p>
+<ul>
+<li><code>roundrobin</code>:  轮询, 动态算法, 会追踪后端主机的连接, 所以每个主机最大支持4192条连接. </li>
+<li><code>static-rr</code>:  静态的轮询算法. </li>
+<li><code>least-conn</code>:  最小连接, 适合长连接场景. </li>
+<li><code>source</code>:  源地址哈希, 默认是静态算法. 但是可以根据哈希算法来改变 <ul>
+<li><code>map-based</code> 除模取余</li>
+<li><code>consistent</code>: 一致性哈希</li>
+</ul>
+</li>
+<li><code>url</code>:  这是一个对HAProxy而言, 很有竞争力的算法. 这个算法就是将请求的URL的前半段或者全部进行Hash运算, 接着和服务器的总权重进行运算最终得到rs. 这样的一个应用就是缓存服务器. 不管来源是什么, 只要你请求那个缓存的内容, 我就把你调度到缓存服务器那里去. 这个算法也一样可以进行两种hash_type.</li>
+</ul>
+<blockquote>
+<p>这里我做了个测试, 我们在后端的两个主机都新建了10个页面, 接着访问几个, 会发现一旦第一次被定向到了哪一个主机, 就会被绑定到那一台. 这个时候我们关闭Web2的httpd服务, 于是再次访问, 一开始堵塞了一会, 接着就访问到了Web1的页面, 另外其他原本是Web2的页面也立即就被转向到了Web1的页面. 然而, 当服务恢复了之后, 立即被定向到了原本的页面, 恢复绑定了.</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># for n in [1..10]; do echo &quot;&lt;h1&gt;Page $n on Web2&lt;/h1&gt;&quot; &gt; /var/www/html/test$n.html ; done</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>url_param</code>:  也是一个从URL中计算哈希的方法, 通过取得URL中被赋值的键的值进行运算接着除以总权重得到的结果. 同样也是支持两种哈希类型. </li>
+<li><code>hdr(&lt;name&gt;)</code>:  可以根据请求报文中的指定首部进行调度, 强大吧. 比如host, referer, user-agent等等.</li>
+</ul>
+<blockquote>
+<p>做个实验吧, 配置成</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">backend webservers</span><br><span class="line">    balance     hdr(User-Agent)</span><br><span class="line">    hash-type   consistent</span><br><span class="line">    server      static 192.168.206.21:80 check</span><br><span class="line">    server      static 192.168.206.22:80 check</span><br></pre></td></tr></table></figure>
+
+<p>接着访问:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node1 haproxy]<span class="comment"># curl http://192.168.206.9</span></span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;</span><br><span class="line">[root@VM-node1 haproxy]<span class="comment"># curl http://192.168.206.9 -A &quot;Hello&quot;</span></span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;</span><br><span class="line">[root@VM-node1 haproxy]<span class="comment"># curl http://192.168.206.9 -A &quot;Hello Hi&quot;</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">[root@VM-node1 haproxy]<span class="comment"># curl http://192.168.206.9 -A &quot;Hello Hi1&quot;</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br><span class="line">[root@VM-node1 haproxy]<span class="comment"># curl http://192.168.206.9 -A &quot;Hello Hi~~&quot;</span></span><br><span class="line">&lt;h1&gt;This is node2(NEW)&lt;/h1&gt;</span><br><span class="line">[root@VM-node1 haproxy]<span class="comment"># curl http://192.168.206.9 -A &quot;Hello hhh&quot;</span></span><br><span class="line">&lt;h1&gt;It works! (From node3)&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="bind"><a href="#bind" class="headerlink" title="bind"></a>bind</h3><p>bind就是监听的套接字位置, 其实和我们在frontend后面加上的那个玩意是一个东西, bind可以出现多次.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">frontend  main </span><br><span class="line">    <span class="built_in">bind</span> *:80</span><br><span class="line">    <span class="built_in">bind</span> 192.168.206.9:8080</span><br><span class="line">    default_backend             webservers</span><br></pre></td></tr></table></figure>
+
+<h3 id="mode"><a href="#mode" class="headerlink" title="mode"></a>mode</h3><p>指明haproxy运行的模式, 一共支持三种: { http | tcp | health }</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">defaults</span><br><span class="line">    mode                    http</span><br><span class="line">    ...(omitted)</span><br></pre></td></tr></table></figure>
+
+<h3 id="log"><a href="#log" class="headerlink" title="log"></a>log</h3><p>定义日志, 单个实例最多定义两个. 而且如果在global中定义了两个, 后面的都会被忽略.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">log</span> &lt;address&gt;&lt;facility&gt;[&lt;level&gt;[&lt;minlevel&gt;]]</span><br></pre></td></tr></table></figure>
+
+<p>也可以在后面导向global的定义:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">log</span> global</span><br></pre></td></tr></table></figure>
+
+<h3 id="maxconn"><a href="#maxconn" class="headerlink" title="maxconn"></a>maxconn</h3><p>设定前端的最大连接数, 如果在global中写, 那就说明整个HAProxy的前端最大并发, 如果在单个实例中写, 最终就会加起来算作整个服务器的前端最大并发. <strong>每个连接大致是17Kb的大小</strong></p>
+<h3 id="default-backend"><a href="#default-backend" class="headerlink" title="default_backend"></a>default_backend</h3><p>默认的后端服务器. 一个使用案例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">use_backend dynamic <span class="keyword">if</span> url_dyn</span><br><span class="line">use_backend static <span class="keyword">if</span> url_img url_css</span><br><span class="line">default_backend dynamic</span><br></pre></td></tr></table></figure>
+
+<p>这里的use_backend是另外一个指令, 和后面的连用. 只要匹配到请求的URL符合后面定义的ACL中, 就会使用那个后端服务器组. 如果都没有匹配的到, 就会使用最后的那个后端服务器组.</p>
+<h3 id="server"><a href="#server" class="headerlink" title="server"></a>server</h3><p>这个server参数非常重要, 支持超多的选项, 格式如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server &lt;name&gt; &lt;address&gt;[:port] [param*...]</span><br></pre></td></tr></table></figure>
+
+<p>前面都很好理解, 主要是后面的参数, 我们提取几个重要的来看一下:</p>
+<p><code>backup</code>：设定为备用服务器，仅在负载均衡场景中的其它server均不可用于启用此server；<br><code>check</code>：启动对此server执行健康状态检查，其可以借助于额外的其它参数完成更精细的设定，如：</p>
+<ul>
+<li><code>inter &lt;delay&gt;</code>：设定健康状态检查的时间间隔，单位为毫秒，默认为2000；也可以使用fastinter和downinter来根据服务器端状态优化此时间延迟；</li>
+<li><code>rise &lt;count&gt;</code>：设定健康状态检查中，某离线的server从离线状态转换至正常状态需要成功检查的次数；</li>
+<li><code>fall &lt;count&gt;</code>：确认server从正常状态转换为不可用状态需要检查的次数；</li>
+</ul>
+<p><code>cookie &lt;value&gt;</code>：为指定server设定cookie值，此处指定的值将在请求入站时被检查，第一次为此值挑选的server将在后续的请求中被选中，其目的在于实现持久连接的功能；<br><code>maxconn &lt;maxconn&gt;</code>：指定此服务器接受的最大并发连接数；如果发往此服务器的连接数目高于此处指定的值，其将被放置于请求队列，以等待其它连接被释放；<br><code>maxqueue &lt;maxqueue&gt;</code>：设定请求队列的最大长度；<br><code>observe &lt;mode&gt;</code>：通过观察服务器的通信状况来判定其健康状态，默认为禁用，其支持的类型有“layer4”和“layer7”，“layer7”仅能用于http代理场景；<br><code>redir &lt;prefix&gt;</code>：启用重定向功能，将发往此服务器的GET和HEAD请求均以302状态码响应；需要注意的是，在prefix后面不能使用&#x2F;，且不能使用相对地址，以免造成循环；例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server srv1 172.16.100.6:80 redir http://imageserver.justin.com check</span><br></pre></td></tr></table></figure>
+
+<p><code>weight &lt;weight&gt;</code>：权重，默认为1，最大值为256，0表示不参与负载均衡； </p>
+<p>另外 在进行健康检查的时候, 我们还可以更加细致的定义:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">backend https_relay</span><br><span class="line">	mode tcp</span><br><span class="line">	option httpchk OPITONS * HTTP/1.1\r\nHost:\ www.yaoxuannn.com</span><br><span class="line">	server httpd1 192.168.1.1:443 check port 80 inter 1000</span><br></pre></td></tr></table></figure>
+
+<h3 id="option"><a href="#option" class="headerlink" title="option"></a>option</h3><p><code>httplog</code>, 如果使用的模式是httpd, 就可以开启这个选项. 该选项会将日志的记录格式变得十分详细. </p>
+<p><code>logasap</code>,  用于如果传输的数据较大, 日志记录会有延时, 这个选项可以提前记录日志, </p>
+<p><code>forwardfor [except &lt;network&gt;][header &lt;name&gt;][if-none]</code>,  在首部中添加<code>X-Forwarded-For</code></p>
+<p><code>http-server-close</code> 可以允许服务器端(HAProxy)主动关闭连接, 会在头部加入Connection: close的标识, 有些服务器见到这个标识 会返回一个不可用的数据. 这里是指HAProxy -&gt; 后端服务器.</p>
+<p><code>http-pretend-keepalive</code> 字面意思了, 在头部加入Connection: Keep-Alive的标识. 经常和上面的选项连用.</p>
+<p><code>redisatch</code> 如果一台服务器宕机, 会进行重新分发</p>
+<p>接下来我们说说访问控制:</p>
+<h3 id="http-request"><a href="#http-request" class="headerlink" title="http-request"></a>http-request</h3><p>格式如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http-request &#123; allow | deny | auth [realm &lt;realm&gt;]&#125; [ &#123;<span class="keyword">if</span> | unless&#125; &lt;condition&gt; ]</span><br></pre></td></tr></table></figure>
+
+<p>不过这里的定义会用到acl指令, 上面也略微提过, 其实很好理解的: [ src就是说源地址嘛 ]</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">acl nagios src 192.168.129.3</span><br><span class="line">acl local_net src 192.168.0.0/16</span><br><span class="line">acl auth_ok http_auth(L1)</span><br><span class="line">http-request allow <span class="keyword">if</span> nagios</span><br><span class="line">http-request allow <span class="keyword">if</span> local_net auth_ok</span><br><span class="line">http-request deny</span><br></pre></td></tr></table></figure>
+
+<h3 id="redirect-amp-acl"><a href="#redirect-amp-acl" class="headerlink" title="redirect &amp; acl"></a>redirect &amp; acl</h3><p>除了指明来源, acl还可以这么写:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">acl login dst_port 8080</span><br><span class="line">acl secure dst_port 80</span><br><span class="line">acl login_page url_beg /login</span><br><span class="line">acl <span class="built_in">logout</span> url_beg /logout</span><br><span class="line">acl uid_given url_reg /login?uid=[^&amp;]+</span><br><span class="line">acl cookie_set hdr_sub(cookie) SEEN=1</span><br></pre></td></tr></table></figure>
+
+<p>最后一个的意思是说, 取头部的cookie字串.</p>
+<p>结合这些我们就可以做到灵活的重定向请求:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">redirect prefix https://yaoxuannn.com set-cookie SEEN=1 <span class="keyword">if</span> !cookie_set</span><br><span class="line">redirect prefix https://yaoxuannn.com <span class="keyword">if</span> login_page !secure</span><br><span class="line">redirect location / clear-cookie USERID= <span class="keyword">if</span> <span class="built_in">logout</span></span><br></pre></td></tr></table></figure>
+
+<p>不止这些, acl还可以更加强大. 我们可以使用下面的acl进行会话速率的检测:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">acl begin_scanned be_sess_rate gt 50</span><br><span class="line">redirect locaiton /error_pages/denied.html <span class="keyword">if</span> begin_scanned</span><br></pre></td></tr></table></figure>
+
+<p><code>be_sess_rate</code>就是说每秒创建的会话数.</p>
+<p>还可以使用<code>method</code>匹配方法, 还可以仅匹配</p>
+<h3 id="reqadd-rspadd"><a href="#reqadd-rspadd" class="headerlink" title="reqadd rspadd"></a>reqadd rspadd</h3><p>这两个选项可以在头部添加内容, 同样支持if条件判断.</p>
+<p>另外, 还有很多超时选项:</p>
+<h3 id="timeout"><a href="#timeout" class="headerlink" title="timeout"></a>timeout</h3><p> http-request</p>
+<p>connect</p>
+<p>http-keep-alive</p>
+<p>…(omitted)</p>
+<h2 id="基于Cookie实现单客户端绑定"><a href="#基于Cookie实现单客户端绑定" class="headerlink" title="基于Cookie实现单客户端绑定"></a>基于Cookie实现单客户端绑定</h2><p>现在我们来使用cookie+HAProxy实现一下单客户端绑定. </p>
+<p>首先我们做如下配置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">backend webservers</span><br><span class="line">    balance     roundrobin</span><br><span class="line">    cookie SERVERID insert</span><br><span class="line">    server      static1 192.168.206.21:80 check cookie web1</span><br><span class="line">    server      static2 192.168.206.22:80 check cookie web2</span><br></pre></td></tr></table></figure>
+
+<p>然后我们重启服务, 第一次访问:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/cookiereq.png" alt="cookiereq"></p>
+<p>可以看到服务器返回了一个设置Cookie的字段, 接着第二次访问:</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/cookieres.png" alt="cookieres"></p>
+<p>这个时候, 我们无论访问什么URL都会被带到这个服务器上, 因为我们是带着Cookie访问的.</p>
+<p>很简单吧.</p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/HAProxy_mind.png" alt="HAProxy_mind.png"></p>
+<p>AProxy_mind.png)</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HAProxy"><span class="toc-number">1.</span> <span class="toc-text">HAProxy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">HAProxy的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#balance"><span class="toc-number">2.1.</span> <span class="toc-text">balance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bind"><span class="toc-number">2.2.</span> <span class="toc-text">bind</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mode"><span class="toc-number">2.3.</span> <span class="toc-text">mode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log"><span class="toc-number">2.4.</span> <span class="toc-text">log</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#maxconn"><span class="toc-number">2.5.</span> <span class="toc-text">maxconn</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#default-backend"><span class="toc-number">2.6.</span> <span class="toc-text">default_backend</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server"><span class="toc-number">2.7.</span> <span class="toc-text">server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#option"><span class="toc-number">2.8.</span> <span class="toc-text">option</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http-request"><span class="toc-number">2.9.</span> <span class="toc-text">http-request</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redirect-amp-acl"><span class="toc-number">2.10.</span> <span class="toc-text">redirect &amp; acl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#reqadd-rspadd"><span class="toc-number">2.11.</span> <span class="toc-text">reqadd rspadd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#timeout"><span class="toc-number">2.12.</span> <span class="toc-text">timeout</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8ECookie%E5%AE%9E%E7%8E%B0%E5%8D%95%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BB%91%E5%AE%9A"><span class="toc-number">3.</span> <span class="toc-text">基于Cookie实现单客户端绑定</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&text=HAProxy的配置和应用"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&is_video=false&description=HAProxy的配置和应用"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=HAProxy的配置和应用&body=Check out this article: https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&title=HAProxy的配置和应用"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&name=HAProxy的配置和应用&description=&lt;p&gt;说完了Nginx, 接下来就来看看另外一个性能优越的load balancer – HAProxy吧.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/19/HAProxy%E7%9A%84%E9%85%8D%E7%BD%AE%E5%92%8C%E5%BA%94%E7%94%A8/&t=HAProxy的配置和应用"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

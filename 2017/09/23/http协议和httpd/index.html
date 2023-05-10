@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="再来看http协议 &amp; Web服务器httpd的初次会面">
+<meta property="og:type" content="article">
+<meta property="og:title" content="http协议和httpd">
+<meta property="og:url" content="https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="再来看http协议 &amp; Web服务器httpd的初次会面">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-09-23T21:43:50.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:25:25.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="http">
+<meta property="article:tag" content="httpd">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>http协议和httpd</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/23/%E5%A5%97%E6%8E%A5%E5%AD%97%E5%9F%BA%E7%A1%80/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&text=http协议和httpd"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&is_video=false&description=http协议和httpd"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=http协议和httpd&body=Check out this article: https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&name=http协议和httpd&description=&lt;p&gt;再来看http协议 &amp;amp; Web服务器httpd的初次会面&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&t=http协议和httpd"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP%E5%8D%8F%E8%AE%AE%E8%A1%A5%E5%85%85"><span class="toc-number">1.</span> <span class="toc-text">HTTP协议补充</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Web%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">Web服务器基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A8%8B%E5%BA%8F"><span class="toc-number">3.</span> <span class="toc-text">http服务器程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#httpd"><span class="toc-number">4.</span> <span class="toc-text">httpd</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS6%E4%B8%8A%E7%9A%84httpd-2-2"><span class="toc-number">4.1.</span> <span class="toc-text">CentOS6上的httpd 2.2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS7%E4%B8%8A%E7%9A%84httpd-2-4"><span class="toc-number">4.2.</span> <span class="toc-text">CentOS7上的httpd 2.4</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E5%85%85-2018-09-07"><span class="toc-number">5.</span> <span class="toc-text">补充 (2018-09-07)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%8F%E4%BE%BF%E6%89%AF%E4%B8%80%E4%B8%8B"><span class="toc-number">5.1.</span> <span class="toc-text">随便扯一下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PHP%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">5.2.</span> <span class="toc-text">PHP的配置</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        http协议和httpd
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-23T21:43:50.000Z" class="dt-published" itemprop="datePublished">2017-09-23</time>
+        
+        (Updated: <time datetime="2020-11-30T01:25:25.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/http/" rel="tag">http</a>, <a class="p-category" href="/tags/httpd/" rel="tag">httpd</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>再来看http协议 &amp; Web服务器httpd的初次会面</p>
+<span id="more"></span>
+
+<h2 id="HTTP协议补充"><a href="#HTTP协议补充" class="headerlink" title="HTTP协议补充"></a>HTTP协议补充</h2><p>虽然之前说过一大堆关于Http的东西了, 就是那一堆图解http阅读笔记, 虽然写了三个部分吧, 但是毕竟是很早的时候搞得, 那个时候的认知显然和现在不太一样, 所以这里就再来说一下, 但是不说原理, 补充一些当时没有写的.</p>
+<p><strong>来自未来: 之前写的http阅读笔记太垃圾了所以我删掉了 哈哈哈, 推荐直接去看书吧</strong></p>
+<p>早期我们的HTTP协议仅仅可以传输html文本, 也就是所谓超文本标记语言. 但是现在可不一样, 我们可以传输音乐, 图片, 视频等等. 这是怎么做的?</p>
+<p>其实就是引入了MIME, 这个玩意是来自于邮件的, 为了能够发送不同类型的文件附件, 叫做多用途互联网邮件扩展. 基于这个HTTP就能够发送非文本的数据了. </p>
+<p>至于HTTP的工作原理, 之前也说得差不多了. 其实也很简单, 就是HTTP请求和HTTP响应. 报文也主要就是这两种. </p>
+<p>最简单的Web资源就是静态的文件, 而还有一些就是动态的资源, 这些资源会先在服务器主机上执行一遍.</p>
+<p>那么在这里来提一个问题, 浏览器是怎么显示图片的? 有些浏览器根本就没有图片显示功能啊. 这里其实他是调用外部系统接口(比如Windows内置的图片查看器), 或者一些插件. 根据获得的资源的后缀名或, 编码, MIME 来判断使用什么来打开并且显示他们.</p>
+<p>MIME也可以叫做媒体类型: 分为主类型&#x2F;次类型, 比如:</p>
+<ul>
+<li>text&#x2F;html</li>
+<li>text&#x2F;plain</li>
+<li>image&#x2F;jpeg</li>
+<li>image&#x2F;gif</li>
+</ul>
+<p>然后我们补充一下HTTP的几个版本更迭吧:</p>
+<ul>
+<li>HTTP&#x2F;0.9 原型版本 很多设计缺陷 不支持多媒体</li>
+<li>HTTP&#x2F;1.0 支持多媒体, 缓存机制设计存在问题</li>
+<li>HTTP&#x2F;1.1 增强了Cache功能</li>
+<li>HTTP&#x2F;2.0</li>
+</ul>
+<h2 id="Web服务器基础"><a href="#Web服务器基础" class="headerlink" title="Web服务器基础"></a>Web服务器基础</h2><p>说到服务器应用, 感觉还是要说一下http的完整请求啊…那就再来一遍吧, 这次我们站在服务器的角度来说.</p>
+<p>( * ) 建立或处理连接 : 接受请求或者拒绝请求</p>
+<p>( * ) 接受请求 : 就是接受来自网络的请求报文中的对某资源的一次请求的过程.</p>
+<p>这里我们稍微多扯扯, 如果一个Web服务器的进程和一个主机的进程正在进行通信, 这个时候又来了一台主机, 他该怎么办呢, 这个处理模型, 也就是并发访问响应模型 (Web I&#x2F;O结构): 常见的有数种:</p>
+<p><strong>单进程I&#x2F;O结构</strong> , 在没有处理完上一个的请求, 不会处理下一个, 被串行响应, 不能算作并行的结构.</p>
+<p><strong>多进程IO结构</strong> , 启动多个进程, 是每个进程响应一个请求. 会造成大量的CPU进程切换, 以及大量的内存消耗.</p>
+<p><strong>I&#x2F;O复用结构</strong>, 一个进程响应多个请求.(多线程模型, 生成N个线程(在Linux上几乎和多进程没什么区别). 事件驱动模型)</p>
+<p><strong>复用的多进程I&#x2F;O结构</strong>, 启动多个进程, 每个进程响应多个请求.</p>
+<p>( * ) 处理请求 : 对请求报文进行解析, 并获取请求的资源以及请求方法等信息</p>
+<p>( * ) 访问资源 : 获取请求报文中请求的资源</p>
+<p>这些资源通常放置于本地文件系统的某路径下, 此路径也被称为DocRoot, 也就是做根的映射.</p>
+<p>web服务器的路径映射方式有多种:<br>​	(a) docroot</p>
+<pre><code>(b) alias别名
+
+(c) 虚拟主机docroot映射
+
+(d) 用户家目录映射
+</code></pre>
+<p>( * ) 构建响应报文 : 显式分类, 魔法分类, 协商分类来标记MIME类型. 或者重定向等</p>
+<p>( * ) 发送响应报文</p>
+<p>( * ) 记录日志</p>
+<h2 id="http服务器程序"><a href="#http服务器程序" class="headerlink" title="http服务器程序"></a>http服务器程序</h2><p>先来数数常见的Web服务器程序吧, 最常见的http服务器程序就是: <strong>httpd(apache), Nginx, Lighttpd</strong> 第三个你可能没有听说过, 其实这也是我第一次听说, 这个玩意是德国开发的, 据说和Nginx的性能不相上下, 但是社区的活跃程度远远比不上Nginx.</p>
+<p>上面的这三个服务器都是静态资源服务器, 在不借助组件的情况下, 只能处理静态资源. 除他们之外, 还有一些应用程序服务器, 这些服务器本身就有作为静态资源服务器的能力, 还可以进行动态资源的处理, 比如:IIS; tomcat, jetty, jboss, resin, webshpere, weblogic, oc4j. 最火的应该就是tomcat和jetty了.</p>
+<p>httpd, 关于其Apache这个名字是有个历史的. 据说这个应用程序是美国的一个信息部为了开发一个完整的Web服务器软件而召集了很多技术优秀的工程师, 这些工程师在做完项目之后就都散到了各个互联网公司中, 但是由于对自己过去的这一个项目怀有感情, 所以就自发的在网上建立起了这个httpd项目, 大家一起维护, 做优化, 打补丁,打补丁, 一直打补丁. 所以就有人说这个httpd服务器是个: <code>a patchy server</code> &#x3D;&#x3D; <code>apache</code>. 这也就是apache的名字由来.</p>
+<p>后来Apache占用的市场份额越来越大, 于是成立了Apache软件基金会, 也就是ASF.</p>
+<p>现在就把目光聚集到今天的主角: httpd身上吧. 先来说说他的几个特性.</p>
+<h2 id="httpd"><a href="#httpd" class="headerlink" title="httpd"></a>httpd</h2><p>httpd的几个特性:</p>
+<ul>
+<li>高度模块化, core + modules</li>
+<li>支持DSO(动态共享对象)</li>
+<li>MPM: 多路处理模块, 实现不同的结构模型<ul>
+<li>prefork: 多进程模型, 每个进程响应一个请求. 一个主进程生成多个子进程, 子进程也被称为工作进程, 每个子进程处理一个用户请求, 即使没有用户请求, 也会预先生成几个空闲线程, 随时等待请求到达, 最大不能超过1024个. 但是这种模型主要是早期所采用的. 现在在高并发场景中几乎不再使用, 因为消耗的时间过长, 效率不高.</li>
+<li>worker: 多线程模型 ( 多进程生成, 一个进程生成多个线程 ) 一个线程响应一个请求, 对于Linux而言, 这个模型的性能提升倒没有prefork多.</li>
+<li>event: 事件驱动模型, 一个线程响应多个请求</li>
+</ul>
+</li>
+</ul>
+<p>现在就来看看如何进行httpd的安装和配置吧.</p>
+<p>对于CentOS6和CentOS7来说, rpm包安装的httpd版本是不一样的, 在CentOS6上安装的是2.2版本, 而CentOS7上安装得是2.4版本. 一般我们有两种安装方式对嘛, rpm和编译安装. httpd相比其他的程序, 编译安装较为常见, 这是因为rpm安装的可能会缺少我们所希望的功能.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpm -qc httpd</span></span><br><span class="line">/etc/httpd/conf.d/autoindex.conf</span><br><span class="line">/etc/httpd/conf.d/userdir.conf</span><br><span class="line">/etc/httpd/conf.d/welcome.conf</span><br><span class="line">/etc/httpd/conf.modules.d/00-base.conf</span><br><span class="line">/etc/httpd/conf.modules.d/00-dav.conf</span><br><span class="line">/etc/httpd/conf.modules.d/00-lua.conf</span><br><span class="line">/etc/httpd/conf.modules.d/00-mpm.conf</span><br><span class="line">/etc/httpd/conf.modules.d/00-proxy.conf</span><br><span class="line">/etc/httpd/conf.modules.d/00-systemd.conf</span><br><span class="line">/etc/httpd/conf.modules.d/01-cgi.conf</span><br><span class="line">/etc/httpd/conf/httpd.conf</span><br><span class="line">/etc/httpd/conf/magic</span><br><span class="line">/etc/logrotate.d/httpd</span><br><span class="line">/etc/sysconfig/htcacheclean</span><br><span class="line">/etc/sysconfig/httpd</span><br></pre></td></tr></table></figure>
+
+<p>他的主配置文件是<code>/etc/httpd/conf/httpd.conf</code> 以及在<code>/etc/httpd/conf.d/*.conf</code> 的种种子配置文件.</p>
+<p>上面的结果是CentOS7上实现的 ,想到版本不一致, 我们还是分版本来说这个吧.</p>
+<h3 id="CentOS6上的httpd-2-2"><a href="#CentOS6上的httpd-2-2" class="headerlink" title="CentOS6上的httpd 2.2"></a>CentOS6上的httpd 2.2</h3><p>我们再使用rpm来查看一下他的httpd启动程序:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># rpm -ql httpd | grep bin</span></span><br><span class="line">/usr/sbin/apachectl</span><br><span class="line">/usr/sbin/htcacheclean</span><br><span class="line">/usr/sbin/httpd</span><br><span class="line">/usr/sbin/httpd.event</span><br><span class="line">/usr/sbin/httpd.worker</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>注意到这里的后缀名, 这就是可以根据具体的业务情况来选择不同模型的 如果是编译的时候只能选择其中一个, 默认选择的是prefork.</p>
+<p>而服务脚本所在:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># ls -l /etc/rc.d/init.d/httpd</span></span><br><span class="line">-rwxr-xr-x. 1 root root 3371 Dec  9  2011 /etc/rc.d/init.d/httpd</span><br><span class="line"><span class="comment"># 该脚本的配置文件是</span></span><br><span class="line">[root@localhost ~]<span class="comment"># ls -l /etc/sysconfig/httpd </span></span><br><span class="line">-rw-r--r--. 1 root root 947 Feb  9  2010 /etc/sysconfig/httpd</span><br></pre></td></tr></table></figure>
+
+<p>日志文件在:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># ls -l /var/log/httpd/</span></span><br><span class="line">total 0</span><br></pre></td></tr></table></figure>
+
+<p>httpd的日志记录有两种: <code>access_log</code> 访问日志 以及 <code>error_log</code> 错误日志</p>
+<p>最重要的一个目录当属站点文档目录了: <code>/var/www/html</code> </p>
+<p>来看一下他的配置文件的组成:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost html]<span class="comment"># grep &quot;Section&quot; /etc/httpd/conf/httpd.conf</span></span><br><span class="line"><span class="comment">### Section 1: Global Environment</span></span><br><span class="line"><span class="comment">### Section 2: &#x27;Main&#x27; server configuration</span></span><br><span class="line"><span class="comment">### Section 3: Virtual Hosts</span></span><br></pre></td></tr></table></figure>
+
+<p>一共有三段, 第一段就是全局的配置, 也就是类似日志记录位置, 程序配置等等, 后面两个一般不会一起使用, 一个是定义主服务器的文档根位置等一些设定, 而如果想要一台主机提供多个站点的话, 就需要配置第三个虚拟主机的配置.</p>
+<p>默认的配置格式就是: <code>directive value</code> 前者不区分字母大小写, 后者作为路径时, 取决于文件系统.</p>
+<p>接下来我们走进配置文件里面看看, 先备份一个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost conf]<span class="comment"># cp httpd.conf&#123;,.bak&#125;</span></span><br><span class="line"><span class="comment"># 有没有感受到bash的神奇力量hhh</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来就可以放心的进去了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Listen: Allows you to bind Apache to specific IP addresses and/or</span></span><br><span class="line"><span class="comment"># ports, in addition to the default. See also the &lt;VirtualHost&gt;</span></span><br><span class="line"><span class="comment"># directive.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Change this to Listen on specific IP addresses as shown below to </span></span><br><span class="line"><span class="comment"># prevent Apache from glomming onto all bound IP addresses (0.0.0.0)</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#Listen 12.34.56.78:80</span></span><br><span class="line">Listen 80</span><br></pre></td></tr></table></figure>
+
+<p>这应该是最基本的配置了把, 这个listen指令可以出现多次, 不指定ip就表示所有IP.</p>
+<p>另一个常用的配置就是持久连接(Persistent Connection), 建立连接, 每个资源获取完成之后不会断开连接, 而是等待其他的请求完成. 那么如何才断开呢? 首先就是数量的限制: 默认是100个资源, 还有时间限制: 这个可配置(建议不配置的太大, 2s-15s都有的, 对于并发访问较大的网站来说, 这个应该设置的小一点甚至关闭[因为可能会有用户得不到服务]) httpd2.4已经支持毫秒级的配置了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># KeepAlive: Whether or not to allow persistent connections (more than</span></span><br><span class="line"><span class="comment"># one request per connection). Set to &quot;Off&quot; to deactivate.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">KeepAlive Off</span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># MaxKeepAliveRequests: The maximum number of requests to allow</span></span><br><span class="line"><span class="comment"># during a persistent connection. Set to 0 to allow an unlimited amount.</span></span><br><span class="line"><span class="comment"># We recommend you leave this number high, for maximum performance.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">MaxKeepAliveRequests 100</span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># KeepAliveTimeout: Number of seconds to wait for the next request from the</span></span><br><span class="line"><span class="comment"># same client on the same connection.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">KeepAliveTimeout 15</span><br></pre></td></tr></table></figure>
+
+<p>这些就是持久连接的设置, 如果上面没有启动, 下面的两个参数就不会起到作用.</p>
+<p>接下来我们可以做个试验, 使用telnet进行请求:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost conf]<span class="comment"># telnet 192.168.206.132 80</span></span><br><span class="line">Trying 192.168.206.132...</span><br><span class="line">Connected to 192.168.206.132.</span><br><span class="line">Escape character is <span class="string">&#x27;^]&#x27;</span>.</span><br><span class="line">GET / HTTP/1.1</span><br><span class="line">Host: 192.168.206.132</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接着你就会收到一大堆的文本信息, 这个就是HTTP响应报文:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 403 Forbidden</span><br><span class="line">Date: Sat, 19 Aug 2017 00:54:48 GMT</span><br><span class="line">Server: Apache/2.2.15 (CentOS)</span><br><span class="line">Accept-Ranges: bytes</span><br><span class="line">Content-Length: 5039</span><br><span class="line">Connection: close</span><br><span class="line">Content-Type: text/html; charset=UTF-8</span><br><span class="line"></span><br><span class="line">&lt;!DOCTYPE html PUBLIC <span class="string">&quot;-//W3C//DTD XHTML 1.1//EN&quot;</span> <span class="string">&quot;http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd&quot;</span>&gt;</span><br><span class="line">	&lt;<span class="built_in">head</span>&gt;</span><br><span class="line">		&lt;title&gt;Apache HTTP Server Test Page powered by CentOS&lt;/title&gt;</span><br><span class="line">...(omitted)</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br><span class="line">Connection closed by foreign host.</span><br></pre></td></tr></table></figure>
+
+<p>一个请求对应着一个连接, 请求处理完了. 链接就会close掉. 如果这个时候我们把上面的持久连接打开, 就可以持续发送请求, 直到你不动他到超时时间到.</p>
+<p>接下来我们说之前说过的MPM, 多路处理模块. 这个其实有十几种, 这是为了满足不同的操作系统, 每个操作系统对于这个的支持是不一样的. 一次编译只能编译一个模块, 而rpm为了不同模式的支持, 就提供了三个二进制的. 默认就是prefork模型. 我们说过httpd的模块是动态的, 所以我们可以查看当前编译进核心的模块有哪些:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost conf]<span class="comment"># httpd -l</span></span><br><span class="line">Compiled <span class="keyword">in</span> modules:</span><br><span class="line">  core.c</span><br><span class="line">  prefork.c</span><br><span class="line">  http_core.c</span><br><span class="line">  mod_so.c</span><br></pre></td></tr></table></figure>
+
+<p>剩余的功能可以动态的加载进去, 我们来查看所有加载的模块:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost conf]<span class="comment"># httpd -M</span></span><br><span class="line">Loaded Modules:</span><br><span class="line"> core_module (static)</span><br><span class="line"> mpm_prefork_module (static)</span><br><span class="line"> http_module (static)</span><br><span class="line"> so_module (static)</span><br><span class="line"> auth_basic_module (shared)</span><br><span class="line">...(omitted)</span><br><span class="line"> proxy_http_module (shared)</span><br><span class="line"> proxy_ajp_module (shared)</span><br><span class="line"> proxy_connect_module (shared)</span><br><span class="line"> cache_module (shared)</span><br><span class="line"> suexec_module (shared)</span><br><span class="line"> disk_cache_module (shared)</span><br><span class="line"> cgi_module (shared)</span><br><span class="line"> version_module (shared)</span><br><span class="line"> dnssd_module (shared)</span><br><span class="line">Syntax OK</span><br></pre></td></tr></table></figure>
+
+<p>如果想要更换使用的httpd模式, 就在脚本文件里进行编辑就好:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost conf]<span class="comment"># cat /etc/sysconfig/httpd </span></span><br><span class="line"><span class="comment"># Configuration file for the httpd service.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># The default processing model (MPM) is the process-based</span></span><br><span class="line"><span class="comment"># &#x27;prefork&#x27; model.  A thread-based model, &#x27;worker&#x27;, is also</span></span><br><span class="line"><span class="comment"># available, but does not work with some modules (such as PHP).</span></span><br><span class="line"><span class="comment"># The service must be stopped before changing this variable.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#HTTPD=/usr/sbin/httpd.worker</span></span><br><span class="line">HTTPD=/usr/sbin/httpd.XXXX</span><br></pre></td></tr></table></figure>
+
+<p>这样就行了. 重新restart之后就会起效果了.</p>
+<p>配置文件里还提供了条件方式装载不同的MPM:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># prefork MPM</span></span><br><span class="line"><span class="comment"># StartServers: number of server processes to start</span></span><br><span class="line"><span class="comment"># MinSpareServers: minimum number of server processes which are kept spare</span></span><br><span class="line"><span class="comment"># MaxSpareServers: maximum number of server processes which are kept spare</span></span><br><span class="line"><span class="comment"># ServerLimit: maximum value for MaxClients for the lifetime of the server</span></span><br><span class="line"><span class="comment"># MaxClients: maximum number of server processes allowed to start</span></span><br><span class="line"><span class="comment"># MaxRequestsPerChild: maximum number of requests a server process serves</span></span><br><span class="line">&lt;IfModule prefork.c&gt;</span><br><span class="line">StartServers       8 <span class="comment"># 子进程数量</span></span><br><span class="line">MinSpareServers    5 <span class="comment"># 最小空闲进程数</span></span><br><span class="line">MaxSpareServers   20 <span class="comment"># 最大空闲进程数</span></span><br><span class="line">ServerLimit      256 <span class="comment"># 为MaxClient提供的最大服务器数量 &gt;= MaxClient</span></span><br><span class="line">MaxClients       256 <span class="comment"># 最大客户端请求</span></span><br><span class="line">MaxRequestsPerChild  4000 <span class="comment"># 子进程的最大处理量</span></span><br><span class="line">&lt;/IfModule&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># worker MPM</span></span><br><span class="line"><span class="comment"># StartServers: initial number of server processes to start</span></span><br><span class="line"><span class="comment"># MaxClients: maximum number of simultaneous client connections</span></span><br><span class="line"><span class="comment"># MinSpareThreads: minimum number of worker threads which are kept spare</span></span><br><span class="line"><span class="comment"># MaxSpareThreads: maximum number of worker threads which are kept spare</span></span><br><span class="line"><span class="comment"># ThreadsPerChild: constant number of worker threads in each server process</span></span><br><span class="line"><span class="comment"># MaxRequestsPerChild: maximum number of requests a server process serves</span></span><br><span class="line">&lt;IfModule worker.c&gt;</span><br><span class="line">StartServers         4 <span class="comment"># 请注意这里 服务器启动时启动的进程数量</span></span><br><span class="line">MaxClients         300</span><br><span class="line">MinSpareThreads     25 </span><br><span class="line">MaxSpareThreads     75 <span class="comment"># 请注意这里 最大空闲线程</span></span><br><span class="line">ThreadsPerChild     25 <span class="comment"># 请注意这里 每个子进程的线程数 4 * 25 = 100, 但是75 &lt; 100, so kill one child. ( 脑残一般的设定</span></span><br><span class="line">MaxRequestsPerChild  0</span><br><span class="line">&lt;/IfModule&gt;</span><br></pre></td></tr></table></figure>
+
+<p>当然, httpd的命令要随着httpd的启动方式来决定.</p>
+<p>httpd还有DSO的支持, 也就是动态的共享对象. 在<code>/usr/lib64/httpd/modules</code>这个目录下 大多数模块都在这里, 这些模块都是可以使用指令模块加载的:</p>
+<p><code>LoadModule  &lt;mod_name&gt; &lt;mod_path&gt;</code> 这里的路径是相对于ServerRoot而言的.</p>
+<p>可以进配置文件进行查看.</p>
+<p>ServerRoot下的模块目录其实就是刚刚说的软件连接:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost conf]<span class="comment"># ls  -l /etc/httpd/modules</span></span><br><span class="line">lrwxrwxrwx. 1 root root 29 Dec 16  2011 /etc/httpd/modules -&gt; ../../usr/lib64/httpd/modules</span><br></pre></td></tr></table></figure>
+
+<p>那么简单看完了配置, 我们来定义server文档页面的路径吧.</p>
+<p><code>DocumentRoot &quot;/var/www/html&quot;</code> 这个就是文档的根, 所以我们在url中的<code>/</code> 就是这个目录了.</p>
+<p>注意一点, 这里的目录的权限是直接影响到用户的访问的.</p>
+<p>httpd的访问控制有两种模式 , 一种就是基于文件系统目录结构的, 一种就是基于URL的 .而访问控制机制其实无非就是来源地址, 账号啥的.</p>
+<p>我们来试试这个访问控制功能吧</p>
+<ul>
+<li><p>Options 定义用户访问此目录下的资源的选项 </p>
+<ul>
+<li><pre><code class="bash"># Possible values for the Options directive are &quot;None&quot;, &quot;All&quot;,
+# or any combination of:
+#   Indexes Includes FollowSymLinks SymLinksifOwnerMatch ExecCGI MultiViews
+#
+# Note that &quot;MultiViews&quot; must be named *explicitly* --- &quot;Options All&quot;
+# doesn&#39;t give it to you.
+#
+# The Options directive is both complicated and important.  Please see
+# http://httpd.apache.org/docs/2.2/mod/core.html#options
+# for more information.
+#
+    Options Indexes FollowSymLinks
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  * 设置的这两项就是最常见的两项, 一种就是访问根的时候(/), 默认返回的资源(Index). 其实这个选项十分危险, 但是如果是用作下载站之类的话, 这个倒是一个不错的选项. 而FollowSymLinks的意义就是跟踪符号链接, 如果你的目录下有一个符号链接,这个选项会进行跟踪并将其视作连接后的文件.</span><br><span class="line"></span><br><span class="line">* 接着还有一个选项是`AllowOverride` 此选项是说, 是否覆盖当前目录下的.htaccess文件的访问控制. .htaccess可以实现对单个目录的访问控制(一个目录一个隐藏文件.htaccess, 但是这种方式极度消耗资源)</span><br><span class="line"></span><br><span class="line">* 基于来源地址的访问控制机制:</span><br><span class="line"></span><br><span class="line">  * Order: 检查次序, 可以理解黑名单和白名单的转换</span><br><span class="line">    * Allow from + IP地址|网络地址&#123;172.16|172.16.0.0|172.16.0.0/16|172.16.0.0/255.255.0.0&#125;|FQDN</span><br><span class="line">    * Deny from </span><br><span class="line"></span><br><span class="line">这些说完了, 我们再来看一下重要的日志,  httpd的日志配置选项还是很标准的:</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line"># ErrorLog: The location of the error log file.</span><br><span class="line"># If you do not specify an ErrorLog directive within a &lt;VirtualHost&gt;</span><br><span class="line"># container, error messages relating to that virtual host will be</span><br><span class="line"># logged here.  If you *do* define an error logfile for a &lt;VirtualHost&gt;</span><br><span class="line"># container, that host&#x27;s errors will be logged there and not here.</span><br><span class="line">#</span><br><span class="line">ErrorLog logs/error_log</span><br><span class="line"></span><br><span class="line">#</span><br><span class="line"># LogLevel: Control the number of messages logged to the error_log.</span><br><span class="line"># Possible values include: debug, info, notice, warn, error, crit,</span><br><span class="line"># alert, emerg.</span><br><span class="line">#</span><br><span class="line">LogLevel warn</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<p>接着注意到有很多<code>CustomLog</code>但是有很多都被注释了, 只开启了一个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#CustomLog logs/access_log common</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># If you would like to have separate agent and referer logfiles, uncomment</span></span><br><span class="line"><span class="comment"># the following directives.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#CustomLog logs/referer_log referer</span></span><br><span class="line"><span class="comment">#CustomLog logs/agent_log agent</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># For a single logfile with access, agent, and referer information</span></span><br><span class="line"><span class="comment"># (Combined Logfile Format), use the following directive:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">CustomLog logs/access_log combined</span><br></pre></td></tr></table></figure>
+
+<p>后面的combined是在定义日志格式的, 你会在上面看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LogFormat <span class="string">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b \&quot;%&#123;Referer&#125;i\&quot; \&quot;%&#123;User-Agent&#125;i\&quot;&quot;</span> combined</span><br><span class="line">LogFormat <span class="string">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b&quot;</span> common</span><br><span class="line">LogFormat <span class="string">&quot;%&#123;Referer&#125;i -&gt; %U&quot;</span> referer</span><br><span class="line">LogFormat <span class="string">&quot;%&#123;User-agent&#125;i&quot;</span> agent</span><br></pre></td></tr></table></figure>
+
+<p>有多种格式, 你也可以来自定义. 日志对于服务器来说非常重要, 因此来看看常见的日志format string:</p>
+<ul>
+<li>%h remote host 远程主机的IP地址</li>
+<li>%l 远程的登录名, 一般是空(-)</li>
+<li>%u 远程登录的用户账号</li>
+<li>%t 服务端收到请求的时间</li>
+<li>%r 请求报文的首行信息(method url version)</li>
+<li>%&gt;s 响应状态码</li>
+<li>%b 响应报文的大小(不包含首部, 只有主体)</li>
+<li>%{Referer}i: 请求报文中的”Referer”首部的值</li>
+</ul>
+<p>httpd还可以进行别名的设置, 就是说, 当你访问对应的位置的时候, 能够进行别的目录映射 就是这个意思:</p>
+<p>DocumentRoot “&#x2F;www&#x2F;htdocs”</p>
+<p>那么访问: <a target="_blank" rel="noopener" href="http://yaoxuannn.com/index.html">http://yaoxuannn.com/index.html</a> –&gt; &#x2F;www&#x2F;htdocs&#x2F;index.html</p>
+<p>如果设置了别名(Alias), 比如:</p>
+<p>Alias &#x2F;bbs&#x2F; “&#x2F;forum&#x2F;bbs&#x2F;“</p>
+<p>那么访问: <a target="_blank" rel="noopener" href="http://yaoxuannn.com/bbs/index.php">http://yaoxuannn.com/bbs/index.php</a> –&gt; &#x2F;forum&#x2F;bbs&#x2F;index.php 了</p>
+<p>上面说过了基于来源地址的访问控制, 现在我们来补充一下基于用户的访问控制, 其实这个访问控制方式就是进行我们熟悉的401质询, 请求用户输入账号和密码 关于这个认证的过程就省略了, 因为太简单了. 关于认证类型有两种: 明文(basic)和消息摘要(digest-MD5)  一般还是会选择basic方式, 虽然这么说…现在也没有谁会使用这种认证了.所以不细说了, 直接过一遍过程就行了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost htdocs]<span class="comment"># htpasswd -cm /etc/httpd/conf.d/.htpasswd justin</span></span><br><span class="line">New password: </span><br><span class="line">Re-<span class="built_in">type</span> new password: </span><br><span class="line">Adding password <span class="keyword">for</span> user justin</span><br><span class="line">[root@localhost htdocs]<span class="comment"># tail /etc/httpd/conf.d/.htpasswd </span></span><br><span class="line">justin:$apr1$ce77yxIr<span class="variable">$GLPzKPK8BOdCpBKAwA0VY0</span></span><br><span class="line">---------</span><br><span class="line">    AuthType Basic</span><br><span class="line">    AuthName <span class="string">&quot;Admin&quot;</span></span><br><span class="line">    AuthUserFile <span class="string">&quot;/etc/httpd/conf.d/.htpasswd&quot;</span></span><br><span class="line">    Require valid-user</span><br><span class="line"></span><br><span class="line">&lt;/Directory&gt;</span><br><span class="line">----------</span><br></pre></td></tr></table></figure>
+
+<p>接下来就剩一个虚拟主机的配置了. </p>
+<p>对于httpd来说有三种实现方案:</p>
+<ul>
+<li>基于IP实现, (不太常用)</li>
+<li>基于端口实现, (不常用)</li>
+<li>基于主机实现, (使用较多)</li>
+</ul>
+<p>其实也可以混合使用. 一般情况下, 我们都会禁用掉中心主机才使用虚拟主机. 一个虚拟主机都有专门的配置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;VirtualHost <span class="string">&quot;IP:PORT&quot;</span>&gt;</span><br><span class="line">	ServerName</span><br><span class="line">	DocumentRoot <span class="string">&quot;&quot;</span></span><br><span class="line">&lt;/VirtualHost&gt;</span><br></pre></td></tr></table></figure>
+
+<p>大多数用于中心主机的配置都可以使用, 配置起来也很简单, 就不说了</p>
+<blockquote>
+<p>curl工具简明使用说明</p>
+<p>这个curl可是很有名的, 功能很强大, 支持多种协议, 支持各种HTTP方法, 支持各种认证, 支持管道, 支持代理, 支持断点续传, 甚至支持IPv6. </p>
+<p><code>curl [options][URL...]</code> </p>
+<p>他的常用选项有这些:</p>
+<p>-A 指定user-agent 设置用户代理</p>
+<p>-e 指定referer信息</p>
+<p>-H 自定义头部</p>
+<p>-I 仅显示响应报文首部信息</p>
+</blockquote>
+<p>最后再说怎么实现httpd的https:</p>
+<p>我们在之前的文章中扯过了怎么签发证书, 那么现在实现一个https的服务器就很简单了.</p>
+<p>对于rpm安装的httpd, 默认是携带ssl模块的, 所以我们还要先进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ssl]# yum install mod_ssl</span><br></pre></td></tr></table></figure>
+
+<p>接着就在&#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;ssl.conf中进行配置就行了.</p>
+<h3 id="CentOS7上的httpd-2-4"><a href="#CentOS7上的httpd-2-4" class="headerlink" title="CentOS7上的httpd 2.4"></a>CentOS7上的httpd 2.4</h3><p>新特性有哪些呢? 新版本的httpd使MPM支持DSO机制, 这样就不需要进行多次编译以得到不同的模式了, 而是按需加载.</p>
+<p>另外支持event MPM, 支持异步读写, 日志级别可以每个目录自定, 表达式分析器得到增强, 支持毫秒级别的keepalive timeout还支持用户自定义变量.</p>
+<p>还有增加了一些新模块: 例如proxy_fcgi, ratelimit, remoteip. </p>
+<p>另外在配置机制上也有更改, 不再支持Order, Allow, Deny.</p>
+<p>在配置文件的分布上, 一共有三个部分:</p>
+<ul>
+<li>主配置	&#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf</li>
+<li>模块配置  &#x2F;etc&#x2F;httpd&#x2F;conf.modules.d&#x2F;*.conf</li>
+<li>辅助配置  &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;*.conf</li>
+</ul>
+<p>通过修改模块配置文件来动态改变使用的MPM</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LoadModule mpm_event_module modules/mod_mpm_event.so</span><br></pre></td></tr></table></figure>
+
+<p>通过注释和解注释来使用不同的模块.</p>
+<p>对于控制IP和特定主机的访问控制, 可以使用Require关键字来进行:</p>
+<blockquote>
+<p>Require ip ADDR</p>
+<p>Require no ip ADDR</p>
+<p>Require host HOSTNAME</p>
+<p>Require no host HOSTNAME</p>
+</blockquote>
+<p>但是需要注意的是, 这个访问控制需要放在一个单独的容器中执行. 例如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;RequireAll&gt;</span><br><span class="line">  Require not ip 192.168.56.1</span><br><span class="line">  Require all granted</span><br><span class="line">&lt;/RequireAll&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="补充-2018-09-07"><a href="#补充-2018-09-07" class="headerlink" title="补充 (2018-09-07)"></a>补充 (2018-09-07)</h2><h3 id="随便扯一下"><a href="#随便扯一下" class="headerlink" title="随便扯一下"></a>随便扯一下</h3><p>在看PHP的相关配置之前, 我们还是先来回忆一下关于LAMP中AMP的概念和一些相关的东西.</p>
+<p>首先是我们的客户端通过HTTP协议的请求发送到我们的HTTP服务器, 然后我们的服务器通过CGI协议访问到和后台的应用服务器, 也就&#x2F;是我们的PHP应用程序. 接着根据我们的应用代码, 通过应用程序的mysql协议或者说是驱动连接到我们后方的mysqld守护进程. </p>
+<p>另外我们说httpd支持多种运行模式: prefork, event, worker. 而第一个prefork, 我们所使用的PHP模块叫做<code>libphp5.so</code>. 后面的两个所使用的叫做: <code>libphp5-zts.so</code>.</p>
+<p>一般我们都可以通过使用PHP加速器来加速我们的执行过程, 常见的几种PHP加速器有: APC, eAccelerator, Xcache.</p>
+<p>就这样随便说一下吧, 接下来就来看看PHP的一些配置吧.</p>
+<h3 id="PHP的配置"><a href="#PHP的配置" class="headerlink" title="PHP的配置"></a>PHP的配置</h3><p>php的配置文件, 位置在<code>/etc/php.ini</code>和<code>/etc/php.d/*.ini</code>. </p>
+<p>官方关于配置文件的写法在<a target="_blank" rel="noopener" href="http://www.php.net/manual/zh/configuration.file.php">这里</a>. </p>
+<p>需要说明的一个: <strong>配置文件（php.ini）在 PHP 启动时被读取。对于服务器模块版本的 PHP，仅在 web 服务器启动时读取一次。对于 CGI 和 CLI 版本，每次调用都会读取</strong>.</p>
+<p>在配置文件中, 我们可以进行关于是否启用解释器的设定, 是否使用短标签等等很多配置, 这里我们其实没有必要去了解,  大部分的配置其实都和开发人员所写的程序相关联的, 在这个文件中, 你可以直接指定MySQL链接的相关参数, 例如主机 端口, 用户名, 密码等等, 不过这并不是一个好的idea. 因为任何一个有PHP访问权限的用户, 都可以直接通过<code>get_cfg_var()</code>来获得.</p>
+<p>更多比较长的一些配置属性都被丢在了<code>/etc/php.d</code>中, 例如<code>mysql.ini</code>. 里面其实就是配置了一个加载的模块.</p>
+<p>对于PHP的配置, 和具体的业务应用程序关联度比较高, 所以还是到需要用的时候再进行查阅吧.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP%E5%8D%8F%E8%AE%AE%E8%A1%A5%E5%85%85"><span class="toc-number">1.</span> <span class="toc-text">HTTP协议补充</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Web%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">Web服务器基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A8%8B%E5%BA%8F"><span class="toc-number">3.</span> <span class="toc-text">http服务器程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#httpd"><span class="toc-number">4.</span> <span class="toc-text">httpd</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS6%E4%B8%8A%E7%9A%84httpd-2-2"><span class="toc-number">4.1.</span> <span class="toc-text">CentOS6上的httpd 2.2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS7%E4%B8%8A%E7%9A%84httpd-2-4"><span class="toc-number">4.2.</span> <span class="toc-text">CentOS7上的httpd 2.4</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E5%85%85-2018-09-07"><span class="toc-number">5.</span> <span class="toc-text">补充 (2018-09-07)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%8F%E4%BE%BF%E6%89%AF%E4%B8%80%E4%B8%8B"><span class="toc-number">5.1.</span> <span class="toc-text">随便扯一下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PHP%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">5.2.</span> <span class="toc-text">PHP的配置</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&text=http协议和httpd"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&is_video=false&description=http协议和httpd"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=http协议和httpd&body=Check out this article: https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&title=http协议和httpd"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&name=http协议和httpd&description=&lt;p&gt;再来看http协议 &amp;amp; Web服务器httpd的初次会面&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/&t=http协议和httpd"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

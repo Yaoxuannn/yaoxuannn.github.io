@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="快来使用VIM提升你的逼格！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VIM编辑器的使用">
+<meta property="og:url" content="https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="快来使用VIM提升你的逼格！">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.catonmat.net/images/why-vim-uses-hjkl/lsi-adm-3a.jpg">
+<meta property="og:image" content="https://catonmat.net/images/why-vim-uses-hjkl/lsi-adm3a-full-keyboard.jpg">
+<meta property="og:image" content="http://www.catonmat.net/images/why-vim-uses-hjkl/adm-3a-hjkl-keyboard.jpg">
+<meta property="article:published_time" content="2017-03-24T04:54:51.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="VIM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.catonmat.net/images/why-vim-uses-hjkl/lsi-adm-3a.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>VIM编辑器的使用</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&text=VIM编辑器的使用"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&is_video=false&description=VIM编辑器的使用"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=VIM编辑器的使用&body=Check out this article: https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&name=VIM编辑器的使用&description=&lt;p&gt;快来使用VIM提升你的逼格！&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&t=VIM编辑器的使用"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#VIM%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">VIM概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">VIM编辑器的操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VIM%E7%9A%84%E6%8C%87%E4%BB%A4%E7%BB%93%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">VIM的指令结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6"><span class="toc-number">2.2.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E5%AD%98%E4%B8%8E%E9%80%80%E5%87%BA%E6%96%87%E4%BB%B6"><span class="toc-number">2.3.</span> <span class="toc-text">保存与退出文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8%E4%B8%8E%E5%AE%9A%E4%BD%8D"><span class="toc-number">2.4.</span> <span class="toc-text">光标移动与定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE"><span class="toc-number">2.5.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E5%88%A0%E9%99%A4"><span class="toc-number">2.6.</span> <span class="toc-text">文件操作之删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E5%A4%8D%E5%88%B6%E5%89%AA%E5%88%87%E7%B2%98%E8%B4%B4"><span class="toc-number">2.7.</span> <span class="toc-text">文件操作之复制剪切粘贴</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6"><span class="toc-number">2.7.1.</span> <span class="toc-text">复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B2%98%E8%B4%B4"><span class="toc-number">2.7.2.</span> <span class="toc-text">粘贴</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%89%AA%E5%88%87"><span class="toc-number">2.7.3.</span> <span class="toc-text">剪切</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E6%9B%BF%E6%8D%A2"><span class="toc-number">2.8.</span> <span class="toc-text">文件操作之替换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E7%BC%A9%E8%BF%9B"><span class="toc-number">2.9.</span> <span class="toc-text">文件操作之缩进</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        VIM编辑器的使用
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-03-24T04:54:51.000Z" class="dt-published" itemprop="datePublished">2017-03-24</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/VIM/" rel="tag">VIM</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>快来使用VIM提升你的逼格！</p>
+<span id="more"></span>
+
+<h2 id="VIM概述"><a href="#VIM概述" class="headerlink" title="VIM概述"></a>VIM概述</h2><p>先来说一下VI吧，VI是VIM的前身，VI的全名叫做Visual Interface(可视化接口)，而VIM叫做VI Improved，也就是VI的升级版。</p>
+<p>那么有哪些令人称赞的升级呢？</p>
+<ul>
+<li>多级撤销 (VI仅能撤销一布)</li>
+<li>跨平台 </li>
+<li>语法高亮</li>
+<li>支持图形界面(NOT recommanded)</li>
+</ul>
+<h2 id="VIM编辑器的操作"><a href="#VIM编辑器的操作" class="headerlink" title="VIM编辑器的操作"></a>VIM编辑器的操作</h2><p>VIM有三种最常用的模式：</p>
+<ul>
+<li>Command Mode 命令模式</li>
+<li>Insert Mode 输入模式</li>
+<li>Last Line Mode 底行模式</li>
+</ul>
+<blockquote>
+<p><strong>插一句重要的话，VIM的学习和Linux一样，是实践科学！所以一定要在实际环境中多使用，仅通过看文档是不会有实际作用的！</strong><br><strong>这篇文档是列举了一些常用的VIM技巧和指令以及一些释义，相当于是一篇实验指南吧，希望能给大家起到一点参考的作用</strong></p>
+</blockquote>
+<p>好了，让我们现在开始吧！</p>
+<h3 id="VIM的指令结构"><a href="#VIM的指令结构" class="headerlink" title="VIM的指令结构"></a>VIM的指令结构</h3><p>VIM有很多指令是支持数字+指令的，</p>
+<p>譬如：dd是用来删除整行的命令，那么我们可以使用2dd来删除两行</p>
+<p>凡是支持这样结构的命令，我会有标注。</p>
+<p>进入输入模式的参考</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>i</td>
+<td>在当前光标处进行编辑(insert)</td>
+</tr>
+<tr>
+<td>I</td>
+<td>在行首插入</td>
+</tr>
+<tr>
+<td>A</td>
+<td>在行末插入</td>
+</tr>
+<tr>
+<td>a</td>
+<td>在光标后插入编辑(append)</td>
+</tr>
+<tr>
+<td>o</td>
+<td>在当前行后插入一个新行(open)</td>
+</tr>
+<tr>
+<td>O</td>
+<td>在当前行前插入一个新行</td>
+</tr>
+</tbody></table>
+<h3 id="打开文件"><a href="#打开文件" class="headerlink" title="打开文件"></a>打开文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:e file</span><br></pre></td></tr></table></figure>
+
+<p>进入vim后通过指令也可以打开</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim file</span><br></pre></td></tr></table></figure>
+
+<p>如果当前目录下没有文件名为file的文件，VIM会为我们创建它。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim +n file</span><br></pre></td></tr></table></figure>
+
+<p>打开file，默认光标在第n行</p>
+<p>如果n大于文件的最大行，则跳到最后一行。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim +/reg file</span><br></pre></td></tr></table></figure>
+
+<p>打开file，高亮所有匹配到的关键字，光标出现在首次出现的哪一行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim file1 file2 file3</span><br></pre></td></tr></table></figure>
+
+<p>VIM同样支持多文件打开</p>
+<p>如何在多文件之间跳转呢？ ( Buffer )</p>
+<ul>
+<li>使用 <code>:n</code> 下一个文件 <code>:N</code> 上一个文件</li>
+<li>使用 <code>:prev</code> 上一个 <code>:next</code> 下一个</li>
+</ul>
+<p>如果想要获得我打开了哪些文件，可以在底盘输入：</p>
+<ul>
+<li>:ls (没错，就是ls)</li>
+</ul>
+<h3 id="保存与退出文件"><a href="#保存与退出文件" class="headerlink" title="保存与退出文件"></a>保存与退出文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:w &lt;可选 文件路径&gt;</span><br></pre></td></tr></table></figure>
+<p>将文件从内存写入硬盘</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:saveas &lt;必须 文件路径&gt;</span><br></pre></td></tr></table></figure>
+<p>另存为</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:q</span><br></pre></td></tr></table></figure>
+<p>关闭文件(仅适用于未修改的文件)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:q!</span><br></pre></td></tr></table></figure>
+<p>关闭文件(强制) <strong>所做的更改无效，数据会丢失</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">:wq</span><br><span class="line">:x</span><br></pre></td></tr></table></figure>
+<p>保存并关闭(应该是使用最多的命令了)</p>
+<p>这些命令都可以组合使用。</p>
+<h3 id="光标移动与定位"><a href="#光标移动与定位" class="headerlink" title="光标移动与定位"></a>光标移动与定位</h3><p>光标的四向移动：(支持数字)</p>
+<ul>
+<li>h 左移 </li>
+<li>j 下移</li>
+<li>k 上移</li>
+<li>l 右移</li>
+</ul>
+<p>至于为什么用这个而不用方向键…..</p>
+<p>有人说使用这四个键更快速，然而事实是，VI编辑器是在ADM-3A终端机上创建的，</p>
+<p>这玩意就长这样：</p>
+<p><img src="http://www.catonmat.net/images/why-vim-uses-hjkl/lsi-adm-3a.jpg" alt="ADM-3A"></p>
+<p>这是它的键盘：</p>
+<p><img src="https://catonmat.net/images/why-vim-uses-hjkl/lsi-adm3a-full-keyboard.jpg" alt="keyboard"></p>
+<p>所以说这玩意儿是没有我们现在的方向键的</p>
+<p>细节图：</p>
+<p><img src="http://www.catonmat.net/images/why-vim-uses-hjkl/adm-3a-hjkl-keyboard.jpg" alt="KeyBoard_detail"></p>
+<p>更快速的移动：(支持数字)</p>
+<ul>
+<li>w 下一个单词的开头</li>
+<li>e 下一个单词的结尾</li>
+<li>b 上一个单词的开头</li>
+<li>ge 上一个单词的结尾</li>
+</ul>
+<p>行内移动还有：</p>
+<ul>
+<li>0 或 ^ 行头</li>
+<li>$ 行尾</li>
+<li>f&lt;字母&gt;	向后搜索&lt;字母&gt;并跳转到第一个匹配的位置</li>
+<li>F&lt;字母&gt;	向前搜索&lt;字母&gt;并跳转到第一个匹配的位置</li>
+</ul>
+<p>翻页指令如下：</p>
+<ul>
+<li>ctrl + f  向前(front)翻页</li>
+<li>ctrl + u  向上(up)翻<strong>半</strong>页</li>
+<li>ctrl + b  向后(back)翻页</li>
+<li>ctrl + d  向下(down)翻<strong>半</strong>页</li>
+</ul>
+<p>可以直接使用<code>:line</code>来定位</p>
+<p><code>gg</code>快速移到第一行<br><code>G</code> 快速移到最后一行<br><code>&lt;num&gt;G</code> 移到<code>&lt;num&gt;</code>行</p>
+<p>如果没有行号，使用<code>:set nu</code>来开启</p>
+<h3 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h3><p>如打开文件一样，在底盘输入<code>/reg</code>来向后搜索</p>
+<p>光标出现在首次出现的reg的位置(这次就不是行头了)</p>
+<p>向前搜索使用:<code>?reg</code>,光标会出现在上方第一个匹配的reg的位置</p>
+<p>接着使用<code>n</code>和<code>N</code>来向后向前搜索</p>
+<h3 id="文件操作之删除"><a href="#文件操作之删除" class="headerlink" title="文件操作之删除"></a>文件操作之删除</h3><p>删除的指令如下：</p>
+<ul>
+<li>x	    删除游标所在的字符(支持数字)</li>
+<li>X	    删除游标所在前一个字符(支持数字)</li>
+<li>dd	删除整行(支持数字)</li>
+<li>dw	删除一个单词(支持数字)</li>
+<li>d$或D	删除至行尾</li>
+<li>d^	删除至行首</li>
+<li>dG	删除到文档结尾处</li>
+<li>d1G	删至文档首部</li>
+</ul>
+<h3 id="文件操作之复制剪切粘贴"><a href="#文件操作之复制剪切粘贴" class="headerlink" title="文件操作之复制剪切粘贴"></a>文件操作之复制剪切粘贴</h3><h4 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h4><p>使用<strong>y</strong>来复制</p>
+<ul>
+<li>yy  复制游标所在的整行&lt;支持数字&gt;</li>
+<li>y^或y0 复制至行首 不含光标所在处字符。</li>
+<li>y$  复制至行尾。含光所在处字符。</li>
+<li>yw  复制一个单词。&lt;支持数字,在w前&gt;</li>
+<li>yG  复制至文本末。</li>
+<li>y1G 复制至文本开头。</li>
+</ul>
+<h4 id="粘贴"><a href="#粘贴" class="headerlink" title="粘贴"></a>粘贴</h4><p>使用<strong>p</strong>来粘贴</p>
+<ul>
+<li>p  粘贴至光标后（下）</li>
+<li>P  粘贴至光标前（上）</li>
+</ul>
+<h4 id="剪切"><a href="#剪切" class="headerlink" title="剪切"></a>剪切</h4><p>好吧..我承认，我骗了你们 (微笑</p>
+<p>事实上，<code>dd</code>命令就是剪切，由此我们可以得到一个酷炫的技能–交换上下行<code>(ddp)</code></p>
+<h3 id="文件操作之替换"><a href="#文件操作之替换" class="headerlink" title="文件操作之替换"></a>文件操作之替换</h3><p>个人觉得替换是很便利的命令(尤其是R，很炫酷)</p>
+<ul>
+<li><p>r+&lt;字母&gt;	将游标所在字母替换为指定字母</p>
+</li>
+<li><p>R	连续替换，直到按下Esc</p>
+</li>
+<li><p>cc	替换整行，即删除游标所在行，并进入插入模式</p>
+</li>
+<li><p>cw	替换一个单词，即删除一个单词，并进入插入模式</p>
+</li>
+<li><p>C(大写)	替换游标以后至行末</p>
+</li>
+<li><p>~	反转游标所在字母大小写</p>
+</li>
+<li><p><code>u&lt;num&gt;</code>	撤销一次或num次操作</p>
+</li>
+<li><p>U(大写)	撤销当前行的所有修改</p>
+</li>
+<li><p>Ctrl+r	redo，即撤销undo的操作</p>
+</li>
+</ul>
+<h3 id="文件操作之缩进"><a href="#文件操作之缩进" class="headerlink" title="文件操作之缩进"></a>文件操作之缩进</h3><p>VIM的缩进非常方便，使用：</p>
+<ul>
+<li><code>&gt;&gt;</code> 整行向右缩进</li>
+<li><code>&lt;&lt;</code> 整行向左缩进</li>
+<li>:set shiftwidth 可以进行缩进和回退的字符数的设置</li>
+</ul>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#VIM%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">VIM概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">VIM编辑器的操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VIM%E7%9A%84%E6%8C%87%E4%BB%A4%E7%BB%93%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">VIM的指令结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6"><span class="toc-number">2.2.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E5%AD%98%E4%B8%8E%E9%80%80%E5%87%BA%E6%96%87%E4%BB%B6"><span class="toc-number">2.3.</span> <span class="toc-text">保存与退出文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8%E4%B8%8E%E5%AE%9A%E4%BD%8D"><span class="toc-number">2.4.</span> <span class="toc-text">光标移动与定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE"><span class="toc-number">2.5.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E5%88%A0%E9%99%A4"><span class="toc-number">2.6.</span> <span class="toc-text">文件操作之删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E5%A4%8D%E5%88%B6%E5%89%AA%E5%88%87%E7%B2%98%E8%B4%B4"><span class="toc-number">2.7.</span> <span class="toc-text">文件操作之复制剪切粘贴</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6"><span class="toc-number">2.7.1.</span> <span class="toc-text">复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B2%98%E8%B4%B4"><span class="toc-number">2.7.2.</span> <span class="toc-text">粘贴</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%89%AA%E5%88%87"><span class="toc-number">2.7.3.</span> <span class="toc-text">剪切</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E6%9B%BF%E6%8D%A2"><span class="toc-number">2.8.</span> <span class="toc-text">文件操作之替换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E4%B9%8B%E7%BC%A9%E8%BF%9B"><span class="toc-number">2.9.</span> <span class="toc-text">文件操作之缩进</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&text=VIM编辑器的使用"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&is_video=false&description=VIM编辑器的使用"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=VIM编辑器的使用&body=Check out this article: https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&title=VIM编辑器的使用"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&name=VIM编辑器的使用&description=&lt;p&gt;快来使用VIM提升你的逼格！&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/&t=VIM编辑器的使用"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

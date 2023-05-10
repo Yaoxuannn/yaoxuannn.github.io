@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="稍微复习了一下操作系统, 从今天真正开始接触虚拟化相关.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Xen虚拟化初识">
+<meta property="og:url" content="https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="稍微复习了一下操作系统, 从今天真正开始接触虚拟化相关.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%B8%80%E5%9E%8B%E8%99%9A%E6%8B%9F%E5%8C%96.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%BA%8C%E5%9E%8B%E8%99%9A%E6%8B%9F%E5%8C%96.png">
+<meta property="og:image" content="https://wiki.xen.org/images/thumb/c/c5/ToolStacks.png/799px-ToolStacks.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware%E8%99%9A%E6%8B%9F%E5%8C%96CPU%E9%85%8D%E7%BD%AE.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/pygrub_1.png">
+<meta property="article:published_time" content="2018-12-05T18:35:55.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:48:28.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Virtualization">
+<meta property="article:tag" content="Xen">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%B8%80%E5%9E%8B%E8%99%9A%E6%8B%9F%E5%8C%96.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Xen虚拟化初识</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/12/15/KVM%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&text=Xen虚拟化初识"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&is_video=false&description=Xen虚拟化初识"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Xen虚拟化初识&body=Check out this article: https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&name=Xen虚拟化初识&description=&lt;p&gt;稍微复习了一下操作系统, 从今天真正开始接触虚拟化相关.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&t=Xen虚拟化初识"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text">虚拟化技术的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Xen"><span class="toc-number">2.</span> <span class="toc-text">Xen</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Xen%E7%9A%84%E7%A1%AC%E4%BB%B6%E8%99%9A%E6%8B%9F%E5%8C%96"><span class="toc-number">2.1.</span> <span class="toc-text">Xen的硬件虚拟化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Xen%E7%9A%84%E5%87%A0%E7%A7%8D%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF"><span class="toc-number">2.2.</span> <span class="toc-text">Xen的几种虚拟化技术</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Xen%E7%9A%84%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7%E6%A0%88"><span class="toc-number">2.3.</span> <span class="toc-text">Xen的管理工具栈</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B8%8A%E5%AE%89%E8%A3%85%E5%B9%B6%E4%BD%BF%E7%94%A8Xen"><span class="toc-number">3.</span> <span class="toc-text">在虚拟机上安装并使用Xen</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-number">3.1.</span> <span class="toc-text">创建一个新的虚拟机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C"><span class="toc-number">3.2.</span> <span class="toc-text">虚拟机网络</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A9%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%8B%A5%E6%9C%89%E8%87%AA%E5%B7%B1%E7%9A%84%E5%86%85%E6%A0%B8"><span class="toc-number">3.3.</span> <span class="toc-text">让虚拟机拥有自己的内核</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8libvirt%E6%9D%A5%E7%AE%A1%E7%90%86Xen%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-number">4.</span> <span class="toc-text">使用libvirt来管理Xen虚拟机</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Xen虚拟化初识
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-12-05T18:35:55.000Z" class="dt-published" itemprop="datePublished">2018-12-05</time>
+        
+        (Updated: <time datetime="2020-11-30T01:48:28.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Virtualization/" rel="tag">Virtualization</a>, <a class="p-category" href="/tags/Xen/" rel="tag">Xen</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>稍微复习了一下操作系统, 从今天真正开始接触虚拟化相关.</p>
+<span id="more"></span>
+
+<h2 id="虚拟化技术的分类"><a href="#虚拟化技术的分类" class="headerlink" title="虚拟化技术的分类"></a>虚拟化技术的分类</h2><p>当前虚拟化技术有这些:</p>
+<ul>
+<li>模拟: Emulation, 其中最著名的一个模拟器就是QEMU, PearPC和Bochs.<ul>
+<li>模拟的最大特性就是上层运行的系统架构可以和下层或者说宿主的系统架构完全不同, 例如我们在x86平台上运行的ARM的安卓模拟器</li>
+</ul>
+</li>
+<li>完全虚拟化, Full Virtualization, 或者说Native Virtualization<ul>
+<li>这种虚拟化架构要求上层的Guest和Host同样的架构, 同样也正因为这种架构使得指令集的虚拟化更加简单(因为CPU的指令集架构完全相同)</li>
+<li>通过HVM硬件辅助虚拟化来提升性能.</li>
+<li>VMware研发的BT技术(二进制翻译)</li>
+</ul>
+</li>
+<li>半虚拟化, Para-Virtualization, 最著名的解决方案是XEN, UML(User-Mode Linux)<ul>
+<li>通过HyperVisor的来进行Hyper Call进行调用, 这要求虚拟化的Guest OS的内核适应, 明确知道自己是运行在虚拟化环境下.</li>
+</ul>
+</li>
+<li>OS级别的虚拟化 ( 容器级别的虚拟化 )<ul>
+<li>这一种虚拟化没有VMM, 只是将用户空间进行切割. 最著名的就是Docker啦, 还有OpenVZ, LXC(Linux Container)</li>
+</ul>
+</li>
+<li>库级别的虚拟化, 例如Wine</li>
+<li>应用程序级别的虚拟化, 例如JVM, PVM(Python)</li>
+</ul>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%B8%80%E5%9E%8B%E8%99%9A%E6%8B%9F%E5%8C%96.png" alt="一型虚拟化"></p>
+<p>将我们的HyperVisor直接安装在硬件上(就是说宿主机没有OS), 这种叫做1型虚拟化. </p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/%E4%BA%8C%E5%9E%8B%E8%99%9A%E6%8B%9F%E5%8C%96.png" alt="二型虚拟化"></p>
+<p>将HyperVisor作为一个进程运行在操作系统上, 这是2型虚拟化.</p>
+<p>这就很显然了. 1型虚拟化肯定是性能上更好的, 而2型的优点在于, 存在一个典型的操作系统, 比较灵活, 而且支持虚拟机的嵌套.</p>
+<h2 id="Xen"><a href="#Xen" class="headerlink" title="Xen"></a>Xen</h2><p>接着我们来看看Xen这个东西, 这玩意是由剑桥大学开发的. 原本的设计目标是为了在单机上跑128个虚拟机.</p>
+<p>Xen是个HyperVisor, 直接运行在硬件上. 我们原来说过, 为了能够操作虚拟机, 包括创建删除等等, 我们一定需要一个管理接口才可以. Xen的特殊之处在于, 他只虚拟化了计算机五大部件的其中两个, 也就是CPU和内存, 对于IO设备, Xen并没有做虚拟化. 我们知道, 操作系统为了能够使用到硬件, 一定是需要驱动程序的. 而这些驱动程序通常由硬件厂商进行开发. 而某些硬件只为了windows进行开发, 例如显卡. Linux的驱动就少之又少了, 所以说, 能针对X环境进行开发的又能有多少呢. 而CPU和内存这种组件由内核直接驱动(作为通信的必要).</p>
+<p>所以, Xen所虚拟化出来的第一个虚拟机, 这个虚拟机是Xen的一个工作辅助, 首先能够为用户提供一个管理接口, 为了能够管理, 这个虚拟机就需要拥有特别的权限才行. 这个虚拟机的内核是一个需要能够驱动各种IO设备的内核, 而Xen就是通过这个虚拟机的内核来进行IO设备的通信的. 也就是说, 其他的虚拟机的IO调用, 通过访问第一个虚拟机来进行. 这些虚拟机的IO设备是通过第一个虚拟机的软件来<strong>模拟</strong>的, 而这个软件通常就是我们刚刚所提到的: <strong>QEMU</strong>. </p>
+<p>Xen的说法是, 每一个虚拟机被称为<code>Domain0</code>, 而第一个虚拟机就被称为<code>Privileged Domain</code>, 也叫做<code>Dom0</code>. 其他被<code>Dom0</code>管理的虚拟机就被称作<code>DomainU</code>, 或者说<code>Unprivileged Domain</code>. 无论启动多少个<code>DomU</code>, 他们都被称为DomU, 只不过他们会拥有一个唯一的ID, 被叫做<code>DomainID</code>.</p>
+<p>根据运行环境的不同, Xen可以有多种虚拟化方案. </p>
+<p>最首先的就是直接跑一个半虚拟化的环境(PV), 向我们之前说的, 这种技术要求内核需要做适应. 在硬件存在虚拟化辅助的情况下, Xen也可以使用全虚拟化(HVM), 这需要借助Intel的VT或者AMD-V的硬件扩展. 另外, 为了提升性能, Xen还可以将一个全虚拟化的虚拟机使用一些特殊的半虚拟化设备驱动跑起来(PV on HVM), 这样就可以对一些只支持全虚拟化的操作系统进行优化, 在这种情况下, CPU是HVM模式运行, IO设备是PV模式运行.</p>
+<h3 id="Xen的硬件虚拟化"><a href="#Xen的硬件虚拟化" class="headerlink" title="Xen的硬件虚拟化"></a>Xen的硬件虚拟化</h3><p>现在我们来说说对于Xen, 一些硬件的虚拟化方案. </p>
+<p>首先对于CPU和内存就比较好说了. 对于每一个虚拟机上的CPU, 我们可以使用Xen HyperVisor的一个线程或者进程就好了, 假设我们开了10台拥有双核CPU的虚拟机, 映射下来, 其实就相当于是20个HyperVisor的线程.</p>
+<p>而内存就是将物理内存上的分片(可能连续可能分散)划分到虚拟机上然后把它们当做是(对于虚拟机而言的)一段连续的内存空间(相当于是物理内存) ,至于如何再去使用那就是虚拟机自己的事情了.</p>
+<p>ok, CPU和内存就比较好解决了, 现在我们来说说关于硬盘的虚拟化. 刚刚我们提到了对于IO设备, Xen的解决方法是使用第一个虚拟机来进行通信, 那么假设我们现在通过硬盘映像文件作为虚拟机的物理磁盘的话, 就需要在<code>DOM0</code>的用户空间借助QEMU虚拟出控制器芯片来欺骗虚拟机, 这里虚拟出来的控制器型号自然会是那种比较通用的. 那么接下来我们来进行一次梳理:</p>
+<ol>
+<li>虚拟机发送写请求, 进行系统调用</li>
+<li>内核驱动程序向设备发送信号(这里的设备是DOM0的QEMU虚拟的), 进行转换</li>
+<li>由于控制器的指令不一定一样, DOM0需要再次向内核发送系统调用进行转换</li>
+<li>写物理设备</li>
+</ol>
+<p>可以看出来, 这里进行了两次的系统调用, 这样子的话就会显得比较繁琐并且降低性能. 为此, 一种解决方法是使用分段的处理方法, 通过前半段来简化第1, 2两步. 我们直接告诉虚拟机这个设备是虚拟的, 这样就可以省略掉硬件信号的转化和寻道等等过程. 这样就要求我们需要一个配套的前半段和后半段来进行通信.</p>
+<p>除了这个问题, 当出现多个虚拟机同时发送大量的IO请求的时候, 所有的真实的物理读写都发生在我们真实的物理硬件上, 这样的压力是很大的. 为此, Xen解决这个问题的方案是, 通过设计一个缓冲环, 一个虚拟机的请求到了之后就在这个环上排着, 当环的空间没有了之后(也就是排满了), 下一次的请求就会被阻塞, 告诉请求者设备繁忙.</p>
+<p> 硬盘如此, 网卡等类似设备也是差不多的做法.</p>
+<h3 id="Xen的几种虚拟化技术"><a href="#Xen的几种虚拟化技术" class="headerlink" title="Xen的几种虚拟化技术"></a>Xen的几种虚拟化技术</h3><ul>
+<li>Xen的半虚拟化(PV)技术</li>
+</ul>
+<p>我们说过, 半虚拟化要求Guest主机的内核必须知晓自己运行在虚拟化环境, 并且不要求CPU有虚拟化支持. Linux的2.6.24+的版本就可以运行在DomU中.</p>
+<ul>
+<li>HVM技术</li>
+</ul>
+<p>依赖于Intel的VT技术或者AMD的AMD-V, 还要依赖QEMU来模拟IO设备, 几乎所有支持此X86平台的OS都可在DomU中运行.</p>
+<ul>
+<li>PV on HVM技术</li>
+</ul>
+<p>就像我们刚刚说的, CPU在HVM的模式下运行, 而IO设备在PV环境中运行. 只要OS能够驱动PV接口类型的IO设备.</p>
+<h3 id="Xen的管理工具栈"><a href="#Xen的管理工具栈" class="headerlink" title="Xen的管理工具栈"></a>Xen的管理工具栈</h3><p><img src="https://wiki.xen.org/images/thumb/c/c5/ToolStacks.png/799px-ToolStacks.png" alt="ToolStacks.png"></p>
+<p>上面的这张图就是我们进行Xen操作的相关接口, 其中XAPI&#x2F;XE是Xen的子项目, 而XL是一个基于libxenlight的轻量级命令行管理工具, 这个工具现在是Xen默认自行携带的. 至于Libvirt是由红帽推出的一整套解决虚拟化API的工具, 通过在虚拟机上运行一个<code>libvirtd</code>进程来进行通信, 所以不仅可以管理Xen, 也可以是KVM等等, 通过virsh来进行交互.</p>
+<h2 id="在虚拟机上安装并使用Xen"><a href="#在虚拟机上安装并使用Xen" class="headerlink" title="在虚拟机上安装并使用Xen"></a>在虚拟机上安装并使用Xen</h2><p>首先说明, 因为我手头没有物理机, 所以只能使用虚拟机来做实验, 值得一提的是, 在这种情况下, 我们在默认的虚拟机配置上只能使用半虚拟化技术, 而使用的Vmware平台可以通过将虚拟CPU的VT-x打开来实现在虚拟机上的HVM模式.</p>
+<p>这个配置就是Vmware的这里: </p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware%E8%99%9A%E6%8B%9F%E5%8C%96CPU%E9%85%8D%E7%BD%AE.png" alt="vmware虚拟化CPU配置"></p>
+<p>另外由于我们运行的这个是个DomU, 还需要运行Dom0, 所以建议将内存稍微分配的大一点.</p>
+<p>这里使用的到的内核版本:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]<span class="comment"># lsb_release -a</span></span><br><span class="line">LSB Version:	:core-4.1-amd64:core-4.1-noarch</span><br><span class="line">Distributor ID:	CentOS</span><br><span class="line">Description:	CentOS Linux release 7.4.1708 (Core) </span><br><span class="line">Release:	7.4.1708</span><br><span class="line">Codename:	Core</span><br></pre></td></tr></table></figure>
+
+<p>安装Xen环境很简单, 只需要下载使用<code>centos-release-xen</code>这个包, 然后直接安装<code>xen</code>即可.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install centos-release-xen</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install xen</span><br></pre></td></tr></table></figure>
+
+<p>接着通过安装生成的脚本进行引导的设置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/grub-bootxen.sh</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p> 如果做到这一步之后你的grub菜单里没有出现xen的菜单入口 , 那么你可以还需要更新一下内核. 另外据说CentOS6存在一个Bug, 那就是grub菜单的initramfs没有写, 需要手动写一下.</p>
+</blockquote>
+<p>这些做完之后直接重启机器就可以看到Xen的启动菜单了,  登陆进去可以来验证一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]<span class="comment"># uname -r</span></span><br><span class="line">4.9.127-32.el7.x86_64</span><br><span class="line">[root@VM-master ~]<span class="comment"># xl list</span></span><br><span class="line">Name                                        ID   Mem VCPUs	State	Time(s)</span><br><span class="line">Domain-0                                     0  1024     4     r-----     350.4</span><br></pre></td></tr></table></figure>
+
+<p>Dom0已经存在了.</p>
+<p>来看一下这个输出信息, 其中Name就是当前虚拟机的名称, ID就是这个虚拟机的唯一标识. 如果这个虚拟机被删除, 下一个创建的仍然会继续累加的, Mem和VCPUs就是这个虚拟机的内存和虚拟CPU的情况. Time就是当前运行的时长.</p>
+<p>值得说的, 是这个状态信息, Xen的虚拟机有这些状态:</p>
+<ul>
+<li>r: running, 正在运行(占据内存)</li>
+<li>b: blocked, 被阻塞</li>
+<li>p: pause, 暂停. 注意这个暂停和我们Vmware的Suspend不是一回事. 暂停的虚拟机, 他的内存空间仍然还在占据, 而不像VMware的挂起, 那是将运行环境转移到了硬盘的.</li>
+<li>s: stop, 停止</li>
+<li>c: crashed, 崩溃</li>
+<li>d: dying, 正在关闭的过程中</li>
+</ul>
+<p>这个<code>xl</code>有很多的子命令, 当我们列出来的时候有一个警告:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WARNING: xl now has better capability to manage domain configuration, avoid using this <span class="built_in">command</span> when possible</span><br></pre></td></tr></table></figure>
+
+<p>也就是说, 在管理域的时候, 尽量避开使用命令, 而是通过配置来处理.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">xl full list of subcommands:</span><br><span class="line"></span><br><span class="line"> create              Create a domain from config file &lt;filename&gt;</span><br><span class="line"> config-update       Update a running domain&#x27;s saved configuration, used when rebuilding the domain after reboot.</span><br><span class="line">WARNING: xl now has better capability to manage domain configuration, avoid using this command when possible</span><br><span class="line"> list                List information about all/some domains</span><br><span class="line"> destroy             Terminate a domain immediately</span><br><span class="line"> shutdown            Issue a shutdown signal to a domain</span><br><span class="line"> reboot              Issue a reboot signal to a domain</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>其中这里的destroy就相当于是直接拔掉电源.</p>
+<h3 id="创建一个新的虚拟机"><a href="#创建一个新的虚拟机" class="headerlink" title="创建一个新的虚拟机"></a>创建一个新的虚拟机</h3><p>创建新的虚拟机需要使用到一个配置文件, 这个配置文件的默认语法可以通过<code>man xl.cfg</code>来获取.</p>
+<p>常规的一些配置如下:</p>
+<ol>
+<li>name 域的名字, 这个每一个都需要是独一无二的(must be unique)</li>
+<li>type 指明虚拟机的类型, 过去的指令叫做builder(xm的)<ul>
+<li>generic</li>
+<li>hvm</li>
+<li>pvh</li>
+</ul>
+</li>
+<li>vcpus: 虚拟的CPU个数</li>
+<li>maxcpus: 最大的虚拟CPU个数</li>
+<li>cpus: 虚拟CPU可以运行在其上面的物理CPU列表</li>
+<li>memory: 内存大小</li>
+<li>maxmem: 可以使用的最大内存空间</li>
+<li>on_*: 各种事件, 就像我们的触发器一样, 下面的除了on_reboot的处理是restart, 其他默认的处理都是destroy<ol>
+<li>on_poweroff</li>
+<li>on_reboot</li>
+<li>on_watchdog</li>
+<li>on_crash</li>
+</ol>
+</li>
+<li>uuid: DomU的唯一标识</li>
+<li>disk: 一个DISK_SPEC_STRING数组, 指明磁盘设备的列表</li>
+<li>vif: 一个NET_SPEC_STRING数组, 指明网络接口的列表</li>
+<li>vfb: 一个VFB_SPEC_STRING的数组, 指明半虚拟化的帧缓冲(framebuffer)设备列表, 这个设备其实就是我们常见的VGA视频输出设备.</li>
+<li>pci: 一个PCI_SPEC_STRING数组, 指明IO透传设备</li>
+</ol>
+<p>接下来我们来说一下关于如何制定一个磁盘到DomU.</p>
+<p>按照刚刚说的, 这是一个数组, 其中<code>DISK_SEPC_STRING</code>可以有多种格式, 其中过一种比较常见的是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&quot;&lt;target&gt;,&lt;format&gt;,&lt;vdev&gt;,&lt;access&gt;&quot;, &quot;&quot;, &quot;&quot;, ...]</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>target</code>是指磁盘映像文件的路径或者是设备文件的路径, <code>format</code>标识磁盘格式, 如果是映像文件可能会有多种格式, 例如, 我们Vmware使用的是vmdk, VirtualBox使用的是vdi, 还有默认dd工具打包出来的raw格式.</p>
+<blockquote>
+<p>可以通过<code>qemu-img</code>来打包, 支持的格式有:</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Supported formats: vvfat vpc vmdk vhdx vdi ssh sheepdog rbd raw host_cdrom host_floppy host_device file qed qcow2 qcow parallels nbd iscsi gluster dmg tftp ftps ftp https http cloop bochs blkverify blkdebug</span><br></pre></td></tr></table></figure>
+
+<p>vdev是在指定这个设备在DomU中被识别成的硬件类型, 支持<code>hd[x], xvd[x], sd[x]</code> 其中, xvd是xen virtual disk. 最后一个access指定访问的权限, 这个就很简单了: <code>ro, r: 只读; rw, w: 读写</code> 默认的权限设置除了cdrom都是读写.</p>
+<p>举个例子, 一种合法的硬盘配置如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">disk=[<span class="string">&quot;images/xen/linux.img,raw,xvda,rw&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们就来使用busybox和qemu-img来创建一个DomU试试!</p>
+<p>先来创建一个磁盘映像文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]<span class="comment"># qemu-img create -f raw /images/xen/busybox.img 2G</span></span><br><span class="line">Formatting <span class="string">&#x27;/images/xen/busybox.img&#x27;</span>, <span class="built_in">fmt</span>=raw size=2147483648 </span><br><span class="line">[root@VM-master ~]<span class="comment"># ls /images/xen/</span></span><br><span class="line">busybox.img</span><br><span class="line">[root@VM-master ~]<span class="comment"># ls /images/xen/ -lh</span></span><br><span class="line">total 0</span><br><span class="line">-rw-r--r-- 1 root root 2.0G Dec  9 23:01 busybox.img</span><br><span class="line">[root@VM-master ~]<span class="comment"># du -h /images/xen/busybox.img </span></span><br><span class="line">0	/images/xen/busybox.img</span><br></pre></td></tr></table></figure>
+
+<p>这是一个稀疏类型的磁盘映像文件. 最大的大小是2G, 只不过当前是空的, 我们直接进行格式化.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master ~]<span class="comment"># mke2fs -t ext2 /images/xen/busybox.img </span></span><br><span class="line">mke2fs 1.42.9 (28-Dec-2013)</span><br><span class="line">/images/xen/busybox.img is not a block special device.</span><br><span class="line">Proceed anyway? (y,n) y</span><br><span class="line">Discarding device blocks: <span class="keyword">done</span>                            </span><br><span class="line">Filesystem label=</span><br><span class="line">OS <span class="built_in">type</span>: Linux</span><br><span class="line">Block size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Fragment size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Stride=0 blocks, Stripe width=0 blocks</span><br><span class="line">131072 inodes, 524288 blocks</span><br><span class="line">26214 blocks (5.00%) reserved <span class="keyword">for</span> the super user</span><br><span class="line">First data block=0</span><br><span class="line">Maximum filesystem blocks=536870912</span><br><span class="line">16 block <span class="built_in">groups</span></span><br><span class="line">32768 blocks per group, 32768 fragments per group</span><br><span class="line">8192 inodes per group</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">	32768, 98304, 163840, 229376, 294912</span><br><span class="line"></span><br><span class="line">Allocating group tables: <span class="keyword">done</span>                            </span><br><span class="line">Writing inode tables: <span class="keyword">done</span>                            </span><br><span class="line">Writing superblocks and filesystem accounting information: <span class="keyword">done</span> </span><br><span class="line"></span><br><span class="line">[root@VM-master ~]<span class="comment"># du -sh /images/xen/busybox.img </span></span><br><span class="line">33M	/images/xen/busybox.img</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们就通过busybox来快速的创建一个根文件系统:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master busybox]<span class="comment"># ls _install/</span></span><br><span class="line">bin  linuxrc  sbin  usr</span><br><span class="line">[root@VM-master busybox]<span class="comment"># mount -o loop /images/xen/busybox.img  /mnt/</span></span><br><span class="line">[root@VM-master busybox]<span class="comment"># ls /mnt/</span></span><br><span class="line">lost+found</span><br><span class="line">[root@VM-master busybox]<span class="comment"># cp -a _install/* /mnt/</span></span><br><span class="line">[root@VM-master busybox]<span class="comment"># cd /mnt/</span></span><br><span class="line">[root@VM-master mnt]<span class="comment"># ls</span></span><br><span class="line">bin  linuxrc  lost+found  sbin  usr</span><br><span class="line">[root@VM-master mnt]<span class="comment"># mkdir proc sys dev etc var boot home</span></span><br><span class="line">[root@VM-master mnt]<span class="comment"># ll</span></span><br><span class="line">total 56</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:16 bin</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:19 boot</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:19 dev</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:19 etc</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:19 home</span><br><span class="line">lrwxrwxrwx 1 root root    11 Dec  9 23:16 linuxrc -&gt; bin/busybox</span><br><span class="line">drwx------ 2 root root 16384 Dec  9 23:03 lost+found</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:19 proc</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:16 sbin</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:19 sys</span><br><span class="line">drwxr-xr-x 4 root root  4096 Dec  9 23:16 usr</span><br><span class="line">drwxr-xr-x 2 root root  4096 Dec  9 23:19 var</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们就要进行内核和ramfs的创建, 我们可以直接使用本机的, 做个链接就行了.</p>
+<p>最后生成的xl配置文件:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-master xen]# cat busybox </span><br><span class="line"># =====================================================================</span><br><span class="line"># Example PV Linux guest configuration</span><br><span class="line"># =====================================================================</span><br><span class="line">#</span><br><span class="line"># This is a fairly minimal example of what is required for a</span><br><span class="line"># Paravirtualised Linux guest. For a more complete guide see xl.cfg(5)</span><br><span class="line"></span><br><span class="line"># Guest name</span><br><span class="line">name = &quot;busybox&quot;</span><br><span class="line"></span><br><span class="line"># 128-bit UUID for the domain as a hexadecimal number.</span><br><span class="line"># Use &quot;uuidgen&quot; to generate one if required.</span><br><span class="line"># The default behavior is to generate a new UUID each time the guest is started.</span><br><span class="line">#uuid = &quot;XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX&quot;</span><br><span class="line"></span><br><span class="line"># Kernel image to boot</span><br><span class="line">kernel = &quot;/boot/vmlinuz&quot;</span><br><span class="line"></span><br><span class="line"># Ramdisk (optional)</span><br><span class="line">ramdisk = &quot;/boot/initramfs&quot;</span><br><span class="line"></span><br><span class="line"># Kernel command line options</span><br><span class="line">extra = &quot;selinux=0 init=/bin/sh&quot;</span><br><span class="line"></span><br><span class="line"># Initial memory allocation (MB)</span><br><span class="line">memory = 256</span><br><span class="line"></span><br><span class="line"># Maximum memory (MB)</span><br><span class="line"># If this is greater than `memory&#x27; then the slack will start ballooned</span><br><span class="line"># (this assumes guest kernel support for ballooning)</span><br><span class="line">maxmem = 256</span><br><span class="line"></span><br><span class="line"># Number of VCPUS</span><br><span class="line">vcpus = 2</span><br><span class="line"></span><br><span class="line"># Network devices</span><br><span class="line"># A list of &#x27;vifspec&#x27; entries as described in</span><br><span class="line"># docs/misc/xl-network-configuration.markdown</span><br><span class="line">#vif = [ &#x27;&#x27; ]</span><br><span class="line"></span><br><span class="line"># Disk Devices</span><br><span class="line"># A list of `diskspec&#x27; entries as described in</span><br><span class="line"># docs/misc/xl-disk-configuration.txt</span><br><span class="line">disk = [ &#x27;/images/xen/busybox.img,raw,xvda,rw&#x27; ]</span><br><span class="line">root = &quot;/dev/xvda ro&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后就通过这个配置文件进行创建就行了, 命令像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xl -v create /etc/xen/busybox</span><br></pre></td></tr></table></figure>
+
+<p>在后面可以加上<code>-n</code>进行dry-run.</p>
+<hr>
+<p>隔了好久更新的分割线, 受不了在CentOS7上搞这个Xen了. 太麻烦了. </p>
+<p>问题主要出在那个QEMU的前后端模拟上, 这个Hypervisor的模块服务总是加载失败. 这个<code>xen_scsi_processor</code>总是提示No such device. 这个东西就应该编译进内核! 官方的解决办法简直了, 不搞了.</p>
+<p>我去CentOS6了.</p>
+<hr>
+<p>终于! 在CentOS6上终于跑起来了, 我们的虚拟机!</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># xl list</span></span><br><span class="line">Name                                        ID   Mem VCPUs	State	Time(s)</span><br><span class="line">Domain-0                                     0  1024     4     r-----    1359.9</span><br><span class="line">[root@localhost ~]<span class="comment"># xl create /etc/xen/busybox </span></span><br><span class="line">Parsing config from /etc/xen/busybox</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>进入终端看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># xl console busybox</span></span><br><span class="line">[    0.000000] Linux version 4.9.127-32.el6.x86_64 (mockbuild@c1bj.rdu2.centos.org) (gcc version 4.4.7 20120313 (Red Hat 4.4.7-23) (GCC) ) <span class="comment">#1 SMP Mon Sep 17 13:48:11 UTC 2018</span></span><br><span class="line">[    0.000000] Command line: root=/dev/xvda ro selinux=0 init=/bin/sh</span><br><span class="line">...(omitted)</span><br><span class="line">[    0.000000] Booting paravirtualized kernel on Xen</span><br><span class="line">[    0.000000] Xen version: 4.6.6-12.el6 (preserve-AD)</span><br><span class="line">...(omitted)</span><br><span class="line">[    2.781378] dracut: Mounted root filesystem /dev/xvda</span><br><span class="line">[    2.911023] dracut: Switching root</span><br><span class="line">/bin/sh: can<span class="string">&#x27;t access tty; job control turned off</span></span><br><span class="line"><span class="string">/ # ls</span></span><br><span class="line"><span class="string">bin         dev         home        lost+found  sbin        usr</span></span><br><span class="line"><span class="string">boot        etc         linuxrc     proc        sys         var</span></span><br><span class="line"><span class="string">/ # uname -a</span></span><br><span class="line"><span class="string">Linux (none) 4.9.127-32.el6.x86_64 #1 SMP Mon Sep 17 13:48:11 UTC 2018 x86_64 GNU/Linux</span></span><br><span class="line"><span class="string">/ # </span></span><br><span class="line"><span class="string"></span></span><br></pre></td></tr></table></figure>
+
+<p>从虚拟机的终端切换到我们的主机只需要使用<code>Ctrl+]</code>就可以了.</p>
+<h3 id="虚拟机网络"><a href="#虚拟机网络" class="headerlink" title="虚拟机网络"></a>虚拟机网络</h3><p>接下来我们为我们的虚拟机加上网络功能.</p>
+<p>磁盘一样, 我们的网卡配置格式也和磁盘基本类似, 就是使用一些指定网卡参数配置的数组来创建虚拟网卡设备, 常见的网络属性有这些:</p>
+<ul>
+<li>mac, 指明MAC地址, Xen的前缀是(00:16:3e).</li>
+<li>bridge&#x3D;&lt; bridge &gt;: 指定此网络接口在Dom0上被关联到哪个设备上.</li>
+<li>model&#x3D;&lt; MODEL &gt;: 指定模拟的网卡模型, 可以是rt18139, 也可以是e1000啥的.</li>
+<li>vifname: 接口名称, 仅仅在Dom0中.</li>
+<li>script: 创建接口的接口.</li>
+<li>ip: 指定IP地址, 会注入到DomU中</li>
+<li>rate, 指明设备的传输速率. 通常为”#UNIT&#x2F;s” <ul>
+<li>GB, MB, KB, B for bytes.</li>
+<li>Gb, Mb, Kb, b for bits.</li>
+</ul>
+</li>
+</ul>
+<p>现在我们就先通过修改配置文件的方式来创建一个桥.</p>
+<p>我们修改配置文件到这个样子:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># cd /etc/sysconfig/network-scripts/</span></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># cat ifcfg-xenbr0 </span></span><br><span class="line">DEVICE=<span class="string">&quot;xenbr0&quot;</span></span><br><span class="line">BOOTPROTO=<span class="string">&quot;static&quot;</span></span><br><span class="line">IPADDR=<span class="string">&quot;192.168.16.200&quot;</span></span><br><span class="line">NETMASK=<span class="string">&quot;255.255.255.0&quot;</span></span><br><span class="line">GATEWAY=<span class="string">&quot;192.168.16.254&quot;</span></span><br><span class="line">NM_CONTROLLED=<span class="string">&quot;no&quot;</span></span><br><span class="line">ONBOOT=<span class="string">&quot;yes&quot;</span></span><br><span class="line">TYPE=<span class="string">&quot;Bridge&quot;</span></span><br><span class="line">DNS1=223.5.5.5</span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># cat ifcfg-eth0 </span></span><br><span class="line">DEVICE=<span class="string">&quot;eth0&quot;</span></span><br><span class="line">BOOTPROTO=<span class="string">&quot;static&quot;</span></span><br><span class="line">HWADDR=<span class="string">&quot;00:0C:29:BD:62:0E&quot;</span></span><br><span class="line">NM_CONTROLLED=<span class="string">&quot;no&quot;</span></span><br><span class="line">TYPE=<span class="string">&quot;Ethernet&quot;</span></span><br><span class="line">ONBOOT=<span class="string">&quot;yes&quot;</span></span><br><span class="line">BRIDGE=xenbr0</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里有个问题, 一定要注意关闭NetworkManager, 接着重启网络服务, 这么一个网桥就搭建好了.</p>
+<p>使用命令建桥的过程也差不多, 我们需要使用brctl命令.</p>
+<p>简单的几个步骤就可以创建了,</p>
+<ul>
+<li>首先取掉当前网卡的地址</li>
+<li>接着新建一个网桥</li>
+<li>给新建的网桥绑定设备和网络信息(建议开启生成树)</li>
+<li>大功告成!</li>
+</ul>
+<p>过程展示就像下面的那样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node network-scripts]<span class="comment"># ifconfig eth0 0</span></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># ifconfig </span></span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 00:0C:29:BD:62:0E  </span><br><span class="line">          inet6 addr: fe80::20c:29ff:febd:620e/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:461 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:378 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:1000 </span><br><span class="line">          RX bytes:51417 (50.2 KiB)  TX bytes:48884 (47.7 KiB)</span><br><span class="line"></span><br><span class="line">lo        Link encap:Local Loopback  </span><br><span class="line">          inet addr:127.0.0.1  Mask:255.0.0.0</span><br><span class="line">          inet6 addr: ::1/128 Scope:Host</span><br><span class="line">          UP LOOPBACK RUNNING  MTU:65536  Metric:1</span><br><span class="line">          RX packets:16 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:16 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:0 </span><br><span class="line">          RX bytes:992 (992.0 b)  TX bytes:992 (992.0 b)</span><br><span class="line"></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># brctl show</span></span><br><span class="line">bridge name	bridge <span class="built_in">id</span>		STP enabled	interfaces</span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># brctl addbr xenbr0</span></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># brctl show</span></span><br><span class="line">bridge name	bridge <span class="built_in">id</span>		STP enabled	interfaces</span><br><span class="line">xenbr0		8000.000000000000	no		</span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># brctl addif xenbr0 eth0</span></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># brctl show</span></span><br><span class="line">bridge name	bridge <span class="built_in">id</span>		STP enabled	interfaces</span><br><span class="line">xenbr0		8000.000c29bd620e	no		eth0</span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># brctl stp xenbr0 on</span></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># ifconfig xenbr0 192.168.16.200/24 up</span></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># ifconfig </span></span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 00:0C:29:BD:62:0E  </span><br><span class="line">          inet6 addr: fe80::20c:29ff:febd:620e/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:478 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:379 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:1000 </span><br><span class="line">          RX bytes:52803 (51.5 KiB)  TX bytes:48944 (47.7 KiB)</span><br><span class="line"></span><br><span class="line">lo        Link encap:Local Loopback  </span><br><span class="line">          inet addr:127.0.0.1  Mask:255.0.0.0</span><br><span class="line">          inet6 addr: ::1/128 Scope:Host</span><br><span class="line">          UP LOOPBACK RUNNING  MTU:65536  Metric:1</span><br><span class="line">          RX packets:16 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:16 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:0 </span><br><span class="line">          RX bytes:992 (992.0 b)  TX bytes:992 (992.0 b)</span><br><span class="line"></span><br><span class="line">xenbr0    Link encap:Ethernet  HWaddr 00:0C:29:BD:62:0E  </span><br><span class="line">          inet addr:192.168.16.200  Bcast:192.168.16.255  Mask:255.255.255.0</span><br><span class="line">          inet6 addr: fe80::20c:29ff:febd:620e/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:0 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:21 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:0 </span><br><span class="line">          RX bytes:0 (0.0 b)  TX bytes:3692 (3.6 KiB)</span><br><span class="line"></span><br><span class="line">[root@xen_node network-scripts]<span class="comment"># ping 192.168.16.254</span></span><br><span class="line">PING 192.168.16.254 (192.168.16.254) 56(84) bytes of data.</span><br><span class="line">64 bytes from 192.168.16.254: icmp_seq=1 ttl=128 time=1.94 ms</span><br><span class="line">64 bytes from 192.168.16.254: icmp_seq=2 ttl=128 time=0.280 ms</span><br><span class="line">64 bytes from 192.168.16.254: icmp_seq=3 ttl=128 time=0.280 ms</span><br><span class="line">64 bytes from 192.168.16.254: icmp_seq=4 ttl=128 time=0.218 ms</span><br><span class="line">^C</span><br><span class="line">--- 192.168.16.254 ping statistics ---</span><br><span class="line">4 packets transmitted, 4 received, 0% packet loss, time 3126ms</span><br><span class="line">rtt min/avg/max/mdev = 0.218/0.679/1.940/0.728 ms</span><br></pre></td></tr></table></figure>
+
+<p>那么在我们的虚拟机中, 可能这个网卡就算我们填写了配置文件也没有作用的, 原因就是因为我们的busybox文件系统中没有响应的网卡驱动, 因此我们需要从本机中把响应的驱动模块丢进去, 然后在虚拟机中哥把这些模块insert才能有用.</p>
+<p>当然新版本的有可能是自动装载模块的, 这就没问题了, 打开虚拟机直接就能看到网卡.</p>
+<p>另外, 当我们的虚拟机启动了网络之后, 我们的Supervisor会多出来一个新的网络适配器:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node network-scripts]<span class="comment"># ip link</span></span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN qlen 1</span><br><span class="line">    <span class="built_in">link</span>/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master xenbr0 state UP qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:bd:62:0e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">3: pan0: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 7e:4d:a1:bf:e5:c3 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">4: xenbr0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:bd:62:0e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">5: vif1.0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq master xenbr0 state UP qlen 32</span><br><span class="line">    <span class="built_in">link</span>/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff</span><br></pre></td></tr></table></figure>
+
+<p>也就是那个<code>vif1.0</code>这是个啥, 我们之前说过, Xen使用的前后端IO设备. 这个就是那个后半段设备. 为啥有一个1.0的后缀, 因为我们当前的虚拟机ID是1:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node network-scripts]<span class="comment"># xl list</span></span><br><span class="line">Name                                        ID   Mem VCPUs	State	Time(s)</span><br><span class="line">Domain-0                                     0  1022     4     r-----     297.8</span><br><span class="line">busybox                                      1   256     1     -b----       3.5</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>那么我们的前后端是否可以进行通信呢, 来看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node network-scripts]<span class="comment"># brctl show</span></span><br><span class="line">bridge name	bridge <span class="built_in">id</span>		STP enabled	interfaces</span><br><span class="line">pan0		8000.000000000000	no		</span><br><span class="line">xenbr0		8000.000c29bd620e	no		eth0</span><br><span class="line">							vif1.0</span><br></pre></td></tr></table></figure>
+
+<p>确实是桥接到我们的xenbr0上的, 接下来我们就来装载一个网络地址来试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># ifconfig -a</span></span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 00:16:3E:63:95:71  </span><br><span class="line">          BROADCAST MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:0 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:1000 </span><br><span class="line">          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)</span><br><span class="line"></span><br><span class="line">/ <span class="comment"># ifconfig eth0 192.168.16.201 up</span></span><br><span class="line">/ <span class="comment"># ifconfig </span></span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 00:16:3E:63:95:71  </span><br><span class="line">          inet addr:192.168.16.201  Bcast:192.168.16.255  Mask:255.255.255.0</span><br><span class="line">          inet6 addr: fe80::216:3eff:fe63:9571/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:125 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:1000 </span><br><span class="line">          RX bytes:12713 (12.4 KiB)  TX bytes:418 (418.0 B)</span><br><span class="line"></span><br><span class="line">/ <span class="comment"># ping 192.168.16.254</span></span><br><span class="line">PING 192.168.16.254 (192.168.16.254): 56 data bytes</span><br><span class="line">64 bytes from 192.168.16.254: <span class="built_in">seq</span>=0 ttl=128 time=1.937 ms</span><br><span class="line">64 bytes from 192.168.16.254: <span class="built_in">seq</span>=1 ttl=128 time=0.470 ms</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>通了!</p>
+<h3 id="让虚拟机拥有自己的内核"><a href="#让虚拟机拥有自己的内核" class="headerlink" title="让虚拟机拥有自己的内核"></a>让虚拟机拥有自己的内核</h3><p>我们之前的虚拟机创建, 是通过使用本机(也就是Hypervisor)的vmlinuz和initramfs, 并且使用的根文件目录是通过busybox实现的. </p>
+<p>现在我们让虚拟机能够自行引导自己的内核, 由于一个完整的系统容量还是有点大, 这边还是使用busybox来进行根文件系统的模拟, 但是这一次我们要使用<code>pygrub</code>来进行引导, 并且让虚拟机使用自己的内核.</p>
+<p>首先我们要先来说个loop设备的管理工具, <code>losetup</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># losetup --help</span></span><br><span class="line"></span><br><span class="line">Usage:</span><br><span class="line"> losetup loop_device                             give info</span><br><span class="line"> losetup -a | --all                              list all used</span><br><span class="line"> losetup -d | --detach &lt;loopdev&gt; [&lt;loopdev&gt; ...] delete</span><br><span class="line"> losetup -f | --find                             find unused</span><br><span class="line"> losetup -c | --set-capacity &lt;loopdev&gt;           resize</span><br><span class="line"> losetup -j | --associated &lt;file&gt; [-o &lt;num&gt;]     list all associated with &lt;file&gt;</span><br><span class="line"> losetup [ options ] &#123;-f|--find|loopdev&#125; &lt;file&gt;  setup</span><br><span class="line"></span><br><span class="line">Options:</span><br><span class="line"> -e | --encryption &lt;<span class="built_in">type</span>&gt; <span class="built_in">enable</span> data encryption with specified &lt;name/num&gt;</span><br><span class="line"> -h | --<span class="built_in">help</span>              this <span class="built_in">help</span></span><br><span class="line"> -o | --offset &lt;num&gt;      start at offset &lt;num&gt; into file</span><br><span class="line">      --sizelimit &lt;num&gt;   loop limited to only &lt;num&gt; bytes of the file</span><br><span class="line"> -p | --pass-fd &lt;num&gt;     <span class="built_in">read</span> passphrase from file descriptor &lt;num&gt;</span><br><span class="line"> -r | --read-only         setup read-only loop device</span><br><span class="line">      --show              <span class="built_in">print</span> device name (with -f &lt;file&gt;)</span><br><span class="line"> -v | --verbose           verbose mode</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们要通过这个来进行qemu创建出的磁盘映像进行分区和文件系统的创建.</p>
+<p>首先还是先创建映像:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># qemu-img create -f raw /images/xen/busybox2.img 2G</span></span><br><span class="line">Formatting <span class="string">&#x27;/images/xen/busybox2.img&#x27;</span>, <span class="built_in">fmt</span>=raw size=2147483648 </span><br></pre></td></tr></table></figure>
+
+<p>接着和我们的loop建立关联:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># losetup -a</span></span><br><span class="line">[root@xen_node ~]<span class="comment"># losetup /dev/loop0 /images/xen/busybox2.img </span></span><br><span class="line">[root@xen_node ~]<span class="comment"># losetup -a</span></span><br><span class="line">/dev/loop0: [0802]:782261 (/images/xen/busybox2.img)</span><br></pre></td></tr></table></figure>
+
+<p>接着我们就可以对<code>loop0</code>进行分区操作了, 分区操作很简单, 就略过了, 分区结束之后写入:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node mapper]<span class="comment"># kpartx -av /dev/loop0</span></span><br><span class="line">add map loop0p1 (253:0): 0 112392 linear /dev/loop0 63</span><br><span class="line">add map loop0p2 (253:1): 0 2120580 linear /dev/loop0 112455</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们对两个分区进行格式化:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># ls /dev/mapper/</span></span><br><span class="line">control  loop0p1  loop0p2</span><br><span class="line">(格式化略...)</span><br></pre></td></tr></table></figure>
+
+<p>OK, 离胜利很近了, 接下来我们写入必要的文件, 我们就使用CentOS6自带的<code>2.6.32</code>版本的内核:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># cp /boot/vmlinuz-2.6.32-754.9.1.el6.x86_64 /mnt/boot/vmlinuz</span></span><br><span class="line">[root@xen_node ~]<span class="comment"># cp /boot/initramfs-2.6.32-754.9.1.el6.x86_64.img /mnt/boot/initramfs.img</span></span><br><span class="line">[root@xen_node ~]<span class="comment"># grub-install --root-directory=/mnt/ /dev/loop0 </span></span><br><span class="line">Probing devices to guess BIOS drives. This may take a long time.</span><br><span class="line">/dev/loop0 does not have any corresponding BIOS drive.</span><br><span class="line">[root@xen_node ~]<span class="comment"># ls /mnt/boot/</span></span><br><span class="line">grub  initramfs.img  lost+found  vmlinuz</span><br></pre></td></tr></table></figure>
+
+<p>接下来创建我们的<code>grub.conf</code>文件:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]# cat /mnt/boot/grub/grub.conf</span><br><span class="line">default=0</span><br><span class="line">timeout=5</span><br><span class="line">title BusyBox(Kernel-2.6.32)</span><br><span class="line">	root (hd0,0)</span><br><span class="line">	kernel /vmlinuz root=/dev/xvda1 selinux=0 init=/bin/sh console=tty</span><br><span class="line">	initrd /initramfs.img</span><br></pre></td></tr></table></figure>
+
+<p>接着还是我们的busybox来构建文件系统, 完成了之后我们就可以开始写虚拟机的配置文件了.</p>
+<blockquote>
+<p>对了, 这个时候别忘记了拆除loop和img映像文件的关联, 另外, 拆除之前, 要先umount</p>
+</blockquote>
+<p>这里我们需要一个叫做<code>pygrub</code>的引导程序, 它会随着我们的xen环境一同被安装</p>
+<p>新版本的配置文件可以把kernel, initramfs, extra_cmd, root等等参数都注释掉了, 只需要额外再写一个<code>bootloader</code>指向我们的<code>pygrub</code>就行了.</p>
+<p>启动虚拟机, 直接附加console, 我们就能看到这个grub的引导页面了.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/pygrub_1.png" alt="pygrub_1"></p>
+<p>但是, 这里似乎存在问题, 那就是console会报错, 看样子是应该配置一下虚拟显卡等等. 暂时还没有研究, 就先跳过了.</p>
+<h2 id="使用libvirt来管理Xen虚拟机"><a href="#使用libvirt来管理Xen虚拟机" class="headerlink" title="使用libvirt来管理Xen虚拟机"></a>使用libvirt来管理Xen虚拟机</h2><p>除了使用xl, 我们还可以使用libvirt这个工具栈, 为了使用libvirt. 我们需要在虚拟机中运行libvirtd进程就可以进行远程的管理了. </p>
+<p>通过安装<code>libvirt</code>这个包, 并且和xen搭配的daemon也可以安装上.</p>
+<p>安装完成后会生成一个叫做<code>virsh</code>的客户端程序, 我们就是通过使用这个来进行操作的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># virsh list</span></span><br><span class="line"> Id    Name                           State</span><br><span class="line">----------------------------------------------------</span><br><span class="line"> 0     Domain-0                       running</span><br><span class="line"></span><br><span class="line">[root@xen_node ~]<span class="comment"># virsh nodeinfo</span></span><br><span class="line">CPU model:           x86_64</span><br><span class="line">CPU(s):              4</span><br><span class="line">CPU frequency:       2400 MHz</span><br><span class="line">CPU socket(s):       1</span><br><span class="line">Core(s) per socket:  2</span><br><span class="line">Thread(s) per core:  1</span><br><span class="line">NUMA cell(s):        1</span><br><span class="line">Memory size:         2096632 KiB</span><br></pre></td></tr></table></figure>
+
+<p>如果你运行这个命令出现了错误:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@xen_node ~]<span class="comment"># virsh list</span></span><br><span class="line">error: failed to connect to the hypervisor</span><br><span class="line">error: Failed to connect socket to <span class="string">&#x27;/var/run/libvirt/libvirt-sock&#x27;</span>: No such file or directory</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>那是因为没有启动服务, 启动一下服务就可以了, 这和MySQL类似, 也是一个使用socket来通信的程序.</p>
+<p>更多的关于<code>virsh</code>这个工具, 我们之后还会用到, 就先这样子了. ( 而且Xen似乎并不是很好用哈哈</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text">虚拟化技术的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Xen"><span class="toc-number">2.</span> <span class="toc-text">Xen</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Xen%E7%9A%84%E7%A1%AC%E4%BB%B6%E8%99%9A%E6%8B%9F%E5%8C%96"><span class="toc-number">2.1.</span> <span class="toc-text">Xen的硬件虚拟化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Xen%E7%9A%84%E5%87%A0%E7%A7%8D%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF"><span class="toc-number">2.2.</span> <span class="toc-text">Xen的几种虚拟化技术</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Xen%E7%9A%84%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7%E6%A0%88"><span class="toc-number">2.3.</span> <span class="toc-text">Xen的管理工具栈</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B8%8A%E5%AE%89%E8%A3%85%E5%B9%B6%E4%BD%BF%E7%94%A8Xen"><span class="toc-number">3.</span> <span class="toc-text">在虚拟机上安装并使用Xen</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-number">3.1.</span> <span class="toc-text">创建一个新的虚拟机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C"><span class="toc-number">3.2.</span> <span class="toc-text">虚拟机网络</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A9%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%8B%A5%E6%9C%89%E8%87%AA%E5%B7%B1%E7%9A%84%E5%86%85%E6%A0%B8"><span class="toc-number">3.3.</span> <span class="toc-text">让虚拟机拥有自己的内核</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8libvirt%E6%9D%A5%E7%AE%A1%E7%90%86Xen%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-number">4.</span> <span class="toc-text">使用libvirt来管理Xen虚拟机</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&text=Xen虚拟化初识"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&is_video=false&description=Xen虚拟化初识"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Xen虚拟化初识&body=Check out this article: https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&title=Xen虚拟化初识"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&name=Xen虚拟化初识&description=&lt;p&gt;稍微复习了一下操作系统, 从今天真正开始接触虚拟化相关.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/&t=Xen虚拟化初识"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

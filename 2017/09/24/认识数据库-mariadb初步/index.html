@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="mariadb, mysql的基础认识和应用.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="认识数据库(mariadb初步)">
+<meta property="og:url" content="https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="mariadb, mysql的基础认识和应用.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sql.png">
+<meta property="article:published_time" content="2017-09-24T19:28:25.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:51:12.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sql.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>认识数据库(mariadb初步)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/25/SHELL%E8%84%9A%E6%9C%AC%E7%BC%96%E7%A8%8B%E5%8F%8A%E5%AD%97%E7%AC%A6%E6%93%8D%E4%BD%9C/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/23/http%E5%8D%8F%E8%AE%AE%E5%92%8Chttpd/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&text=认识数据库(mariadb初步)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&is_video=false&description=认识数据库(mariadb初步)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=认识数据库(mariadb初步)&body=Check out this article: https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&name=认识数据库(mariadb初步)&description=&lt;p&gt;mariadb, mysql的基础认识和应用.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&t=认识数据库(mariadb初步)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">认识数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">2.</span> <span class="toc-text">数据库的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MariaDB"><span class="toc-number">3.</span> <span class="toc-text">MariaDB</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        认识数据库(mariadb初步)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-24T19:28:25.000Z" class="dt-published" itemprop="datePublished">2017-09-24</time>
+        
+        (Updated: <time datetime="2020-11-30T01:51:12.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database/" rel="tag">Database</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>mariadb, mysql的基础认识和应用.</p>
+<span id="more"></span>
+
+<h2 id="认识数据库"><a href="#认识数据库" class="headerlink" title="认识数据库"></a>认识数据库</h2><p>我们现在已经知道数据库有很多种类型的, 比如关系型数据库, NoSQL数据库, 分布式关系型数据库.  而mysql,mariadb只是数量众多的数据库中关系型数据库的一种开源实现. 数据存储在文本文件中在数据量很大中是很麻烦的, 所以数据库就是为了<strong>组织数据</strong>.  所以采用何种组织数据的方式, 我们就把他成为数据组织模型. 像文件系统组织文件的模型就是树状的. 对于单个文件就是一行行的流.</p>
+<p>数据结构模型一开始有: <strong>层次模型</strong>. 这种模型使用时就发现了问题, 因为他很难表示两个节点之间的关系, 多个节点就更加困难了. 于是后来就有了<strong>网状结构</strong> .</p>
+<p>而网状结构却发现, 这个模型和应用程序的耦合度过大. 一旦应用程序的发生改变, 这个结构也要发生变化.</p>
+<p>因此最后提出了<strong>关系结构模型</strong>, 每一个数据被组成行和列, 一个二维交叉的平面结构上. 那么当进行一个大的数据集的设计的时候, 为了达到降低数据冗余, 达到更改方便的时候, 提出设计数据库的几个范式, 有关数据库的设计在之前我曾经简单的在慕课网上学习了一些: <a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/">数据库设计</a> </p>
+<p>之前说过, 为了满足范式我们经常要进行表的拆分, 这个时候如果要进行查询就要先进行表的连接(join), 而这个连接就是关系性数据库要解决的一个大问题, 表的连接是十分消耗资源的. 这个合并操作对于内存是一个大的消耗. 因此就精心设计算法来避免产生过多中间数据.</p>
+<p>那么列举一些典型的RDBMS:<br>首当其冲的就是MySQL了, 其下有三个重要的分支: MySQL, MariaDB, Percona-Server(反正我是没听说过)</p>
+<p>还有很著名的开源数据库: PostgreSQL: pgSQL.  再来一个Oracle的oracle, 还有MS的MSSQL. </p>
+<p>接下来就要来看看一个关系型数据库的组成结构了.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sql.png" alt="sql"></p>
+<p>不管怎么说, 最终都是要存储在磁盘上的, 所以也可以简单的说MySQL只是一个文件系统上的能够理解数据库源数据的一个软件管理程序罢了.  所有的数据都是现在内存中进行的缓冲 接着在PUSH到磁盘上的. 如一个文件正在被一个进程进行写操作, 那么就会上锁, 这就是为了在资源竞争保护资源. 对于一个关系型数据库来说, 事务是一个必不可少的组件. 多个写操作被认定成一个整体操作. 如何认定一个关系型数据库满足事务功能? 只要满足ACID测试就行, ACID是事务的一个标准, 也就是(原子性, 一致性, 隔离性, 持久性)</p>
+<p>回复管理器就是为了保证事务的运行, 他会把事物产生的数据连续存储两次, 一次存储在事务日志中, 一次存储在事务文件中, 这样就可以进行一致性检测.</p>
+<p>上面的那一大块东西就是SQL引擎, 或者SQL解释器.  以上就是一个标准的RDBMS的组成结构.</p>
+<p>那么我怎么和数据库进行交互呢 ?  </p>
+<p>一般数据库都会把自己作为一个服务器通过监听套接字来监听客户端发送来的请求, 基于一个而应用层的协议, 基于C&#x2F;S架构, 每一个软件设计都会设计自己的协议. 那么我们怎么去对接这样的协议, 合成满足对方协议的报文呢? 这就需要数据库的开发者提供客户端的接口, 其中有两种: 程序接口, 以及应用程序接口.</p>
+<p>一个通用的接口就是ODBC, 但是过于底层, 所以在此基础上再封装得到对应的程序编程语言的数据库编程接口, 再度封装和抽象, 甚至得到一个编程语言通用的数据库抽象层.</p>
+<h2 id="数据库的基本概念"><a href="#数据库的基本概念" class="headerlink" title="数据库的基本概念"></a>数据库的基本概念</h2><p><strong>约束(constraint)</strong>  我们来举个例子吧, 比如现在想表里填一个学生的年龄, 但是填写了200, 如果数据库对于这个数值的大小有限制, 它可以检测数据的合法性, 这就是约束.</p>
+<blockquote>
+<p>约束有这些常见的类型: <strong>主键</strong> 一个或者多个字段的组合, 简单的说就是在本表中唯一标识一个行, 而且必须提供数据, 即NOT NULL.</p>
+<p><strong>唯一键</strong> 一个或者多个字段的组合, 填入的数据必须能在本表唯一标识本行, 允许为空. 一个表只能有一个主键, 但是唯一键可以出现多次.</p>
+<p><strong>外键</strong> 一个表中可以填入的数据取决于另一个表的主键已有的数据.</p>
+<p><strong>检查性</strong> check约束. 就是上面的那个例子</p>
+</blockquote>
+<p><strong>索引</strong> 将表中的一个或者多个字段中的数据复制一份另存并且这些数据需要按需排序存储. 分稀疏索引, 稠密索引</p>
+<p><strong>关系计算</strong>:</p>
+<blockquote>
+<p>选择: 挑选出符合需要的行</p>
+<p>投影: 挑选出需要的字段, 和选择可以同时进行.</p>
+<p>连接: 笛卡尔积, 内外连接…</p>
+</blockquote>
+<p>而在组织数据之前, 我们现需要将数据进行抽象. 站在不同的角度来看, 数据是不一样的表现形式. 在物理层上, 决定这数据的存储格式即如何在磁盘上进行文件组织. 而逻辑层上, 描述DB中如何存储, 以及数据间的关系如何处理. 最后在视图层上, 描述DB的部分数据.</p>
+<p>( 过于学术化, 不管了</p>
+<h2 id="MariaDB"><a href="#MariaDB" class="headerlink" title="MariaDB"></a>MariaDB</h2><p>先来说说MariaDB的特性吧:</p>
+<p>首先和MySQL一样的, 他们都支持插件式的存储引擎, 这个组件就是既能够和磁盘打交道, 还可以为逻辑层提供保证的这么一个组件. 我们就把他成为存储引擎. 对于Oracle等, 他们的存储引擎都是不可变的, 但是MySQL和MariaDB是可以进行插件式的接口设计的, 只要整合到core上就可以使用. 存储引擎有多重实现版本, 功能和性能都有差异, 用户可以根据需要进行选择.</p>
+<p>存储引擎也被成为”表类型” 相比MySQL, MariaDB提供更多的存储引擎.</p>
+<p>原先是MyISAM这个引擎, 后来出现了InnoDB, 也是InnoDB得到了广泛使用, 而MyISAM后来推出了针对MariaDB的Aria引擎, 能够进行数据恢复. 其实InnoDB在mariaDB上也不叫做这个名字, 而是<strong>XtraDB</strong> .都是升级版.</p>
+<p>MariaDB提供了诸多扩展和测试组件, 而且他是真正开源的.</p>
+<p>在CentOS7上这个mariaDB是默认安装的. 我们来说说他的配置文件吧.</p>
+<p>MySQL的配置文件查找方式很有趣, 他是基于ini格式, 为各个程序提供配置信息:  [prog_name]</p>
+<p>配置文件存在查找次序:</p>
+<blockquote>
+<p>&#x2F;etc&#x2F;my.cnf –&gt; &#x2F;etc&#x2F;mysql&#x2F;my.cnf –&gt; –default-extra-file&#x3D;&#x2F;PATH&#x2F;TO&#x2F;CONF_FILE –&gt; ~&#x2F;.my.cnf</p>
+<p>会匹配最后一个查找到的配置文件</p>
+</blockquote>
+<p>MySQL默认提供了几个配置文件, 这些文件分别对应不同等级的内存或者服务器所使用的配置, small, medium, large, huge, heavy-4G. </p>
+<p>MariaDB有两种程序组成一种就是客户端, 一种就是服务端, 服务器端监听两种套接字: ip socket 和 unix socket</p>
+<p>监听在TCP的3306端口, 支持远程通信. 而unix socket监听在一个socket文件, 仅支持本地通信. 我们的命令行交互式客户端程序就叫做: mysql</p>
+<p>常用的属性是: -u 用户名 -h 主机地址 -p 密码</p>
+<p>要注意的是, MySQL的用户账号有两个部分组成, ‘USERNAME‘@’HOST’ 这里的host四为了限制用户可通过哪些主机来进行远程连接MySQL服务, 支持使用通配符: % 匹配任意长度的任意字符, _ 匹配任意单个字符.</p>
+<p>在我们刚刚安装完成之后, mysql会预置几个用户, 这是十分危险的, 我们来看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># mysql -u root -p</span></span><br><span class="line">Enter password: </span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection <span class="built_in">id</span> is 4</span><br><span class="line">Server version: 5.5.56-MariaDB MariaDB Server</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type <span class="string">&#x27;help;&#x27;</span> or <span class="string">&#x27;\h&#x27;</span> <span class="keyword">for</span> <span class="built_in">help</span>. Type <span class="string">&#x27;\c&#x27;</span> to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; use mysql</span><br><span class="line">Reading table information <span class="keyword">for</span> completion of table and column names</span><br><span class="line">You can turn off this feature to get a quicker startup with -A</span><br><span class="line"></span><br><span class="line">Database changed</span><br><span class="line">MariaDB [mysql]&gt; <span class="keyword">select</span> User,Host,Password from user;</span><br><span class="line">+------+-----------+----------+</span><br><span class="line">| User | Host      | Password |</span><br><span class="line">+------+-----------+----------+</span><br><span class="line">| root | localhost |          |</span><br><span class="line">| root | www       |          |</span><br><span class="line">| root | 127.0.0.1 |          |</span><br><span class="line">| root | ::1       |          |</span><br><span class="line">|      | localhost |          |</span><br><span class="line">|      | www       |          |</span><br><span class="line">+------+-----------+----------+</span><br><span class="line">6 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [mysql]&gt; </span><br></pre></td></tr></table></figure>
+
+<p>有两个匿名用户, 而且都是没有密码的. 这可不行 所以我们要先进行安全的初始化. 由一个程序可以帮助我们(你的路径可能和我不一样)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># /usr/bin/mysql_secure_installation </span></span><br><span class="line"></span><br><span class="line">NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB</span><br><span class="line">      SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!</span><br><span class="line"></span><br><span class="line">In order to <span class="built_in">log</span> into MariaDB to secure it, we<span class="string">&#x27;ll need the current</span></span><br><span class="line"><span class="string">password for the root user.  If you&#x27;</span>ve just installed MariaDB, and</span><br><span class="line">you haven<span class="string">&#x27;t set the root password yet, the password will be blank,</span></span><br><span class="line"><span class="string">so you should just press enter here.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Enter current password for root (enter for none): </span></span><br></pre></td></tr></table></figure>
+
+<p>在回车之后会有一大堆的安全初始化流程:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">OK, successfully used password, moving on...</span><br><span class="line"></span><br><span class="line">Setting the root password ensures that nobody can <span class="built_in">log</span> into the MariaDB</span><br><span class="line">root user without the proper authorisation.</span><br><span class="line"></span><br><span class="line">Set root password? [Y/n] Y        </span><br><span class="line">New password: </span><br><span class="line">Re-enter new password: </span><br><span class="line">Password updated successfully!</span><br><span class="line">Reloading privilege tables..</span><br><span class="line"> ... Success!</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">By default, a MariaDB installation has an anonymous user, allowing anyone</span><br><span class="line">to <span class="built_in">log</span> into MariaDB without having to have a user account created <span class="keyword">for</span></span><br><span class="line">them.  This is intended only <span class="keyword">for</span> testing, and to make the installation</span><br><span class="line">go a bit smoother.  You should remove them before moving into a</span><br><span class="line">production environment.</span><br><span class="line"></span><br><span class="line">Remove anonymous <span class="built_in">users</span>? [Y/n] y</span><br><span class="line"> ... Success!</span><br><span class="line"></span><br><span class="line">Normally, root should only be allowed to connect from <span class="string">&#x27;localhost&#x27;</span>.  This</span><br><span class="line">ensures that someone cannot guess at the root password from the network.</span><br><span class="line"></span><br><span class="line">Disallow root login remotely? [Y/n] n</span><br><span class="line"> ... skipping.</span><br><span class="line"></span><br><span class="line">By default, MariaDB comes with a database named <span class="string">&#x27;test&#x27;</span> that anyone can</span><br><span class="line">access.  This is also intended only <span class="keyword">for</span> testing, and should be removed</span><br><span class="line">before moving into a production environment.</span><br><span class="line"></span><br><span class="line">Remove <span class="built_in">test</span> database and access to it? [Y/n] n</span><br><span class="line"> ... skipping.</span><br><span class="line"></span><br><span class="line">Reloading the privilege tables will ensure that all changes made so far</span><br><span class="line">will take effect immediately.</span><br><span class="line"></span><br><span class="line">Reload privilege tables now? [Y/n] y</span><br><span class="line"> ... Success!</span><br><span class="line"></span><br><span class="line">Cleaning up...</span><br><span class="line"></span><br><span class="line">All <span class="keyword">done</span>!  If you<span class="string">&#x27;ve completed all of the above steps, your MariaDB</span></span><br><span class="line"><span class="string">installation should now be secure.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Thanks for using MariaDB!</span></span><br></pre></td></tr></table></figure>
+
+<p>这里我故意没有禁用管理员远程登录, 其实这个应该是禁用掉的.</p>
+<p>现在登陆进去再看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use mysql</span><br><span class="line">Reading table information <span class="keyword">for</span> completion of table and column names</span><br><span class="line">You can turn off this feature to get a quicker startup with -A</span><br><span class="line"></span><br><span class="line">Database changed</span><br><span class="line">MariaDB [mysql]&gt; <span class="keyword">select</span> User,Host,Password from user;</span><br><span class="line">+------+-----------+-------------------------------------------+</span><br><span class="line">| User | Host      | Password                                  |</span><br><span class="line">+------+-----------+-------------------------------------------+</span><br><span class="line">| root | localhost | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">| root | www       | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">| root | 127.0.0.1 | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">| root | ::1       | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">+------+-----------+-------------------------------------------+</span><br><span class="line">4 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>就已经加密了, 而且匿名用户已经删除了.</p>
+<p>mysql的命令有两种, 一种是客户端命令, 一种是客户端命令.</p>
+<p>客户端命令是在本地执行的, 例如status这个命令, 每一个客户端命令都有其缩写形式, 以&#x2F;开头.使用help可以查看所有的客户端命令, 而服务器端命令是需要通过MySQL协议发往服务器端执行之后才获得结果, 每一个命令都需要使用;(默认)来标记结束.</p>
+<p>使用<code>show character set</code>;来查看所有支持的字符集, 使用<code>show collation;</code>查看所有的排序规则 , 使用<code>show engines;</code> 查看所有存储引擎支持.</p>
+<p>最后再说一下, 如何进行MariaDB的权限管理吧:</p>
+<p>先来说怎么进行用户的创建:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [mysql]&gt; create user <span class="string">&#x27;justin&#x27;</span>@<span class="string">&#x27;%&#x27;</span> identified by <span class="string">&#x27;password&#x27;</span>;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [mysql]&gt; <span class="keyword">select</span> User,Host,Password from user;</span><br><span class="line">+--------+-----------+-------------------------------------------+</span><br><span class="line">| User   | Host      | Password                                  |</span><br><span class="line">+--------+-----------+-------------------------------------------+</span><br><span class="line">| root   | localhost | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">| root   | www       | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">| root   | 127.0.0.1 | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">| root   | ::1       | *D79FA10BB5A035FC32C7106AE068E4772D8FF081 |</span><br><span class="line">| justin | %         | *2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19 |</span><br><span class="line">+--------+-----------+-------------------------------------------+</span><br><span class="line">5 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>删除用户就变得简单了, 直接drop user就行了.</p>
+<p>如果这个时候进行登录 会发现justin用户无法看到mysql数据库, 这是因为我们呢还没有给justin用户进行授权.</p>
+<p>授权的命令是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Name: <span class="string">&#x27;GRANT&#x27;</span></span><br><span class="line">Description:</span><br><span class="line">Syntax:</span><br><span class="line">GRANT</span><br><span class="line">    priv_type [(column_list)]</span><br><span class="line">      [, priv_type [(column_list)]] ...</span><br><span class="line">    ON [object_type] priv_level</span><br><span class="line">    TO user_specification [, user_specification] ...</span><br><span class="line">    [REQUIRE &#123;NONE | ssl_option [[AND] ssl_option] ...&#125;]</span><br><span class="line">    [WITH with_option ...]</span><br></pre></td></tr></table></figure>
+
+<p>这个命令也可以进行用户的创建. 后面的省略号甚至可以进行查询的数量进行限制, 把这个help稍微整理一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GRANT priv_type,... ON [TABLE|...] db_name.tb_name TO <span class="string">&#x27;user&#x27;</span>@<span class="string">&#x27;host&#x27;</span> [IDENTIFIED BY <span class="string">&#x27;password&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>可以查看指定用户的权限设定:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; show grants <span class="keyword">for</span> root@localhost;</span><br><span class="line">+----------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| Grants <span class="keyword">for</span> root@localhost                                                                                                              |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| GRANT ALL PRIVILEGES ON *.* TO <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED BY PASSWORD <span class="string">&#x27;*D79FA10BB5A035FC32C7106AE068E4772D8FF081&#x27;</span> WITH GRANT OPTION |</span><br><span class="line">| GRANT PROXY ON <span class="string">&#x27;&#x27;</span>@<span class="string">&#x27;&#x27;</span> TO <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> WITH GRANT OPTION                                                                           |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">2 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>另外, 如果是想知道当前登录用户的权限设定的话, 可以使用内置的函数来:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; show grants <span class="keyword">for</span> current_user();</span><br><span class="line">+----------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| Grants <span class="keyword">for</span> root@localhost                                                                                                              |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| GRANT ALL PRIVILEGES ON *.* TO <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED BY PASSWORD <span class="string">&#x27;*D79FA10BB5A035FC32C7106AE068E4772D8FF081&#x27;</span> WITH GRANT OPTION |</span><br><span class="line">| GRANT PROXY ON <span class="string">&#x27;&#x27;</span>@<span class="string">&#x27;&#x27;</span> TO <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> WITH GRANT OPTION                                                                           |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">2 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>而如果想要撤销授权, 就使用revoke指令就行. 格式是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REVOKE priv_type,... ON db_name.tb_name FROM <span class="string">&#x27;user&#x27;</span>@<span class="string">&#x27;host&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>在我们启动MariaDB服务进程的时候,会读取mysql库中的所有授权表到内存中, 所以每当有用户进行登录的时候都会到内存中进行检查. 而当我们进行权限改变, 或者用户更改的时候, 这些操作机会保存在表中, MariaDB会自动进行重读授权表. 而对于不能或者不能及时重读授权表的时候, 我们就使用<code>FLUSH PRIVILEGES</code> 来强制重读.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">认识数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">2.</span> <span class="toc-text">数据库的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MariaDB"><span class="toc-number">3.</span> <span class="toc-text">MariaDB</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&text=认识数据库(mariadb初步)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&is_video=false&description=认识数据库(mariadb初步)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=认识数据库(mariadb初步)&body=Check out this article: https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&title=认识数据库(mariadb初步)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&name=认识数据库(mariadb初步)&description=&lt;p&gt;mariadb, mysql的基础认识和应用.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/24/%E8%AE%A4%E8%AF%86%E6%95%B0%E6%8D%AE%E5%BA%93-mariadb%E5%88%9D%E6%AD%A5/&t=认识数据库(mariadb初步)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

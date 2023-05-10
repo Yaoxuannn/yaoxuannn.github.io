@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="再来学习一遍数据库, 这一次稍微学习深入一点.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL数据库">
+<meta property="og:url" content="https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="再来学习一遍数据库, 这一次稍微学习深入一点.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/mysql_arch.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/MySQL_query_arch.png">
+<meta property="article:published_time" content="2018-10-07T19:47:23.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:44:02.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Database">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3.ap-northeast-1.amazonaws.com/mysql_arch.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>MySQL数据库</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&text=MySQL数据库"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&is_video=false&description=MySQL数据库"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MySQL数据库&body=Check out this article: https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&name=MySQL数据库&description=&lt;p&gt;再来学习一遍数据库, 这一次稍微学习深入一点.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&t=MySQL数据库"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%AE%80%E5%8D%95%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.</span> <span class="toc-text">数据库系统的简单回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E5%92%8CMariaDB"><span class="toc-number">2.</span> <span class="toc-text">MySQL和MariaDB</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%92%8CSQL%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.1.</span> <span class="toc-text">MySQL的数据类型和SQL接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E6%9E%B6%E6%9E%84-%E7%B4%A2%E5%BC%95%E5%92%8C%E8%A7%86%E5%9B%BE"><span class="toc-number">3.</span> <span class="toc-text">MySQL的架构, 索引和视图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E6%9F%A5%E8%AF%A2%E6%93%8D%E4%BD%9C"><span class="toc-number">4.</span> <span class="toc-text">MySQL的查询操作</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        MySQL数据库
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-10-07T19:47:23.000Z" class="dt-published" itemprop="datePublished">2018-10-07</time>
+        
+        (Updated: <time datetime="2020-11-30T01:44:02.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database/" rel="tag">Database</a>, <a class="p-category" href="/tags/MySQL/" rel="tag">MySQL</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>再来学习一遍数据库, 这一次稍微学习深入一点.</p>
+<span id="more"></span>
+
+<h2 id="数据库系统的简单回顾"><a href="#数据库系统的简单回顾" class="headerlink" title="数据库系统的简单回顾"></a>数据库系统的简单回顾</h2><p>我们这一次主要关注的还是关系型数据库, 也就是RDBMS.  对于数据库应用程序一般都是C&#x2F;S架构的, 而他们使用的数据交换协议一般都是专有协议. 说道关系型数据库, 就一定要说到关系模型了, 也就是二维关系的表(行,列). </p>
+<p>当然数据库中也不仅仅只有表, 还包括例如叫做的索引的组件, 索引其实就是把表中特定字段的结果抽取出来, 根据某种组织形式来把他们组织起来. 常用的比如平衡树等等.</p>
+<p>除了索引, 还有视图这个概念, 视图其实就是虚拟的表, 其实就是一个存储下来的查询语句, 当下次遇到查询的时候可以直接使用视图进行子查询.</p>
+<p>当然一个更重要的概念自然就是SQL本身了, SQL的全称是结构查询语言, 主要分成DDL, DML. SQL的开发商也提供了SQL的编程接口和一些内置的函数, 用户也可以自定义一些存储过程, 包括一些触发器的编写.</p>
+<p>从数据的角度来看, 我们有一个三层模型:</p>
+<ul>
+<li>物理层: 磁盘</li>
+<li>逻辑层: 数据库内建组件</li>
+<li>视图层: 看到的表(用户所看到的, 可能不同, 可能不全)</li>
+</ul>
+<h2 id="MySQL和MariaDB"><a href="#MySQL和MariaDB" class="headerlink" title="MySQL和MariaDB"></a>MySQL和MariaDB</h2><p>我们之前介绍过MariaDB, 他跟MySQL的发布路线不太一样, 但是每当MySQL发布新功能之后, MariaDB都会根据社区力量, 引入社区的代码来提供新功能. 尽管他们的一部分功能实现不一样, 基本功能上他们是兼容的. 在调用接口上也是兼容的.</p>
+<p>MySQL采取的一种十分巧妙的方式, 即插件式存储引擎. 有些存储引擎是商用的, 即使用需要付费, 有些是开源的. 另外, MySQL是多线程单进程的模式, 其中一类线程是连接线程, 另外一类是守护线程. 这种模型使得MySQL对于多核心和大内存不是很能利用起来.</p>
+<p>MySQL的配置文件是属于集中式的配置模式, 一个配置文件可以为mysql的各个应用提供配置信息.</p>
+<p>关于一些安装MySQL之后的一些惯常动作, 我们再来说一次:</p>
+<ol>
+<li>为所有的root用户设定密码, 当然也可以删除不需要的root用户, 需要注意的是别忘记flush权限表.</li>
+<li>删除所有的匿名用户, 可以直接使用DROP命令搞定.</li>
+<li>建议关闭主机名反解功能, 修改配置文件增加<code>skip_name_resolve</code></li>
+</ol>
+<p>在我们安装MySQL之后, 会在默认的数据库中看到一个加做<code>mysql</code>的数据库, 这个就是元数据数据库, 包含一些程序运行所需要的数据.</p>
+<p>我们MySQL无论是服务端程序还是客户端在启动的时候都会携带大量的变量, 这些变量有的可以在运行的时候进行修改, 并且立即生效, 有的参数不支持, 只能通过修改配置文件的形式并且重启服务端程序来进行生效. 并且MySQL也引入了作用域的概念, 有的参数是全局的不可改变, 有的则是为每一个用户提供单独的设置, 这些变量叫做会话变量. </p>
+<p>设置变量的值的方法很简单, 直接在命令行中<code>SET</code>就行了, 这样默认修改的变量是会话变量, 一旦用户会话中断再次进行访问的时候, 这些变量就又变成配置文件所约束的值了. 如果想要修改全局变量, 则需要在<code>SET</code>后面加上<code>GLOBAL</code>.</p>
+<p>另外还有一种叫做状态变量的数据, 这一种变量通常都是记录的MySQL的运行信息, 一般也不可以进行修改.</p>
+<h3 id="MySQL的数据类型和SQL接口"><a href="#MySQL的数据类型和SQL接口" class="headerlink" title="MySQL的数据类型和SQL接口"></a>MySQL的数据类型和SQL接口</h3><p>我们现在使用的SQL语法都是在ANSI SQL中进行的标准定义, 就好像我们的C语言规范也是ANSI C一样.除了约束SQL的语法之外, ANSI SQL-03也同时规范了一些数据类型, 例如:</p>
+<ul>
+<li>字符类型</li>
+<li>数值型</li>
+<li>日期时间型</li>
+<li>内建类型</li>
+</ul>
+<p>你可能会说为啥没有布尔型, 因为布尔其实说到底就还是特殊的数值类型, 而二进制类型其实就也是特殊的长字符串类型.(BLOB其实就是Binary Large OBject)</p>
+<p>其中每一种大类型又分成好多根据长度划分的不同大小的数据类型. 例如我们熟悉的定长数据类型和不定长数据类型. 而数值类型又可以分成精准数值和近似数值类型. 日期时间型又可以分成日期类型,时间类型,日期时间类型,时间戳等等.</p>
+<p>在MySQL中有两种内建的类型, 分别是ENUM和SET, 其实就是单选和多选的选项数据格式, 可以使用字符串也可以使用索引来写入值. 有关上述的数据类型的修饰符就不在这里说了.</p>
+<p>对于MySQL, 有一个SQL模式的概念. 通过定义MySQL的SQL模式, 可以定义mysqld对约束的响应行为. 修改方式其实很简单, 可以直接修改全局变量然后对于下一次的新session产生效果, 对于已经产生的会话不会产生影响. 如果对当前的会话生效可以直接修改会话变量.这个在上面就说过了.</p>
+<p>那么问题来了, 到底什么是SQL mode呢?</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(<span class="keyword">none</span>)]<span class="operator">&gt;</span> <span class="keyword">show</span> <span class="keyword">global</span> variables <span class="keyword">like</span> <span class="string">&#x27;sql_mode&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="operator">+</span><span class="comment">---------------+-------+</span></span><br><span class="line"><span class="operator">|</span> Variable_name <span class="operator">|</span> <span class="keyword">Value</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------------+-------+</span></span><br><span class="line"><span class="operator">|</span> sql_mode      <span class="operator">|</span>       <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------------+-------+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.02</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>默认的值是空的, 如果想要修改, 常用的三种模式是:</p>
+<ul>
+<li>TRADITIONAL</li>
+<li>STRICT_TRANS_TABLES</li>
+<li>STRICT_ALL_TABLES</li>
+</ul>
+<p>其实支持的多达数十个之多.</p>
+<p>例如我们来做个试验:</p>
+<p>首先我们创建一个数据表:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(<span class="keyword">none</span>)]<span class="operator">&gt;</span> use test;</span><br><span class="line">Database changed</span><br><span class="line">MariaDB [test]<span class="operator">&gt;</span> <span class="keyword">create</span> <span class="keyword">table</span> t1 (id <span class="type">int</span> unsigned auto_increment <span class="keyword">primary</span> key <span class="keyword">not</span> <span class="keyword">null</span>, name <span class="type">char</span>(<span class="number">5</span>) <span class="keyword">not</span> <span class="keyword">null</span>);</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.05</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接下来我们来填充数据:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]<span class="operator">&gt;</span> <span class="keyword">insert</span> <span class="keyword">into</span> t1 (name) <span class="keyword">values</span> (<span class="string">&#x27;yes&#x27;</span>),(<span class="string">&#x27;2long4char(5)&#x27;</span>);</span><br><span class="line">Query OK, <span class="number">2</span> <span class="keyword">rows</span> affected, <span class="number">1</span> warning (<span class="number">0.01</span> sec)</span><br><span class="line">Records: <span class="number">2</span>  Duplicates: <span class="number">0</span>  Warnings: <span class="number">1</span></span><br><span class="line"></span><br><span class="line">MariaDB [test]<span class="operator">&gt;</span> <span class="keyword">show</span> warnings;</span><br><span class="line"><span class="operator">+</span><span class="comment">---------+------+-------------------------------------------+</span></span><br><span class="line"><span class="operator">|</span> Level   <span class="operator">|</span> Code <span class="operator">|</span> Message                                   <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------+------+-------------------------------------------+</span></span><br><span class="line"><span class="operator">|</span> Warning <span class="operator">|</span> <span class="number">1265</span> <span class="operator">|</span> Data truncated <span class="keyword">for</span> <span class="keyword">column</span> <span class="string">&#x27;name&#x27;</span> <span class="keyword">at</span> <span class="type">row</span> <span class="number">2</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------+------+-------------------------------------------+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line">MariaDB [test]<span class="operator">&gt;</span> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> t1;</span><br><span class="line"><span class="operator">+</span><span class="comment">----+-------+</span></span><br><span class="line"><span class="operator">|</span> id <span class="operator">|</span> name  <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">----+-------+</span></span><br><span class="line"><span class="operator">|</span>  <span class="number">1</span> <span class="operator">|</span> yes   <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span>  <span class="number">2</span> <span class="operator">|</span> <span class="number">2</span>long <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">----+-------+</span></span><br><span class="line"><span class="number">2</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到出现了一个警告, 我们插入的值超过了<code>char5</code>所规定的的5个字符长度, 但是并没有MySQL并没有报错只是显示了警告, 当我们查询值的时候也会发现, 超过长度的值也被自动剪掉了.</p>
+<p>如果说我们修改SQL模式会变成效果呢, 来试试:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]<span class="operator">&gt;</span> <span class="keyword">insert</span> <span class="keyword">into</span> t1 (name) <span class="keyword">values</span> (<span class="string">&#x27;2long4char(5)&#x27;</span>);</span><br><span class="line">ERROR <span class="number">1406</span> (<span class="number">22001</span>): Data too long <span class="keyword">for</span> <span class="keyword">column</span> <span class="string">&#x27;name&#x27;</span> <span class="keyword">at</span> <span class="type">row</span> <span class="number">1</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>看, 直接就会报错了. 其他的SQL模式在MySQL的官方网站上都会有说明.</p>
+<p>关于SQL接口, 因为是有过基础的. 所以就跳过这一部分, 但是还是简单的说一下, 我们的SQL主要分成两种, 一种叫做DDL, 即数据定义语言, 另外一种叫做DML. 即数据修改语言. 其中DDL主要负责各种数据库组件的建立删除修改, 而DML则负责进行数据的插入修改查找删除. 关于在数据库中一个频繁出现的概念 - 二维关系表, 我们在设计的时候需要遵循一定的规范, 也就是范式. 当然具体是根据业务模型来进行设计的, 范式不是绝对的.</p>
+<p>我们来说说索引, 索引是建立在经常用于查询条件的字段上. MySQL的默认索引是B树&#x2F;B+树, 由于索引的实现实际上是由存储引擎进行的, 所以不同的存储引擎实现的索引类型是不一样的.</p>
+<p>根据索引项对应的记录是不是所有的记录项, 可以分成稠密索引和稀疏索引, 根据实现类型(数据组织结构), 我们可以分成B+索引, hash索引, R树索引, FULLTEXT索引, 根据索引和数据是否存储在一个位置, 可以分成聚集索引和非聚集索引(通过指针), 还有简单索引(单键)和组合索引.</p>
+<p>我们来看一下刚刚创建的表的信息:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [test]<span class="operator">&gt;</span> <span class="keyword">show</span> <span class="keyword">table</span> status <span class="keyword">like</span> <span class="string">&#x27;t1&#x27;</span>\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           Name: t1</span><br><span class="line">         Engine: InnoDB</span><br><span class="line">        Version: <span class="number">10</span></span><br><span class="line">     Row_format: Compact</span><br><span class="line">           <span class="keyword">Rows</span>: <span class="number">2</span></span><br><span class="line"> Avg_row_length: <span class="number">8192</span></span><br><span class="line">    Data_length: <span class="number">16384</span></span><br><span class="line">Max_data_length: <span class="number">0</span></span><br><span class="line">   Index_length: <span class="number">0</span></span><br><span class="line">      Data_free: <span class="number">10485760</span></span><br><span class="line"> Auto_increment: <span class="number">3</span></span><br><span class="line">    Create_time: <span class="number">2018</span><span class="number">-10</span><span class="number">-09</span> <span class="number">13</span>:<span class="number">25</span>:<span class="number">19</span></span><br><span class="line">    Update_time: <span class="keyword">NULL</span></span><br><span class="line">     Check_time: <span class="keyword">NULL</span></span><br><span class="line">      <span class="keyword">Collation</span>: latin1_swedish_ci</span><br><span class="line">       Checksum: <span class="keyword">NULL</span></span><br><span class="line"> Create_options: </span><br><span class="line">        Comment: </span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>其中显示了当前分配的空间大小, 自增的id, 创建时间, 最后一次的更新时间, 检查时间等等.</p>
+<h2 id="MySQL的架构-索引和视图"><a href="#MySQL的架构-索引和视图" class="headerlink" title="MySQL的架构, 索引和视图"></a>MySQL的架构, 索引和视图</h2><p><img src="https://hexopic.s3.ap-northeast-1.amazonaws.com/mysql_arch.png" alt="mysql_arch"></p>
+<p>我们先来看一下这个MySQL的架构图, 我们说这是一个C&#x2F;S架构的应用程序, 所以最上面自然就有接受客户端连接的连接器, 这也是使用的MySQL的驱动. 当我们通过这些连接器连接进入MySQL之后, 会获得一个连接会话. 这个连接会话其实也是可以分成长连接或者短连接的. 我们说过, MySQL是单进程多线程的, 所以就需要分发连接线程给用户, 这就有一个Connection Pool也就是连接池. 用户通过这个连接会话发送SQL到MySQL的SQL接口, 于是这个接口就是一个完备的SQL解释器, 这里分析的是用户发送的SQL的语法正确与否, 如果没有问题就会进入下一个分析器, 这个分析器不负责检查语法方面的问题, 他所作的是关于查询的内容方面的分析, 例如, 查询的用户是否有查询数据的权限以及查询的翻译等等. 分析之后生成的查询路径(查询路由)被丢到下面的一层, 也就是分析那一条路是最近的, 开销最低, 通过评估进行优化.甚至于, 这个优化器会进行SQL的重写.接着就交给了存储引擎, 由存储引擎. 然后这些存储引擎寻找到目标磁盘块, 将他们加载到内存中. 这些存储引擎是没有写入权限的, 所以他需要依托于内核, 通过内存空间来进行改写.</p>
+<p>通过上面的架构图, 我们大概可以获得MySQL的数据文件类型:</p>
+<ul>
+<li>数据文件, 索引文件</li>
+<li>日志: 重做日志, 撤销日志, 二进制日志, 错误日志, 查询日志, 慢查询日志</li>
+</ul>
+<p>关于MySQL的索引, 我们之前稍微的整理了一下几种索引类型, 其实在真实的查找过程中, 我们的索引也是分等级的, 因为直接扫描全部的索引也是一个消耗资源的耗时操作, 所以就再添加一个稀疏的索引用来检索索引, 从而在查询结果的时候先快速的拿到对应的索引的位置, 接着通过索引所指向的硬盘块读取进内存从而拿到结果.</p>
+<p>接下来, 我们说一个MySQL中的索引概念, 叫做 – <strong>左前缀索引</strong>.</p>
+<p>这是个什么玩意呢, 我们知道, 一个varchar类型的字符串数据最长可以达到65535个字符.这就导致如果将所有的字符串继续匹配的话, 会很麻烦. 因此MySQL只选取这字符串的前半段(例如: 只取前50个), 然后将他们组织成索引. 但是这样就造成了一个结果, 那就是我们进行查询的尽量不要做形如这样的查询: <code>LIKE %abc%</code>. 因为左前缀索引是不能找到满足这样条件的字符串的, 要查询的是一个中间数据, 但是只组织了左半数据的索引是做不到的. 所以, 在进行查询的时候, 尽量不要在左边加上<code>%</code>.</p>
+<p>接下来我们读取一个SQL脚本来做个测试, 这个脚本可以在<a target="_blank" rel="noopener" href="https://yaoxuannn.com:8080/hellodb.sql">这里</a>得到. </p>
+<p>我们可以先用学生表来做个试验, 首先看下这张表的相关信息和他的索引:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">show</span> indexes <span class="keyword">from</span> students\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">        <span class="keyword">Table</span>: students</span><br><span class="line">   Non_unique: <span class="number">0</span></span><br><span class="line">     Key_name: <span class="keyword">PRIMARY</span></span><br><span class="line"> Seq_in_index: <span class="number">1</span></span><br><span class="line">  Column_name: StuID</span><br><span class="line">    <span class="keyword">Collation</span>: A</span><br><span class="line">  <span class="keyword">Cardinality</span>: <span class="number">25</span></span><br><span class="line">     Sub_part: <span class="keyword">NULL</span></span><br><span class="line">       Packed: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">Null</span>: </span><br><span class="line">   Index_type: BTREE</span><br><span class="line">      Comment: </span><br><span class="line">Index_comment: </span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> students <span class="keyword">where</span> StuID<span class="operator">=</span><span class="number">3</span>;</span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+--------+---------+-----------+</span></span><br><span class="line"><span class="operator">|</span> StuID <span class="operator">|</span> Name      <span class="operator">|</span> Age <span class="operator">|</span> Gender <span class="operator">|</span> ClassID <span class="operator">|</span> TeacherID <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+--------+---------+-----------+</span></span><br><span class="line"><span class="operator">|</span>     <span class="number">3</span> <span class="operator">|</span> Xie Yanke <span class="operator">|</span>  <span class="number">53</span> <span class="operator">|</span> M      <span class="operator">|</span>       <span class="number">2</span> <span class="operator">|</span>        <span class="number">16</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+--------+---------+-----------+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.01</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到,当前表设置的主键是<code>StuID</code>, 然后我们通过这个主键查找可以找到对应的记录. 事实上, 对于MySQL而言, 有个命令<code>EXPLAIN</code>可以来显示这个命令的执行过程:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> students <span class="keyword">where</span> StuID<span class="operator">=</span><span class="number">3</span>\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">1</span></span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        <span class="keyword">table</span>: students</span><br><span class="line">         type: const</span><br><span class="line">possible_keys: <span class="keyword">PRIMARY</span></span><br><span class="line">          key: <span class="keyword">PRIMARY</span></span><br><span class="line">      key_len: <span class="number">4</span></span><br><span class="line">          <span class="keyword">ref</span>: const</span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">1</span></span><br><span class="line">        Extra: </span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 显示的结果是, 使用我们的主键就找到了, 仅仅使用了1行. 这就证明这个是从索引中抓取的. 接下来我们试试如果使用别的字段作为筛选条件的话会是什么样子的:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> students <span class="keyword">where</span> Name<span class="operator">=</span><span class="string">&#x27;Xie Yanke&#x27;</span>\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">1</span></span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        <span class="keyword">table</span>: students</span><br><span class="line">         type: <span class="keyword">ALL</span></span><br><span class="line">possible_keys: <span class="keyword">NULL</span></span><br><span class="line">          key: <span class="keyword">NULL</span></span><br><span class="line">      key_len: <span class="keyword">NULL</span></span><br><span class="line">          <span class="keyword">ref</span>: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">25</span></span><br><span class="line">        Extra: <span class="keyword">Using</span> <span class="keyword">where</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这一次就没有可以参考的索引了, 所以就只能扫描全表来获取结果了. 可以看出来扫描了25行然后使用where条件才获取到.</p>
+<p>现在我们再来验证一下上面说的MySQL的左前缀索引的效果, 我们先给Name字段加上一个索引, 接着再通过模糊匹配来试试:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">create</span> index name_index <span class="keyword">on</span> students(Name);</span><br><span class="line">Query OK, <span class="number">25</span> <span class="keyword">rows</span> affected (<span class="number">0.01</span> sec)</span><br><span class="line">Records: <span class="number">25</span>  Duplicates: <span class="number">0</span>  Warnings: <span class="number">0</span></span><br><span class="line"></span><br><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">show</span> indexes <span class="keyword">from</span> students\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">        <span class="keyword">Table</span>: students</span><br><span class="line">   Non_unique: <span class="number">0</span></span><br><span class="line">     Key_name: <span class="keyword">PRIMARY</span></span><br><span class="line"> Seq_in_index: <span class="number">1</span></span><br><span class="line">  Column_name: StuID</span><br><span class="line">    <span class="keyword">Collation</span>: A</span><br><span class="line">  <span class="keyword">Cardinality</span>: <span class="number">25</span></span><br><span class="line">     Sub_part: <span class="keyword">NULL</span></span><br><span class="line">       Packed: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">Null</span>: </span><br><span class="line">   Index_type: BTREE</span><br><span class="line">      Comment: </span><br><span class="line">Index_comment: </span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">2.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">        <span class="keyword">Table</span>: students</span><br><span class="line">   Non_unique: <span class="number">1</span></span><br><span class="line">     Key_name: name_index</span><br><span class="line"> Seq_in_index: <span class="number">1</span></span><br><span class="line">  Column_name: Name</span><br><span class="line">    <span class="keyword">Collation</span>: A</span><br><span class="line">  <span class="keyword">Cardinality</span>: <span class="keyword">NULL</span></span><br><span class="line">     Sub_part: <span class="keyword">NULL</span></span><br><span class="line">       Packed: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">Null</span>: </span><br><span class="line">   Index_type: BTREE</span><br><span class="line">      Comment: </span><br><span class="line">Index_comment: </span><br><span class="line"><span class="number">2</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>创建完成了, 这样创建的默认的索引类型都是B树索引. 接着我们来试试查询:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> students <span class="keyword">where</span> Name <span class="keyword">like</span> &quot;Xi%&quot;;</span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+--------+---------+-----------+</span></span><br><span class="line"><span class="operator">|</span> StuID <span class="operator">|</span> Name      <span class="operator">|</span> Age <span class="operator">|</span> Gender <span class="operator">|</span> ClassID <span class="operator">|</span> TeacherID <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+--------+---------+-----------+</span></span><br><span class="line"><span class="operator">|</span>     <span class="number">7</span> <span class="operator">|</span> Xi Ren    <span class="operator">|</span>  <span class="number">19</span> <span class="operator">|</span> F      <span class="operator">|</span>       <span class="number">3</span> <span class="operator">|</span>      <span class="keyword">NULL</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span>    <span class="number">22</span> <span class="operator">|</span> Xiao Qiao <span class="operator">|</span>  <span class="number">20</span> <span class="operator">|</span> F      <span class="operator">|</span>       <span class="number">1</span> <span class="operator">|</span>      <span class="keyword">NULL</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span>     <span class="number">3</span> <span class="operator">|</span> Xie Yanke <span class="operator">|</span>  <span class="number">53</span> <span class="operator">|</span> M      <span class="operator">|</span>       <span class="number">2</span> <span class="operator">|</span>        <span class="number">16</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+--------+---------+-----------+</span></span><br><span class="line"><span class="number">3</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> students <span class="keyword">where</span> Name <span class="keyword">like</span> &quot;Xi%&quot;\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">1</span></span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        <span class="keyword">table</span>: students</span><br><span class="line">         type: <span class="keyword">range</span></span><br><span class="line">possible_keys: name_index</span><br><span class="line">          key: name_index</span><br><span class="line">      key_len: <span class="number">152</span></span><br><span class="line">          <span class="keyword">ref</span>: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">3</span></span><br><span class="line">        Extra: <span class="keyword">Using</span> index <span class="keyword">condition</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> students <span class="keyword">where</span> Name <span class="keyword">like</span> &quot;%Xi%&quot;\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">1</span></span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        <span class="keyword">table</span>: students</span><br><span class="line">         type: <span class="keyword">ALL</span></span><br><span class="line">possible_keys: <span class="keyword">NULL</span></span><br><span class="line">          key: <span class="keyword">NULL</span></span><br><span class="line">      key_len: <span class="keyword">NULL</span></span><br><span class="line">          <span class="keyword">ref</span>: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">25</span></span><br><span class="line">        Extra: <span class="keyword">Using</span> <span class="keyword">where</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>当我们没有在左边加上通配符的时候. 查询的使用还是通过索引来进行的, 然而如果加上了, 就会扫描全表.</p>
+<p>接着我们再来看一下视图, 视图是关系型数据库中的一个概念, 但是在MySQL中对于视图的支持没那么好, 视图其实就是一个虚表, 他的数据仍然来源于基表(就是创建视图的那个表), 所以说如果想要在视图上插入数据, 是需要参照基表的约束的, 但是几乎没有人会去这么做, 创建一个视图很简单:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">create</span> <span class="keyword">view</span> test <span class="keyword">as</span> <span class="keyword">select</span> StuID, Name, Age <span class="keyword">from</span> students;</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.01</span> sec)</span><br><span class="line"></span><br><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">show</span> tables;</span><br><span class="line"><span class="operator">+</span><span class="comment">-------------------+</span></span><br><span class="line"><span class="operator">|</span> Tables_in_hellodb <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------------------+</span></span><br><span class="line"><span class="operator">|</span> classes           <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> coc               <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> courses           <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> scores            <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> students          <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> teachers          <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> test              <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> toc               <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------------------+</span></span><br><span class="line"><span class="number">8</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后我们就可以看到这个视图了, 那么怎么区分视图和表的呢?</p>
+<p>我们可以通过查看表的状态来看:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">show</span> <span class="keyword">table</span> status <span class="keyword">like</span> &quot;test&quot;\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           Name: test</span><br><span class="line">         Engine: <span class="keyword">NULL</span></span><br><span class="line">        Version: <span class="keyword">NULL</span></span><br><span class="line">     Row_format: <span class="keyword">NULL</span></span><br><span class="line">           <span class="keyword">Rows</span>: <span class="keyword">NULL</span></span><br><span class="line"> Avg_row_length: <span class="keyword">NULL</span></span><br><span class="line">    Data_length: <span class="keyword">NULL</span></span><br><span class="line">Max_data_length: <span class="keyword">NULL</span></span><br><span class="line">   Index_length: <span class="keyword">NULL</span></span><br><span class="line">      Data_free: <span class="keyword">NULL</span></span><br><span class="line"> Auto_increment: <span class="keyword">NULL</span></span><br><span class="line">    Create_time: <span class="keyword">NULL</span></span><br><span class="line">    Update_time: <span class="keyword">NULL</span></span><br><span class="line">     Check_time: <span class="keyword">NULL</span></span><br><span class="line">      <span class="keyword">Collation</span>: <span class="keyword">NULL</span></span><br><span class="line">       Checksum: <span class="keyword">NULL</span></span><br><span class="line"> Create_options: <span class="keyword">NULL</span></span><br><span class="line">        Comment: <span class="keyword">VIEW</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>一个视图不会具备表的信息, 你只会在注释里面看到有写.</p>
+<p>可以正常的在视图中继续查询:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">where</span> StuID<span class="operator">=</span><span class="number">22</span>;</span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+</span></span><br><span class="line"><span class="operator">|</span> StuID <span class="operator">|</span> Name      <span class="operator">|</span> Age <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+</span></span><br><span class="line"><span class="operator">|</span>    <span class="number">22</span> <span class="operator">|</span> Xiao Qiao <span class="operator">|</span>  <span class="number">20</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------+-----------+-----+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">where</span> StuID<span class="operator">=</span><span class="number">22</span>\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">1</span></span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        <span class="keyword">table</span>: students</span><br><span class="line">         type: const</span><br><span class="line">possible_keys: <span class="keyword">PRIMARY</span></span><br><span class="line">          key: <span class="keyword">PRIMARY</span></span><br><span class="line">      key_len: <span class="number">4</span></span><br><span class="line">          <span class="keyword">ref</span>: const</span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">1</span></span><br><span class="line">        Extra: </span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+
+<p>但是实际上, 我们的结果还是从<code>students</code>表中获取的.</p>
+<h2 id="MySQL的查询操作"><a href="#MySQL的查询操作" class="headerlink" title="MySQL的查询操作"></a>MySQL的查询操作</h2><p>了解MySQL的查询操作就是了解他的查询执行路径, 我们先来看一下:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/MySQL_query_arch.png" alt="MySQL查询过程"></p>
+<p>最左上就是我们的客户端了, 通过C&#x2F;S协议来访问到我们的MySQL服务器端. 通过连接线程在缓冲池中寻找, 如果能够命中Cache, 直接结束查询过程, 相当于是剩下了后面的所有资源消耗, 可想而知这是多么大的收益!</p>
+<p>不过, 查询缓存也只是在一些特定条件下才会有用, 例如一个最典型的例子:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(<span class="keyword">none</span>)]<span class="operator">&gt;</span> <span class="keyword">select</span> now();</span><br><span class="line"><span class="operator">+</span><span class="comment">---------------------+</span></span><br><span class="line"><span class="operator">|</span> now()               <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------------------+</span></span><br><span class="line"><span class="operator">|</span> <span class="number">2018</span><span class="number">-10</span><span class="number">-16</span> <span class="number">22</span>:<span class="number">29</span>:<span class="number">34</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------------------+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样的值是没有缓存的必要的, 因为每次查询都不一样.</p>
+<p>有关这个查询的后半部分, 我们在之前的MySQL的架构中说了, 这里就不在赘述了. 但是我们依然可以总结出查询的路径:</p>
+<blockquote>
+<p>查询缓存 -&gt; 解析器 -&gt; 预处理器 -&gt; 优化器 -&gt; 查询执行引擎 -&gt; 存储引擎</p>
+</blockquote>
+<p>说到查询, 不得不提到的就是<code>SELECT</code>查询语句了, 一个完整的SELECT语句执行下来, 是从FROM先开始的, FROM说明选择查询的表, 接着where表明需要满足那些条件, 分析完where之后就会进行分组GROUP BY, 接着通过HAVING进行分组的聚合, 接着还可以通过ORDERBY来进行排序, 接着就根据select指明的列进行投影, 之后再根据LIMIT所指明的范围对结果进行移除.</p>
+<p>在MySQL的交互式SHELL命令行中, 我们可以看到完整的SELECT查询语句:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Name: <span class="string">&#x27;SELECT&#x27;</span></span><br><span class="line">Description:</span><br><span class="line">Syntax:</span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">    [<span class="keyword">ALL</span> <span class="operator">|</span> <span class="keyword">DISTINCT</span> <span class="operator">|</span> DISTINCTROW ]</span><br><span class="line">      [HIGH_PRIORITY]</span><br><span class="line">      [STRAIGHT_JOIN]</span><br><span class="line">      [SQL_SMALL_RESULT] [SQL_BIG_RESULT] [SQL_BUFFER_RESULT]</span><br><span class="line">      [SQL_CACHE <span class="operator">|</span> SQL_NO_CACHE] [SQL_CALC_FOUND_ROWS]</span><br><span class="line">    select_expr [, select_expr ...]</span><br><span class="line">    [<span class="keyword">FROM</span> table_references</span><br><span class="line">    [<span class="keyword">WHERE</span> where_condition]</span><br><span class="line">    [<span class="keyword">GROUP</span> <span class="keyword">BY</span> &#123;col_name <span class="operator">|</span> expr <span class="operator">|</span> position&#125;</span><br><span class="line">      [<span class="keyword">ASC</span> <span class="operator">|</span> <span class="keyword">DESC</span>], ... [<span class="keyword">WITH</span> <span class="keyword">ROLLUP</span>]]</span><br><span class="line">    [<span class="keyword">HAVING</span> where_condition]</span><br><span class="line">    [<span class="keyword">ORDER</span> <span class="keyword">BY</span> &#123;col_name <span class="operator">|</span> expr <span class="operator">|</span> position&#125;</span><br><span class="line">      [<span class="keyword">ASC</span> <span class="operator">|</span> <span class="keyword">DESC</span>], ...]</span><br><span class="line">    [LIMIT &#123;[<span class="keyword">offset</span>,] row_count <span class="operator">|</span> row_count <span class="keyword">OFFSET</span> <span class="keyword">offset</span>&#125;]</span><br><span class="line">    [<span class="keyword">PROCEDURE</span> procedure_name(argument_list)]</span><br><span class="line">    [<span class="keyword">INTO</span> OUTFILE <span class="string">&#x27;file_name&#x27;</span></span><br><span class="line">        [<span class="type">CHARACTER</span> <span class="keyword">SET</span> charset_name]</span><br><span class="line">        export_options</span><br><span class="line">      <span class="operator">|</span> <span class="keyword">INTO</span> DUMPFILE <span class="string">&#x27;file_name&#x27;</span></span><br><span class="line">      <span class="operator">|</span> <span class="keyword">INTO</span> var_name [, var_name]]</span><br><span class="line">    [<span class="keyword">FOR</span> <span class="keyword">UPDATE</span> <span class="operator">|</span> LOCK <span class="keyword">IN</span> SHARE MODE]]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们可以添加前面一些查询选项, 来实现一些功能, 例如: <code>DISTINCT</code>就是在做数据去重, 重复的数据会被舍弃. 还有SQL_CACHE和SQL_NO_CACHE分别表示显示指定存储查询结果是否丢到缓存中. 在我们的MySQL的服务器变量叫做<code>query_cache_type</code>. 只有当这个值为ON的时候, 查询缓存才是打开的. 看一下相关的变量:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> <span class="keyword">show</span> <span class="keyword">global</span> variables <span class="keyword">like</span> &quot;query%&quot;;</span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------------+---------+</span></span><br><span class="line"><span class="operator">|</span> Variable_name                <span class="operator">|</span> <span class="keyword">Value</span>   <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------------+---------+</span></span><br><span class="line"><span class="operator">|</span> query_alloc_block_size       <span class="operator">|</span> <span class="number">8192</span>    <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_limit            <span class="operator">|</span> <span class="number">1048576</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_min_res_unit     <span class="operator">|</span> <span class="number">4096</span>    <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_size             <span class="operator">|</span> <span class="number">0</span>       <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_strip_comments   <span class="operator">|</span> OFF     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_type             <span class="operator">|</span> <span class="keyword">ON</span>      <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_wlock_invalidate <span class="operator">|</span> OFF     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_prealloc_size          <span class="operator">|</span> <span class="number">8192</span>    <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------------+---------+</span></span><br><span class="line"><span class="number">8</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>并且, SELECT的结果缓存符合条件的时候就会进行缓存. 另外, 还可以使用<code>DEMAND</code>来要求MySQL进行显式缓存, 也就是说, 需要用户手动的显式指定需要缓存的数据, 但是如果数据的数据类型不符合缓存的数据类型, 就依然不能进行. 当然了, 在我们进行查询的时候加上<code>SQL_NO_CACHE</code>的话就都不会进行缓存了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%AE%80%E5%8D%95%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.</span> <span class="toc-text">数据库系统的简单回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E5%92%8CMariaDB"><span class="toc-number">2.</span> <span class="toc-text">MySQL和MariaDB</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%92%8CSQL%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.1.</span> <span class="toc-text">MySQL的数据类型和SQL接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E6%9E%B6%E6%9E%84-%E7%B4%A2%E5%BC%95%E5%92%8C%E8%A7%86%E5%9B%BE"><span class="toc-number">3.</span> <span class="toc-text">MySQL的架构, 索引和视图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E7%9A%84%E6%9F%A5%E8%AF%A2%E6%93%8D%E4%BD%9C"><span class="toc-number">4.</span> <span class="toc-text">MySQL的查询操作</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&text=MySQL数据库"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&is_video=false&description=MySQL数据库"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MySQL数据库&body=Check out this article: https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&title=MySQL数据库"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&name=MySQL数据库&description=&lt;p&gt;再来学习一遍数据库, 这一次稍微学习深入一点.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/&t=MySQL数据库"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

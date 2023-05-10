@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Linux和Windows的文件共享, NFS和Samba (SMB)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NFS和Samba">
+<meta property="og:url" content="https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Linux和Windows的文件共享, NFS和Samba (SMB)">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/cmd1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/easy.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/shared.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/confshared.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sucshared.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/sambaserver.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/smbuser1.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/deny.png">
+<meta property="article:published_time" content="2017-09-30T17:18:12.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:44:52.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="NFS">
+<meta property="article:tag" content="Samba">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/cmd1.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>NFS和Samba</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/01/%E6%9D%A5%E5%81%9A%E4%B8%AAmini-Linux%E5%90%A7/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/27/FTP%E5%8D%8F%E8%AE%AE%E5%92%8Cvsftpd/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&text=NFS和Samba"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&is_video=false&description=NFS和Samba"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=NFS和Samba&body=Check out this article: https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&name=NFS和Samba&description=&lt;p&gt;Linux和Windows的文件共享, NFS和Samba (SMB)&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&t=NFS和Samba"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NFS"><span class="toc-number">1.</span> <span class="toc-text">NFS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">1.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.2.</span> <span class="toc-text">启动服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AENFS"><span class="toc-number">1.3.</span> <span class="toc-text">配置NFS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Samba"><span class="toc-number">2.</span> <span class="toc-text">Samba</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Extra"><span class="toc-number">3.</span> <span class="toc-text">Extra</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        NFS和Samba
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-30T17:18:12.000Z" class="dt-published" itemprop="datePublished">2017-09-30</time>
+        
+        (Updated: <time datetime="2020-11-30T01:44:52.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/NFS/" rel="tag">NFS</a>, <a class="p-category" href="/tags/Samba/" rel="tag">Samba</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Linux和Windows的文件共享, NFS和Samba (SMB)</p>
+<span id="more"></span>
+
+<h2 id="NFS"><a href="#NFS" class="headerlink" title="NFS"></a>NFS</h2><p>前面在说ftp文件共享的时候我们提到了NFS是Linux&#x2F;Unix上一个常用的文件共享服务中的一种. NFS的全称是Network File System. 一般情况下, 文件系统在内核中实现, 但并不是说文件系统不能在用户空间实现, 例如分布式的一些文件系统, 特别是一些网络文件系统和虚拟文件系统, 在内核中由一个叫FUSE的模块专门用来实现这个, 当然这不是这篇文章的重点. NFS是在内核中实现的, 在编译内核的时候就有这个选项的配置.</p>
+<p>NFS中最大的问题就是在对本地文件系统的接口调用要被映射到网络上的另外一台主机上. 这是如何实现的? </p>
+<p>在很久很久之前我们曾经提到过RPC, 远程过程调用的概念. 我们在内核上实现了很多系统调用, 当用户空间的程序需要进行特权操作的时候, 会发起系统调用, 这是<strong>本地系统调用</strong> 例如 ( read(), write(), open(), close() ) 而所谓远程过程调用其实就是把这个原本的过程调用发给远端主机. 当然这个也是需要监听在某个套接字的. 接受到了传过来的函数和参数的时候, 就会通过这个服务进程来托付给远端的OS 其实就相当于是对于远端机器的本地系统调用.当执行结束了之后, 这个执行结果就会<strong>返回给这个监听服务进程</strong>, 接着该进程再将结果构造成响应报文发送给发起调用的主机. 这就是RPC. 从本质讲他还是系统调用, 一部分的功能交给了本地程序, 一部分交给了远程主机的函数.</p>
+<p>这个基本上就是NFS的工作模式, 当你对文件系统发起操作的时候, 内核中的NFS模块会得到响应, 尽管要操作的目录的本地并不存在, 但是NFS模块会帮助你从远端拿到结果并返回给你. 那么我们知道, 只要涉及到跨主机的情况, 为了能够使得双方得到兼容, 或者说双方都可以明确意思, 就需要<strong>协议</strong>的帮助, 或者使用<strong>半结构化的数据</strong>, 例如xml, json, http(RESTful)等.</p>
+<p>在早期的NFS版本中, 有个非常棘手的问题, 就是文件权限的问题. 想象在本地主机test(uid&#x3D;1002)用户存储了一个文件到远端主机上, 但是问题是远端主机上没有test这个用户啊? 这怎么办? 好办! 我们说过用户和组的本质只是一个ID号, 那么只要在远端主机上直接看到的就是1002这个ID号就行了, 但是, 巧合的是远端主机上正好有一个叫centos的用户的ID号也是1002, 这样子就乱套了. 除此之外, 我们知道root用户的ID号是0, 而在每一台主机上都是如此, 所以root用户就还是拥有可以操作远端一切文件的权限了.</p>
+<p>因此, NFS的解决方法是进行权限的集中管理, 并且进行root的权限挤压, 也就是说, 当收到root用户存储的文件时, 会自动将这个root用户挤压成一个权限最小的用户, 来避免权限问题. 而用户不同的问题使用了一个新的机制, 叫做NIS. </p>
+<p>NIS的全称是Network Information System, 如他的名字一样, 这个系统就像是一个信息库, 单独存放用户的账号信息. 我们知道进行登录是需要一个login程序的. 当我们输入了账号之后, login程序就会去找NIS去询问有没有这个账号啊? 如果有的话就显示password, 接着再将用户输入的密码发送给NIS询问密码是否正确 这样的一套工作流程. 问题终于解决了? 有意思的是, NIS协议是明文的. emmmmm, 所以NIS不建议在互联网上使用, 除此之外, NIS成为了这个网络的重要节点. 所以这样的缺点, 使得NIS的使用率并不高, 甚至说几乎没有在使用这个. 而现在使用的更多的是LDAP.</p>
+<p>好吧, 我不使用NIS了. 现在怎么解决问题呢? 于是就想到了类似vsftpd的那种用户映射的模式, 在新版本的NFS中, 由一个叫做idmapd的服务端服务来完成这个事情, 实现用户账号的映射.</p>
+<p>对于NFS来说, 另一个棘手的问题是用户认证这件事, 因为他只负责文件系统, 不能像其他的远程调用一样进行用户账号和密码的验证. 所以, NFS仅支持对于IP的认证. 但这又不安全而且很不灵活. 而且即使是这种认证也需要另外一个服务来跑, 这个认证服务叫做mountd, 他的主要作用就是<strong>令牌分发</strong> 当来访者请求发送到NFS服务器的时候, 这个请求会先交给mound服务, mountd判断这个用户是合法或者说有权限访问, 就发给他一个令牌, 这样每一对文件的操作只要令牌验证就可以了.</p>
+<p>至此, 服务端已经运行三个daemon了: idmapd, mountd, nfsd. 客户端呢? 假设给你这样的场景, 如果有个疯子在你传输大文件的时候把你网线拔了, 你的文件传到一半怎么办? 这个时候就要求客户端进行文件跟踪以及文件锁的相关服务.</p>
+<p>NFS监听在2049&#x2F;udp, 2049&#x2F;tcp端口上, 而mountd监听的端口就要由本地的公共服务rpc来决定了, 是一个随机端口. 但是这个随机端口是服务决定的, 所以是个半随机端口, 其实这个服务的名字叫做portmapper:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpcinfo </span></span><br><span class="line">   program version netid     address                service    owner</span><br><span class="line">    100000    4    tcp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    3    tcp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    4    udp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    3    udp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    4    tcp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    3    tcp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    2    tcp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    4    udp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    3    udp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    2    udp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    4    <span class="built_in">local</span>     /var/run/rpcbind.sock  portmapper superuser</span><br><span class="line">    100000    3    <span class="built_in">local</span>     /var/run/rpcbind.sock  portmapper superuser</span><br></pre></td></tr></table></figure>
+
+<p>可以看到它监听在111端口上, 如果你无法看到或者无法使用, 应该先安装.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpm -qf /sbin/rpcinfo </span></span><br><span class="line">rpcbind-0.2.0-42.el7.x86_64</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们就来说说怎么使用nfs吧.</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpm -q nfs-utils</span></span><br><span class="line">package nfs-utils is not installed</span><br><span class="line">[root@WWW ~]<span class="comment"># yum install nfs-utils</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来看看装了那些内容:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpm -ql nfs-utils</span></span><br><span class="line">/etc/exports.d</span><br><span class="line">/etc/gssproxy/24-nfs-server.conf</span><br><span class="line">/etc/modprobe.d/lockd.conf</span><br><span class="line">/etc/nfs.conf</span><br><span class="line">/etc/nfsmount.conf</span><br><span class="line">/etc/request-key.d/id_resolver.conf</span><br><span class="line">/etc/sysconfig/nfs</span><br><span class="line">/sbin/mount.nfs</span><br><span class="line">/sbin/mount.nfs4</span><br><span class="line">/sbin/osd_login</span><br><span class="line">/sbin/rpc.statd</span><br><span class="line">/sbin/umount.nfs</span><br><span class="line">/sbin/umount.nfs4</span><br><span class="line">/usr/lib/systemd/scripts/nfs-utils_env.sh</span><br><span class="line">/usr/lib/systemd/system-generators/nfs-server-generator</span><br><span class="line">/usr/lib/systemd/system/auth-rpcgss-module.service</span><br><span class="line">/usr/lib/systemd/system/nfs-blkmap.service</span><br><span class="line">/usr/lib/systemd/system/nfs-client.target</span><br><span class="line">/usr/lib/systemd/system/nfs-config.service</span><br><span class="line">/usr/lib/systemd/system/nfs-idmap.service</span><br><span class="line">/usr/lib/systemd/system/nfs-idmapd.service</span><br><span class="line">/usr/lib/systemd/system/nfs-lock.service</span><br><span class="line">/usr/lib/systemd/system/nfs-mountd.service</span><br><span class="line">/usr/lib/systemd/system/nfs-secure.service</span><br><span class="line">/usr/lib/systemd/system/nfs-server.service</span><br><span class="line">/usr/lib/systemd/system/nfs-utils.service</span><br><span class="line">/usr/lib/systemd/system/nfs.service</span><br><span class="line">/usr/lib/systemd/system/nfslock.service</span><br><span class="line">/usr/lib/systemd/system/proc-fs-nfsd.mount</span><br><span class="line">/usr/lib/systemd/system/rpc-gssd.service</span><br><span class="line">/usr/lib/systemd/system/rpc-statd-notify.service</span><br><span class="line">/usr/lib/systemd/system/rpc-statd.service</span><br><span class="line">/usr/lib/systemd/system/rpcgssd.service</span><br><span class="line">/usr/lib/systemd/system/rpcidmapd.service</span><br><span class="line">/usr/lib/systemd/system/var-lib-nfs-rpc_pipefs.mount</span><br><span class="line">/usr/sbin/blkmapd</span><br><span class="line">/usr/sbin/exportfs</span><br><span class="line">/usr/sbin/mountstats</span><br><span class="line">/usr/sbin/nfsdcltrack</span><br><span class="line">/usr/sbin/nfsidmap</span><br><span class="line">/usr/sbin/nfsiostat</span><br><span class="line">/usr/sbin/nfsstat</span><br><span class="line">/usr/sbin/rpc.gssd</span><br><span class="line">/usr/sbin/rpc.idmapd</span><br><span class="line">/usr/sbin/rpc.mountd</span><br><span class="line">/usr/sbin/rpc.nfsd</span><br><span class="line">/usr/sbin/rpcdebug</span><br><span class="line">/usr/sbin/showmount</span><br><span class="line">/usr/sbin/sm-notify</span><br><span class="line">/usr/sbin/start-statd</span><br><span class="line">...(omitted)</span><br><span class="line">/var/lib/nfs</span><br><span class="line">/var/lib/nfs/etab</span><br><span class="line">/var/lib/nfs/rmtab</span><br><span class="line">/var/lib/nfs/rpc_pipefs</span><br><span class="line">/var/lib/nfs/statd</span><br><span class="line">/var/lib/nfs/statd/sm</span><br><span class="line">/var/lib/nfs/statd/sm.bak</span><br><span class="line">/var/lib/nfs/state</span><br><span class="line">/var/lib/nfs/v4recovery</span><br><span class="line">/var/lib/nfs/xtab</span><br></pre></td></tr></table></figure>
+
+<p>很显眼就能看到</p>
+<ul>
+<li>&#x2F;usr&#x2F;sbin&#x2F;rpc.idmapd</li>
+<li>&#x2F;usr&#x2F;sbin&#x2F;rpc.mountd</li>
+<li>&#x2F;usr&#x2F;sbin&#x2F;rpc.nfsd</li>
+</ul>
+<p>这三个重要的服务端程序.</p>
+<h3 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h3><p>现在就直接来启动, 要注意的是 这个时候的服务名字不是nfsd而是nfs:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># systemctl start nfs</span></span><br><span class="line">[root@WWW ~]<span class="comment"># systemctl status nfs</span></span><br><span class="line">● nfs-server.service - NFS server and services</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; disabled; vendor preset: disabled)</span><br><span class="line">   Active: active (exited) since Sat 2017-09-30 02:51:15 EDT; 6s ago</span><br><span class="line">  Process: 9826 ExecStart=/usr/sbin/rpc.nfsd <span class="variable">$RPCNFSDARGS</span> (code=exited, status=0/SUCCESS)</span><br><span class="line">  Process: 9821 ExecStartPre=/bin/sh -c /bin/kill -HUP `<span class="built_in">cat</span> /run/gssproxy.pid` (code=exited, status=0/SUCCESS)</span><br><span class="line">  Process: 9820 ExecStartPre=/usr/sbin/exportfs -r (code=exited, status=0/SUCCESS)</span><br><span class="line"> Main PID: 9826 (code=exited, status=0/SUCCESS)</span><br><span class="line">   CGroup: /system.slice/nfs-server.service</span><br><span class="line"></span><br><span class="line">Sep 30 02:51:15 WWW systemd[1]: Starting NFS server and services...</span><br><span class="line">Sep 30 02:51:15 WWW systemd[1]: Started NFS server and services.</span><br></pre></td></tr></table></figure>
+
+<p>这个时候该启动的程序都已经在自己监听的套接字上了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># netstat -antp</span></span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    </span><br><span class="line">tcp        0      0 0.0.0.0:49287           0.0.0.0:*               LISTEN      9806/rpc.statd      </span><br><span class="line">tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      1/systemd           </span><br><span class="line">tcp        0      0 0.0.0.0:20048           0.0.0.0:*               LISTEN      9819/rpc.mountd     </span><br></pre></td></tr></table></figure>
+
+<p>而且这个时候再调用rpcinfo, 就可以看到一大堆端口了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># rpcinfo </span></span><br><span class="line">   program version netid     address                service    owner</span><br><span class="line">    100000    4    tcp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    3    tcp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    4    udp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    3    udp6      ::.0.111               portmapper superuser</span><br><span class="line">    100000    4    tcp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    3    tcp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    2    tcp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    4    udp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    3    udp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    2    udp       0.0.0.0.0.111          portmapper superuser</span><br><span class="line">    100000    4    <span class="built_in">local</span>     /var/run/rpcbind.sock  portmapper superuser</span><br><span class="line">    100000    3    <span class="built_in">local</span>     /var/run/rpcbind.sock  portmapper superuser</span><br><span class="line">    100024    1    udp       0.0.0.0.232.28         status     29</span><br><span class="line">    100024    1    tcp       0.0.0.0.192.135        status     29</span><br><span class="line">    100024    1    udp6      ::.164.187             status     29</span><br><span class="line">    100024    1    tcp6      ::.233.229             status     29</span><br><span class="line">    100005    1    udp       0.0.0.0.78.80          mountd     superuser</span><br><span class="line">    100005    1    tcp       0.0.0.0.78.80          mountd     superuser</span><br><span class="line">    100005    1    udp6      ::.78.80               mountd     superuser</span><br><span class="line">    100005    1    tcp6      ::.78.80               mountd     superuser</span><br><span class="line">    100005    2    udp       0.0.0.0.78.80          mountd     superuser</span><br><span class="line">    100005    2    tcp       0.0.0.0.78.80          mountd     superuser</span><br><span class="line">    100005    2    udp6      ::.78.80               mountd     superuser</span><br><span class="line">    100005    2    tcp6      ::.78.80               mountd     superuser</span><br><span class="line">    100005    3    udp       0.0.0.0.78.80          mountd     superuser</span><br><span class="line">    100005    3    tcp       0.0.0.0.78.80          mountd     superuser</span><br><span class="line">    100005    3    udp6      ::.78.80               mountd     superuser</span><br><span class="line">    100005    3    tcp6      ::.78.80               mountd     superuser</span><br><span class="line">    100003    3    tcp       0.0.0.0.8.1            nfs        superuser</span><br><span class="line">    100003    4    tcp       0.0.0.0.8.1            nfs        superuser</span><br><span class="line">    100227    3    tcp       0.0.0.0.8.1            nfs_acl    superuser</span><br><span class="line">    100003    3    udp       0.0.0.0.8.1            nfs        superuser</span><br><span class="line">    100003    4    udp       0.0.0.0.8.1            nfs        superuser</span><br><span class="line">    100227    3    udp       0.0.0.0.8.1            nfs_acl    superuser</span><br><span class="line">    100003    3    tcp6      ::.8.1                 nfs        superuser</span><br><span class="line">    100003    4    tcp6      ::.8.1                 nfs        superuser</span><br><span class="line">    100227    3    tcp6      ::.8.1                 nfs_acl    superuser</span><br><span class="line">    100003    3    udp6      ::.8.1                 nfs        superuser</span><br><span class="line">    100003    4    udp6      ::.8.1                 nfs        superuser</span><br><span class="line">    100227    3    udp6      ::.8.1                 nfs_acl    superuser</span><br><span class="line">    100021    1    udp       0.0.0.0.220.82         nlockmgr   superuser</span><br><span class="line">    100021    3    udp       0.0.0.0.220.82         nlockmgr   superuser</span><br><span class="line">    100021    4    udp       0.0.0.0.220.82         nlockmgr   superuser</span><br><span class="line">    100021    1    tcp       0.0.0.0.182.24         nlockmgr   superuser</span><br><span class="line">    100021    3    tcp       0.0.0.0.182.24         nlockmgr   superuser</span><br><span class="line">    100021    4    tcp       0.0.0.0.182.24         nlockmgr   superuser</span><br><span class="line">    100021    1    udp6      ::.217.178             nlockmgr   superuser</span><br><span class="line">    100021    3    udp6      ::.217.178             nlockmgr   superuser</span><br><span class="line">    100021    4    udp6      ::.217.178             nlockmgr   superuser</span><br><span class="line">    100021    1    tcp6      ::.142.205             nlockmgr   superuser</span><br><span class="line">    100021    3    tcp6      ::.142.205             nlockmgr   superuser</span><br><span class="line">    100021    4    tcp6      ::.142.205             nlockmgr   superuser</span><br></pre></td></tr></table></figure>
+
+<p>如果此时重启, 端口就会发生改变. 因为这是半随机的.	</p>
+<h3 id="配置NFS"><a href="#配置NFS" class="headerlink" title="配置NFS"></a>配置NFS</h3><p>说了这么多, 其实配置才是最简单的, 只需要编辑&#x2F;etc&#x2F;exports文件, 来说明要导出的文件目录是哪一个就行了. 这个文件的具体格式是这样的:</p>
+<blockquote>
+<p>dir(filesystem)  client1(option1, option2)  client2(option1, option2)</p>
+</blockquote>
+<p>以及就是暴露出去哪个目录(或者文件系统, 但是文件系统就是挂载到目录上才可以使用的, 所以指定目录就行了), 接着允许访问的客户是谁, 以及他们的权限设定和选项.</p>
+<p>所有支持的选项可以在exports的man手册上查看. 一个最简单的例子就像这样:</p>
+<p><code>/tmp	192.168.56.103(rw)</code> </p>
+<p>接着我们重启服务 ( 这里先进行重启, 但是这是一种极其不推荐的做法, 后面再细说 ) 接着就可以查看了, 使用命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW etc]<span class="comment"># showmount -e 192.168.56.101</span></span><br><span class="line">Export list <span class="keyword">for</span> 192.168.56.101:</span><br><span class="line">/tmp 192.168.56.103</span><br></pre></td></tr></table></figure>
+
+<p>在另外一台主机上也是可以查看到的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ip addr show enp0s3 </span></span><br><span class="line">2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 08:00:27:a0:b9:10 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 192.168.56.103/24 brd 192.168.56.255 scope global dynamic enp0s3</span><br><span class="line">       valid_lft 1161sec preferred_lft 1161sec</span><br><span class="line">[root@WWW ~]<span class="comment"># showmount -e 192.168.56.101</span></span><br><span class="line">Export list <span class="keyword">for</span> 192.168.56.101:</span><br><span class="line">/tmp 192.168.56.103</span><br></pre></td></tr></table></figure>
+
+<p>当然前提是安装了nfs-utils这个包.</p>
+<p>现在其实已经配置完成了, 登录到103主机挂载即可使用了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># mount -t nfs 192.168.56.101:/tmp /mnt/</span></span><br><span class="line">[root@WWW ~]<span class="comment"># cd /mnt/</span></span><br><span class="line">[root@WWW mnt]<span class="comment"># ls</span></span><br><span class="line">fstab                                                                  yum_save_tx.2017-09-23.17-39.rZFKGX.yumtx  yum_save_tx.2017-09-26.11-33.JDsQeW.yumtx</span><br><span class="line"><span class="built_in">functions</span>                                                              yum_save_tx.2017-09-24.02-10.SFv1gg.yumtx  yum_save_tx.2017-09-28.02-22.TmlpEK.yumtx</span><br><span class="line">grub.cfg                                                               yum_save_tx.2017-09-24.02-14.hLrGaJ.yumtx  yum_save_tx.2017-09-28.02-24.nw6FJ3.yumtx</span><br><span class="line">systemd-private-76aa5be0b609474b906e0041c7287281-named.service-YvkHEW  yum_save_tx.2017-09-24.02-17.jrTroG.yumtx  yum_save_tx.2017-09-28.02-26.eetkNP.yumtx</span><br><span class="line">systemd-private-84ee57e9e1d94742bc1ef6e525e7c6f9-named.service-bGtSvY  yum_save_tx.2017-09-24.02-25.z2khA_.yumtx</span><br><span class="line">yum_save_tx.2017-09-23.17-39.CI1ETc.yumtx                              yum_save_tx.2017-09-26.11-32.zTDVHS.yumtx</span><br></pre></td></tr></table></figure>
+
+<p>怎么样是不是很帅气 ! </p>
+<p>那么就来说说几个常用的参数吧. 除了简单的读写权限, 还有很多有趣的属性呢</p>
+<ul>
+<li>async: 异步读写, 可以提高性能.</li>
+<li>secure: 使用1024以下的端口</li>
+<li>root_squash: root权限挤压</li>
+<li>all_squash: 所有用户都积压权限</li>
+<li>anonuid&#x3D;?, anongid&#x3D;?: 所有的文件所属用户和组都是匿名</li>
+</ul>
+<p>现在就来说一下, 如何正常的进行文件系统导出, 不是进行重启服务, 而是使用一个特定的工具: <code>exportfs</code> </p>
+<p>我们先加上一个新的文件系统导出:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW tmp]<span class="comment"># mkdir -p /share/nfs</span></span><br><span class="line">[root@WWW tmp]<span class="comment"># vim /etc/exports</span></span><br><span class="line">[root@WWW tmp]<span class="comment"># showmount -e 192.168.56.101</span></span><br><span class="line">Export list <span class="keyword">for</span> 192.168.56.101:</span><br><span class="line">/tmp 192.168.56.103</span><br><span class="line">[root@WWW tmp]<span class="comment"># exportfs -ar</span></span><br><span class="line">[root@WWW tmp]<span class="comment"># showmount -e 192.168.56.101</span></span><br><span class="line">Export list <span class="keyword">for</span> 192.168.56.101:</span><br><span class="line">/share/nfs 192.168.56.103</span><br><span class="line">/tmp       192.168.56.103</span><br></pre></td></tr></table></figure>
+
+<p>-ar就是说all re-export, 另外还支持其他的参数例如 -u 关闭导出的文件系统, 可以和-a参数连在一起使用, 表示关闭所有的文件系统.</p>
+<p>当然我们也可以进行开机自动挂载nfs文件系统, 只要在fstab中写上就行了. 直接mount也可以看到当前的参数:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">...(omitted)</span><br><span class="line">192.168.56.101:/tmp on /mnt <span class="built_in">type</span> nfs4 (rw,relatime,vers=4.1,rsize=262144,wsize=262144,namlen=255,hard,proto=tcp,port=0,timeo=600,retrans=2,sec=sys,clientaddr=192.168.56.103,local_lock=none,addr=192.168.56.101)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Samba"><a href="#Samba" class="headerlink" title="Samba"></a>Samba</h2><p>前面说的NFS, 如果想要使用, 最好是Unix&#x2F;Linux系统, Windows对于NFS的支持还是很有限的. 更早之前, 我们还说过FTP这个协议, 但是FTP位于应用层, 从协议本身来看, 把一个FTP共享<strong>挂载</strong>在客户机上, 这是不可能的.</p>
+<p>这两者就催生了samba的诞生, 为了使得能够在Linux&#x2F;Unix上实现一个能够提供Windows支持的协议, 于是这就是Windows上的smb, 即Service Message Block. 这个就是Windows上网络邻居之间共享文件所使用到的, 它的协议通称CIFS, 即Common Internet File System.  一段时间之后smb协议逐渐演化成一个开源项目, 这个项目的命名就是samba.</p>
+<p>samba可以安装在Win和Unix&#x2F;Linux主机上. 在Windows上, 这个服务监听137&#x2F;udp, 138&#x2F;tcp, 139&#x2F;tcp, 445&#x2F;tcp.</p>
+<p>具体说来, 在137,138是用来实现NetBIOS的, 这个是Windows用来基于主机名进行互相访问的, 对于主机名的解析, 依靠Windows的Wins服务解析服务, 除此之外, Windows的网络共享模型有基于工作组和基于域的, 这些都需要特定的服务来支持. 对于Linux&#x2F;Unix主机, 如果想要加入Windows, 就必须也实现这些服务. </p>
+<p>samba就做了这些事情, 它主要实现了三种服务: nmdb: 提供NetBIOS服务, smbd: 提供CIFS协议支持, winbindd: 提供对Windows用户组的支持.</p>
+<p>接下来我们使用一个CentOS6和和一台Windows XP做实验:</p>
+<p>先来看看CentOS6上的软件包:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># yum list all samba*</span></span><br><span class="line">Loaded plugins: fastestmirror, refresh-packagekit, security</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line">base                                                                                                                                                | 3.7 kB     00:00     </span><br><span class="line">extras                                                                                                                                              | 3.4 kB     00:00     </span><br><span class="line">updates                                                                                                                                             | 3.4 kB     00:00     </span><br><span class="line">Installed Packages</span><br><span class="line">samba-client.x86_64                                                                   3.5.10-114.el6                                                      @base/<span class="variable">$releasever</span></span><br><span class="line">samba-common.x86_64                                                                   3.5.10-114.el6                                                      @base/<span class="variable">$releasever</span></span><br><span class="line">samba-winbind-clients.x86_64                                                          3.5.10-114.el6                                                      @base/<span class="variable">$releasever</span></span><br><span class="line">Available Packages</span><br><span class="line">samba.x86_64                                                                          3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-client.x86_64                                                                   3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-common.i686                                                                     3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-common.x86_64                                                                   3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-doc.x86_64                                                                      3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-domainjoin-gui.x86_64                                                           3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-glusterfs.x86_64                                                                3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-swat.x86_64                                                                     3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-winbind.x86_64                                                                  3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-winbind-clients.i686                                                            3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-winbind-clients.x86_64                                                          3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-winbind-devel.i686                                                              3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-winbind-devel.x86_64                                                            3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba-winbind-krb5-locator.x86_64                                                     3.6.23-45.el6_9                                                     updates          </span><br><span class="line">samba4.x86_64                                                                         4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-client.x86_64                                                                  4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-common.x86_64                                                                  4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-dc.x86_64                                                                      4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-dc-libs.x86_64                                                                 4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-devel.x86_64                                                                   4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-libs.x86_64                                                                    4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-pidl.x86_64                                                                    4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-python.x86_64                                                                  4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-test.x86_64                                                                    4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-winbind.x86_64                                                                 4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-winbind-clients.x86_64                                                         4.2.10-11.el6_9                                                     updates          </span><br><span class="line">samba4-winbind-krb5-locator.x86_64                                                    4.2.10-11.el6_9                                                     updates          </span><br></pre></td></tr></table></figure>
+
+<p>有两个版本的samba, 系统已经预先安装了samba客户端, 3.6版本. 那么我们就使用这个版本的吧.</p>
+<p>在Windows上, 共享文件路径是这样写的: \SEREVR\shared_name.</p>
+<p>下面说说我们当前的环境:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/cmd1.png" alt="cmd1"></p>
+<p>而另外一台CentOS6主机就是那个192.168.56.101. 现在在Windows上建立一个共享文件夹, 步骤如下:</p>
+<ul>
+<li>关闭简单文件共享</li>
+</ul>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/easy.png" alt="easy"></p>
+<ul>
+<li>设置共享文件夹</li>
+</ul>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/shared.png" alt="shared"></p>
+<ul>
+<li>配置权限, 创建一个新用户</li>
+</ul>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/confshared.png" alt="confshared"></p>
+<p>完成之后就会看到图标发生改变.</p>
+<p>现在就来试试连接到Windows上的共享文件夹, 首先我们来看看samba-client安装了什么二进制程序吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># rpm -ql samba-client</span></span><br><span class="line">/usr/bin/findsmb</span><br><span class="line">/usr/bin/nmblookup</span><br><span class="line">/usr/bin/rpcclient</span><br><span class="line">/usr/bin/sharesec</span><br><span class="line">/usr/bin/smbcacls</span><br><span class="line">/usr/bin/smbclient</span><br><span class="line">/usr/bin/smbget</span><br><span class="line">/usr/bin/smbprint</span><br><span class="line">/usr/bin/smbspool</span><br><span class="line">/usr/bin/smbtar</span><br><span class="line">/usr/bin/smbtree</span><br></pre></td></tr></table></figure>
+
+<p>其中我们最关心的就是那个smbclient了. 使用这个程序可以列出目标主机的共享目录, 以及进行连接, 接着就像是使用ftp客户端一样了.	</p>
+<p>来试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">root@localhost ~]<span class="comment"># smbclient -L 192.168.56.102 -U test</span></span><br><span class="line">Enter <span class="built_in">test</span><span class="string">&#x27;s password: </span></span><br><span class="line"><span class="string">session request to 192.168.56.102 failed (Called name not present)</span></span><br><span class="line"><span class="string">Domain=[NETCOOL-TEST] OS=[Windows 5.1] Server=[Windows 2000 LAN Manager]</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">	Sharename       Type      Comment</span></span><br><span class="line"><span class="string">	---------       ----      -------</span></span><br><span class="line"><span class="string">	IPC$            IPC       远程 IPC</span></span><br><span class="line"><span class="string">	Shard           Disk      This is a teest</span></span><br><span class="line"><span class="string">	ADMIN$          Disk      远程管理</span></span><br><span class="line"><span class="string">	C$              Disk      默认共享</span></span><br><span class="line"><span class="string">	Shared          Disk      This is a test.</span></span><br><span class="line"><span class="string">session request to 192.168.56.102 failed (Called name not present)</span></span><br><span class="line"><span class="string">session request to 192 failed (Called name not present)</span></span><br><span class="line"><span class="string">Domain=[NETCOOL-TEST] OS=[Windows 5.1] Server=[Windows 2000 LAN Manager]</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">	Server               Comment</span></span><br><span class="line"><span class="string">	---------            -------</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">	Workgroup            Master</span></span><br><span class="line"><span class="string">	---------            -------</span></span><br></pre></td></tr></table></figure>
+
+<p>默认就有很多共享服务, 在最后一行的那个就是我们的新建的Shared文件夹, 可以往里面扔东西, 因为刚刚我给了test用户写入的权限, 使用上面说的路径来连接: [ 为了防止各种各样的辣鸡NT权限报错,建议把测试文件夹放在别的分区或者共享文档目录下 ]</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># smbclient //192.168.56.102/Shared -U test</span></span><br><span class="line">Enter <span class="built_in">test</span><span class="string">&#x27;s password: </span></span><br><span class="line"><span class="string">session request to 192.168.56.102 failed (Called name not present)</span></span><br><span class="line"><span class="string">Domain=[NETCOOL-TEST] OS=[Windows 5.1] Server=[Windows 2000 LAN Manager]</span></span><br><span class="line"><span class="string">smb: \&gt; ls</span></span><br><span class="line"><span class="string">  .                                   D        0  Mon Oct  2 19:55:36 2017</span></span><br><span class="line"><span class="string">  ..                                  D        0  Mon Oct  2 19:55:36 2017</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">		40915 blocks of size 262144. 26933 blocks available</span></span><br><span class="line"><span class="string">smb: \&gt; ?</span></span><br><span class="line"><span class="string">?              allinfo        altname        archive        blocksize      </span></span><br><span class="line"><span class="string">cancel         case_sensitive cd             chmod          chown          </span></span><br><span class="line"><span class="string">close          del            dir            du             echo           </span></span><br><span class="line"><span class="string">exit           get            getfacl        hardlink       help           </span></span><br><span class="line"><span class="string">history        iosize         lcd            link           lock           </span></span><br><span class="line"><span class="string">lowercase      ls             l              mask           md             </span></span><br><span class="line"><span class="string">mget           mkdir          more           mput           newer          </span></span><br><span class="line"><span class="string">open           posix          posix_encrypt  posix_open     posix_mkdir    </span></span><br><span class="line"><span class="string">posix_rmdir    posix_unlink   print          prompt         put            </span></span><br><span class="line"><span class="string">pwd            q              queue          quit           readlink       </span></span><br><span class="line"><span class="string">rd             recurse        reget          rename         reput          </span></span><br><span class="line"><span class="string">rm             rmdir          showacls       setmode        stat           </span></span><br><span class="line"><span class="string">symlink        tar            tarmode        translate      unlock         </span></span><br><span class="line"><span class="string">volume         vuid           wdel           logon          listconnect    </span></span><br><span class="line"><span class="string">showconnect    ..             !     </span></span><br></pre></td></tr></table></figure>
+
+<p>是不是和ftp使用起来很像啊</p>
+<p>向里面扔个文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">smb: \&gt; lcd /etc/</span><br><span class="line">smb: \&gt; put fstab </span><br><span class="line">putting file fstab as \fstab (84.7 kb/s) (average 84.7 kb/s)</span><br></pre></td></tr></table></figure>
+
+<p>此时Windows中已经看到了:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sucshared.png" alt="sucshared"></p>
+<p>就这么简单. 这是一种基于交互式访问的方式,也可以进行挂载使用:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># mount -t cifs //192.168.56.102/Shared /NTshared/ -o username=test</span></span><br><span class="line">Password:</span><br><span class="line">[root@localhost NTshared]<span class="comment"># cd /NTshared/</span></span><br><span class="line">[root@localhost NTshared]<span class="comment"># ls</span></span><br><span class="line">fstab</span><br></pre></td></tr></table></figure>
+
+<p>这很简单, 但是重点在于, 我们如何使Linux成为Samba服务器端, Windows成为客户端呢.</p>
+<ul>
+<li>首先安装服务器端程序</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install samba -y</span><br></pre></td></tr></table></figure>
+
+<p>安装完成之后, 我们按照惯例查看安装了哪些, 其中最重要的就是下面的两守护进程了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...(omitted)</span><br><span class="line">/usr/sbin/nmbd</span><br><span class="line">/usr/sbin/smbd</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>启动samba服务的时候, 其实就是启动的这个. 他的主配置文件是<code>/etc/samba/smb.conf</code> </p>
+<ul>
+<li>接着我们需要进行认证的设置</li>
+</ul>
+<p>与ftp相似的是, samba直接启动之后就可以使用. 但是不同的是, samba需要指定那些目录共享, 这其中有点像NFS. 我们在说ftp的时候说过, vsftpd维护三种用户: 系统用户匿名用户虚拟用户. 对于samba来说, 他只使用系统用户, 但是有意思的是, 他不是用shadow文件进行的密码认证, 而是使用自己的密码文件. 这就是说 账号使用passwd中的系统用户, 但是认证是自己来( 所以我可以理解成samba不使用Linux的统一认证pam(?) )</p>
+<p>由一个工具专门做这个事情<code>smbpasswd</code>. </p>
+<p>不多说了, 直接启动服务看看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># service nmb start &amp;&amp; service smb start</span></span><br><span class="line">Starting NMB services:                                     [  OK  ]</span><br><span class="line">Starting SMB services:                                     [  OK  ]</span><br></pre></td></tr></table></figure>
+
+<p>接着就能看到监听的137,139,445端口已经开始监听起来了. </p>
+<blockquote>
+<p><strong>脱坑指南: 如果你的nmb进程启动有问题( 比如没法创建套接字 ), 那么就手动的<code>nmbd -D</code>启动.</strong></p>
+</blockquote>
+<p>这个时候按理说已经可以在Windows主机中看到Linux主机了, 但是问题在于他们的工作组不一样( 上面说过使用工作组来划分 ), 因为Windows上的默认工作组是<code>WORKGROUP</code>, 而samba默认的工作组是<code>MYGROUP</code>. 这个设定可以在samba的配置文件中进行更改:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#======================= Global Settings =====================================</span></span><br><span class="line"></span><br><span class="line">[global]</span><br><span class="line"></span><br><span class="line"><span class="comment"># ----------------------- Network Related Options -------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># workgroup = NT-Domain-Name or Workgroup-Name, eg: MIDEARTH</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># server string is the equivalent of the NT Description field</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># netbios name can be used to specify a server name not tied to the hostname</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Interfaces lets you configure Samba to use multiple interfaces</span></span><br><span class="line"><span class="comment"># If you have multiple network interfaces then you can list the ones</span></span><br><span class="line"><span class="comment"># you want to listen on (never omit localhost)</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Hosts Allow/Hosts Deny lets you restrict who can connect, and you can</span></span><br><span class="line"><span class="comment"># specifiy it as a per share option as well</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">        workgroup = MYGROUP</span><br><span class="line">        server string = Samba Server Version %v</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>把他改成WORKGROUP之后, 重新启动服务, 在windows中的网上邻居中查看工作组的计算机就可以看到:<br><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/sambaserver.png" alt="sambaserver"></p>
+<blockquote>
+<p><strong>脱坑指南: 如果你看不到主机先尝试清空iptables.</strong></p>
+</blockquote>
+<p>但是这个时候还是连接不了的哦 因为这个时候我们还没有设置Samba的用户账户. 所以没法进行连接.</p>
+<p>这个账号的设置就需要我们之前说过的smbpasswd了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># useradd smbuser1</span></span><br><span class="line">[root@localhost ~]<span class="comment"># smbpasswd -a smbuser1</span></span><br><span class="line">New SMB password:</span><br><span class="line">Retype new SMB password:</span><br><span class="line">Added user smbuser1.</span><br></pre></td></tr></table></figure>
+
+<p>除了-a参数增加用户以外, 还有一些常用的选项:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># smbpasswd</span></span><br><span class="line">  -a                   add user</span><br><span class="line">  -d                   <span class="built_in">disable</span> user</span><br><span class="line">  -e                   <span class="built_in">enable</span> user</span><br><span class="line">  -x                   delete user</span><br></pre></td></tr></table></figure>
+
+<p>输入密码登陆之后就可以看到了:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/smbuser1.png" alt="smbuser1"></p>
+<p>接着你就可以在里面创建文件了, 因为这就是smbuser1的家目录, 所以是有权限的.</p>
+<p>另外如果是使用另外一台Linux来访问这个smbuser1是什么样子的呢?我们启动另外一台CentOS7来看看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># smbclient -L 192.168.56.101 -U smbuser1</span></span><br><span class="line">Enter SAMBA\smbuser1<span class="string">&#x27;s password: </span></span><br><span class="line"><span class="string">Domain=[LOCALHOST] OS=[Unix] Server=[Samba 3.6.23-45.el6_9]</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">	Sharename       Type      Comment</span></span><br><span class="line"><span class="string">	---------       ----      -------</span></span><br><span class="line"><span class="string">	IPC$            IPC       IPC Service (Samba Server Version 3.6.23-45.el6_9)</span></span><br><span class="line"><span class="string">	smbuser1        Disk      Home Directories</span></span><br><span class="line"><span class="string">Domain=[LOCALHOST] OS=[Unix] Server=[Samba 3.6.23-45.el6_9]</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">	Server               Comment</span></span><br><span class="line"><span class="string">	---------            -------</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">	Workgroup            Master</span></span><br><span class="line"><span class="string">	---------            -------</span></span><br><span class="line"><span class="string">	WORKGROUP            LOCALHOST</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看出来咯, 默认的备注还是家目录.</p>
+<p>还是回过头来看看配置文件吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">        workgroup = WORKGROUP <span class="comment"># 工作组</span></span><br><span class="line">        server string = Samba Server Version %v <span class="comment"># 服务器描述</span></span><br><span class="line">;       netbios name = MYSERVER <span class="comment"># 主机名</span></span><br><span class="line">;       interfaces = lo eth0 192.168.12.2/24 192.168.13.2/24 <span class="comment"># 启用接口</span></span><br><span class="line">;       hosts allow = 127. 192.168.12. 192.168.13. <span class="comment"># 访问控制白名单</span></span><br><span class="line">        <span class="built_in">log</span> file = /var/log/samba/log.%m <span class="comment"># 每一个进程都会有一个日志</span></span><br><span class="line">        max <span class="built_in">log</span> size = 50 <span class="comment"># 滚动限制</span></span><br></pre></td></tr></table></figure>
+
+<p>跳过后面的关于域的设定, 我们直接来看后面的共享设定:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[homes]</span><br><span class="line">        comment = Home Directories</span><br><span class="line">        browseable = no <span class="comment"># 除了属主外是否可以浏览, 应该打开的</span></span><br><span class="line">        writable = <span class="built_in">yes</span> <span class="comment"># 是否可写</span></span><br><span class="line">;       valid <span class="built_in">users</span> = %S</span><br><span class="line">;       valid <span class="built_in">users</span> = MYDOMAIN\%S</span><br></pre></td></tr></table></figure>
+
+<p>第一行就是我们的注释设定, 在这里进行更改. </p>
+<p>如果先要自定义一个共享, 首先就要确保由一个Path参数. 后面有示例.</p>
+<p>不管怎么说, 我们现在就来手动创建一个分享吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">test</span>]</span><br><span class="line">        comment = Shared <span class="built_in">test</span></span><br><span class="line">        path = /tmp/shared</span><br><span class="line">        public = <span class="built_in">yes</span></span><br><span class="line">        writable = <span class="built_in">yes</span></span><br><span class="line">        guest ok = <span class="built_in">yes</span></span><br><span class="line">        <span class="built_in">readonly</span> = no</span><br></pre></td></tr></table></figure>
+
+<p>接着我们创建那个文件夹:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># mkdir /tmp/shared</span></span><br></pre></td></tr></table></figure>
+
+<p>我们可以执行检查, 来确保配置文件不会出错:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]<span class="comment"># testparm </span></span><br><span class="line">Load smb config files from /etc/samba/smb.conf</span><br><span class="line">rlimit_max: increasing rlimit_max (1024) to minimum Windows <span class="built_in">limit</span> (16384)</span><br><span class="line">Processing section <span class="string">&quot;[homes]&quot;</span></span><br><span class="line">Processing section <span class="string">&quot;[printers]&quot;</span></span><br><span class="line">Processing section <span class="string">&quot;[test]&quot;</span></span><br><span class="line">Loaded services file OK.</span><br><span class="line">Server role: ROLE_STANDALONE</span><br><span class="line">Press enter to see a dump of your service definitions</span><br><span class="line"></span><br><span class="line">[global]</span><br><span class="line">	server string = Samba Server Version %v</span><br><span class="line">	<span class="built_in">log</span> file = /var/log/samba/log.%m</span><br><span class="line">	max <span class="built_in">log</span> size = 50</span><br><span class="line">	client signing = required</span><br><span class="line">	idmap config * : backend = tdb</span><br><span class="line">	cups options = raw</span><br><span class="line"></span><br><span class="line">[homes]</span><br><span class="line">	comment = Home Directories</span><br><span class="line">	<span class="built_in">read</span> only = No</span><br><span class="line"></span><br><span class="line">[printers]</span><br><span class="line">	comment = All Printers</span><br><span class="line">	path = /var/spool/samba</span><br><span class="line">	printable = Yes</span><br><span class="line">	<span class="built_in">print</span> ok = Yes</span><br><span class="line">	browseable = No</span><br><span class="line"></span><br><span class="line">[<span class="built_in">test</span>]</span><br><span class="line">	comment = Shared <span class="built_in">test</span></span><br><span class="line">	path = /tmp/shared</span><br><span class="line">	<span class="built_in">read</span> only = No</span><br><span class="line">	guest ok = Yes</span><br></pre></td></tr></table></figure>
+
+
+
+<p>接着重启服务, 来进入另外一台CentOS7 试试看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># smbclient //192.168.56.101/test -U smbuser1</span></span><br><span class="line">Enter SAMBA\smbuser1<span class="string">&#x27;s password: </span></span><br><span class="line"><span class="string">Domain=[LOCALHOST] OS=[Unix] Server=[Samba 3.6.23-45.el6_9]</span></span><br><span class="line"><span class="string">smb: \&gt; ls</span></span><br><span class="line"><span class="string">  .                                   D        0  Mon Oct  2 15:16:31 2017</span></span><br><span class="line"><span class="string">  ..                                  D        0  Mon Oct  2 15:19:02 2017</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">		5715544 blocks of size 1024. 3492768 blocks available</span></span><br></pre></td></tr></table></figure>
+
+<p>没毛病.</p>
+<blockquote>
+<p>温馨提示: 如果你看到的是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">smb: \&gt; <span class="built_in">ls</span></span><br><span class="line">NT_STATUS_ACCESS_DENIED listing \*</span><br></pre></td></tr></table></figure>
+
+<p>并且在上面的Windows实验中看到的是:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/deny.png" alt="deny"></p>
+<p>而且你确定是有权限的话, 那么很大一部分原因可能是SELINUX.</p>
+</blockquote>
+<h2 id="Extra"><a href="#Extra" class="headerlink" title="Extra"></a>Extra</h2><p>另外, samba是有一个图形化管理工具的, 叫做swat. 处于extra源中.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NFS"><span class="toc-number">1.</span> <span class="toc-text">NFS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">1.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.2.</span> <span class="toc-text">启动服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AENFS"><span class="toc-number">1.3.</span> <span class="toc-text">配置NFS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Samba"><span class="toc-number">2.</span> <span class="toc-text">Samba</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Extra"><span class="toc-number">3.</span> <span class="toc-text">Extra</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&text=NFS和Samba"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&is_video=false&description=NFS和Samba"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=NFS和Samba&body=Check out this article: https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&title=NFS和Samba"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&name=NFS和Samba&description=&lt;p&gt;Linux和Windows的文件共享, NFS和Samba (SMB)&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/30/NFS%E5%92%8CSamba/&t=NFS和Samba"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

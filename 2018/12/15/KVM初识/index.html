@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="看完了Xen, 接下来再来接触一下不使用hypervisor的KVM虚拟化技术.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KVM初识">
+<meta property="og:url" content="https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="看完了Xen, 接下来再来接触一下不使用hypervisor的KVM虚拟化技术.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-12-16T00:19:39.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:25:25.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="KVM">
+<meta property="article:tag" content="Virtualization">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>KVM初识</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/03/12/%E5%88%9D%E8%AF%86OpenStack_1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&text=KVM初识"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&is_video=false&description=KVM初识"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=KVM初识&body=Check out this article: https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&name=KVM初识&description=&lt;p&gt;  看完了Xen, 接下来再来接触一下不使用hypervisor的KVM虚拟化技术.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&t=KVM初识"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#KVM%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">KVM概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#KVM%E7%9A%84%E5%B7%A5%E5%85%B7%E6%A0%88"><span class="toc-number">2.</span> <span class="toc-text">KVM的工具栈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Qemu"><span class="toc-number">2.1.</span> <span class="toc-text">Qemu</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        KVM初识
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-12-16T00:19:39.000Z" class="dt-published" itemprop="datePublished">2018-12-15</time>
+        
+        (Updated: <time datetime="2020-11-30T01:25:25.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/KVM/" rel="tag">KVM</a>, <a class="p-category" href="/tags/Virtualization/" rel="tag">Virtualization</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>  看完了Xen, 接下来再来接触一下不使用hypervisor的KVM虚拟化技术.</p>
+<span id="more"></span>
+
+<h2 id="KVM概述"><a href="#KVM概述" class="headerlink" title="KVM概述"></a>KVM概述</h2><p>KVM就是<code>Kernel-based Virtualization </code>. 基于内核的虚拟化, 我们之前已经通过使用Xen这种类型一虚拟化来实现虚拟化环境, 通过Dom0虚拟机来实现IO设备模拟交互.</p>
+<p>KVM是通过实现一个内核接口来进行虚拟机管理的, KVM作为一个内核模块, 当我们装载了之后整个Linux内核就会变成一个HyperVisor了. 因此当创建了一个虚拟机之后, 在操作系统中被抽象成了一个进程, 我们甚至可以通过<code>ps</code>来看到他们, 那关闭一个虚拟机咋做? 很简单, 直接<code>kill</code>就完事了. 在KVM出现之后, 由于他和内核的相性使得Linux直接抛弃了原先的Xen, 实装了KVM到内核模块中, 至于一些支持Xen和KVM的管理工具, 就被砍去了对Xen的部分功能.</p>
+<p>对于KVM而言, 硬件辅助虚拟技术(HVM)也是必要的, 因此我们需要在虚拟机测试的环境下开启硬件虚拟化. KVM在我们的<code>/dev</code>目录下有一个专门的文件, <code>/dev/kvm</code>. 当我们想要创建虚拟机的时候, 就向这个文件发送请求即可, 他会和我们的KVM内核模块打交道. 现在来想象一下, 在装载了KVM并且新建一个虚拟机之后, 假设这还是一个Linux虚拟机, 那么他也会有自己的用户空间和内核空间, 这就比较麻烦, 我们知道有内核模式和用户模式, 此时我们引入了一个新的模式叫做宾客模式(guest mode). 也就是这个虚拟机对应的用户空间的模式名. </p>
+<p>由此, 在我们载入KVM模块之后, 我们的系统就会有三种运行模式了:</p>
+<ul>
+<li>内核模式: 虚拟机的内核模式</li>
+<li>用户模式: 代表GuestOS执行I&#x2F;O类操作, host的用户模式</li>
+<li>来宾模式: GuestOS的非I&#x2F;O操作, 该模式可以说成是虚拟机的用户模式</li>
+</ul>
+<p>此时我们的Host的内核就扮演成Hypervisor的角色了.</p>
+<p>除了上面提到的<code>/dev/kvm</code>, 另外一个重要的KVM组件就是我们之前也见过的qemu进程. 先来说说<code>/dev/kvm</code>. 我们知道这个东西是KVM的一个入口, 作为一个字符设备来存在, 可以通过<code>ioctl()</code>系统调用来完成VM创建, 启动, 分配内存, 读写VCPU的寄存器等等. 而qemu, 工作在用户空间, 主要用于实现模拟PC机的IO设备.</p>
+<p>KVM可以使用Linux的大内存页(Huge Page), 也支持将分配给虚拟机的内存进行swap交换. 另外, KVM还可以使用KSM(Kernel Same-page Merging), 合并相同的内存页.</p>
+<p>接着我们来说说KVM的设备驱动, 首先是IO设备的完全虚拟化, 很简单了这就是模拟硬件. 而对于IO设备的半虚拟化, 我们需要在GuestOS中安装驱动, 叫做virtio.</p>
+<p>KVM优点很多, 但也有一些局限性, 例如KVM的过载使用(overcommit), 还有虚拟机的时钟, 由于VCPU的存在就会导致时间同步出错. </p>
+<h2 id="KVM的工具栈"><a href="#KVM的工具栈" class="headerlink" title="KVM的工具栈"></a>KVM的工具栈</h2><p>除了上面说的Qemu, 另外一组KVM的工具栈就是使用libvirt的virsh. 在qemu中我们主要使用qemu-kvm和qemu-img这两个工具. 而libvirt支持在GUI和CLI两种模式下的, 使用到的工具也不尽相同. 我们从Qemu开始.</p>
+<h3 id="Qemu"><a href="#Qemu" class="headerlink" title="Qemu"></a>Qemu</h3><p>我们QEMU主要提供一下几个部分:</p>
+<ul>
+<li>处理器模拟器</li>
+<li>仿真IO设备</li>
+<li>关联模拟设备到真实设备</li>
+<li>调试器</li>
+<li>与模拟器交互的用户接口</li>
+</ul>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#KVM%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">KVM概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#KVM%E7%9A%84%E5%B7%A5%E5%85%B7%E6%A0%88"><span class="toc-number">2.</span> <span class="toc-text">KVM的工具栈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Qemu"><span class="toc-number">2.1.</span> <span class="toc-text">Qemu</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&text=KVM初识"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&is_video=false&description=KVM初识"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=KVM初识&body=Check out this article: https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&title=KVM初识"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&name=KVM初识&description=&lt;p&gt;  看完了Xen, 接下来再来接触一下不使用hypervisor的KVM虚拟化技术.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/12/15/KVM%E5%88%9D%E8%AF%86/&t=KVM初识"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="现在我们来把目光放在HA存储上面吧~">
+<meta property="og:type" content="article">
+<meta property="og:title" content="drbd实现HA的MySQL集群">
+<meta property="og:url" content="https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="现在我们来把目光放在HA存储上面吧~">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://terry.im/wiki/terry/attachments/33325169/33554434.gif">
+<meta property="article:published_time" content="2017-10-29T20:02:55.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:33:57.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Cluster">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="drbd">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://terry.im/wiki/terry/attachments/33325169/33554434.gif">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>drbd实现HA的MySQL集群</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/11/04/Python%E7%88%AC%E8%99%AB%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/10/28/Corosync-Pacemaker%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&text=drbd实现HA的MySQL集群"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&is_video=false&description=drbd实现HA的MySQL集群"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=drbd实现HA的MySQL集群&body=Check out this article: https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&name=drbd实现HA的MySQL集群&description=&lt;p&gt;现在我们来把目光放在HA存储上面吧~&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&t=drbd实现HA的MySQL集群"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#drbd%E7%AE%80%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">drbd简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#drdb%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">drdb的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE-drbd-pacemaker%E5%AE%9E%E7%8E%B0%E9%AB%98%E5%8F%AF%E7%94%A8MySQL%E9%9B%86%E7%BE%A4"><span class="toc-number">3.</span> <span class="toc-text">项目: drbd+pacemaker实现高可用MySQL集群</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        drbd实现HA的MySQL集群
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-29T20:02:55.000Z" class="dt-published" itemprop="datePublished">2017-10-29</time>
+        
+        (Updated: <time datetime="2020-11-30T01:33:57.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Cluster/" rel="tag">Cluster</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/MySQL/" rel="tag">MySQL</a>, <a class="p-category" href="/tags/drbd/" rel="tag">drbd</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>现在我们来把目光放在HA存储上面吧~</p>
+<span id="more"></span>
+
+<h2 id="drbd简述"><a href="#drbd简述" class="headerlink" title="drbd简述"></a>drbd简述</h2><p>什么是drbd? 全称是Distributed Replicated Block Device, 分布式复制块设备.基于内核和相关脚本构建的.用来构建高可用性的集群. 总体来看, 就像是基于网络的RAID1. 可以进行数据块级别的复制, 由于存在在文件系统模块的下层, 所以当然是无法理解文件系统的层次.</p>
+<p>整体的一个流程如下:</p>
+<p><img src="https://terry.im/wiki/terry/attachments/33325169/33554434.gif" alt="img"></p>
+<p>其中有底色的那一个大块就是我们的内核空间, 上方就是用户空间, 用户空间的应用程序发起写入的系统调用请求将数据写入到磁盘设备, 原本应该是经过FS -&gt; BC -&gt; DS -&gt; DD最后进入硬件设备的, 但是我们的DRBD在中间横插一刀, 将写入的数据原封不动的复制一遍, 并且通过TCP&#x2F;IP协议栈经由网卡发送出去. 另外一边,接收端收到之后发送到DRBD, 接着进过scheduler通过驱动到达磁盘.</p>
+<p>同样, 这样的模型也规定了DRBD只能是一读一写, 读写分离的形式, 一旦出现双写, 就会造成数据不一致的情况. 当然, 双主模型也不是不可以, 只不过需要分布式文件系统的援助. 利用它的分布式锁机制才可以.</p>
+<p>上述的这个过程, 其实就是在镜像一个数据, 主要有三个特点:</p>
+<ul>
+<li>实时性: 复制立即发生</li>
+<li>透明性: 数据的存放是透明和独立的</li>
+<li>同步和异步</li>
+</ul>
+<p>到这里, 我们就对DRBD有了一个大体的印象了, 有没有觉得他有点像我们之前说的一个内核模块? <strong>LVS</strong>. 对了~当时我们通过<code>ipvsadm</code>来进行规则的管理, 同样, 我们的DRBD也提供了用户空间的管理工具 – <code>drbdadm</code>. 此工具更高层, 更贴近用户. 比较低层的有: <code>drbdsetup</code>和<code>drbdmeta</code>. 前者是底层配置后者用来修改管理数据结构. adm其实就是对这些工具高层封装.</p>
+<p>使用这些前端管理工具就可以使得DRBD发挥效果, 但是在说到配置之前, 我们先来看看DRBD的工作模式.</p>
+<p>DRBD有三种复制的方式,我们可以概括成: <strong>同步, 半同步, 异步</strong>.</p>
+<p>我们知道DRBD是基于网络的, 而且之前我们也说过, 当发起系统调用之后会进入不可中断的睡眠态, 而直到返回结果才会继续执行. 而上面这几个复制方式区别就在什么时候返回处理结果上. </p>
+<p>如果是刚刚提交就返回, 那就是异步. 如果是将数据扔到自己的消息队列上的时候再返回, 那就是半同步. 如果是把数据交给对方, 并且已经到达了的, 那就是同步的.</p>
+<p>现在就可以说说DRBD的资源构成了. 必须要有的有三个部分:</p>
+<ul>
+<li>名字: 只允许不包含空格符的ASCII字符</li>
+<li>drbd设备: &#x2F;dev&#x2F;drbd#<ul>
+<li>主设备号: 147</li>
+</ul>
+</li>
+<li>磁盘配置: 各个主机用于组成drbd设备的磁盘或者分区;</li>
+<li>网络配置: 节点通信间的网络通信属性;</li>
+</ul>
+<h2 id="drdb的使用"><a href="#drdb的使用" class="headerlink" title="drdb的使用"></a>drdb的使用</h2><blockquote>
+<p>有点坑..这个drbd. 我们用CentOS6来实现.</p>
+</blockquote>
+<p>首先安装必要的服务, 主要是两个rpm包, 一个是drbd84-utils, 一个是kmod-drbd84. 其中第二个需要特定的内核补丁.</p>
+<p>安装完成了之后, 我们看一下生成的文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># rpm -ql drbd84-utils</span></span><br><span class="line">/etc/bash_completion.d/drbdadm</span><br><span class="line">/etc/drbd.conf</span><br><span class="line">/etc/drbd.d</span><br><span class="line">/etc/drbd.d/global_common.conf</span><br><span class="line">/etc/ha.d/resource.d/drbddisk</span><br><span class="line">/etc/ha.d/resource.d/drbdupper</span><br><span class="line">/etc/rc.d/init.d/drbd</span><br><span class="line">/etc/xen/scripts/block-drbd</span><br><span class="line">/lib/drbd/drbdadm-84</span><br><span class="line">/lib/drbd/drbdsetup-84</span><br><span class="line">/lib/udev/rules.d/65-drbd.rules</span><br><span class="line">/sbin/drbdadm</span><br><span class="line">/sbin/drbdmeta</span><br><span class="line">/sbin/drbdsetup</span><br><span class="line">/usr/lib/drbd</span><br><span class="line">/usr/lib/drbd/crm-fence-peer.sh</span><br><span class="line">/usr/lib/drbd/crm-unfence-peer.sh</span><br><span class="line">/usr/lib/drbd/notify-emergency-reboot.sh</span><br><span class="line">/usr/lib/drbd/notify-emergency-shutdown.sh</span><br><span class="line">/usr/lib/drbd/notify-io-error.sh</span><br><span class="line">/usr/lib/drbd/notify-out-of-sync.sh</span><br><span class="line">/usr/lib/drbd/notify-pri-lost-after-sb.sh</span><br><span class="line">/usr/lib/drbd/notify-pri-lost.sh</span><br><span class="line">/usr/lib/drbd/notify-pri-on-incon-degr.sh</span><br><span class="line">/usr/lib/drbd/notify-split-brain.sh</span><br><span class="line">/usr/lib/drbd/notify.sh</span><br><span class="line">/usr/lib/drbd/outdate-peer.sh</span><br><span class="line">/usr/lib/drbd/rhcs_fence</span><br><span class="line">/usr/lib/drbd/snapshot-resync-target-lvm.sh</span><br><span class="line">/usr/lib/drbd/stonith_admin-fence-peer.sh</span><br><span class="line">/usr/lib/drbd/unsnapshot-resync-target-lvm.sh</span><br><span class="line">/usr/lib/ocf/resource.d/linbit/drbd</span><br><span class="line">/usr/sbin/drbd-overview</span><br><span class="line">/usr/sbin/drbdadm</span><br><span class="line">/usr/sbin/drbdmeta</span><br><span class="line">/usr/sbin/drbdsetup</span><br><span class="line">/usr/share/cluster/drbd.metadata</span><br><span class="line">/usr/share/cluster/drbd.sh</span><br><span class="line">...(omitted)</span><br><span class="line">/var/lib/drbd</span><br></pre></td></tr></table></figure>
+
+<p>三个执行程序都是这个包提供的. 而另外一边, kmod其实就是安装了一个ko而已.</p>
+<p>我们来看看配置文件吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">include <span class="string">&quot;drbd.d/global_common.conf&quot;</span>;</span><br><span class="line">include <span class="string">&quot;drbd.d/*.res&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>是模块式的配置, 显然<code>global_common</code>就是全局配置了, 而其他所有以<code>res</code>结尾的. 就都是我们的资源配置了.</p>
+<p>先来看一下全局配置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 drbd.d]<span class="comment"># grep &quot;&#123;$&quot; global_common.conf </span></span><br><span class="line">global &#123;</span><br><span class="line">common &#123;</span><br><span class="line">	handlers &#123;</span><br><span class="line">	startup &#123;</span><br><span class="line">	options &#123;</span><br><span class="line">	disk &#123;</span><br><span class="line">	net &#123;</span><br></pre></td></tr></table></figure>
+
+<p>层次一目了然. 全局和通用配置, 通用配置就是每一个drbd设备的配置</p>
+<p>其中global定义drbd整体的工作属性, 关于这个没什么好设置的, 接着是handlers. 其实就是当发生了一些情况的时候调用哪些脚本的处理器, 接着startup定义启动时超时选项等等, options指定一些同步属性, disk用来指明磁盘属性,net指定属性, 我们可以在这里添加使用的带宽大小以及加密选项.</p>
+<p>简单的配置一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">disk &#123;</span><br><span class="line">    on-io-error detach;</span><br><span class="line">&#125;</span><br><span class="line">net &#123;</span><br><span class="line">    protocol C;</span><br><span class="line">    cram-hmac-alg <span class="string">&#x27;sha1&#x27;</span>;</span><br><span class="line">    shared-secret <span class="string">&#x27;52f5308f3a2f9b31ba&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着就来定义一下资源(mysql.res):</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">resource mysql &#123;</span><br><span class="line">        on VM-node3 &#123;</span><br><span class="line">                device /dev/drbd0;</span><br><span class="line">                disk /dev/sdb1;</span><br><span class="line">                meta-disk internal;</span><br><span class="line">                address 192.168.206.22:7789;</span><br><span class="line">        &#125;</span><br><span class="line">        on VM-node4 &#123;</span><br><span class="line">                device /dev/drbd0;</span><br><span class="line">                disk /dev/sdb1;</span><br><span class="line">                meta-disk internal;        </span><br><span class="line">                address 192.168.206.23:7789;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里, 同样的项目可以整合在一起, 于是我们的资源定义就简化成这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">resource mysql &#123;</span><br><span class="line">        device /dev/drbd0;</span><br><span class="line">        disk /dev/sdb1;</span><br><span class="line">        meta-disk internal;</span><br><span class="line">        on VM-node3 &#123;</span><br><span class="line">                address 192.168.206.22:7789;</span><br><span class="line">        &#125;</span><br><span class="line">        on VM-node4 &#123;</span><br><span class="line">                address 192.168.206.23:7789;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中, meta-link 表示元数据存放在哪里. internal表示就在原磁盘上.</p>
+<p>OK, 接着确定配置是一样的, 我们把它拷贝到另一个节点上, 当然另一个节点是已经安装过drbd的.</p>
+<p>接下来就可以直接启动服务了, 但是在此次之前, 我们还需要初始化一下资源, 由于我之前写的是sdb1, 所以还是要先加进来一块新的磁盘并且进行分区的.</p>
+<p>接着执行:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node4 ~]<span class="comment"># drbdadm create-md mysql</span></span><br><span class="line">initializing activity <span class="built_in">log</span></span><br><span class="line">NOT initializing bitmap</span><br><span class="line">Writing meta data...</span><br><span class="line">New drbd meta data block successfully created.</span><br></pre></td></tr></table></figure>
+
+<p>两边都要做这样的操作,接着就可以启动服务了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># service drbd start</span></span><br><span class="line">Starting DRBD resources: [</span><br><span class="line">     create res: mysql</span><br><span class="line">   prepare disk: mysql</span><br><span class="line">    adjust disk: mysql</span><br><span class="line">     adjust net: mysql</span><br><span class="line">]</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>注意: 如果只启动一端, 会等待另外一边的启动. 直到两方都启动才会成功启动.</p>
+<p>接下来, 我们可以通过下面的方式来查看当前drbd的状态:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># cat /proc/drbd</span></span><br><span class="line">version: 8.4.7-1 (api:1/proto:86-101)</span><br><span class="line">GIT-<span class="built_in">hash</span>: 3a6a769340ef93b1ba2792c6461250790795db49 build by mockbuild@Build64R6, 2016-01-12 13:27:11</span><br><span class="line"> 0: cs:Connected ro:Secondary/Secondary ds:Inconsistent/Inconsistent C r-----</span><br><span class="line">    ns:0 nr:0 dw:0 dr:0 al:0 bm:0 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:3144572</span><br><span class="line">[root@VM-node3 ~]<span class="comment"># drbd-overview </span></span><br><span class="line"> 0:mysql/0  Connected Secondary/Secondary Inconsistent/Inconsistent </span><br></pre></td></tr></table></figure>
+
+<p>你会发现, 现在我们的drbd都是备用节点, 而且数据不一致. 所以我们必须手动的将其中一个节点变成主节点才行:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># drbdadm primary --force mysql</span></span><br><span class="line">[root@VM-node3 ~]<span class="comment"># cat /proc/drbd</span></span><br><span class="line">version: 8.4.7-1 (api:1/proto:86-101)</span><br><span class="line">GIT-<span class="built_in">hash</span>: 3a6a769340ef93b1ba2792c6461250790795db49 build by mockbuild@Build64R6, 2016-01-12 13:27:11</span><br><span class="line"> 0: cs:SyncSource ro:Primary/Secondary ds:UpToDate/Inconsistent C r-----</span><br><span class="line">    ns:2924 nr:0 dw:0 dr:3756 al:0 bm:0 lo:0 pe:1 ua:3 ap:0 ep:1 wo:f oos:3141692</span><br><span class="line">	[&gt;....................] <span class="built_in">sync</span><span class="string">&#x27;ed:  0.2% (3141692/3144572)K</span></span><br><span class="line"><span class="string">	finish: 0:32:43 speed: 1,440 (1,440) K/sec</span></span><br><span class="line"><span class="string">[root@VM-node3 ~]# cat /proc/drbd</span></span><br><span class="line"><span class="string">version: 8.4.7-1 (api:1/proto:86-101)</span></span><br><span class="line"><span class="string">GIT-hash: 3a6a769340ef93b1ba2792c6461250790795db49 build by mockbuild@Build64R6, 2016-01-12 13:27:11</span></span><br><span class="line"><span class="string"> 0: cs:SyncSource ro:Primary/Secondary ds:UpToDate/Inconsistent C r-----</span></span><br><span class="line"><span class="string">    ns:14512 nr:0 dw:0 dr:15572 al:0 bm:0 lo:0 pe:1 ua:4 ap:0 ep:1 wo:f oos:3130076</span></span><br><span class="line"><span class="string">	[&gt;....................] sync&#x27;</span>ed:  0.6% (3130076/3144572)K</span><br><span class="line">	finish: 0:21:08 speed: 2,416 (2,416) K/sec</span><br></pre></td></tr></table></figure>
+
+<p>接着数据就会开始进行复制. 同步完成之后就是这个状态了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># cat /proc/drbd</span></span><br><span class="line">version: 8.4.7-1 (api:1/proto:86-101)</span><br><span class="line">GIT-<span class="built_in">hash</span>: 3a6a769340ef93b1ba2792c6461250790795db49 build by mockbuild@Build64R6, 2016-01-12 13:27:11</span><br><span class="line"> 0: cs:Connected ro:Primary/Secondary ds:UpToDate/UpToDate C r-----</span><br><span class="line">    ns:3144572 nr:0 dw:0 dr:3145244 al:0 bm:0 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:0</span><br></pre></td></tr></table></figure>
+
+<p>我们的节点是主节点, 而且双方都是UpToDate的状态.</p>
+<p>接着就可以开始格式化文件系统了, 由于我们的drbd是位级别对齐的, 所以文件系统也会自动的同步过去.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># mke2fs -t ext4 /dev/drbd0</span></span><br><span class="line">mke2fs 1.41.12 (17-May-2010)</span><br><span class="line">Filesystem label=</span><br><span class="line">OS <span class="built_in">type</span>: Linux</span><br><span class="line">Block size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Fragment size=4096 (<span class="built_in">log</span>=2)</span><br><span class="line">Stride=0 blocks, Stripe width=0 blocks</span><br><span class="line">196608 inodes, 786143 blocks</span><br><span class="line">39307 blocks (5.00%) reserved <span class="keyword">for</span> the super user</span><br><span class="line">First data block=0</span><br><span class="line">Maximum filesystem blocks=805306368</span><br><span class="line">24 block <span class="built_in">groups</span></span><br><span class="line">32768 blocks per group, 32768 fragments per group</span><br><span class="line">8192 inodes per group</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">	32768, 98304, 163840, 229376, 294912</span><br><span class="line"></span><br><span class="line">Writing inode tables: <span class="keyword">done</span>                            </span><br><span class="line">Creating journal (16384 blocks): <span class="keyword">done</span></span><br><span class="line">Writing superblocks and filesystem accounting information: <span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">This filesystem will be automatically checked every 35 mounts or</span><br><span class="line">180 days, whichever comes first.  Use tune2fs -c or -i to override.</span><br><span class="line">[root@VM-node3 ~]<span class="comment"># mount /dev/drbd0 /mnt/</span></span><br><span class="line">[root@VM-node3 ~]<span class="comment"># ls /mnt/</span></span><br><span class="line">lost+found</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以正常使用了. 另外 如果进行主备的切换, 我们就需要首先卸载, 接着降级主节点, 升级备用节点, 接着备用节点就可以进行挂载使用了, 反之亦然.</p>
+<p>那么, 切换来切换去真是是很麻烦的, 所以我们可以将这个drbd设备定义成资源, 通过HA服务来进行自动的调度.</p>
+<p>OK, 以上就是我们MySQL高可用的前导基础准备了. 现在就可以正式开始了.</p>
+<h2 id="项目-drbd-pacemaker实现高可用MySQL集群"><a href="#项目-drbd-pacemaker实现高可用MySQL集群" class="headerlink" title="项目: drbd+pacemaker实现高可用MySQL集群"></a>项目: drbd+pacemaker实现高可用MySQL集群</h2><p>当前是一个肥肠干净的集群, 没有配置任何资源:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># pcs status</span></span><br><span class="line">Cluster name: </span><br><span class="line">Stack: classic openais (with plugin)</span><br><span class="line">Current DC: VM-node3 (version 1.1.15-5.el6-e174ec8) - partition with quorum</span><br><span class="line">Last updated: Tue Oct 31 19:09:26 2017		Last change: Mon Oct 30 23:24:09 2017 by root via cibadmin on VM-node4</span><br><span class="line">, 2 expected votes</span><br><span class="line">2 nodes and 0 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node3 VM-node4 ]</span><br><span class="line"></span><br><span class="line">No resources</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Daemon Status:</span><br><span class="line">  corosync: active/disabled</span><br><span class="line">  pacemaker: active/disabled</span><br><span class="line">  pcsd: active/disabled</span><br></pre></td></tr></table></figure>
+
+<p>接着我们就要开始配置drbd的资源了, 我们来看一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">crm(live)ra<span class="comment"># classes</span></span><br><span class="line">lsb</span><br><span class="line">ocf / .isolation heartbeat linbit pacemaker</span><br><span class="line">service</span><br><span class="line">stonith</span><br></pre></td></tr></table></figure>
+
+<p>多了一个linbit. 这个其实就是我们的drbd的ra了, 接着来看一下需要哪些参数:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Parameters (*: required, []: default):</span><br><span class="line"></span><br><span class="line">drbd_resource* (string): drbd resource name</span><br><span class="line">    The name of the drbd resource from the drbd.conf file.</span><br></pre></td></tr></table></figure>
+
+<p>至此都和以前没什么 区别, 但是 drbd资源特殊的性表现在主从上, 这是一个clone资源, 一主一从, 如果要配置主从资源, 在crmsh中, 我们在configure中使用ms这个关键字来指明. 不过, 有哪些参数呢? 这些参数就是pacemaker中定义克隆资源的专用属性, 有这些:</p>
+<ul>
+<li>clone-max: 最多克隆出的份数</li>
+<li>clone-node-max: 在单个节点上最多运行几个克隆</li>
+<li>notify: 当一份克隆启动或者停止的时候, 是否通知给其他的节点</li>
+<li>master-max: 最多克隆的master资源的个数</li>
+<li>master-node-max: 同一个节点最多运行多少master资源</li>
+</ul>
+<p>那么我们来定义一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># crm</span></span><br><span class="line">crm(live)<span class="comment"># configure</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive drbd_mysql ocf:linbit:drbd drbd_resource=&quot;mysql&quot; op monitor role=&quot;Slave&quot; interval=20s timeout=20s op monitor role=&quot;Master&quot; interval=10s timeout=20s</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">WARNING: drbd_mysql: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> start is smaller than the advised 240</span><br><span class="line">WARNING: drbd_mysql: default <span class="built_in">timeout</span> 20s <span class="keyword">for</span> stop is smaller than the advised 100</span><br><span class="line">crm(live)configure<span class="comment"># delete drbd_mysql</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive drbd_mysql ocf:linbit:drbd drbd_resource=&quot;mysql&quot; op monitor role=&quot;Slave&quot; interval=20s timeout=20s op monitor role=&quot;Master&quot; interval=10s timeout=20s op start timeout=240s op stop timeout=100</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># ms ms_drbd_mysql drbd_mysql meta clone-max=&quot;2&quot; clone-node-max=&quot;1&quot; master-max=&quot;1&quot; master-node-max=&quot;1&quot; notify=&quot;true&quot;</span></span><br><span class="line">crm(live)configure<span class="comment"># commit</span></span><br><span class="line">crm(live)configure<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: classic openais (with plugin)</span><br><span class="line">Current DC: VM-node3 (version 1.1.15-5.el6-e174ec8) - partition with quorum</span><br><span class="line">Last updated: Tue Oct 31 22:54:17 2017		Last change: Tue Oct 31 22:54:14 2017 by root via cibadmin on VM-node3</span><br><span class="line">, 2 expected votes</span><br><span class="line">2 nodes and 2 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node3 VM-node4 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> Master/Slave Set: ms_drbd_mysql [drbd_mysql]</span><br><span class="line">     Masters: [ VM-node4 ]</span><br><span class="line">     Slaves: [ VM-node3 ]</span><br><span class="line"></span><br><span class="line">crm(live)<span class="comment"># exit</span></span><br><span class="line"><span class="built_in">bye</span></span><br><span class="line">[root@VM-node3 ~]<span class="comment"># drbd-overview </span></span><br><span class="line"> 0:mysql/0  Connected Secondary/Primary UpToDate/UpToDate </span><br></pre></td></tr></table></figure>
+
+<p>服务已然运行.</p>
+<p>但是我们说过, 如果没有文件系统, 是没办法工作的, 所以我们要继续添加 文件系统的资源, 不仅如此, 这个资源还应该在drbd之后启动, 而且, 他还必须在主节点上, 这就同时有了位置和顺序的约束:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">crm(live)configure<span class="comment"># primitive drbd_fs ocf:heartbeat:Filesystem params device=&quot;/dev/drbd0&quot; directory=&quot;/data&quot; fstype=&quot;ext4&quot; op monitor interval=20s timeout=40s op start timeout=60s op stop timeout=60s</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># show</span></span><br><span class="line">node VM-node3</span><br><span class="line">node VM-node4</span><br><span class="line">primitive drbd_fs Filesystem \</span><br><span class="line">	params device=<span class="string">&quot;/dev/drbd0&quot;</span> directory=<span class="string">&quot;/data&quot;</span> fstype=ext4 \</span><br><span class="line">	op monitor interval=20s <span class="built_in">timeout</span>=40s \</span><br><span class="line">	op start <span class="built_in">timeout</span>=60s interval=0 \</span><br><span class="line">	op stop <span class="built_in">timeout</span>=60s interval=0</span><br><span class="line">primitive drbd_mysql ocf:linbit:drbd \</span><br><span class="line">	params drbd_resource=mysql \</span><br><span class="line">	op monitor role=Slave interval=20s <span class="built_in">timeout</span>=20s \</span><br><span class="line">	op monitor role=Master interval=10s <span class="built_in">timeout</span>=20s \</span><br><span class="line">	op start <span class="built_in">timeout</span>=240s interval=0 \</span><br><span class="line">	op stop <span class="built_in">timeout</span>=100 interval=0</span><br><span class="line">ms ms_drbd_mysql drbd_mysql \</span><br><span class="line">	meta clone-max=2 clone-node-max=1 master-max=1 master-node-max=1 notify=<span class="literal">true</span></span><br><span class="line">property cib-bootstrap-options: \</span><br><span class="line">	have-watchdog=<span class="literal">false</span> \</span><br><span class="line">	dc-version=1.1.15-5.el6-e174ec8 \</span><br><span class="line">	cluster-infrastructure=<span class="string">&quot;classic openais (with plugin)&quot;</span> \</span><br><span class="line">	expected-quorum-votes=2 \</span><br><span class="line">	stonith-enabled=<span class="literal">false</span></span><br><span class="line">crm(live)configure<span class="comment"># colocation drbd_fs_with_drbd_mysql inf: drbd_fs ms_drbd_mysql:Master</span></span><br><span class="line">crm(live)configure<span class="comment"># order drbd_fs_after_drbd_mysql Mandatory: ms_drbd_mysql:promote drbd_fs:start</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># commit</span></span><br><span class="line">crm(live)configure<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: classic openais (with plugin)</span><br><span class="line">Current DC: VM-node3 (version 1.1.15-5.el6-e174ec8) - partition with quorum</span><br><span class="line">Last updated: Wed Nov  1 10:23:41 2017		Last change: Wed Nov  1 10:23:37 2017 by root via cibadmin on VM-node3</span><br><span class="line">, 2 expected votes</span><br><span class="line">2 nodes and 3 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node3 VM-node4 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> Master/Slave Set: ms_drbd_mysql [drbd_mysql]</span><br><span class="line">     Masters: [ VM-node4 ]</span><br><span class="line">     Slaves: [ VM-node3 ]</span><br><span class="line"> drbd_fs	(ocf::heartbeat:Filesystem):	Started VM-node4</span><br></pre></td></tr></table></figure>
+
+<p>可以看到, 文件系统在VM-node4上启动, 原因当然就是因为VM-node4是master节点了, 现在我们下线node4:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node4 scripts]<span class="comment"># pcs node standby VM-node4</span></span><br></pre></td></tr></table></figure>
+
+<p>接着就可以看到, 资源一起转移到VM-node3:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># mount</span></span><br><span class="line">...(omitted)</span><br><span class="line">/dev/drbd0 on /data <span class="built_in">type</span> ext4 (rw)</span><br></pre></td></tr></table></figure>
+
+<p>接下来就要安装MariaDB了, 熟悉的流程, 但是这一次要注意我们只能在master节点上进行安装:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node3 ~]<span class="comment"># crm status</span></span><br><span class="line">Stack: classic openais (with plugin)</span><br><span class="line">Current DC: VM-node3 (version 1.1.15-5.el6-e174ec8) - partition with quorum</span><br><span class="line">Last updated: Wed Nov  1 11:56:45 2017		Last change: Wed Nov  1 11:56:43 2017 by root via crm_attribute on VM-node4</span><br><span class="line">, 2 expected votes</span><br><span class="line">2 nodes and 3 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ VM-node3 VM-node4 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> Master/Slave Set: ms_drbd_mysql [drbd_mysql]</span><br><span class="line">     Masters: [ VM-node3 ]</span><br><span class="line">     Slaves: [ VM-node4 ]</span><br><span class="line"> drbd_fs	(ocf::heartbeat:Filesystem):	Started VM-node3</span><br><span class="line">[root@VM-node3 ~]<span class="comment"># groupadd -r -g 306 mysql</span></span><br><span class="line">[root@VM-node3 ~]<span class="comment"># useradd -r -g 306 -u 306 mysql</span></span><br><span class="line">[root@VM-node3 mariadb55]<span class="comment"># chown root:mysql -R mysql</span></span><br><span class="line">[root@VM-node3 mysql]<span class="comment"># bash scripts/mysql_install_db --user=mysql --datadir=/data/db_data/</span></span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># cp /usr/local/src/mariadb55/mysql/support-files/mysql.server /etc/rc.d/init.d/mysqld</span></span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># chkconfig --add mysqld</span></span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># chkconfig mysqld off</span></span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># mkdir /etc/mysql</span></span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># cp /usr/local/src/mariadb55/mysql/support-files/my-large.cnf /etc/mysql/my.cnf</span></span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># vim /etc/mysql/my.cnf </span></span><br><span class="line">---(In Vim)</span><br><span class="line">[mysqld]</span><br><span class="line">...(omitted)</span><br><span class="line">datadir = /data/db_data</span><br><span class="line">innodb_file_per_table = on</span><br><span class="line">skip_name_resolve = on</span><br><span class="line">---(Quit)</span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># service mysqld start</span></span><br><span class="line">Starting MySQL.171101 13:29:07 mysqld_safe Logging to <span class="string">&#x27;/data/db_data/VM-node3.err&#x27;</span>.</span><br><span class="line">171101 13:29:07 mysqld_safe Starting mysqld daemon with databases from /data/db_data</span><br><span class="line">. SUCCESS! </span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># /usr/local/src/mariadb55/mysql/bin/mysql</span></span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection <span class="built_in">id</span> is 2</span><br><span class="line">Server version: 5.5.58-MariaDB MariaDB Server</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type <span class="string">&#x27;help;&#x27;</span> or <span class="string">&#x27;\h&#x27;</span> <span class="keyword">for</span> <span class="built_in">help</span>. Type <span class="string">&#x27;\c&#x27;</span> to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; GRANT ALL ON *.* TO <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;192.168.206.%&#x27;</span> IDENTIFIED BY <span class="string">&#x27;cluster&#x27;</span>;</span><br><span class="line">Query OK, 0 rows affected (0.02 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; FLUSH PRIVILEGES;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; quit</span><br><span class="line">Bye</span><br><span class="line">[root@VM-node3 db_data]<span class="comment"># service mysqld stop</span></span><br><span class="line">Shutting down MySQL.. SUCCESS! </span><br></pre></td></tr></table></figure>
+
+<p>接下来master切换成另一个(让node3成为standby), 这个时候就不需要初始化了, 因为我们的文件是镜像过来的. 直接复制一下配置文件启动一下服务试试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node4 mysql]<span class="comment"># mkdir /etc/mysql</span></span><br><span class="line">---</span><br><span class="line">[root@VM-node3 ~]<span class="comment"># scp /etc/mysql/my.cnf VM-node4:/etc/mysql/my.cnf </span></span><br><span class="line">---</span><br><span class="line">[root@VM-node4 mysql]<span class="comment"># cp support-files/mysql.server /etc/rc.d/init.d/mysqld</span></span><br><span class="line">[root@VM-node4 mysql]<span class="comment"># chkconfig --add mysqld</span></span><br><span class="line">[root@VM-node4 mysql]<span class="comment"># chkconfig mysqld off</span></span><br><span class="line">[root@VM-node4 mysql]<span class="comment"># service mysqld start</span></span><br><span class="line">Starting MySQL.171101 13:40:50 mysqld_safe Logging to <span class="string">&#x27;/data/db_data/VM-node4.err&#x27;</span>.</span><br><span class="line">171101 13:40:50 mysqld_safe Starting mysqld daemon with databases from /data/db_data</span><br><span class="line">..                                                         [  OK  ]</span><br></pre></td></tr></table></figure>
+
+<p>OK, 如果数据库服务已经OK, 就可以配置资源和资源约束了. 当然我们还需要一个虚拟的IP地址.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">crm(live)<span class="comment"># configure </span></span><br><span class="line">crm(live)configure<span class="comment"># primitive ip ocf:heartbeat:IPaddr params ip=&quot;192.168.206.20&quot; op monitor interval=10s timeout=20s</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># primitive mysql lsb:mysqld op monitor interval=20s timeout=20s</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># colocation ip_with_drbd_Master inf: ip ms_drbd_mysql:Master</span></span><br><span class="line">crm(live)configure<span class="comment"># colocation mysql_with_drbd_Master inf: mysql ms_drbd_mysql:Master</span></span><br><span class="line">crm(live)configure<span class="comment"># show</span></span><br><span class="line">crm(live)configure<span class="comment"># order mysql_after_drbd Mandatory: </span></span><br><span class="line">drbd_fs         ip              ms_drbd_mysql   mysql           </span><br><span class="line">crm(live)configure<span class="comment"># order mysql_after_drbd Mandatory: drbd_fs:start mysql:start</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># order mysql_after_ip Mandatory: ip:start mysql:start</span></span><br><span class="line">crm(live)configure<span class="comment"># verify</span></span><br><span class="line">crm(live)configure<span class="comment"># commit</span></span><br><span class="line">crm(live)configure<span class="comment"># cd</span></span><br><span class="line">crm(live)<span class="comment"># status</span></span><br><span class="line">Stack: classic openais (with plugin)</span><br><span class="line">Current DC: VM-node3 (version 1.1.15-5.el6-e174ec8) - partition with quorum</span><br><span class="line">Last updated: Wed Nov  1 21:34:04 2017		Last change: Wed Nov  1 21:33:58 2017 by root via cibadmin on VM-node3</span><br><span class="line">, 2 expected votes</span><br><span class="line">2 nodes and 5 resources configured</span><br><span class="line"></span><br><span class="line">Node VM-node4: standby</span><br><span class="line">Online: [ VM-node3 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> Master/Slave Set: ms_drbd_mysql [drbd_mysql]</span><br><span class="line">     Masters: [ VM-node3 ]</span><br><span class="line">     Stopped: [ VM-node4 ]</span><br><span class="line"> drbd_fs	(ocf::heartbeat:Filesystem):	Started VM-node3</span><br><span class="line"> ip	(ocf::heartbeat:IPaddr):	Started VM-node3</span><br><span class="line"> mysql	(lsb:mysqld):	Started VM-node3</span><br></pre></td></tr></table></figure>
+
+<p>至此, 我们的资源 就大体完成了, 打开网段内另外一台主机, 连接尝试:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]<span class="comment"># mysql -uroot -h192.168.206.20 -p</span></span><br><span class="line">Enter password: </span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection <span class="built_in">id</span> is 7</span><br><span class="line">Server version: 5.5.58-MariaDB MariaDB Server</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type <span class="string">&#x27;help;&#x27;</span> or <span class="string">&#x27;\h&#x27;</span> <span class="keyword">for</span> <span class="built_in">help</span>. Type <span class="string">&#x27;\c&#x27;</span> to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| <span class="built_in">test</span>               |</span><br><span class="line">| testdb             |</span><br><span class="line">+--------------------+</span><br><span class="line">5 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.01 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; show databasesl;</span><br><span class="line">ERROR 2006 (HY000): MySQL server has gone away</span><br><span class="line">No connection. Trying to reconnect...</span><br><span class="line">ERROR 2003 (HY000): Can<span class="string">&#x27;t connect to MySQL server on &#x27;</span>192.168.206.20<span class="string">&#x27; (111)</span></span><br><span class="line"><span class="string">ERROR: Can&#x27;</span>t connect to the server</span><br><span class="line"></span><br><span class="line">unknown [(none)]&gt; show databases;</span><br><span class="line">No connection. Trying to reconnect...</span><br><span class="line">ERROR 2003 (HY000): Can<span class="string">&#x27;t connect to MySQL server on &#x27;</span>192.168.206.20<span class="string">&#x27; (111)</span></span><br><span class="line"><span class="string">ERROR: Can&#x27;</span>t connect to the server</span><br><span class="line"></span><br><span class="line">unknown [(none)]&gt; show databases;</span><br><span class="line">No connection. Trying to reconnect...</span><br><span class="line">Connection <span class="built_in">id</span>:    2</span><br><span class="line">Current database: *** NONE ***</span><br><span class="line"></span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| <span class="built_in">test</span>               |</span><br><span class="line">| testdb             |</span><br><span class="line">+--------------------+</span><br><span class="line">5 rows <span class="keyword">in</span> <span class="built_in">set</span> (0.01 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; </span><br></pre></td></tr></table></figure>
+
+<p>可以看到中间的连接断掉了, 原因很简单, 我在中间将节点(node3)进行了下线, 于是过了一会node4得到了资源, mysql于是就重新连接了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#drbd%E7%AE%80%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">drbd简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#drdb%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">drdb的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE-drbd-pacemaker%E5%AE%9E%E7%8E%B0%E9%AB%98%E5%8F%AF%E7%94%A8MySQL%E9%9B%86%E7%BE%A4"><span class="toc-number">3.</span> <span class="toc-text">项目: drbd+pacemaker实现高可用MySQL集群</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&text=drbd实现HA的MySQL集群"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&is_video=false&description=drbd实现HA的MySQL集群"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=drbd实现HA的MySQL集群&body=Check out this article: https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&title=drbd实现HA的MySQL集群"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&name=drbd实现HA的MySQL集群&description=&lt;p&gt;现在我们来把目光放在HA存储上面吧~&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/10/29/drbd%E5%AE%9E%E7%8E%B0HA%E7%9A%84MySQL%E9%9B%86%E7%BE%A4/&t=drbd实现HA的MySQL集群"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

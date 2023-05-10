@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Linux下文本处理的三剑客–grep&#x2F;awk&#x2F;sed!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux三剑客-grep&#x2F;awk&#x2F;sed">
+<meta property="og:url" content="https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Linux下文本处理的三剑客–grep&#x2F;awk&#x2F;sed!">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://linux.vbird.org/linux_basic/0320bash//0320bash_5.png">
+<meta property="article:published_time" content="2017-05-06T17:50:17.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:25:25.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="RegExp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://linux.vbird.org/linux_basic/0320bash//0320bash_5.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux三剑客-grep/awk/sed</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/05/05/Python%E5%B0%8F%E6%8A%80%E5%B7%A7-3/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&text=Linux三剑客-grep/awk/sed"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&is_video=false&description=Linux三剑客-grep/awk/sed"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux三剑客-grep/awk/sed&body=Check out this article: https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&name=Linux三剑客-grep/awk/sed&description=&lt;p&gt;Linux下文本处理的三剑客–grep&amp;#x2F;awk&amp;#x2F;sed!&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&t=Linux三剑客-grep/awk/sed"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#grep"><span class="toc-number">2.</span> <span class="toc-text">grep</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sed"><span class="toc-number">3.</span> <span class="toc-text">sed</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#awk"><span class="toc-number">4.</span> <span class="toc-text">awk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E7%AE%A1%E9%81%93%E5%91%BD%E4%BB%A4"><span class="toc-number">5.</span> <span class="toc-text">其他管道命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#cut"><span class="toc-number">5.1.</span> <span class="toc-text">cut</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sort"><span class="toc-number">5.2.</span> <span class="toc-text">sort</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#uniq"><span class="toc-number">5.3.</span> <span class="toc-text">uniq</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wc"><span class="toc-number">5.4.</span> <span class="toc-text">wc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tee"><span class="toc-number">5.5.</span> <span class="toc-text">tee</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tr"><span class="toc-number">5.6.</span> <span class="toc-text">tr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#split"><span class="toc-number">5.7.</span> <span class="toc-text">split</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#xargs"><span class="toc-number">5.8.</span> <span class="toc-text">xargs</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux三剑客-grep/awk/sed
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-05-06T17:50:17.000Z" class="dt-published" itemprop="datePublished">2017-05-06</time>
+        
+        (Updated: <time datetime="2020-11-30T01:25:25.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/RegExp/" rel="tag">RegExp</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Linux下文本处理的三剑客–grep&#x2F;awk&#x2F;sed!</p>
+<span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Grep&#x2F;awk&#x2F;Sed是Linux下处理文本信息的最强的三个命令.使用它们几乎可以完成所有的文本处理, 具体说来是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">grep : 过滤.查找</span><br><span class="line">awk : 文本处理工具</span><br><span class="line">sed : 行编辑器</span><br></pre></td></tr></table></figure>
+
+<p>使用它们不可避免的要使用正则.</p>
+<p>因此回顾一下正则的基础:</p>
+<p>简单的说, 我们把基础正则分为这样三个部分.</p>
+<p><strong>单个字符</strong>–表示内容</p>
+<p>特定的字符(直接写), 字符范围(使用中括号<code>[]</code>), 任意字符(用一个点<code>.</code>来表示).<br>使用<code>|</code>来进行逻辑或运算.</p>
+<p><strong>重复字符</strong>–表示数量</p>
+<p>表示从零到任意:使用星号<code>*</code><br>表示要么0个要么1个:使用问号<code>?</code><br>表示从1到任意个:使用加号<code>+</code><br>表示特定的范围:使用大括号<code>&#123;&#125;</code></p>
+<p><strong>边界字符</strong></p>
+<p>首字符使用尖角号<code>^</code><br>尾字符使用美元符<code>$</code></p>
+<p><strong>元字符</strong></p>
+<p>任何字类字符使用<code>\w</code><br>任何非字类字符使用<code>\W</code><br>划定单词边界使用<code>\b</code> – <code>(boundary)</code></p>
+<p>另外,在使用一些字符时, <strong>千万不要忘记使用转义字符.</strong></p>
+<p>基础的正则就是这样了.</p>
+<h2 id="grep"><a href="#grep" class="headerlink" title="grep"></a>grep</h2><p>这个使用率应该是最高的了, 因为他是三个命令中最简单的一个.</p>
+<p>grep的基本命令格式是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep [选项] 匹配字符串 文件</span><br></pre></td></tr></table></figure>
+
+<p>我们经常使用管道符流动的数据来替代文件, grep常用的选项是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-i (ignore-case) 忽略大小写</span><br><span class="line">-v (invert-match) 反向匹配</span><br><span class="line">-n (line-number) 输出行号</span><br></pre></td></tr></table></figure>
+
+<p>这个没什么好说的了..因为大家都用的很666666. :)</p>
+<h2 id="sed"><a href="#sed" class="headerlink" title="sed"></a>sed</h2><p>sed相当于是一个自动的vim,常用来分析日志,修改配置,自动处理文件.</p>
+<p>简单先说一下Sed的原理, Sed接受一个输入, 接着(A)将读到的<strong>一行</strong>数据写入到模式空间(其实就是一个临时缓冲区), 接着进行命令处理(B),最后输出到屏幕, (A-B)循环执行直到读取结束.</p>
+<p>Sed实际上是行处理! 并且, Sed不改变源文件, 除非指定选项(这个后面再说), </p>
+<p>命令格式:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed [选项] <span class="string">&#x27;[命令]&#x27;</span> 文件名</span><br></pre></td></tr></table></figure>
+<p>现将常用的选项参数列出来, 到了下面再慢慢说:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-e 对输入数据进行多条sed命令(;号分割)</span><br><span class="line">-n 仅仅将处理的行输出到屏幕(默认全文件)</span><br><span class="line">-i 直接修改源文件, 而不是由屏幕输出.</span><br></pre></td></tr></table></figure>
+<p>那我们从<strong>文本处理</strong>开始!</p>
+<p>Sed的命令有很多和Vim很像, 列举一些常用的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- a : (append) 追加</span><br><span class="line">- c : (change) 替换</span><br><span class="line">- d : (delete) 删除</span><br><span class="line">- i : (insert) 插入</span><br><span class="line">- p : (<span class="built_in">print</span>) 打印</span><br><span class="line">- s : (string) 字串替换 -- 行范围s/旧字串/新字串/g (后面说)</span><br></pre></td></tr></table></figure>
+
+<p>下面来动动手吧~</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;p&#x27;</span> passwd</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">.....</span><br></pre></td></tr></table></figure>
+
+<p>挨!!??输出了两次?想想看这是为什么?</p>
+<p>之前说过, sed的原理是读取一行, 而在没有加上-n参数的时候, 又会将全文件输出, 所以就造成了行行重复的情况.</p>
+<p>同Vim一样,也可以直接使用行号或者使用斜杠进行搜索.</p>
+<p>比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed -n <span class="string">&#x27;10p&#x27;</span> passwd</span><br><span class="line">operator:x:11:0:operator:/root:/sbin/nologin</span><br><span class="line">[root@WWW ~]$ sed -n <span class="string">&#x27;/user/p&#x27;</span> passwd</span><br><span class="line">tss:x:59:59:Account used by the trousers package to sandbox the tcsd daemon:/dev/null:/sbin/nologin</span><br><span class="line">tinyproxy:x:993:991:tinyproxy user:/var/run/tinyproxy:/bin/false</span><br><span class="line">user1:x:1001:1001::/home/user1:/bin/bash</span><br><span class="line">user2:x:1002:1002::/home/user2:/bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>也可以选择一段距离, 比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed -n <span class="string">&#x27;10,20p&#x27;</span> passwd</span><br><span class="line">[root@WWW ~]$ sed -n <span class="string">&#x27;/operator/, /ftp/p&#x27;</span> passwd</span><br></pre></td></tr></table></figure>
+
+<p>将数字中的逗号变为波浪线即可进行步进式的跳跃.</p>
+<p>也可以进行取反: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed -n <span class="string">&#x27;10!p&#x27;</span> passwd</span><br><span class="line"><span class="comment"># 表示除了第十行都进行p操作</span></span><br></pre></td></tr></table></figure>
+
+<p>接着来看一下<code>-i</code>和<code>-a</code>两个插入命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;2a =========&#x27;</span> passwd</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">bin:x:1:1:bin:/bin:/sbin/nologin</span><br><span class="line">=========</span><br><span class="line">......</span><br><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;2i =========&#x27;</span> passwd</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">=========</span><br><span class="line">bin:x:1:1:bin:/bin:/sbin/nologin</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>也就是说, i是向前插入, a是向后插入.</p>
+<p>很简单对吧? 删除命令也是很简单的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">nl</span> passwd | sed <span class="string">&#x27;2d&#x27;</span></span><br><span class="line">1 root:x:0:0:root:/root:/bin/bash</span><br><span class="line">3 daemon:x:2:2:daemon:/sbin:/sbin/nologin</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+
+<p>删除同样也支持跳行和段选择.</p>
+<p>最后就是替换命令了, 替换支持行替换和字串替换.</p>
+<p>相对来说, 行替换要更简单一点.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;2c Hello&#x27;</span> passwd | <span class="built_in">nl</span></span><br><span class="line">1 root:x:0:0:root:/root:/bin/bash</span><br><span class="line">2 Hello</span><br><span class="line">3 daemon:x:2:2:daemon:/sbin:/sbin/nologin</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<p>如果在替换命令中使用了段选择, 不会使每一行都做替换, 而是把他们作为一个整体.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;1,34c Hello&#x27;</span> passwd | <span class="built_in">nl</span></span><br><span class="line">1 Hello</span><br><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;s/root/ROOT/g&#x27;</span> passwd </span><br><span class="line">ROOT:x:0:0:ROOT:/ROOT:/bin/bash</span><br><span class="line">bin:x:1:1:bin:/bin:/sbin/nologin</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+
+<p>来看一个操作实例吧, 现在我们从ifconfig中读取ip地址:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ ifconfig | grep inet | sed -e <span class="string">&#x27;s/inet //;s/net.*//&#x27;</span></span><br><span class="line">xx.xxx.xxx.xxx</span><br></pre></td></tr></table></figure>
+
+<p>其中我们使用了多重操作, 也就是添加<code>-e</code>参数, 并使用分号进行多个<code>sed</code>命令.</p>
+<p>接下来来看一下Sed稍微高级一点的用法:</p>
+<ul>
+<li>使用&amp;来复制前一个字符串</li>
+<li>大小写转换</li>
+</ul>
+<p>使用<code>&amp;</code>的一个实例像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;s/^[a-z]\+/&amp;   /&#x27;</span> passwd</span><br></pre></td></tr></table></figure>
+
+<p>接着来看一下这几个大小写转换符:</p>
+<ul>
+<li>u 转大写(以首字母为单位) (U 以词为单位) </li>
+<li>l 转小写(以首字母为单位) (L 以词为单位)</li>
+</ul>
+<p>比如:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed &#x27;s/^[a-z-]\+/\U&amp;/&#x27; passwd</span><br></pre></td></tr></table></figure>
+
+<p>会将所有的用户名变成大写.</p>
+<p>接着,如同我们在Python小技巧中说过的捕获组, 正则拼成的组, 也是可以有编号进行引用的.就像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;s/\(^[0-9A-Za-z-]\+\):x:\([0-9]\+\):\([0-9]\+\).*$/USER:\1   UID:\2   GID:\3/&#x27;</span> passwd</span><br></pre></td></tr></table></figure>
+
+<p>这样会输出类似:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">User:root   UID: 0 GID:0 </span><br><span class="line">User:bin   UID: 1 GID:1 </span><br><span class="line">User:daemon   UID: 2 GID:2 </span><br></pre></td></tr></table></figure>
+
+<p>这样的语句.</p>
+<p>sed也可以进行多文件间的操作, 比如这两个命令:(<strong>注意:其中的<code>w</code>命令是会进行真实写入的!会直接对文件进行改变并且指针在文件头.</strong>)</p>
+<p>比方说我们先写入一些数据:(和下面的演示有出入,只要分清字母和数字就好)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> -e <span class="string">&quot;13243\n545343\n112324&quot;</span> &gt; 123.txt</span><br><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> -e <span class="string">&quot;ghreqwre\ndwegfew\ndwqcsa&quot;</span> &gt; abc.txt</span><br></pre></td></tr></table></figure>
+
+<p>接着演示文件间的读取和写入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;1r abc.txt&#x27;</span> 123.txt <span class="comment"># 写入缓存区中,不会生效</span></span><br><span class="line">3413254</span><br><span class="line">aDSWvsdfv</span><br><span class="line">fwqwqfwqfwq</span><br><span class="line">fqefqq</span><br><span class="line">14354354</span><br><span class="line">2132421</span><br><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;$r abc.txt&#x27;</span> 123.txt <span class="comment"># 写到尾部</span></span><br><span class="line">[root@WWW ~]$ sed <span class="string">&#x27;1w abc.txt&#x27;</span> 123.txt</span><br><span class="line">3413254</span><br><span class="line">14354354</span><br><span class="line">2132421</span><br><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> abc.txt <span class="comment"># 文件被改变</span></span><br><span class="line">3413254</span><br></pre></td></tr></table></figure>
+
+<p>sed的执行单位是行, 直到读取完整个文件.</p>
+<p>但我们可以通过<code>q</code>命令使其提前退出.</p>
+<p>比如:  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">nl</span> passwd | sed <span class="string">&#x27;3q&#x27;</span></span><br><span class="line">1	root:x:0:0:root:/root:/bin/bash</span><br><span class="line">2	bin:x:1:1:bin:/bin:/sbin/nologin</span><br><span class="line">[root@WWW ~]$ <span class="built_in">nl</span> passwd | sed <span class="string">&#x27;/nologin/q&#x27;</span></span><br><span class="line">1	root:x:0:0:root:/root:/bin/bash</span><br><span class="line">2	bin:x:1:1:bin:/bin:/sbin/nologin</span><br></pre></td></tr></table></figure>
+
+<p>至此, sed的命令就差不多了.</p>
+<h2 id="awk"><a href="#awk" class="headerlink" title="awk"></a>awk</h2><p>awk是一个与Sed类似的文本与数据处理工具, 同样也是一次处理一行内容.</p>
+<p>不同的是, awk对每行可进行切片, 并且awk是可以进行编程的, 因此他十分灵活.</p>
+<p>awk的格式为:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="string">&#x27;条件1&#123;动作1&#125;条件2&#123;动作2&#125;...&#x27;</span> 文件名</span><br></pre></td></tr></table></figure>
+
+<p>awk的内置变量(1)同shell参数很像, 使用<code>$0</code>表示整行, <code>$1</code>表示第一个字段, <code>$2</code>表示第二个字段….以此类推..</p>
+<p>awk的分割符用 <code>-F &#39;&#39; </code>来进行声明</p>
+<p>比如:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> passwd | awk -F <span class="string">&#x27;:&#x27;</span> <span class="string">&#x27;&#123;print $1 &quot;----&quot; $7&#125;&#x27;</span></span><br><span class="line">root----/bin/bash</span><br><span class="line">bin----/sbin/nologin</span><br><span class="line">daemon----/sbin/nologin</span><br><span class="line">adm----/sbin/nologin</span><br></pre></td></tr></table></figure>
+
+<p>awk的内置变量(2)是NR,NF,FILENAME,分别表示每行的记录号, 字段的数量, 和正在处理的文件名. </p>
+<p>awk是支持逻辑运算的, 比如下面这个:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ awk -F <span class="string">&quot;:&quot;</span> <span class="string">&#x27;&#123;if ($3&gt;100) print &quot;Deny:  &quot;,$1&#125; &#123;if ($3&lt;100) print &quot;Access:   &quot;,$1&#125;&#x27;</span> passwd</span><br><span class="line">Access:    root</span><br><span class="line">Access:    bin</span><br><span class="line">Deny:   libstoragemgmt</span><br><span class="line">Access:    tcpdump</span><br><span class="line">Deny:   nginx</span><br></pre></td></tr></table></figure>
+
+<p>awk有两种输出函数, 一个是<code>printf</code>, 一个是<code>print</code>, 其中<code>printf</code>更加古老, 需要手动加上最后的换行符, <code>print</code>会自动加上.</p>
+<p><code>printf</code>基本上和编程语言的同名函数用法相同,都是格式化输出.</p>
+<p>作为awk的重要功能, 我们来看一下他的逻辑判断式:</p>
+<ul>
+<li><del>, !</del>  :  匹配正则表达式</li>
+<li>&#x3D;&#x3D;, !&#x3D;, &lt;, &gt;  :  判断逻辑表达式</li>
+</ul>
+<p>匹配正则以<code>~</code>开头, 后面加上有斜线规定的正则, 后面的指令就只对匹配到的内容有效果了.</p>
+<p>比如这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk -F <span class="string">&#x27;:&#x27;</span> <span class="string">&#x27;$1~/^r.*$/&#123;print $1&#125;&#x27;</span> passwd</span><br><span class="line">root</span><br><span class="line">rpc</span><br></pre></td></tr></table></figure>
+
+<p>当然也可以反选择, 只要把<code>~</code>进行取反就可以啦, 也就是<code>!~</code>.</p>
+<p>以上是awk的基础格式.</p>
+<p>什么?还有扩展的? 是的, awk的command2拓展就像是这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ awk [options] <span class="string">&#x27;BEGIN&#123;print &#x27;</span>start<span class="string">&#x27;&#125; pattern&#123;commands&#125; END&#123; print &quot;end&quot;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用awk扩展格式可以手动制表, 仍然用<code>passwd</code>来举例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ awk -F <span class="string">&#x27;:&#x27;</span> <span class="string">&#x27;BEGIN&#123;print &quot;Line\tCol\tUser&quot;&#125;&#123;print NR&quot;\t&quot;NF&quot;\t&quot;$1&#125;END&#123;print &quot;-------&quot;FILENAME&quot;-------&quot;&#125;&#x27;</span> passwd </span><br><span class="line">Line	Col	User</span><br><span class="line">1	7	root</span><br><span class="line">....</span><br><span class="line">31	7	tomcat</span><br><span class="line">32	7	tinyproxy</span><br><span class="line">-------passwd-------</span><br></pre></td></tr></table></figure>
+
+<p>现在我们利用awk的逻辑控制运算功能, 做一个小实例:(请使用du取代这个愚蠢的实例.)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">ls</span> -la | awk <span class="string">&#x27;BEGIN&#123;size=0&#125;&#123;size+=$5&#125;END&#123;print &quot;The total size of the directory is &quot;size/1024/1024&quot;M&quot;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>在BEGIN段中, 我们初始化了size,接着让awk一行一行读入大小的值并累加到size上,最后输出.</p>
+<p>同样, 我们也可以统计passwd文件的行数, 从而得知有多少用户(请使用wc命令,取代这个愚蠢的实例)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ awk -F <span class="string">&quot;:&quot;</span> <span class="string">&#x27;BEGIN&#123;count=0&#125;$1!~/^$/&#123;count++&#125;END&#123;print &quot;There are &quot;count&quot; users&quot;&#125;&#x27;</span> passwd</span><br></pre></td></tr></table></figure>
+
+<p>awk也可以使用for循环和数组, 没想到吧?</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ netstat -tanp | awk <span class="string">&#x27;$6~/LISTEN|ESTABLISHED/&#123;sum[$6]++&#125;END&#123;for (i in sum)print i, sum[i]&#125;&#x27;</span></span><br><span class="line"></span><br><span class="line">LISTEN 9</span><br><span class="line">ESTABLISHED 16</span><br></pre></td></tr></table></figure>
+
+<p>到这里awk的使用就算是差不多了, 简单小结一下吧:</p>
+<p>awk的内置参数要知道, $n(数字) 代表那一列的值, NR, NF 分别代表<strong>Record每行记录数</strong>, <strong>Field字段数</strong>.</p>
+<p>awk支持逻辑符, 判断, 数组, 循环等等, 还有<code>BEGIN</code>和<code>END</code>.</p>
+<h2 id="其他管道命令"><a href="#其他管道命令" class="headerlink" title="其他管道命令"></a>其他管道命令</h2><p>接着记录一下Linux的管道命令, 这些在进行文本处理的时候也是超级常用的.</p>
+<h3 id="cut"><a href="#cut" class="headerlink" title="cut"></a>cut</h3><p>这个命令其实也是很常用的,听名字就知道是干什么的了–做字符串的裁剪以剪出我们需要的信息.</p>
+<p>事实上,这个命令的历史很久的.简单的使用方法就像是这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cut</span> -d <span class="string">&quot;分割字符&quot;</span> -f fields <span class="comment"># d其实就是delimiter嘛  fields就是要裁剪的数据域</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">cut</span> -c 字符范围</span><br></pre></td></tr></table></figure>
+
+<p>举个例子就明白了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> <span class="variable">$PATH</span></span><br><span class="line">/usr/lib64/qt-3.3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin</span><br><span class="line">[root@WWW ~]$ <span class="comment"># 现在我们可以把这之间的:当成分隔符,这样$PATH的构成就是</span></span><br><span class="line">[root@WWW ~]$ <span class="comment"># |1|2|3|4|5|6|</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> <span class="variable">$PATH</span> | <span class="built_in">cut</span> -d <span class="string">&quot;:&quot;</span> -f 1</span><br><span class="line">/usr/lib64/qt-3.3/bin</span><br></pre></td></tr></table></figure>
+
+<p>简单吧,另外cut还能精确的定位到一节字符串的某个位置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> <span class="variable">$PATH</span> | <span class="built_in">cut</span> -c 1,5</span><br><span class="line">// <span class="comment"># 这个是第一个usr两边的斜线</span></span><br><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> <span class="variable">$PATH</span> | <span class="built_in">cut</span> -c 1-5</span><br><span class="line">/usr/</span><br></pre></td></tr></table></figure>
+
+<p>上面就是在使用cut命令的<code>-c</code>进行的精准截取, <code>,</code>表示<strong>就选择这两个位置的字符</strong>, <code>-</code>表示<strong>选择这两个字符以及他们中间的所有字符</strong>, 其实就类似Python的切片, <code>cut</code>也可以不写两端来进行直到头尾的操作.</p>
+<p>当然你也发现了, cut在处理多个空格的情况下是比较吃力的, 这个时候就要选择<code>awk</code>了.</p>
+<h3 id="sort"><a href="#sort" class="headerlink" title="sort"></a>sort</h3><p>sort是个很有趣的指令,他可以根据不同的数据类型来进行排序.<strong>这里要注意一下,排序的依据还取决于当前系统的语系.使用LANG&#x3D;C来使得语系统一,优化排序</strong></p>
+<p>常用的选项和参数如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">sort</span> [options] [file or stdin]</span><br><span class="line"><span class="comment"># options</span></span><br><span class="line"><span class="comment"># -f 忽略大小写(很好奇为什么不是i,难道是familiar?) 哦,-i的意思是忽略不可打印的字符,不过基本用不到吧....</span></span><br><span class="line"><span class="comment"># -r 反向排序(reverse)</span></span><br><span class="line"><span class="comment"># -k 排序依据(用什么东西来进行排序)</span></span><br><span class="line"><span class="comment"># -t 分割符号(默认是TAB, 这个选项经常和-k一起使用)</span></span><br></pre></td></tr></table></figure>
+
+<p>使用sort,我们可以很轻易的得到按照用户名排序的passwd文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> /etc/passwd | <span class="built_in">sort</span></span><br></pre></td></tr></table></figure>
+
+<p>假如说系统的passwd文件不是按照uid排的序的话, 使用sort同样可以达到同样的目的, 这个时候就要使用到<code>-k</code>和<code>-t</code>了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> /etc/passwd | <span class="built_in">sort</span> -t <span class="string">&quot;:&quot;</span> -k 3</span><br></pre></td></tr></table></figure>
+
+<p>稍微解释一下,<code>-t &quot;:&quot;</code>的意思是说以<code>:</code>当做分割符, <code>-k 3</code>的意思是说以第三个的数据域(也就是uid了)当做排序依据.</p>
+<h3 id="uniq"><a href="#uniq" class="headerlink" title="uniq"></a>uniq</h3><p>这个命令经常用于进行处理重复的行, 一个经典的使用例子就是统计曾经登录的用户的登录次数.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ last | <span class="built_in">cut</span> -d <span class="string">&#x27; &#x27;</span> -f 1 | <span class="built_in">sort</span> | <span class="built_in">uniq</span> -c</span><br></pre></td></tr></table></figure>
+
+<p>我的机器上的输出结果是:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">  1 </span><br><span class="line">  1 reboot</span><br><span class="line">121 root</span><br><span class="line">  1 wtmp</span><br></pre></td></tr></table></figure>
+
+<p><strong>一开始我省略了sort命令,结果发现输出的结果是这样的:</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">107 root</span><br><span class="line">  1 reboot</span><br><span class="line"> 14 root</span><br><span class="line">  1 </span><br><span class="line">  1 wtmp</span><br></pre></td></tr></table></figure>
+
+<p><code>root</code>的结果被分开了, 这样就导致<code>uniq</code>的统计结果出现了错误. 这样我们就能发现了<code>uniq</code>的处理逻辑: <strong>从上到下的搜索,如果是一样的就不再增加新条目,一旦遇到不同的,则直接将之前的的条目归档.</strong></p>
+<h3 id="wc"><a href="#wc" class="headerlink" title="wc"></a>wc</h3><p>这个是一个很好用的统计工具哦, <code>wc</code>可以很方便的统计行数,字数,字符数.</p>
+<p>尤其对于一些成行的文件,这个命令可以很灵活的获取一些你想要的值.( 比如<code>/etc/passwd</code>这样的文件,行数即为用户数 )</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">echo</span> `<span class="built_in">cat</span> /etc/passwd | <span class="built_in">wc</span> -l`<span class="string">&quot;个用户&quot;</span></span><br><span class="line">36个用户</span><br></pre></td></tr></table></figure>
+
+<p>直接使用<code>wc</code>,会按照次序输出行数,字数,字节数.</p>
+<p><code>wc</code>对于单词的界定是被空格分割的非零长度的字符序列.</p>
+<p>使用一下选项来限制输出的信息:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">wc</span> -l (lines) -w (words) -m (chars)</span><br></pre></td></tr></table></figure>
+
+<h3 id="tee"><a href="#tee" class="headerlink" title="tee"></a>tee</h3><p><img src="http://linux.vbird.org/linux_basic/0320bash//0320bash_5.png" alt="tee 的工作流程示意图"></p>
+<p>像上面的图那样, tee会将输出流复制一份到文件,另外一份到标准输出流(也就是屏幕了)</p>
+<p>例如,当你想要将处理的信息输出到屏幕外,还想存一份日志或者什么.那么<code>tee</code>就是一个十分适合的工具</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ last | <span class="built_in">tee</span> last.list | <span class="built_in">cut</span> -d <span class="string">&quot; &quot;</span> -f 1</span><br></pre></td></tr></table></figure>
+
+<p>这样不仅会新建一个叫<code>last.list</code>的文件,还会将信息同步输出到屏幕上.</p>
+<p>如果文件是已经存在的,那么文件指针将会指向文件头.</p>
+<p>如果是要进行追加,就要添加<code>-a</code>参数. 如果文件的参数是<code>-</code>,那么将会输出标准输出 ( 也就是说会在屏幕上输出两倍的信息 )</p>
+<h3 id="tr"><a href="#tr" class="headerlink" title="tr"></a>tr</h3><p>tr的用法还是很灵活的, 因为你可以使用正则来进行各种替换和删除.</p>
+<p>直接上实例吧:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~] <span class="built_in">cat</span> /etc/passwd | <span class="built_in">tr</span> [:lower:] [:upper:] </span><br></pre></td></tr></table></figure>
+
+<p>这样便将所有的字母变成了大写.像这样的变量还有:</p>
+<ul>
+<li><code>[:alnum:]</code>所有的字母和数字</li>
+<li><code>[:alpha:]</code>所有的字母</li>
+<li><code>[:blank:]</code>所有的水平空格</li>
+<li><code>[:digit:]</code>所有的数字</li>
+<li><code>[:upper:]</code>大写字母</li>
+<li><code>[:lower:]</code>小写字母</li>
+</ul>
+<p>另外tr可以加上参数来说明模式: <code>-d</code>是匹配删除, <code>-t</code>是用来将SET1映射成SET2.</p>
+<p>在使用正则的情况下: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> /etc/passwd | <span class="built_in">tr</span> [a-z] [A-Z]</span><br></pre></td></tr></table></figure>
+
+<p>和上面的效果是一样的.</p>
+<p>删除功能的示例如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> /etc/passwd | <span class="built_in">tr</span> -d <span class="string">&quot;:&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后你就会看到一团子东西, 所有的分隔符已经被删去了.</p>
+<p>tr还有一个有趣的参数<code>-c</code> 意思就是取补集, 换言之就是除了给定的SET之外的. 如果和-d连续使用就是说仅保留给定的字符集. 这样子的一个应用就是生成随机字符串:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW mage_shell_edu]<span class="comment"># tr -cd a-zA-Z0-9 &lt; /dev/urandom | head -c 20 | xargs</span></span><br><span class="line">hd5t7kDdpOwBoiKhYP9K</span><br><span class="line">[root@WWW mage_shell_edu]<span class="comment"># tr -cd a-zA-Z0-9 &lt; /dev/urandom | head -c 20 | xargs</span></span><br><span class="line">PDR1Eb6ZJkFc5851TeUc</span><br><span class="line">[root@WWW mage_shell_edu]<span class="comment"># tr -cd a-zA-Z0-9 &lt; /dev/urandom | head -c 20 | xargs</span></span><br><span class="line">NdH7qFJY7Xo3wWo9Vub8</span><br><span class="line">[root@WWW mage_shell_edu]<span class="comment"># tr -cd a-zA-Z0-9 &lt; /dev/urandom | head -c 20 | xargs</span></span><br><span class="line">jgcXXMGVNoZJPUtY9Kp6</span><br></pre></td></tr></table></figure>
+
+<p>最后一个xargs其实就是为了换行而已, 关于xargs的用法, 下面会有.</p>
+<h3 id="split"><a href="#split" class="headerlink" title="split"></a>split</h3><p>在<code>NT</code>下, 你应该使用过一些<code>txt</code>裁剪工具对吧.这个<code>split</code>就是类似的一个外部命令.</p>
+<p><code>split</code>可以将大文档分割成一个个小的档案.并且支持单位.</p>
+<p><code>split</code>支持按行数分割, 按大小两种方式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">split</span> [OPTION] [INPUT [PREFIX]]</span><br><span class="line"><span class="comment"># OPTION 常用的就是 -b 按字节分割 -l 按行数分割</span></span><br><span class="line"><span class="comment"># INPUT 就是输入</span></span><br><span class="line"><span class="comment"># PREFIX 是指生成的文件名前缀</span></span><br></pre></td></tr></table></figure>
+
+<p>现在来试一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">split</span> -l 4 /root/test mytest_</span><br><span class="line">[root@WWW ~]$ <span class="built_in">split</span> -b 100 /root/test mytest_</span><br></pre></td></tr></table></figure>
+
+<p>然后我的机器上就多出来了几个文件, 命名形式是: <code>mytest_a&#123;a,b,c,d...&#125;</code></p>
+<p>如果我是想将屏幕上的信息进行裁剪之后再输出文件怎么办呢?</p>
+<p>还记得之前的那个短横线 <code>-</code> 这个横线就可以来解决问题.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">ls</span> -al /| <span class="built_in">split</span> -l 4 - lsroot_</span><br></pre></td></tr></table></figure>
+
+<p>那如果我要进行文件的合并怎么办呢, 其实这个并不需要什么特定的工具了,直接使用数据流重定向就可以了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> mytest_* &gt;&gt; mytest</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以了.</p>
+<p>最后再来看一个参数代换的命令:</p>
+<h3 id="xargs"><a href="#xargs" class="headerlink" title="xargs"></a>xargs</h3><p>这个命令是个很神奇的命令,参数代换并不能理解吧, 其实说白了就是将前面的输出当做命令的参数.所以这个命令的用处是很大的.</p>
+<p>比如说</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ <span class="built_in">cat</span> /etc/passwd \ <span class="built_in">cut</span> -d <span class="string">&#x27;:&#x27;</span> -f 1 | xargs -n 1 <span class="built_in">id</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以打印出所有用户的UID,GID和所属组名.</p>
+<p>这样看来<code>xargs</code>就像是<code>find</code>命令后面的那个<code>-exec COMMAND &#123;&#125; \;</code>一样的感觉.</p>
+<p>解释一下上面的参数是什么意思: 如果参数是很多个就一定要指定<code>-n</code>参数, 这个告诉<code>xargs</code>一次处理的命令参数数量</p>
+<p>另外,如果xargs后面没有指定命令,那么默认就是<code>echo</code>. 另外一个可能会用到的参数是<code>-e</code>(EOF)的意思, 在后面可以跟上一个字符串, 当<code>xargs</code>扫描到了这个字符串就会直接停止工作.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#grep"><span class="toc-number">2.</span> <span class="toc-text">grep</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sed"><span class="toc-number">3.</span> <span class="toc-text">sed</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#awk"><span class="toc-number">4.</span> <span class="toc-text">awk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E7%AE%A1%E9%81%93%E5%91%BD%E4%BB%A4"><span class="toc-number">5.</span> <span class="toc-text">其他管道命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#cut"><span class="toc-number">5.1.</span> <span class="toc-text">cut</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sort"><span class="toc-number">5.2.</span> <span class="toc-text">sort</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#uniq"><span class="toc-number">5.3.</span> <span class="toc-text">uniq</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wc"><span class="toc-number">5.4.</span> <span class="toc-text">wc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tee"><span class="toc-number">5.5.</span> <span class="toc-text">tee</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tr"><span class="toc-number">5.6.</span> <span class="toc-text">tr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#split"><span class="toc-number">5.7.</span> <span class="toc-text">split</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#xargs"><span class="toc-number">5.8.</span> <span class="toc-text">xargs</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&text=Linux三剑客-grep/awk/sed"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&is_video=false&description=Linux三剑客-grep/awk/sed"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux三剑客-grep/awk/sed&body=Check out this article: https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&title=Linux三剑客-grep/awk/sed"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&name=Linux三剑客-grep/awk/sed&description=&lt;p&gt;Linux下文本处理的三剑客–grep&amp;#x2F;awk&amp;#x2F;sed!&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/&t=Linux三剑客-grep/awk/sed"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

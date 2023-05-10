@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="简单了解Tomcat之后, 我们来看看他的实际配置和相关的应用吧,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tomcat配置与应用">
+<meta property="og:url" content="https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="简单了解Tomcat之后, 我们来看看他的实际配置和相关的应用吧,">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/tomcat_test.png">
+<meta property="article:published_time" content="2018-09-20T14:23:39.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:47:53.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Tomcat">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/tomcat_test.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Tomcat配置与应用</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/09/25/Tomcat%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/09/14/Java%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB%E5%92%8Ctomcat%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&text=Tomcat配置与应用"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&is_video=false&description=Tomcat配置与应用"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Tomcat配置与应用&body=Check out this article: https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&name=Tomcat配置与应用&description=&lt;p&gt;简单了解Tomcat之后, 我们来看看他的实际配置和相关的应用吧,&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&t=Tomcat配置与应用"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8CentOS7%E4%B8%8A%E9%83%A8%E7%BD%B2%E4%BD%BF%E7%94%A8Tomcat"><span class="toc-number">1.</span> <span class="toc-text">在CentOS7上部署使用Tomcat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat%E7%9A%84%E7%BB%84%E4%BB%B6%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">Tomcat的组件配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Server-xml"><span class="toc-number">2.1.</span> <span class="toc-text">Server.xml</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Connector"><span class="toc-number">2.1.1.</span> <span class="toc-text">Connector</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Engine"><span class="toc-number">2.1.2.</span> <span class="toc-text">Engine</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Host"><span class="toc-number">2.1.3.</span> <span class="toc-text">Host</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Context"><span class="toc-number">2.1.4.</span> <span class="toc-text">Context</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Valve"><span class="toc-number">2.1.5.</span> <span class="toc-text">Valve</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LNMT-amp-LAMT"><span class="toc-number">3.</span> <span class="toc-text">LNMT &amp; LAMT</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Tomcat配置与应用
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-09-20T14:23:39.000Z" class="dt-published" itemprop="datePublished">2018-09-20</time>
+        
+        (Updated: <time datetime="2020-11-30T01:47:53.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/Tomcat/" rel="tag">Tomcat</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>简单了解Tomcat之后, 我们来看看他的实际配置和相关的应用吧,</p>
+<span id="more"></span>
+
+<p>我们之前已经说过了, 对于Tomcat运行的核心配置文件就是<code>server.xml</code>.  各个层级组件的顺序是这样子的:</p>
+<blockquote>
+<p>server -&gt; service  -&gt; connector -&gt; engine -&gt; host -&gt; context</p>
+</blockquote>
+<p>我们还说过在部署的时候, tomcat启动一个jvm, 产生运行时区域, 主要就是堆和栈两个部分, 其中对象都保存在堆中.</p>
+<h2 id="在CentOS7上部署使用Tomcat"><a href="#在CentOS7上部署使用Tomcat" class="headerlink" title="在CentOS7上部署使用Tomcat"></a>在CentOS7上部署使用Tomcat</h2><p>之前我们已经将相关的环境变量配置好了, 也成功的部署了Tomcat的默认页面, 现在我们来先看一下默认的页面的组织结构:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 host-manager]# tree .</span><br><span class="line">.</span><br><span class="line">├── images</span><br><span class="line">│   ├── add.gif</span><br><span class="line">│   ├── asf-logo.svg</span><br><span class="line">│   ├── code.gif</span><br><span class="line">│   ├── design.gif</span><br><span class="line">│   ├── docs.gif</span><br><span class="line">│   ├── fix.gif</span><br><span class="line">│   ├── tomcat.gif</span><br><span class="line">│   ├── update.gif</span><br><span class="line">│   └── void.gif</span><br><span class="line">├── index.jsp</span><br><span class="line">├── manager.xml</span><br><span class="line">├── META-INF</span><br><span class="line">│   └── context.xml</span><br><span class="line">└── WEB-INF</span><br><span class="line">    ├── jsp</span><br><span class="line">    │   ├── 401.jsp</span><br><span class="line">    │   ├── 403.jsp</span><br><span class="line">    │   └── 404.jsp</span><br><span class="line">    └── web.xml</span><br><span class="line"></span><br><span class="line">4 directories, 16 files</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个是默认tomcat页面的<code>host-manager</code>的目录结构 从中我们可以得到一个Java Web工程的目录组织结构.</p>
+<p> 一个JavaWeb程序, 都有特定的组织形式, 层次性的目录结构, 从上面也可以看到了. 主要包含了servlet代码文件, jsp页面文件, 类文件, 部署描述符文件等等.</p>
+<p>例如我们在上面看到的, <code>WEB-INF</code>, <code>META-INF</code> 这两个目录是完全大写的, 但是却并不一定是必须要有的, 不过基本上每一个JavaWeb程序都有这个. 其中, 前者是webapp的私有资源目录, 通常存放的是webapp自用的web.xml.而后者基本相似, 存放的是webapp的context.xml</p>
+<p>显然的, 我们这两个目录是不能被访问到的. 另外, 还有<code>classes</code>, 用来存放webapp的私有类的, 以及<code>lib</code>, 这也是webapp的私有类, 但是是被打包成jar格式的类. 当然了, 还有一个webapp的主页, 也就是index.jsp了.</p>
+<p>说完了webapp的组织结构, 接下来我们再来说一下webapp的几种归档格式.</p>
+<ul>
+<li>war 	webapp</li>
+<li>jar  EJB的类</li>
+<li>rar  资源适配器</li>
+<li>ear  企业级应用程序</li>
+</ul>
+<p>以上就是关于Java的Webapp组织结构的相关了, 接下来我们就来手动添加一个测试应用程序, 步骤如下:</p>
+<ol>
+<li>创建一个webapp的特有的目录结构</li>
+<li>提供webapp的各个文件</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 webapps]# mkdir myapp</span><br><span class="line">[root@VM-node0 webapps]# cd myapp/</span><br><span class="line">[root@VM-node0 myapp]# mkdir ./&#123;lib,classes,WEB-INF,META-INF&#125; -pv</span><br><span class="line">mkdir: created directory ‘./lib’</span><br><span class="line">mkdir: created directory ‘./classes’</span><br><span class="line">mkdir: created directory ‘./WEB-INF’</span><br><span class="line">mkdir: created directory ‘./META-INF’</span><br><span class="line">[root@VM-node0 myapp]# tree .</span><br><span class="line">.</span><br><span class="line">├── classes</span><br><span class="line">├── lib</span><br><span class="line">├── META-INF</span><br><span class="line">└── WEB-INF</span><br><span class="line"></span><br><span class="line">4 directories, 0 files</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接下来就是创建一些必要的文件.</p>
+<p>来随便写一个:</p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page language=<span class="string">&quot;java&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.util.*&quot;</span>%&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">  &lt;head&gt;</span><br><span class="line">    &lt;title&gt;JSP Test Page&lt;/title&gt;</span><br><span class="line">  &lt;/head&gt;</span><br><span class="line">  &lt;body&gt;</span><br><span class="line">    &lt;% out.println(<span class="string">&quot;Hello, World.&quot;</span>); %&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>ok, 接下来我们就来直接访问一下. 默认配置的是自动部署的 我们先不要关心这方面的.</p>
+<p>直接访问的结果:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/tomcat_test.png" alt="tomcat_test"></p>
+<p>结果和我们设想的结果是一致的.</p>
+<p>我们之前说过, webapp中的源文件会被翻译成Java代码和Class文件在<code>work</code>目录下, 我们去看一下吧.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 myapp]# pwd</span><br><span class="line">/usr/local/tomcat/work/Catalina/localhost/myapp</span><br><span class="line">[root@VM-node0 myapp]# tree .</span><br><span class="line">.</span><br><span class="line">└── org</span><br><span class="line">    └── apache</span><br><span class="line">        └── jsp</span><br><span class="line">            ├── index_jsp.class</span><br><span class="line">            └── index_jsp.java</span><br><span class="line"></span><br><span class="line">3 directories, 2 files</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>已经生成了对应的Java代码和类文件.</p>
+<p>我们部署webapp应用, 其实就是将源文件放置于目标目录, 接着配置tomcat服务器是的能够给予context.xml文件中定义的路径来访问此webapp. 接着通过特有的类来将class loader装载到tomcat.</p>
+<p>主要有两种方式, 也即是自动部署和手动部署, 其实手动部署还有两种, 一个是冷部署, 也就是把webapp复制倒指定位置, 接着再启动tomcat. 另外一个就是热部署, 通过一些manager的部署工具, ant, tcd等. </p>
+<p>除了部署操作, 还有反部署, 重新部署, 停止, 启动等等几种和部署有关的操作. 其中稍微有点疑问的应该就是反部署操作了吧. 这个其实是说停止webapp, 并且从tomcat实例中拆除其部分文件和部署名.</p>
+<h2 id="Tomcat的组件配置"><a href="#Tomcat的组件配置" class="headerlink" title="Tomcat的组件配置"></a>Tomcat的组件配置</h2><p>我们再来看一遍tomcat主配置文件的目录结构.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">service</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">connector</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">connector</span> /&gt;</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="tag">&lt;<span class="name">engine</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">host</span> <span class="attr">name</span>=<span class="string">&quot;&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">host</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">host</span> <span class="attr">name</span>=<span class="string">&quot;&quot;</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">context</span> /&gt;</span></span><br><span class="line">                ...</span><br><span class="line">            <span class="tag">&lt;/<span class="name">host</span>&gt;</span></span><br><span class="line">            ...</span><br><span class="line">        <span class="tag">&lt;/<span class="name">engine</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">service</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>除了上面的这些, 还有一些被嵌套的组件, 例如<code>Valve(阀门)</code>. 这个东西可以存在在任何容器类的组件中, 这个东西可以理解成是一种拦截器, 可以用来进行日志收集或者试请求拦截. 另外, 还有日志记录器<code>Logger</code>, 可以存放在Context之外的任何容器中, 用来定义日志是如何存储, 如何记录的. 除此之外, 还有一个用来进行用户身份认证的组件叫做<code>Realm</code>这个在之前也提到过.</p>
+<h3 id="Server-xml"><a href="#Server-xml" class="headerlink" title="Server.xml"></a>Server.xml</h3><p>我们现在就打开<code>server.xml</code>来看一下, 首先还是先复制一份吧 然后更方便进行实验.</p>
+<p>首先我们可以看到默认定义的Server实例, 后面跟上了一个端口和一个shutdown属性. 这是干嘛的? 相信聪明的你一定看出来了, 对. 这是销毁虚拟机的一个接口, 我们可以使用telnet连接过去之后, 输入<code>shutdown</code>属性所定义的语句, tomcat就会销毁虚拟机了, 来试试吧.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 tomcat]# ss -tnl</span><br><span class="line">State      Recv-Q Send-Q                              Local Address:Port                                             Peer Address:Port              </span><br><span class="line">LISTEN     0      100                                     127.0.0.1:25                                                          *:*                  </span><br><span class="line">LISTEN     0      128                                             *:22                                                          *:*                  </span><br><span class="line">LISTEN     0      100                                           ::1:25                                                         :::*                  </span><br><span class="line">LISTEN     0      1                                ::ffff:127.0.0.1:8005                                                       :::*                  </span><br><span class="line">LISTEN     0      100                                            :::8009                                                       :::*                  </span><br><span class="line">LISTEN     0      100                                            :::8080                                                       :::*                  </span><br><span class="line">LISTEN     0      128                                            :::22                                                         :::*                  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个是启动之后的情况, 我们可以看到监听本机的8005端口, 接下来使用telnet去连接并且发送对应的字符串:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 tomcat]# telnet 127.0.0.1 8005</span><br><span class="line">Trying 127.0.0.1...</span><br><span class="line">Connected to 127.0.0.1.</span><br><span class="line">Escape character is &#x27;^]&#x27;.</span><br><span class="line">SHUTDOWN</span><br><span class="line">Connection closed by foreign host.</span><br><span class="line">[root@VM-node0 tomcat]# ss -tnl</span><br><span class="line">State      Recv-Q Send-Q                              Local Address:Port                                             Peer Address:Port              </span><br><span class="line">LISTEN     0      100                                     127.0.0.1:25                                                          *:*                  </span><br><span class="line">LISTEN     0      128                                             *:22                                                          *:*                  </span><br><span class="line">LISTEN     0      100                                           ::1:25                                                         :::*                  </span><br><span class="line">LISTEN     0      128                                            :::22                                                         :::*                  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>看 这样监听的套接字都被释放了, 事实上, 虚拟机都销毁了, 整个tomcat进程其实都没了.</p>
+<p>再往下面看, 我们可以看到tomcat对用户认证相关的属性:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">GlobalNamingResources</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!-- Editable user database that can also be used by</span></span><br><span class="line"><span class="comment">       UserDatabaseRealm to authenticate users</span></span><br><span class="line"><span class="comment">  --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Resource</span> <span class="attr">name</span>=<span class="string">&quot;UserDatabase&quot;</span> <span class="attr">auth</span>=<span class="string">&quot;Container&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">type</span>=<span class="string">&quot;org.apache.catalina.UserDatabase&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">description</span>=<span class="string">&quot;User database that can be updated and saved&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">factory</span>=<span class="string">&quot;org.apache.catalina.users.MemoryUserDatabaseFactory&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">pathname</span>=<span class="string">&quot;conf/tomcat-users.xml&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">GlobalNamingResources</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里定义了一个全局的命名资源, 创建了一个基于内存的用户数据库, 所对应的配置文件就是<code>conf/tomcat-user.xml</code>.</p>
+<p>再往下走, 我们看到了第一个对于HTTP&#x2F;1.1协议版本的连接器:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">&quot;8080&quot;</span> <span class="attr">protocol</span>=<span class="string">&quot;HTTP/1.1&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">connectionTimeout</span>=<span class="string">&quot;20000&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">redirectPort</span>=<span class="string">&quot;8443&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在下面的注释中, 还有一个使用https也就是SSL&#x2F;TLS的连接器:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">&lt;Connector port=&quot;8443&quot; protocol=&quot;org.apache.coyote.http11.Http11Protocol&quot;</span></span><br><span class="line"><span class="comment">           maxThreads=&quot;150&quot; SSLEnabled=&quot;true&quot; scheme=&quot;https&quot; secure=&quot;true&quot;</span></span><br><span class="line"><span class="comment">           clientAuth=&quot;false&quot; sslProtocol=&quot;TLS&quot; /&gt;</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面做销毁实例的实验中 我们注意到除了这个服务实例监听的8005端口和HTTP连接器监听的8080端口之外, 还有一个<code>8009</code>端口, 这个端口是干什么的呢? 向下看就可以看到了:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Define an AJP 1.3 Connector on port 8009 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">&quot;8009&quot;</span> <span class="attr">protocol</span>=<span class="string">&quot;AJP/1.3&quot;</span> <span class="attr">redirectPort</span>=<span class="string">&quot;8443&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>就像上面注释写的, 这是一个AJP协议的连接器.</p>
+<blockquote>
+<p>AJP的全称是<code>Apache Jserv Protocol</code>. 这是一个定向包协议, 使用二进制格式来传输可读文本.</p>
+</blockquote>
+<p>接着向下就可以看到我们的Catalina的<code>Engine</code>了, 使用的默认host就是下面定义的<code>localhost</code>:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Engine</span> <span class="attr">name</span>=<span class="string">&quot;Catalina&quot;</span> <span class="attr">defaultHost</span>=<span class="string">&quot;localhost&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Host</span> <span class="attr">name</span>=<span class="string">&quot;localhost&quot;</span>  <span class="attr">appBase</span>=<span class="string">&quot;webapps&quot;</span></span></span><br><span class="line"><span class="tag">        <span class="attr">unpackWARs</span>=<span class="string">&quot;true&quot;</span> <span class="attr">autoDeploy</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.valves.AccessLogValve&quot;</span> <span class="attr">directory</span>=<span class="string">&quot;logs&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">prefix</span>=<span class="string">&quot;localhost_access_log.&quot;</span> <span class="attr">suffix</span>=<span class="string">&quot;.txt&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">pattern</span>=<span class="string">&quot;%h %l %u %t <span class="symbol">&amp;quot;</span>%r<span class="symbol">&amp;quot;</span> %s %b&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">Host</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Engine</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里省略了注释的部分, 这里的host定义了使用的webapp的目录名称和一些部署选项,例如: 是否自动部署, 解包WAR等. host内部就是我们说的<code>valve</code>, 定义了一个日志的存储格式和存储类型<code>.txt</code></p>
+<h4 id="Connector"><a href="#Connector" class="headerlink" title="Connector"></a>Connector</h4><p>在绝大多数的应用场景中, 我们都不会把Tomcat直接面向客户提供服务, 虽然官方说Tomcat是使用event模型开发的. 那么搭配反向代理使用的时候就需要配置一下连接器组件了.</p>
+<p>假设我们的前端服务器是Apache的话, 我们可以使用AJP协议进行通信, 这样更高效. 甚至, 在这种情况下, 我们可以直接关闭HTTP的连接器防止用户直接越过前端服务器访问到. 基本上我们的连接器类型分以下的3种:</p>
+<ul>
+<li>HTTP连接器</li>
+<li>SSL连接器</li>
+<li>AJP连接器</li>
+</ul>
+<p>如果是HTTP类型的连接器, 必须要配置的属性是<code>port</code>, 协议默认就是http, 这就意味着 我们在定义AJP连接器的时候需要定义<code>protocol</code>. 除这两之外, 常用的属性还有:</p>
+<ul>
+<li>address: 连接器定义的监听地址, 默认是0.0.0.0</li>
+<li>maxThreads: 最大并发连接, 默认是200</li>
+<li>redirectPort: HTTP和HTTPS的转发端口, 如果连接器支持的协议是HTTP但是收到了HTTPS请求的话, 就会转发到这个接口.</li>
+<li>connectionTimeout: 顾名思义了, 等到客户端发送请求的超时时长</li>
+<li>enableLookups: 是否进行DNS解析, 默认是true. 这十分耗时间, 一般都会设置成为false</li>
+<li>acceptCount: 设置等待队列的最大长度. 在tomcat所有的处理线程都处于繁忙状态的时候, 新发来的请求就会放置于这个队列中.</li>
+</ul>
+<p>一个SSL连接器的示例:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">&quot;8443&quot;</span> <span class="attr">maxThreads</span>=<span class="string">&quot;150&quot;</span> <span class="attr">minSpareThreads</span>=<span class="string">&quot;25&quot;</span> <span class="attr">maxSpareThreads</span>=<span class="string">&quot;75&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">enableLookups</span>=<span class="string">&quot;false&quot;</span> <span class="attr">acceptCount</span>=<span class="string">&quot;100&quot;</span> <span class="attr">debug</span>=<span class="string">&quot;0&quot;</span> <span class="attr">scheme</span>=<span class="string">&quot;https&quot;</span> <span class="attr">secure</span>=<span class="string">&quot;true&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">clientAuth</span>=<span class="string">&quot;false&quot;</span> <span class="attr">sslProtocol</span>=<span class="string">&quot;TLS&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>提个醒, 这里我们还没有配置使用的证书和密钥, tomcat仅仅支持<code>JKS</code>, <code>PKCS11</code> or <code>PKCS12</code>这三种格式的密钥存储格式, 也就是说我们需要先把之前的证书和密钥重新导入进去, 使用形如这样的cmd:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs12 -export -in mycert.crt -inkey mykey.key</span><br><span class="line">                       -out mycert.p12 -name tomcat -CAfile myCA.crt</span><br><span class="line">                       -caname root -chain</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>过了很久之后的补充, 通过这种方式我没有正确的配置好SSL访问, 但是连接器是启动了, 8443端口是在监听状态了. 通过查阅了<a target="_blank" rel="noopener" href="http://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html">官方文档</a>, 使用另外一种<code>Apr</code>的方式配置好了, 当然前提是下载了一个so组件, <code>tomcat-native</code>. 在下面贴上一个能够使用的:</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">&quot;8443&quot;</span> <span class="attr">protocol</span>=<span class="string">&quot;org.apache.coyote.http11.Http11AprProtocol&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">maxThreads</span>=<span class="string">&quot;150&quot;</span> <span class="attr">SSLEnabled</span>=<span class="string">&quot;true&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">scheme</span>=<span class="string">&quot;https&quot;</span> <span class="attr">secure</span>=<span class="string">&quot;true&quot;</span> <span class="attr">SSLenabled</span>=<span class="string">&quot;true&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">SSLCertificateFile</span>=<span class="string">&quot;conf/tomcat.crt&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">SSLCertificateKeyFile</span>=<span class="string">&quot;conf/key.pem&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">SSLProtocol</span>=<span class="string">&quot;TLSv1+TLSv1.1+TLSv1.2&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">SSLVerifyClient</span>=<span class="string">&quot;false&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Connector</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里的前提是本机需要安装<code>tomcat-native</code>包</p>
+<h4 id="Engine"><a href="#Engine" class="headerlink" title="Engine"></a>Engine</h4><p>engine是servlet的运行实例, 他只有三个常用的属性, <code>defaultHost</code>, 默认的虚拟主机实例, <code>name</code>: engine组件的名字, 用于日志和错误信息记录时区别不同的引擎. 最后一个是<code>jvmRoute</code>, 是用来进行集群搭建时用作路由的.</p>
+<h4 id="Host"><a href="#Host" class="headerlink" title="Host"></a>Host</h4><p>虚拟主机, 常用的属性有<code>appBase</code>, 就是这个host的webapp目录. <code>autoDeploy</code> 是否进行自动部署, <code>unpackWARs</code> 是否对WAR格式的文档进行解包.</p>
+<h4 id="Context"><a href="#Context" class="headerlink" title="Context"></a>Context</h4><p>类似Apache中的路径别名, 一个Context定义用来表示tomcat实例中的web应用程序. 常用的属性有:  <code>docBase</code>, 表示响应的webapp应用程序存放位置. &#96;&#96;reloadable&#96; 是否允许重新加载context相关的web应用程序类, 默认是false.</p>
+<h4 id="Valve"><a href="#Valve" class="headerlink" title="Valve"></a>Valve</h4><p>之前我们就说过了, 这个东西像是一个过滤器,并且可以存在在很多组件之间, 按照Valve定义的次序来决定生效的次序.</p>
+<p>我们有很多种不同的Valve:</p>
+<ul>
+<li>AccessLogValve: 访问日志</li>
+<li>ExtendedAccessValve: 扩展功能的访问日志</li>
+<li>JDBCAccessLogValve: 通过JDBC将访问日志发送到数据库中</li>
+<li>RemoteAddrValve: 远程地址的访问控制</li>
+<li>RemoteHostValve: 远程主机名称的访问控制</li>
+<li>….</li>
+</ul>
+<p>等等.</p>
+<p>一个使用访问控制的Valve示例就像这样子:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.valves.RemoteAddrValve&quot;</span> <span class="attr">allow</span>=<span class="string">&quot;127\.0\.0\.1&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这样子配置就会只允许本机访问了:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 conf]# curl -I 192.168.16.100:8080</span><br><span class="line">HTTP/1.1 403 </span><br><span class="line">Transfer-Encoding: chunked</span><br><span class="line">Date: Fri, 21 Sep 2018 09:48:40 GMT</span><br><span class="line"></span><br><span class="line">[root@VM-node0 conf]# curl -I 127.0.0.1:8080</span><br><span class="line">HTTP/1.1 200 </span><br><span class="line">Content-Type: text/html;charset=UTF-8</span><br><span class="line">Transfer-Encoding: chunked</span><br><span class="line">Date: Fri, 21 Sep 2018 09:48:48 GMT</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="LNMT-amp-LAMT"><a href="#LNMT-amp-LAMT" class="headerlink" title="LNMT &amp; LAMT"></a>LNMT &amp; LAMT</h2><p>首先我们在前端加上一个Nginx实现反向代理.</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">location</span> / &#123;</span><br><span class="line">    <span class="attribute">proxy_pass</span> http://192.168.16.100:8080/;</span><br><span class="line"><span class="comment">#   root   &quot;/usr/share/nginx/html&quot;;</span></span><br><span class="line"><span class="comment">#   index  index.html index.htm;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样就很简单了. 稍微细致一点的话就像这样:</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">index</span>  index.jsp index.html;</span><br><span class="line"></span><br><span class="line"><span class="section">location</span> <span class="regexp">~* \.(jsp|do)$</span> &#123;</span><br><span class="line">	<span class="attribute">proxy_pass</span> http://192.168.16.100:8080/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除了使用Nginx, 我们还有一个选择就是使用httpd. 在使用Apache的选择上 我们就可以使用之前说的AJP协议而不是HTTP协议了. AJP是一个二进制协议, 相较于文本传输的HTTP性能要更好一点. </p>
+<p>要想使用AJP, 要求我们的HTTPD加载模块, 我们来看一下当前加载的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# httpd -M</span><br><span class="line">...(omitted)</span><br><span class="line"> proxy_ajp_module (shared)</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>这里就装载了我们的ajp协议的代理协议模块. 当然 为了能够开启这个模块, 我们首先需要开开启总反代模块<code>proxy_module</code></p>
+<p>接着我们在配置文件中确认一下:</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@VM-node0 ~]# cat /etc/httpd/conf.modules.d/00-proxy.conf </span><br><span class="line"># This file configures all the proxy modules:</span><br><span class="line">LoadModule proxy_module modules/mod_proxy.so</span><br><span class="line">LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so</span><br><span class="line">LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so</span><br><span class="line">LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so</span><br><span class="line">LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so</span><br><span class="line">LoadModule proxy_ajp_module modules/mod_proxy_ajp.so</span><br><span class="line">LoadModule proxy_balancer_module modules/mod_proxy_balancer.so</span><br><span class="line">LoadModule proxy_connect_module modules/mod_proxy_connect.so</span><br><span class="line">LoadModule proxy_express_module modules/mod_proxy_express.so</span><br><span class="line">LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so</span><br><span class="line">LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so</span><br><span class="line">LoadModule proxy_ftp_module modules/mod_proxy_ftp.so</span><br><span class="line">LoadModule proxy_http_module modules/mod_proxy_http.so</span><br><span class="line">LoadModule proxy_scgi_module modules/mod_proxy_scgi.so</span><br><span class="line">LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so</span><br></pre></td></tr></table></figure>
+
+<p>确实是启用了模块, 接着我们就可以进行配置一下了: (在虚拟主机中配置)</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">VirtualHost</span> *<span class="attr">:80</span>&gt;</span></span><br><span class="line">        ServerName test.wyx.com</span><br><span class="line">        ProxyVia On</span><br><span class="line">        ProxyRequests Off</span><br><span class="line">        ProxyPreserveHost On</span><br><span class="line">        <span class="tag">&lt;<span class="name">Proxy</span> *&gt;</span></span><br><span class="line">                Require all granted</span><br><span class="line">        <span class="tag">&lt;/<span class="name">Proxy</span>&gt;</span></span><br><span class="line">        ProxyPass / http://192.168.16.100:8080/</span><br><span class="line">        ProxyPassReverse / http://192.168.16.100:8080/</span><br><span class="line">        <span class="tag">&lt;<span class="name">Location</span> /&gt;</span></span><br><span class="line">                Require all granted</span><br><span class="line">        <span class="tag">&lt;<span class="name">Location</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">VirtualHost</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接着我们就可以尝试访问了.(顺便贴一下关于Tomcat主机的配置相关)</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Host</span> <span class="attr">name</span>=<span class="string">&quot;test.wyx.com&quot;</span>  <span class="attr">appBase</span>=<span class="string">&quot;/data/webapps&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">unpackWARs</span>=<span class="string">&quot;true&quot;</span> <span class="attr">autoDeploy</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Context</span> <span class="attr">path</span>=<span class="string">&quot;/&quot;</span> <span class="attr">docBase</span>=<span class="string">&quot;ROOT&quot;</span> <span class="attr">reloadable</span>=<span class="string">&quot;true&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">&quot;org.apache.catalina.valves.AccessLogValve&quot;</span> <span class="attr">directory</span>=<span class="string">&quot;logs&quot;</span></span></span><br><span class="line"><span class="tag">               <span class="attr">prefix</span>=<span class="string">&quot;localhost_access_log&quot;</span> <span class="attr">suffix</span>=<span class="string">&quot;.txt&quot;</span></span></span><br><span class="line"><span class="tag">               <span class="attr">pattern</span>=<span class="string">&quot;%h %l %u %t <span class="symbol">&amp;quot;</span>%r<span class="symbol">&amp;quot;</span> %s %b&quot;</span> /&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Host</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这个是在原来的默认Host下面增加的一个, host的名字和上面的ServerName保持一致, 这样会有什么作用呢?</p>
+<p>当我们访问<code>192.168.16.100</code>的时候, 代理出现的页面就是默认的那个Tomcat的首页, 但是当我们访问<code>test.wyx.com</code>的时候, 呈现在我们眼前的就是当前上面配置的那个自定义的jsp页面. 这是因为我们在代理的时候保留了host主机.</p>
+<p>至于AJP协议的使用, 直接在上面的<code>ProxyPass</code>那个地方把协议改成ajp就OK了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8CentOS7%E4%B8%8A%E9%83%A8%E7%BD%B2%E4%BD%BF%E7%94%A8Tomcat"><span class="toc-number">1.</span> <span class="toc-text">在CentOS7上部署使用Tomcat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat%E7%9A%84%E7%BB%84%E4%BB%B6%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">Tomcat的组件配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Server-xml"><span class="toc-number">2.1.</span> <span class="toc-text">Server.xml</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Connector"><span class="toc-number">2.1.1.</span> <span class="toc-text">Connector</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Engine"><span class="toc-number">2.1.2.</span> <span class="toc-text">Engine</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Host"><span class="toc-number">2.1.3.</span> <span class="toc-text">Host</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Context"><span class="toc-number">2.1.4.</span> <span class="toc-text">Context</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Valve"><span class="toc-number">2.1.5.</span> <span class="toc-text">Valve</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LNMT-amp-LAMT"><span class="toc-number">3.</span> <span class="toc-text">LNMT &amp; LAMT</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&text=Tomcat配置与应用"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&is_video=false&description=Tomcat配置与应用"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Tomcat配置与应用&body=Check out this article: https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&title=Tomcat配置与应用"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&name=Tomcat配置与应用&description=&lt;p&gt;简单了解Tomcat之后, 我们来看看他的实际配置和相关的应用吧,&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/20/Tomcat%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%BA%94%E7%94%A8/&t=Tomcat配置与应用"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

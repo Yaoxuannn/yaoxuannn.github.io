@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="How 2 design a database.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库设计学习">
+<meta property="og:url" content="https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="How 2 design a database.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-05-19T11:00:28.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>数据库设计学习</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/05/21/First2Redis/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/05/06/Linux%E4%B8%89%E5%89%91%E5%AE%A2-grep-awk-sed/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&text=数据库设计学习"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&is_video=false&description=数据库设计学习"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=数据库设计学习&body=Check out this article: https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&name=数据库设计学习&description=&lt;p&gt;How 2 design a database.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&t=数据库设计学习"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.</span> <span class="toc-text">数据库设计的基本步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="toc-number">1.1.</span> <span class="toc-text">需求分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E8%AE%BE%E8%AE%A1-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E7%9A%84%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.</span> <span class="toc-text">逻辑设计[ 数据库设计的范式 ]</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.1.</span> <span class="toc-text">第一范式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.2.</span> <span class="toc-text">第二范式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.3.</span> <span class="toc-text">第三范式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BC%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.4.</span> <span class="toc-text">BC范式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E8%AE%BE%E8%AE%A1-%E4%BB%A5MySQL%E4%B8%BA%E4%BE%8B"><span class="toc-number">1.3.</span> <span class="toc-text">物理设计[ 以MySQL为例 ]</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E5%90%8D"><span class="toc-number">1.3.1.</span> <span class="toc-text">命名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B1%BB%E5%9E%8B%E9%80%89%E6%8B%A9"><span class="toc-number">1.3.2.</span> <span class="toc-text">类型选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8D%E8%8C%83%E5%BC%8F%E5%8C%96%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.3.3.</span> <span class="toc-text">反范式化表设计</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        数据库设计学习
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-05-19T11:00:28.000Z" class="dt-published" itemprop="datePublished">2017-05-19</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database/" rel="tag">Database</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>How 2 design a database.</p>
+<span id="more"></span>
+
+<h2 id="数据库设计的基本步骤"><a href="#数据库设计的基本步骤" class="headerlink" title="数据库设计的基本步骤"></a>数据库设计的基本步骤</h2><p><strong>需求分析 -&gt; 逻辑设计 -&gt; 物理设计 -&gt; 维护优化</strong></p>
+<p>在进行需求分析时, 要明确的是:</p>
+<ul>
+<li>数据是什么</li>
+<li>数据有哪些属性</li>
+<li>数据和属性各自的特点有哪些</li>
+</ul>
+<p>从逻辑设计到物理设计, 根据选择数据库的特点不同实现起来也不一样.</p>
+<p>一般维护优化, 譬如:</p>
+<ul>
+<li>根据新的需求进行建表</li>
+<li>索引优化</li>
+<li>大表拆分</li>
+</ul>
+<h3 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h3><ul>
+<li>系统中要存储的数据 ( 冷热分离? )</li>
+<li>数据的存储特点</li>
+<li>数据的生命周期</li>
+</ul>
+<p>我们将数据库中存储的对象称之为实体.<br>而实体与实体间是存在不同的关系的<code>( 一对一, 一对多, 多对多 )</code> 表 &lt;–&gt; 实体<br>实体中的属性 – 哪些属性或者属性的组合可以唯一标示一个实体.</p>
+<p>譬如: 一个电商的用户表中, 可唯一表示一个用户的属性有, <code>用户名, 身份证, 电话等.</code></p>
+<p>而这样的属性的存储是随着系统上线时间而逐渐增加的, 且需要永久存储.</p>
+<p>而商品表中, 属性繁多<code>(编码, 名称, 描述, 品类, 供应商, 重量, 有效期, 价格...)</code>, 但在这些属性中, 能够唯一标示的属性类如 <code>( 商品名称,商品编码等 )</code>, 对于已经下线的商品, 我们可以进行归档存储, 或者进行表的迁移.</p>
+<h3 id="逻辑设计-数据库设计的范式"><a href="#逻辑设计-数据库设计的范式" class="headerlink" title="逻辑设计[ 数据库设计的范式 ]"></a>逻辑设计[ 数据库设计的范式 ]</h3><p>在逻辑设计中, 我们将需求化成数据库的逻辑模型.</p>
+<p>通过<strong>ER图</strong>的形式对逻辑模型进行展示.</p>
+<p>在ER图中,矩形代表实体集,菱形代表联系集,椭圆代表实体的属性,线段将属性联系到实体集.</p>
+<hr>
+<p>提到数据库的逻辑设计, 就不得不说一下数据库设计的范式.</p>
+<p>设计范式用来使数据库变得简洁高效, 避免数据冗余和异常发生.</p>
+<p>常见的数据库范式包括: <strong>第一范式</strong>, <strong>第二范式</strong>, <strong>第三范式</strong>以及<strong>BC范式</strong>.</p>
+<p>这些范式一个比一个复杂(或者说每一个都是以前一个作为基础的.)</p>
+<p>目前的数据库设计大多遵循这些.</p>
+<h4 id="第一范式"><a href="#第一范式" class="headerlink" title="第一范式"></a>第一范式</h4><p>第一范式的定义是:</p>
+<blockquote>
+<p>数据库中的字段都是单一属性, 不可再分的</p>
+</blockquote>
+<p>换句话说: <strong>第一范式要求数据库中的表都是二维表.</strong></p>
+<table>
+<thead>
+<tr>
+<th align="center">ID</th>
+<th align="center">用户名</th>
+<th align="center">密码</th>
+<th align="center">姓名</th>
+<th align="center">电话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">Justin</td>
+<td align="center">**</td>
+<td align="center">www</td>
+<td align="center">0000000</td>
+</tr>
+</tbody></table>
+<p>很简单 对嘛, 基本上我们设计的表都是符合第一范式的.</p>
+<h4 id="第二范式"><a href="#第二范式" class="headerlink" title="第二范式"></a>第二范式</h4><p>第二范式定义是:</p>
+<blockquote>
+<p>数据库中的表中不存在非关键字对任一候选关键字段的部分函数依赖.</p>
+</blockquote>
+<p>其中, 部分函数依赖指的是存在这组合关键字中的某一关键字决定非关键字的情况.</p>
+<p><strong>看不懂在说啥?</strong></p>
+<p>换句话说:<strong>所有的[!单!]关键字段的表都符合第二范式</strong></p>
+<p>看下面的例子:</p>
+<table>
+<thead>
+<tr>
+<th align="center">商品名称</th>
+<th align="center">供应商名称</th>
+<th align="center">价格</th>
+<th align="center">描述</th>
+<th align="center">重量</th>
+<th align="center">电话</th>
+<th align="center">有效期</th>
+<th align="center">分类</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">可乐</td>
+<td align="center">一厂</td>
+<td align="center">3.00</td>
+<td align="center">www</td>
+<td align="center">300g</td>
+<td align="center">88888888</td>
+<td align="center">2017.05</td>
+<td align="center">饮料</td>
+</tr>
+<tr>
+<td align="center">可乐</td>
+<td align="center">二厂</td>
+<td align="center">3.50</td>
+<td align="center">www</td>
+<td align="center">333g</td>
+<td align="center">00000000</td>
+<td align="center">2017.05</td>
+<td align="center">饮料</td>
+</tr>
+</tbody></table>
+<p>注意这个表, 可乐这个商品并不具备唯一标示的能力(因为存在不同的生产商), 所以这是一组组合关键字, 而看一下函数依赖关系就会发现:</p>
+<p>(商品名称) -&gt; ( 价格, 描述, 重量, 有效期 )<br>(供应商名称) -&gt; ( 供应商电话 )</p>
+<p>对于这样的表, 进行优化后成为以下三个表:</p>
+<p>|ID|商品名称|价格|描述|重量|有效期|分类|<br>|:—:|:—:|:—:|:—:|:—:|:—-:|<br>|1|可乐|3.00|www|300g|2017.05|饮料|<br>|2|可乐|3.50|www|333g|2017.05|饮料|</p>
+<table>
+<thead>
+<tr>
+<th align="center">ID</th>
+<th align="center">供应商名称</th>
+<th align="center">供应商电话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">一厂</td>
+<td align="center">88888888</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">二厂</td>
+<td align="center">00000000</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center">供应商ID</th>
+<th align="center">商品ID</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">2</td>
+</tr>
+</tbody></table>
+<p>这样, 单个表中仅存在单关键字, 它就满足第二范式了, 之前存在的种种异常和数据冗余就不存在了.</p>
+<h4 id="第三范式"><a href="#第三范式" class="headerlink" title="第三范式"></a>第三范式</h4><p>第三范式建立在第二范式的基础之上.</p>
+<p>先不说定义, 请看表:</p>
+<p>|商品名称|价格|描述|重量|有效期|分类|分类描述|<br>|:—:|:—:|:—:|:—:|:—-:|:—:|<br>|可乐|3.00|www|300ml|2017.05|酒水饮料|碳酸饮料|<br>|苹果|3.50|www|500g| |生鲜食品|水果|</p>
+<p>该表中存在以下传递函数:</p>
+<p>( 名称 ) -&gt; ( 分类 ) -&gt; ( 分类描述 )</p>
+<p>非关键字段**’分类描述’<strong>, 对</strong>名称<strong>的</strong>传递**函数有依赖.</p>
+<p>对于每一个商品我们都会进行记录, 所以存在着冗余. 同时还存在数据的插入, 更新及删除异常.</p>
+<p>因此, 我们将其优化成如下的三张表:</p>
+<p>|商品ID|商品名称|价格|描述|重量|有效期|<br>|:—:|:—:|:—:|:—:|:—:|<br>|1|可乐|3.00|www|300g|2017.05|<br>|2|可乐|3.50|www|333g|2017.05|</p>
+<table>
+<thead>
+<tr>
+<th align="center">分类ID</th>
+<th align="center">分类</th>
+<th align="center">分类描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">酒水饮料</td>
+<td align="center">碳酸饮料</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">生鲜食品</td>
+<td align="center">水果</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center">分类ID</th>
+<th align="center">商品ID</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">2</td>
+</tr>
+</tbody></table>
+<p>对第三范式的定义是:</p>
+<blockquote>
+<p>如果数据表中不存在非关键字段对任一候选关键字段的传递函数依赖则符合第三范式.</p>
+</blockquote>
+<h4 id="BC范式"><a href="#BC范式" class="headerlink" title="BC范式"></a>BC范式</h4><p>最后来看一下BC范式, 这是对于第三范式的扩展.</p>
+<p>定义:</p>
+<blockquote>
+<p>在第三范式的基础之上,数据库表中如果不存在任意字段对任一候选关键字段的传递函数依赖则符合BC范式.</p>
+</blockquote>
+<p>如果是复合关键字, 则符合关键字之间也不能存在函数依赖关系.</p>
+<p>来看这样一个表:</p>
+<table>
+<thead>
+<tr>
+<th align="center">供应商</th>
+<th align="center">商品ID</th>
+<th align="center">供应商联系人</th>
+<th align="center">商品数量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">饮料一厂</td>
+<td align="center">1</td>
+<td align="center">张三</td>
+<td align="center">10</td>
+</tr>
+<tr>
+<td align="center">饮料二厂</td>
+<td align="center">2</td>
+<td align="center">李四</td>
+<td align="center">20</td>
+</tr>
+<tr>
+<td align="center">饮料三厂</td>
+<td align="center">1</td>
+<td align="center">王五</td>
+<td align="center">20</td>
+</tr>
+</tbody></table>
+<p>该表中存在不符合BCNF要求的以来依赖:</p>
+<p>( 供应商, 商品ID ) -&gt; ( 供应商联系人, 商品数量 )<br>( 联系人, 商品ID ) -&gt; ( 供应商, 商品数量 )</p>
+<p>该关系即为:</p>
+<p>( 供应商 ) -&gt; ( 供应商联系人 )<br>( 供应商联系人 ) -&gt; ( 供应商 )</p>
+<p>也就是说,关键字之间存在函数依赖关系.</p>
+<p>那么如何更改优化呢?</p>
+<table>
+<thead>
+<tr>
+<th align="center">供应商</th>
+<th align="center">商品ID</th>
+<th align="center">商品数量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">饮料一厂</td>
+<td align="center">1</td>
+<td align="center">10</td>
+</tr>
+<tr>
+<td align="center">饮料二厂</td>
+<td align="center">2</td>
+<td align="center">20</td>
+</tr>
+<tr>
+<td align="center">饮料一厂</td>
+<td align="center">1</td>
+<td align="center">20</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center">供应商</th>
+<th align="center">供应商联系人</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">饮料一厂</td>
+<td align="center">张三</td>
+</tr>
+<tr>
+<td align="center">饮料一厂</td>
+<td align="center">李四</td>
+</tr>
+<tr>
+<td align="center">饮料二厂</td>
+<td align="center">王五</td>
+</tr>
+</tbody></table>
+<h3 id="物理设计-以MySQL为例"><a href="#物理设计-以MySQL为例" class="headerlink" title="物理设计[ 以MySQL为例 ]"></a>物理设计[ 以MySQL为例 ]</h3><p>存储引擎的选择: InnoDB.(略)</p>
+<h4 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h4><p>对于数据库的表和字段的命名应遵循下述原则:</p>
+<ul>
+<li><p>可读性原则</p>
+</li>
+<li><p>表意性原则</p>
+<ul>
+<li>name NOT col_1</li>
+</ul>
+</li>
+<li><p>长名原则</p>
+<ul>
+<li>例如: goods_id NOT id, student_name NOT name</li>
+</ul>
+</li>
+</ul>
+<h4 id="类型选择"><a href="#类型选择" class="headerlink" title="类型选择"></a>类型选择</h4><p>关于字段类型的选择,总的原则是对于相同级别的数据类型, 应该优先选择占用空间小的数据类型.</p>
+<p><strong>优先考虑数字类型, 其次是日期或二进制类型, 最后是字符类型</strong></p>
+<p>而对于选择这样的原则, 主要从下面两个角度考虑:</p>
+<ul>
+<li><p>在对数据进行比较(查询条件, JOIN, 排序)操作时: 同样的数据, 字符常常处理的比数字慢.</p>
+</li>
+<li><p>数据库中, 数据处理以页为单位, 列的长度越小, 利于性能提升.</p>
+</li>
+</ul>
+<p>具体说来,有这些小Tips:</p>
+<blockquote>
+<p>1.如果列中的数据长度长不多是一致的, 应该考虑使用<code>char</code>, 否则考虑使用<code>varchar</code>.<br>2.如果列中的最大数据长度小于<code>50Byte</code>,则一般考虑使用<code>char</code>.( 当然, 如果这个列很常用, 则基于节省空间和减少I&#x2F;O的考虑, 还是可以选择用<code>varchar</code> )<br>3.一般不宜定义大于<code>50Byte</code>的<code>char</code>类型</p>
+</blockquote>
+<h4 id="反范式化表设计"><a href="#反范式化表设计" class="headerlink" title="反范式化表设计"></a>反范式化表设计</h4><p>简单地说, 反范式化表设计是为了性能和读取效率的考虑(毕竟表的连接还是很消耗性能的), 因此, 允许存在少量的数据冗余或适当的对第三范式的要求进行违反.</p>
+<p>也就是: <strong>反范式化是使用空间换时间.</strong></p>
+<p>譬如之前的表, 在为了快速读取的业务场景下, 我们仍然可以考虑设计出这样的表.</p>
+<table>
+<thead>
+<tr>
+<th align="center">订单ID</th>
+<th align="center">商品ID</th>
+<th align="center">商品数量</th>
+<th align="center">商品价格</th>
+<th align="center">商品名称</th>
+<th align="center">过期时间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<p>在上面所说的逻辑设计部分, 这样的表是不合规范的, 因为我们完全可以通过商品ID来推出商品的名称和过期时间.</p>
+<p>但是在实际的业务场景中, 我们经常需要获取名称和时间这样的信息.(热数据)</p>
+<p>而且, SQL语句也会得到大量的缩减.</p>
+<p>因此考虑到这个, 我们设计出这样的表.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.</span> <span class="toc-text">数据库设计的基本步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="toc-number">1.1.</span> <span class="toc-text">需求分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E8%AE%BE%E8%AE%A1-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E7%9A%84%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.</span> <span class="toc-text">逻辑设计[ 数据库设计的范式 ]</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.1.</span> <span class="toc-text">第一范式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.2.</span> <span class="toc-text">第二范式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.3.</span> <span class="toc-text">第三范式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BC%E8%8C%83%E5%BC%8F"><span class="toc-number">1.2.4.</span> <span class="toc-text">BC范式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E8%AE%BE%E8%AE%A1-%E4%BB%A5MySQL%E4%B8%BA%E4%BE%8B"><span class="toc-number">1.3.</span> <span class="toc-text">物理设计[ 以MySQL为例 ]</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E5%90%8D"><span class="toc-number">1.3.1.</span> <span class="toc-text">命名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B1%BB%E5%9E%8B%E9%80%89%E6%8B%A9"><span class="toc-number">1.3.2.</span> <span class="toc-text">类型选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8D%E8%8C%83%E5%BC%8F%E5%8C%96%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.3.3.</span> <span class="toc-text">反范式化表设计</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&text=数据库设计学习"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&is_video=false&description=数据库设计学习"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=数据库设计学习&body=Check out this article: https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&title=数据库设计学习"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&name=数据库设计学习&description=&lt;p&gt;How 2 design a database.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/05/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/&t=数据库设计学习"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

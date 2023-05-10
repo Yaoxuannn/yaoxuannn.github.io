@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="说说我对HTTPS的理解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="对SSL&#x2F;TLS的理解">
+<meta property="og:url" content="https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="说说我对HTTPS的理解">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/SSL_handshake_with_two_way_authentication_with_certificates.svg/1024px-SSL_handshake_with_two_way_authentication_with_certificates.svg.png">
+<meta property="og:image" content="http://image.beekka.com/blog/2014/bg2014092009.png">
+<meta property="og:image" content="http://image.beekka.com/blog/2014/bg2014092012.png">
+<meta property="article:published_time" content="2017-04-04T07:13:58.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:49:20.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="HTTPS">
+<meta property="article:tag" content="SSL&#x2F;TLS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/SSL_handshake_with_two_way_authentication_with_certificates.svg/1024px-SSL_handshake_with_two_way_authentication_with_certificates.svg.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>对SSL/TLS的理解</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/04/13/Python-s-Memo-1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/04/04/Python%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&text=对SSL/TLS的理解"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&is_video=false&description=对SSL/TLS的理解"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=对SSL/TLS的理解&body=Check out this article: https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&name=对SSL/TLS的理解&description=&lt;p&gt;说说我对HTTPS的理解&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&t=对SSL/TLS的理解"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%89%87%E5%BC%80%E5%A7%8B"><span class="toc-number">2.</span> <span class="toc-text">正片开始</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSL-x2F-TLS%E7%9A%84%E5%BB%B6%E6%97%B6%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">SSL&#x2F;TLS的延时问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%90%8E-%E5%86%8D%E6%9D%A5%E8%AF%B4%E8%AF%B4session%E6%81%A2%E5%A4%8D%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">最后,再来说说session恢复的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E5%85%85-SSH-Secure-Shell-%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-number">5.</span> <span class="toc-text">补充:SSH(Secure Shell)的原理和处理过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80-%E5%8D%8F%E5%95%86"><span class="toc-number">5.1.</span> <span class="toc-text">阶段一:协商</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%BA%8C-%E8%AE%A4%E8%AF%81"><span class="toc-number">5.2.</span> <span class="toc-text">阶段二: 认证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%89-%E4%BC%A0%E8%BE%93"><span class="toc-number">5.3.</span> <span class="toc-text">阶段三: 传输</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        对SSL/TLS的理解
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-04-04T07:13:58.000Z" class="dt-published" itemprop="datePublished">2017-04-04</time>
+        
+        (Updated: <time datetime="2020-11-30T01:49:20.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/HTTPS/" rel="tag">HTTPS</a>, <a class="p-category" href="/tags/SSL-TLS/" rel="tag">SSL/TLS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>说说我对HTTPS的理解</p>
+<span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>TLS是现在广泛使用的安全协议,全名为传输层安全协议(Transport Layer Security).它的前身是SSL,即安全套接层(Secure Socket Layer).</p>
+<p>网景公司（Netscape）在1994年推出首版网页浏览器，网景导航者时，推出HTTPS协议，以SSL进行加密，这是SSL的起源。</p>
+<p>后来,Google在04年发布 在SSL 3.0中发现设计缺陷，建议禁用此一协议。攻击者可以向TLS发送虚假错误提示，然后将安全连接强行降级到过时且不安全的SSL 3.0，然后就可以利用其中的设计漏洞窃取敏感信息。最后各大公司都选择了强制使用TLS.</p>
+<p>目前SSL&#x2F;TLS已成为互联网上保密通讯的工业标准</p>
+<p><strong>更新</strong>: 这个SSL&#x2F;TLS就像是在应用层和传输层中间多加的半层. 其实就是库嘛, 应用程序可以选择性的进行调用. 以Web服务为例, 如果没有调用的话就是http, 如果调用了的话就是https了.反正提供了API. 二者虽然只有一个字的差距但是却又很大的不同的. 一个是文本格式的, 一个是二进制的格式的.</p>
+<p>尽管他自己是半个层, 但是其内部也是分了很多层的(进行了分层设计), 简单的说一下:</p>
+<ol>
+<li>最底层: 基础算法原语的实现, aes, rsa, md5</li>
+<li>向上一层: 各种算法的实现</li>
+<li>再向上一层: 组合算法实现的半成品</li>
+<li>用各种组件拼装而成的种种成品密码学协议&#x2F;软件:<ol>
+<li>tls, ssh, …</li>
+</ol>
+</li>
+</ol>
+<h2 id="正片开始"><a href="#正片开始" class="headerlink" title="正片开始"></a>正片开始</h2><p>提到了TLS,就一定要说一下HTTPS了,一般对HTTPS的定义是<code>HTTP over SSL/HTTP over TLS/HTTP over Secure</code>.</p>
+<p>而提到了HTTPS,有不得不说一下浏览器了.那么我来慢慢按照顺序来说一下.</p>
+<p>首先,HTTPS借由HTTP(<code>如果对HTTP不熟悉可以考虑看一下隔壁的HTTP阅读笔记</code>)来传输信息,但为了某些需要,要加密某些信息,此时它就借助了SSL&#x2F;TLS来加密传输的数据包.一般的,HTTPS的默认使用端口为<code>443</code>.</p>
+<p>最重要的部分就是协议实现的方式了.<br>下面来说下: (可以结合下面的图来看, <a target="_blank" rel="noopener" href="http://hexopic.s3-ap-northeast-1.amazonaws.com/SSL_handshake_with_two_way_authentication_with_certificates.svg">超清版的.SVG</a>)</p>
+<p><strong>首先</strong>客户端向Web服务器发送一个HTTPS请求,该请求包含了客户端的条件以及一个随机数.<strong>关键字</strong>:{ <strong>本地条件</strong> }</p>
+<ul>
+<li>具体内容包括：支持的协议版本，比如TLS1.0版，一个客户端生成的随机数（稍后用于生成“会话密钥”），支持的加密算法（如RSA公钥加密）和支持的压缩算法。</li>
+</ul>
+<p>此时,客户端的随机数被Server端获得.</p>
+<p><strong>然后</strong>收到一个Server回应消息，这个回应中确定了双方在后来要使用的各种连接参数.<strong>关键字</strong>:{ <strong>确定参数</strong> }</p>
+<ul>
+<li>这次的回应包括：确认使用的加密通信协议版本，比如TLS 1.2版本（如果浏览器与服务器支持的版本不一致，服务器关闭加密通信），一个服务器生成的随机数（稍后用于生成“对话密钥”），确认使用的加密方法（如RSA公钥加密），服务器证书。</li>
+</ul>
+<p>此时,双方手中都有了双方的随机数.<br>至此,Phase 1结束.</p>
+<ul>
+<li><strong>{ Phase1中交换了随机数,确定了连接参数 }</strong></li>
+</ul>
+<p><strong>再然后</strong>当双方知道了连接参数，客户端与服务器交换证书(依靠被选择的公钥系统)(Phase2-Phase3)</p>
+<p>服务器端向客户端发送自己的证书和公钥并要求客户端提供证书. <strong>看到这里,想必会有这样的疑问:客户端哪里来的证书?</strong></p>
+<p>我认为,本机的电子证书是通过浏览器中预设的CA来获取的.</p>
+<blockquote>
+<p>SSL 服务器证书提供加密和安全功能。<br>客户端证书提供用户身份验证功能。<br>客户端证书由证书颁发机构颁发给用户。</p>
+</blockquote>
+<p>客户端这边,通过CA的公钥解密服务器端的证书,还会检测是否被吊销, 确认是否有效.</p>
+<ul>
+<li>所以说,这里的证书是经过了认证中心的私钥加密的</li>
+</ul>
+<p><strong>关键字:{ 确认服务器端身份 }</strong></p>
+<p>此时,客户端手中多了服务器端的公钥.<br>至此,Phase2结束.</p>
+<ul>
+<li><strong>{Phase2中客户端验证了服务器的身份}</strong></li>
+</ul>
+<p><strong>接着</strong>根据之前的请求,客户端向服务器端发送自己的证书和自己的公钥.</p>
+<blockquote>
+<p>客户端有证书即双向身份认证，没证书时随机生成公钥。</p>
+</blockquote>
+<p>服务器端对客户端发来的证书进行检查,如果有问题会直接中断私密通信.</p>
+<p><strong>然后</strong>,客户端再次生成一个随机数,<strong>注意,此时生成的随机数是经过了服务器端公钥的加密的</strong>,接着将其发送到了服务器端. </p>
+<p>当服务器端收到了这个随机数,(我们把他叫做<code>pre-master-secret</code>),双方会根据之前商定的加密方法,对之前的两个随机数加上这个PMS,生成一个会话密钥(<code>MS</code>).</p>
+<p>此时,服务器端手中自己的公钥和私钥,以及<code>MS</code><br>客户端手中有自己的公钥和私钥,以及<code>MS</code><br>至此,Phase3结束.</p>
+<ul>
+<li><strong>{Phase3中双方得到了会话密钥}</strong></li>
+</ul>
+<p><strong>最后</strong>,双方关键数据的加密传输均使用这个“会话密钥”–主密钥</p>
+<p>结束SSL握手.</p>
+<p>至此,全部的SSL握手结束.</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/SSL_handshake_with_two_way_authentication_with_certificates.svg/1024px-SSL_handshake_with_two_way_authentication_with_certificates.svg.png" alt="SSL"></p>
+<h2 id="SSL-x2F-TLS的延时问题"><a href="#SSL-x2F-TLS的延时问题" class="headerlink" title="SSL&#x2F;TLS的延时问题"></a>SSL&#x2F;TLS的延时问题</h2><p>既然HTTPS的数据传递是相对安全的,那为什么不给每一个域名都配上HTTPS呢?</p>
+<p>原因很简单,<strong>延时</strong>,因为复杂的握手机制,会使得访问时间延长很多,那么到底有多少呢?</p>
+<p>首先,HTTPS是建立在HTTP的,HTTP又是建立在TCP&#x2F;IP上的,因此必定存在三次握手.</p>
+<p>所以,我们可以得到:</p>
+<blockquote>
+<p>HTTP耗时 &#x3D; TCP握手<br>HTTPs耗时 &#x3D; TCP握手 + SSL握手</p>
+</blockquote>
+<p>我们可以做一个小测试:</p>
+<p>命令行工具curl有一个w参数，可以用来测量TCP握手和SSL握手的具体耗时，以访问支付宝为例。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ curl -w <span class="string">&quot;TCP handshake: %&#123;time_connect&#125;, SSL handshake: %&#123;time_appconnect&#125;\n&quot;</span> -so /dev/null https://www.alipay.com</span><br></pre></td></tr></table></figure>
+
+<p>我测试的一些结果样本供参考:</p>
+<blockquote>
+<p>TCP handshake: 0.053, SSL handshake: 0.129<br>TCP handshake: 0.079, SSL handshake: 0.187<br>TCP handshake: 0.075, SSL handshake: 0.145<br>TCP handshake: 0.077, SSL handshake: 0.150</p>
+</blockquote>
+<p>从结果可以看到，SSL握手的耗时大概是TCP握手的二-三倍。</p>
+<p>也就是说，在建立连接的阶段，HTTPs链接比HTTP链接要长2-3倍的时间，当然了,具体数字取决于CPU的快慢和网络状况。</p>
+<h2 id="最后-再来说说session恢复的问题"><a href="#最后-再来说说session恢复的问题" class="headerlink" title="最后,再来说说session恢复的问题"></a>最后,再来说说session恢复的问题</h2><p>如果出于某种原因，对话中断，就需要重新握手。</p>
+<p>之前说过,SSL是很要时间的,因此,要想出一种办法来快速恢复.</p>
+<p>这时有两种方法可以恢复原来的session：一种叫做<strong>session ID</strong>，另一种叫做<strong>session ticket</strong>。</p>
+<p>session ID的思想很简单，就是每一次对话都有一个编号（session ID）。如果对话中断，下次重连的时候，只要客户端给出这个编号，且服务器有这个编号的记录，双方就可以重新使用已有的”对话密钥”，而不必重新生成一把。</p>
+<p><img src="http://image.beekka.com/blog/2014/bg2014092009.png" alt="sessionID"></p>
+<p>上图中，客户端给出session ID，服务器确认该编号存在，双方就不再进行握手阶段剩余的步骤，而直接用已有的对话密钥进行加密通信。</p>
+<p>但是,sessionID是存储在一个服务器上的,一旦有发向另一台的请求,就又会重新开始了.</p>
+<p>为了解决这个问题,session ticket应运而生.</p>
+<p><img src="http://image.beekka.com/blog/2014/bg2014092012.png" alt="sessionticket"></p>
+<p>上图中，客户端不再发送session ID，而是发送一个服务器在上一次对话中发送过来的session ticket。这个session ticket是加密的，只有服务器才能解密，其中包括本次对话的主要信息，比如对话密钥和加密方法。当服务器收到session ticket以后，解密后就不必重新生成对话密钥了。</p>
+<h2 id="补充-SSH-Secure-Shell-的原理和处理过程"><a href="#补充-SSH-Secure-Shell-的原理和处理过程" class="headerlink" title="补充:SSH(Secure Shell)的原理和处理过程"></a>补充:SSH(Secure Shell)的原理和处理过程</h2><p>首先,需要知道几种不同的SSH Key,</p>
+<ul>
+<li>HOST KEY  由服务端创建, 用于对服务端进行认证</li>
+<li>User Key  由用户创建, 用于对用户进行验证</li>
+<li>Server Key 服务端创建(有效期默认为1小时) 用于加密Session Key–在SSH-2中作为一个概念而存在</li>
+<li>Session Key 存在于会话中, 用于对传输的数据进行加密</li>
+</ul>
+<p>类似上文的SSL&#x2F;TLS, SSH原理与之很相似.</p>
+<p>需要以下几个阶段:</p>
+<ul>
+<li>协议协商阶段 (就如同HTTPS交换信息一样)</li>
+<li>服务端认证阶段</li>
+<li>客户端认证阶段</li>
+<li>传输阶段</li>
+</ul>
+<h3 id="阶段一-协商"><a href="#阶段一-协商" class="headerlink" title="阶段一:协商"></a>阶段一:协商</h3><p>SSH服务器会打开默认的22端口等待客户端的连接, 一旦客户端发起TCP连接请求, 服务端收到后就会向客户端发送SSH协议版本信息.</p>
+<p>接着客户端就会根据版本信息与自己的版本,决定选用哪个版本的,发送给服务端.</p>
+<p>服务端进行检查自己是否支持客户端决定选用的SSH版本, 在该过程中, 如果发现版本不兼容的情况, 任何一方都可以直接中断连接.</p>
+<h3 id="阶段二-认证"><a href="#阶段二-认证" class="headerlink" title="阶段二: 认证"></a>阶段二: 认证</h3><p>此时,双方已经建立了通信通道, <code>要注意,此时的通道依然是明文传输.</code> 服务端发送Host Key&amp;Server Key带上一个128位的MD5(由一个8字节的随机数生成,用来防止IP地址欺诈),客户端收到后,会先到<code>~/.ssh/known_hosts</code>文件中检查是否已经包含,如果没有会发出警告,询问用户是否要信任该主机,并附上其RSA指纹.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The authenticity of host <span class="string">&#x27;host (12.18.429.21)&#x27;</span> can<span class="string">&#x27;t be established.</span></span><br><span class="line"><span class="string">RSA key fingerprint is 98:2e:d7:e0:de:9f:ac:67:28:c2:42:2d:37:16:58:4d.</span></span><br><span class="line"><span class="string">Are you sure you want to continue connecting (yes/no)?</span></span><br></pre></td></tr></table></figure>
+<p>如果有,就会进行下一步.</p>
+<p>接着,客户端向服务器端发送Session Key, 这个时候是建立SSH隧道中最需要保密,最重要的时刻,因为session key维系着数据传输的保密性.一旦Session key泄露,整个SSH的安全机制就会变得荡然无存, 因此客户端会使用Host key和Server key对这个session key进行双重加密.</p>
+<p>服务器端收到这个Session key,一个安全的通道就被建立起来了,双方会通过这个Session key进行数据的加密和解密.另外,在正式这个通道前, 服务端会再次要求客户端发送Session Key加密的确认信息,如果无误, 则完成服务端的认证过程.</p>
+<p>对于客户端的认证,最常见的两种认证方式就是password和public key, 由于password的方式是一般调用的本地系统接口.因此其配置简单(或者说无需配置), 但是暴力破解是可能的.</p>
+<p>较好的方式是使用public key的方式.</p>
+<p>下面简单说一下, 这种方法的运作流程.</p>
+<ol>
+<li>客户端发起一个Public Key的认证请求，并发送RSA Key的模数作为标识符.</li>
+<li>服务端检查是否存在请求帐号的公钥（Linux中存储在~&#x2F;.ssh&#x2F;authorized _ keys文件中），以及其拥有的访问权限。如果没有则断开连接</li>
+<li>服务端使用对应的公钥对一个随机的256位的字符串进行加密，并发送给客户端</li>
+<li>客户端使用私钥对字符串进行解密，并将其结合session id生成一个MD5值发送给服务端。 结合session id的目的是为了避免攻击者采用重放攻击(简单的说就好像是模拟发送一个一样的请求,就像经常在Fiddier进行的一样,也可以理解成窃听到身份token,然后发送给服务端,从而获得token所有者的身份权限)</li>
+<li>服务端采用同样的方式生成MD5值与客户端返回的MD5值进行比较，完成对客户端的认证.</li>
+</ol>
+<h3 id="阶段三-传输"><a href="#阶段三-传输" class="headerlink" title="阶段三: 传输"></a>阶段三: 传输</h3><p>使用Session Key提供的对称加密算法,保证数据传输的安全.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%89%87%E5%BC%80%E5%A7%8B"><span class="toc-number">2.</span> <span class="toc-text">正片开始</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSL-x2F-TLS%E7%9A%84%E5%BB%B6%E6%97%B6%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">SSL&#x2F;TLS的延时问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%90%8E-%E5%86%8D%E6%9D%A5%E8%AF%B4%E8%AF%B4session%E6%81%A2%E5%A4%8D%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">最后,再来说说session恢复的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E5%85%85-SSH-Secure-Shell-%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-number">5.</span> <span class="toc-text">补充:SSH(Secure Shell)的原理和处理过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80-%E5%8D%8F%E5%95%86"><span class="toc-number">5.1.</span> <span class="toc-text">阶段一:协商</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%BA%8C-%E8%AE%A4%E8%AF%81"><span class="toc-number">5.2.</span> <span class="toc-text">阶段二: 认证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%89-%E4%BC%A0%E8%BE%93"><span class="toc-number">5.3.</span> <span class="toc-text">阶段三: 传输</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&text=对SSL/TLS的理解"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&is_video=false&description=对SSL/TLS的理解"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=对SSL/TLS的理解&body=Check out this article: https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&title=对SSL/TLS的理解"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&name=对SSL/TLS的理解&description=&lt;p&gt;说说我对HTTPS的理解&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/&t=对SSL/TLS的理解"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录. 概述和内建对象的基石 - PyObject">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python源码阅读—内建对象(1)">
+<meta property="og:url" content="https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录. 概述和内建对象的基石 - PyObject">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/python_src_tree.png">
+<meta property="article:published_time" content="2018-03-07T18:02:18.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:46:21.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="Source Code">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/python_src_tree.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python源码阅读—内建对象(1)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/03/08/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/03/04/%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0%E5%AD%98%E6%A1%A3/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&text=Python源码阅读—内建对象(1)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&is_video=false&description=Python源码阅读—内建对象(1)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python源码阅读—内建对象(1)&body=Check out this article: https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&name=Python源码阅读—内建对象(1)&description=&lt;p&gt;这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.&lt;/p&gt;
+&lt;p&gt;概述和内建对象的基石 - &lt;code&gt;PyObject&lt;/code&gt;&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&t=Python源码阅读—内建对象(1)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PyObject"><span class="toc-number">2.</span> <span class="toc-text">PyObject</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="toc-number">3.</span> <span class="toc-text">对象的创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%A1%8C%E4%B8%BA-x2F-%E6%96%B9%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text">对象的行为&#x2F;方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%9E%8B-%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">类型:类型</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python源码阅读—内建对象(1)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-03-07T18:02:18.000Z" class="dt-published" itemprop="datePublished">2018-03-07</time>
+        
+        (Updated: <time datetime="2020-11-30T01:46:21.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>, <a class="p-category" href="/tags/Source-Code/" rel="tag">Source Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.</p>
+<p>概述和内建对象的基石 - <code>PyObject</code></p>
+<span id="more"></span>
+
+<p>我自认为我是没有能力可以完整的阅读并且理解这本书的, 因此可能不会完全覆盖这本书的全部内容, 并且理解可能会有偏差或者错误. 不过还是尽力而为吧, 初步将本篇阅读记录划成这么几个部分:</p>
+<ul>
+<li>Python的内建对象:<ul>
+<li>基石对象 — PyObject</li>
+<li>整数</li>
+<li>字符串</li>
+<li>List</li>
+<li>Dict</li>
+<li>…</li>
+</ul>
+</li>
+<li>Python运行机制 — 虚拟机初探</li>
+<li>Python虚拟机控制流</li>
+<li>Python虚拟机的函数机制</li>
+<li>Python虚拟机的类机制</li>
+<li>Python模块加载机制</li>
+<li>Python多线程机制</li>
+<li>Python内存管理机制</li>
+</ul>
+<p>后期在学习中再根据进度做修改. </p>
+<p>当然源码是一定要下载下来的~我们来看下结构:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/python_src_tree.png" alt="python_src_tree.png"></p>
+<p>其中, <code>Include</code>这样的命名大家都知道了, 是用来放头文件的. <code>Lib</code>就是我们熟悉的那些Python标准库的源码了, 他们都是使用Python写的, 另外一个目录: <code>Modules</code>同样也是放一些模块的, 只不过这里的都是使用C语言写的, 目的不言自明. <code>Parser</code>就是Python解释器中的词法分析和语法分析, 其中还有些自动生成Python语言的词法和语法分析器, 类似YACC.<code>Python</code>, 都用自己的名字来命名了, 这个目录就十分重要了, 包含了Python的编译器和执行引擎. 另外<code>PCbuild</code>和<code>PCbuild8</code>这两个玩意是VS的工程了, 由于我是在Mac上操作的, 所以就忽略掉了.</p>
+<p>那就不说多了, 直接开始吧!</p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>先来撇清楚一个概念, 我们都知道Python是个面向对象的编程语言, 而这里内建对象的<strong>对象</strong>. 和面向<strong>对象</strong>的<strong>对象</strong>是两个截然不同的概念. 在Python中, 存在许多类型, 例如上面列举的int, string, List, Dict等等. 这些都实现了<strong>类</strong>的功能, 有意思的是, 这些类型, 他们也是类; 即是说: 类型本身也是类. 除了这些内置的, 我们还可以使用<code>class A(object)</code>这样的语句进行自定类型的声明和创建相应的实例. 我们都知道Python是使用ANSI C实现的, 那么这些对象是怎么在C中表示的呢?</p>
+<p>其实不仅仅是Python, 其他很多基于C实现的面向对象语言都是使用的结构体来存储一个类所包含的信息的. 也就是说, 所谓类, 也就无非是C中的结构体在堆上申请的一块内存. 在Python中, 对象的创建是按照固定的内存大小创建的. 但我们都知道我们是可以随意的给一个对象加上各种属性的, 这是怎么搞的? </p>
+<p>其实是这样, 这些对象都在自己的固定内存中维护一个指向一个可变大小的内存区域的指针. 那你可能要问了, 为啥不直接制定可变大小的对象区域? 其实这个答案很简单, 如果是这样 那么连续创建的两个对象在前一个对象需要增加大小的时候, 第二个是需要移动的, 如果第二个后面还有其他的对象, 还需要继续移动下去, 为第一个对象提供内存空间, 这就很麻烦了.</p>
+<h2 id="PyObject"><a href="#PyObject" class="headerlink" title="PyObject"></a>PyObject</h2><p>现在我们来看一下头文件中的<code>object.h</code>, 他定义了Python对象机制中的核心对象 — <strong><code>PyObject</code></strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">object</span> &#123;</span></span><br><span class="line">	PyObject_HEAD</span><br><span class="line">&#125; PyObject;</span><br></pre></td></tr></table></figure>
+
+<p>而这其中, 藏了一个宏, 我们来看下具体内容是啥:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PyObject_HEAD			\</span></span><br><span class="line"><span class="meta">	_PyObject_HEAD_EXTRA		\</span></span><br><span class="line"><span class="meta">	Py_ssize_t ob_refcnt;		\</span></span><br><span class="line"><span class="meta">	struct _typeobject *ob_type;</span></span><br></pre></td></tr></table></figure>
+
+<p>其中第一个宏, 向上追溯的话其实是一个DEBUG开关, 只有打开DEBUG的话才会有定义, 所以我们可以忽略掉. 而第二个<code>Py_ssize_t</code>, 是Python为了更好的支持64位机器, 在2.5版本中进行的修改, 原本是<code>int</code>, 这个<code>ssize_t</code>, 学习C语言的同学应该是知道的, 在32位的机器上仍然是原本的<code>int</code>, 而在64位的机器上等同于<code>long int</code>. </p>
+<p>那么搞到最后, 我们的PyObject其实就是这个样子啦:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">object</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> ob_refcnt;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> *<span class="title">ob_type</span>;</span></span><br><span class="line">&#125; PyObject;</span><br></pre></td></tr></table></figure>
+
+<p>猜猜看, 这个int变量是干什么用的? 看名字大概可以猜出来的. 对, 这就是基于引用计数机制的内存回收实现了, 这个变量就是用来记录引用的, 当该变量变成0的时候, 变量就会从堆中删除.</p>
+<p>另外一个呢? 叫做ob_type, 嗯 没错. 这个东西就是用来定义类型信息的, 标明对象的类型是什么.</p>
+<p>接着我们先切换到另一个头文件:<code>intobject.h</code>, 你会看到这个: </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    <span class="type">long</span> ob_ival;</span><br><span class="line">&#125; PyIntObject;</span><br></pre></td></tr></table></figure>
+
+<p>除了包含一个<code>PyObject</code>以外, 他还有一个<code>long</code>值, 这个变量就是int的值保存的地方.</p>
+<p>除此之外, 还有很多<code>XXXobject.h</code>就定义了各种类型的Python类型对象, 各自包含了各自需要的属性.</p>
+<p>int比较好办, 那么string呐. 我们知道int在C中是可以直接赋个值的, 但是string就不行了, 因为string在C中是数个char数组的表示, 那么维护一个字符串变量该怎么操作呢? 除此之外, 还有很多变量是类似string的, 他们都需要维护一个变长的属性, 例如List, Dict等等.</p>
+<p>因此, 我们声明一个可变长Python对象: (回到<code>object.h</code>)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">	PyObject_VAR_HEAD</span><br><span class="line">&#125; PyVarObject;</span><br></pre></td></tr></table></figure>
+
+<p>我们来看看这个宏展开是个啥:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PyObject_VAR_HEAD		\</span></span><br><span class="line"><span class="meta">	PyObject_HEAD			\</span></span><br><span class="line"><span class="meta">	Py_ssize_t ob_size; <span class="comment">/* Number of items in variable part */</span></span></span><br></pre></td></tr></table></figure>
+
+<p>其实就是一个PyObject再加上一个<code>ob_size</code>, 也就相当于是一个拓展. 正如注释中说的那样, 这个变量是用来记录这个变长对象容纳了多少个元素, 即<strong>元素的个数</strong>.</p>
+<p>现在你大概也就知道为啥我们把<code>PyObject</code>叫做对象中的基石了, 因为不论是什么类型的变量, 他们的开头都是一个<code>PyObject</code>头部, 也许你突然就知道了为啥宏叫做<code>_HEAD</code>了, 对呀. <em><em>在Python内部, 所有的对象都拥有PyObject对象头部, 也就是说, 我们可以使用PyObject</em> 指针引用任意对象.</em>*</p>
+<p>OK, 让我们继续. 一个很重要的问题, 对象是用来创建的, 创建就必然是需要进行内存的申请的 显然这个申请的空间大小是一个重要的元信息, 那它保存在哪里呢? 回过头来看看, 我们有一个部分还没看:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">object</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> ob_refcnt;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> *<span class="title">ob_type</span>;</span></span><br><span class="line">&#125; PyObject;</span><br></pre></td></tr></table></figure>
+
+<p>是了, 就是那个<code>_typeobject</code>. 这个东西的定义就可怕了, 是个85行的结构体, 截取一下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> &#123;</span></span><br><span class="line">	PyObject_VAR_HEAD</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *tp_name; <span class="comment">/* For printing, in format &quot;&lt;module&gt;.&lt;name&gt;&quot; */</span></span><br><span class="line">	Py_ssize_t tp_basicsize, tp_itemsize; <span class="comment">/* For allocation */</span></span><br><span class="line">	...(omitted)</span><br><span class="line">&#125; PyTypeObject;</span><br></pre></td></tr></table></figure>
+
+<p>通过注释, 我们大概可以了解到, 这个对象包含了大量的函数指针, 就上面截取的部分, 我们可以看到定义了类型的名字, 可以打印来进行内部的调试等, 另外还有用于分配内存的内存大小数值和元素大小数值.</p>
+<p>其实呢, 这个巨大的<code>PyTypeObject</code>就是Python中<strong>类</strong>的实现. 所以自然在这里就不展开了, 我们继续来看, 关于对象创建的概述.</p>
+<h2 id="对象的创建"><a href="#对象的创建" class="headerlink" title="对象的创建"></a>对象的创建</h2><p>当我们在Python中:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = <span class="built_in">int</span>(<span class="number">10</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a</span><br><span class="line"><span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<p>这样便创建了一个值是10的int类型对象. 这个对象是怎么创建出来的?</p>
+<p>实际上, Python有两种创建方式:</p>
+<ul>
+<li>C API - 范型API</li>
+<li>类型相关API</li>
+</ul>
+<p>对于第一种C API, 可以使用在任何Python对象上, 你只要调用就好, 内部会自动选择相应的函数. 创建一个对象就形如这样:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PyObject* intObj = PyObject_New(PyObject, &amp;PyInt_Type);</span><br></pre></td></tr></table></figure>
+
+<p>而第二种就略有局限性, 面向<em>类型</em>. 所以就形如这样:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PyObject* intObj = PyInt_FromLong(<span class="number">10</span>);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>定义是这样的:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PyAPI_FUNC(PyObject *) PyInt_FromLong(<span class="type">long</span>);</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>但是我们知道如果是自己声明的类, 同样可以进行创建, Python不可能准备用于创建用户自定义类的上述那种API, 那是怎么做到创建的呢? </p>
+<p>在之前那个<code>PyTypeObject</code>中, 定义了一个属性:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> *<span class="title">tp_base</span>;</span></span><br></pre></td></tr></table></figure>
+
+<p>这个base类指针就指向当前这个类型的创建时参考的基类. 下面我们把创建对象会用到一些东西筛选出来用来说明:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Py_ssize_t tp_basicsize</span><br><span class="line">newfunc tp_new;</span><br><span class="line">initproc tp_init;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> *<span class="title">tp_base</span>;</span></span><br></pre></td></tr></table></figure>
+
+<p>首先会调用<code>tp_new</code>这个创建函数, 如果是内置好的, 就会直接调用了. 但是如果是自定义, 这个函数指针实际上是NULL(在你也没有定义的时候), 这个时候就会去找<code>tp_base</code>指针所指向的那个基类的<code>tp_new</code>操作. 总之最后总会在<code>object</code>中找到这个, 接着根据<code>tp_basicsize</code>记录的信息进行内存的申请, 之后就会调用<code>tp_init</code>来初始化对象. </p>
+<p>关于这里我是用JavaScript的原型链来理解的, 理念上大概是一样的.</p>
+<h2 id="对象的行为-x2F-方法"><a href="#对象的行为-x2F-方法" class="headerlink" title="对象的行为&#x2F;方法"></a>对象的行为&#x2F;方法</h2><p>另外, 在Python中整数int对象是可以进行加减乘除的, 显然这个功能应该是定义在里面的, 具体的位置在哪里呢? 我们可以在<code>PyTypeObject</code>的定义中找到:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Method suites for standard classes */</span></span><br><span class="line"></span><br><span class="line">PyNumberMethods *tp_as_number;</span><br><span class="line">PySequenceMethods *tp_as_sequence;</span><br><span class="line">PyMappingMethods *tp_as_mapping;</span><br></pre></td></tr></table></figure>
+
+<p>这是三个方法组, 要找计算相关, 想必是看第一个指针了, 我们来看下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">	<span class="comment">/* For numbers without flag bit Py_TPFLAGS_CHECKTYPES set, all</span></span><br><span class="line"><span class="comment">	   arguments are guaranteed to be of the object&#x27;s type (modulo</span></span><br><span class="line"><span class="comment">	   coercion hacks -- i.e. if the type&#x27;s coercion function</span></span><br><span class="line"><span class="comment">	   returns other types, then these are allowed as well).  Numbers that</span></span><br><span class="line"><span class="comment">	   have the Py_TPFLAGS_CHECKTYPES flag bit set should check *both*</span></span><br><span class="line"><span class="comment">	   arguments for proper type and implement the necessary conversions</span></span><br><span class="line"><span class="comment">	   in the slot functions themselves. */</span></span><br><span class="line"></span><br><span class="line">	binaryfunc nb_add;</span><br><span class="line">	binaryfunc nb_subtract;</span><br><span class="line">	binaryfunc nb_multiply;</span><br><span class="line">	binaryfunc nb_divide;</span><br><span class="line">	...(omitted)</span><br><span class="line">&#125; PyNumberMethods;</span><br></pre></td></tr></table></figure>
+
+<p>喏, 这就是基本的加减乘除函数了. 另外我们知道Python中有很多魔术方法, 例如以前说过的:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>a[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File <span class="string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">TypeError: <span class="string">&#x27;int&#x27;</span> <span class="built_in">object</span> <span class="keyword">is</span> <span class="keyword">not</span> subscriptable</span><br></pre></td></tr></table></figure>
+
+<p>报错说:<code>not subscriptable</code>. 这样的一个功能应该是字典才会具有的, 我们可以在<code>PyMappingMethods *tp_as_mapping</code>中找到.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">	lenfunc mp_length;</span><br><span class="line">	binaryfunc mp_subscript;</span><br><span class="line">	objobjargproc mp_ass_subscript;</span><br><span class="line">&#125; PyMappingMethods;</span><br></pre></td></tr></table></figure>
+
+<p>这里的<code>mp_subscript</code>就是了. 当我们使用<code>__getitem__</code>这个特殊的方法的时候, 其实就是在指定这个<code>mp_subscript</code>的行为. 也就是说, 为啥一个对象可以既具有数字还有字典的特性, 那就是因为Python在结构设计中同时加入了数字, 序列, 映射的方法组.</p>
+<h2 id="类型-类型"><a href="#类型-类型" class="headerlink" title="类型:类型"></a>类型:类型</h2><p>我们知道在Python中有个有趣的东西:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">type</span></span><br><span class="line">&lt;<span class="built_in">type</span> <span class="string">&#x27;type&#x27;</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">type</span>(<span class="built_in">type</span>)</span><br><span class="line">&lt;<span class="built_in">type</span> <span class="string">&#x27;type&#x27;</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">type</span>.__class__</span><br><span class="line">&lt;<span class="built_in">type</span> <span class="string">&#x27;type&#x27;</span>&gt;</span><br></pre></td></tr></table></figure>
+
+<p>类型同样也有个类型, 这说明对象都有的类型本身也是一个对象, 其实刚刚在看<code>_typeobject</code>的时候就已经知道了, 因为他同样也有一个可变对象头部: <code>PyObject_VAR_HEAD</code>.</p>
+<p>我们可以通过类型来描述一个对象是什么类型的, 但是如何描述一个类型的类型? 在<code>typeobject.c</code>中就可以找到了:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PyTypeObject PyType_Type = &#123;</span><br><span class="line">	PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">	<span class="number">0</span>,					<span class="comment">/* ob_size */</span></span><br><span class="line">	<span class="string">&quot;type&quot;</span>,					<span class="comment">/* tp_name */</span></span><br><span class="line">	<span class="keyword">sizeof</span>(PyHeapTypeObject),		<span class="comment">/* tp_basicsize */</span></span><br><span class="line">	<span class="keyword">sizeof</span>(PyMemberDef),			<span class="comment">/* tp_itemsize */</span></span><br><span class="line">	...(omitted)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>喏, 这个<code>PyTypeType</code>就是Python类型机制的核心了, 而在上面的<code>&lt;type &#39;type&#39;&gt;</code>这个就是这个对象的C实现了. </p>
+<p>还是用int来做例子:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PyTypeObject PyInt_Type = &#123;</span><br><span class="line">	PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">	<span class="number">0</span>,</span><br><span class="line">	<span class="string">&quot;int&quot;</span>,</span><br><span class="line">	<span class="keyword">sizeof</span>(PyIntObject),</span><br><span class="line">	...(omitted)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>我们发现, 最前面还是那个宏, 看起来玄机在这里了, 来找一下定义:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifdef</span> Py_TRACE_REFS</span></span><br><span class="line"><span class="comment">/* Define pointers to support a doubly-linked list of all live heap objects. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _PyObject_HEAD_EXTRA		\</span></span><br><span class="line"><span class="meta">	struct _object *_ob_next;	\</span></span><br><span class="line"><span class="meta">	struct _object *_ob_prev;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _PyObject_EXTRA_INIT 0, 0,</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _PyObject_HEAD_EXTRA</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _PyObject_EXTRA_INIT</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">...(omitted)</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PyObject_HEAD_INIT(type)	\</span></span><br><span class="line"><span class="meta">	_PyObject_EXTRA_INIT		\</span></span><br><span class="line"><span class="meta">	1, type,</span></span><br></pre></td></tr></table></figure>
+
+<p>前面的<code>Py_TRACE_REFS</code>是只有在DEBUG调试的时候才会被设置的FLAG. 也就是说引用计数默认是1, 类型始终是type.</p>
+<p>那么现在就可以来稍微完整的来说一下了:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="built_in">int</span>(<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+
+<p>一句简单的<code>int</code>, 实际上是在创建<code>PyIntObject</code>, 接着根据<code>PyIntObject</code>所指向的类型:<code>PyInt_Type</code> 而我们知道这些内置的类型都是指向Object的, 也就是这货:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PyTypeObject PyBaseObject_Type = &#123;</span><br><span class="line">	PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line"> 	<span class="number">0</span>,					<span class="comment">/* ob_size */</span></span><br><span class="line">	<span class="string">&quot;object&quot;</span>,				<span class="comment">/* tp_name */</span></span><br><span class="line">	<span class="keyword">sizeof</span>(PyObject),			<span class="comment">/* tp_basicsize */</span></span><br><span class="line">    ...(omitted)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>但是仍然, 无论是Int还是Object, 最后始终都是回归到<code>PyType_Type</code>. 而<code>PyType_Type</code>的<code>ob_type</code>指针是指向自己的, 这就相当于是结束了指向过程.</p>
+<p>我们一开始就说了, 所有的对象都是使用PyObject这个开头的, 也就是说, 一个PyObject类型的指针可以指向所有的对象, 但是去可以根据对象具体的属性来表现出不同的状态. 没错, 这就是多态性质的实现原理. 例如<code>Hash</code>函数:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span></span><br><span class="line"><span class="title function_">PyObject_Hash</span><span class="params">(PyObject *v)</span></span><br><span class="line">&#123;</span><br><span class="line">	PyTypeObject *tp = v-&gt;ob_type;</span><br><span class="line">	<span class="keyword">if</span> (tp-&gt;tp_hash != <span class="literal">NULL</span>)</span><br><span class="line">		<span class="keyword">return</span> (*tp-&gt;tp_hash)(v);</span><br><span class="line">	<span class="keyword">if</span> (tp-&gt;tp_compare == <span class="literal">NULL</span> &amp;&amp; RICHCOMPARE(tp) == <span class="literal">NULL</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> _Py_HashPointer(v); <span class="comment">/* Use address as hash value */</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/* If there&#x27;s a cmp but no hash defined, the object can&#x27;t be hashed */</span></span><br><span class="line">	PyErr_Format(PyExc_TypeError, <span class="string">&quot;unhashable type: &#x27;%.200s&#x27;&quot;</span>,</span><br><span class="line">		     v-&gt;ob_type-&gt;tp_name);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一个函数, 在传入不同的PyObject的时候, 表现也不一样, 这就是基于前面的多态实现的. </p>
+<p>顺便说一下, 我们知道Python的垃圾回收机制是基于引用计数的, 那么作为重要的核心对象 - 类型对象. 自然是像root in Linux一样, 是不受到这个规则约束的. 他永远不会被析构.</p>
+<p>至于关于引用计数的相关, 我们可以在<code>object.h</code>中看到:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> Py_INCREF(op) (				\</span></span><br><span class="line"><span class="meta">	_Py_INC_REFTOTAL  _Py_REF_DEBUG_COMMA	\</span></span><br><span class="line"><span class="meta">	(op)-&gt;ob_refcnt++)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> Py_DECREF(op)					\</span></span><br><span class="line"><span class="meta">	<span class="keyword">if</span> (_Py_DEC_REFTOTAL  _Py_REF_DEBUG_COMMA	\</span></span><br><span class="line"><span class="meta">	    --(op)-&gt;ob_refcnt != 0)			\</span></span><br><span class="line"><span class="meta">		_Py_CHECK_REFCNT(op)			\</span></span><br><span class="line"><span class="meta">	<span class="keyword">else</span>						\</span></span><br><span class="line"><span class="meta">		_Py_Dealloc((PyObject *)(op))</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Macros to use in case the object pointer may be NULL: */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> Py_XINCREF(op) <span class="keyword">if</span> ((op) == NULL) ; <span class="keyword">else</span> Py_INCREF(op)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> Py_XDECREF(op) <span class="keyword">if</span> ((op) == NULL) ; <span class="keyword">else</span> Py_DECREF(op)</span></span><br></pre></td></tr></table></figure>
+
+<p>一些增加计数, 减少计数的宏.</p>
+<p>至此, Python内建对象的概述就这样了 下一节就来认真看看我们本节中拿来用例子的<code>IntObject</code>.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PyObject"><span class="toc-number">2.</span> <span class="toc-text">PyObject</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="toc-number">3.</span> <span class="toc-text">对象的创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%A1%8C%E4%B8%BA-x2F-%E6%96%B9%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text">对象的行为&#x2F;方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%9E%8B-%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">类型:类型</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&text=Python源码阅读—内建对象(1)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&is_video=false&description=Python源码阅读—内建对象(1)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python源码阅读—内建对象(1)&body=Check out this article: https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&title=Python源码阅读—内建对象(1)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&name=Python源码阅读—内建对象(1)&description=&lt;p&gt;这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.&lt;/p&gt;
+&lt;p&gt;概述和内建对象的基石 - &lt;code&gt;PyObject&lt;/code&gt;&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/03/07/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-1/&t=Python源码阅读—内建对象(1)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

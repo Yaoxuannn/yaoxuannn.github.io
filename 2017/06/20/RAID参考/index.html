@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="写给自己的RAID参考memo.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RAID参考">
+<meta property="og:url" content="https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="写给自己的RAID参考memo.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/RAID_0.svg/325px-RAID_0.svg.png">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/RAID_1.svg/325px-RAID_1.svg.png">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/RAID_5.svg/675px-RAID_5.svg.png">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/RAID_6.svg/800px-RAID_6.svg.png">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/RAID_10.svg/600px-RAID_10.svg.png">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/RAID_01.svg/600px-RAID_01.svg.png">
+<meta property="article:published_time" content="2017-06-20T19:35:48.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="RAID">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/RAID_0.svg/325px-RAID_0.svg.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>RAID参考</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/06/21/Linux%E7%A8%8B%E5%BA%8F%E5%8C%85%E7%AE%A1%E7%90%86/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/06/18/btrfs%E5%88%9D%E6%8E%A2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&text=RAID参考"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&is_video=false&description=RAID参考"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=RAID参考&body=Check out this article: https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&name=RAID参考&description=&lt;p&gt;写给自己的RAID参考memo.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&t=RAID参考"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RAID%E5%8F%82%E8%80%83"><span class="toc-number">1.</span> <span class="toc-text">RAID参考</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RAID%E7%9A%84%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">RAID的概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RAID%E7%9A%84%E5%88%86%E7%BA%A7"><span class="toc-number">3.</span> <span class="toc-text">RAID的分级</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID0"><span class="toc-number">3.1.</span> <span class="toc-text">RAID0</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID1"><span class="toc-number">3.2.</span> <span class="toc-text">RAID1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID5"><span class="toc-number">3.3.</span> <span class="toc-text">RAID5</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID6"><span class="toc-number">3.4.</span> <span class="toc-text">RAID6</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID-10-x2F-01"><span class="toc-number">3.5.</span> <span class="toc-text">RAID 10&#x2F;01</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        RAID参考
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-06-20T19:35:48.000Z" class="dt-published" itemprop="datePublished">2017-06-20</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/RAID/" rel="tag">RAID</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>写给自己的RAID参考memo.</p>
+<span id="more"></span>
+
+<h2 id="RAID参考"><a href="#RAID参考" class="headerlink" title="RAID参考"></a>RAID参考</h2><p>总是记不住, 记个笔记给自己参考, 主要信息来源于<code>Wikipedia</code>.</p>
+<h2 id="RAID的概述"><a href="#RAID的概述" class="headerlink" title="RAID的概述"></a>RAID的概述</h2><p>RAID的全称是 <strong>独立硬盘冗余阵列</strong>（<strong>RAID</strong>, <strong>R</strong>edundant <strong>A</strong>rray of <strong>I</strong>ndependent <strong>D</strong>isks），旧称<strong>廉价磁盘冗余阵列</strong>（<strong>R</strong>edundant <strong>A</strong>rray of <strong>I</strong>nexpensive <strong>D</strong>isks），简称<strong>磁盘阵列</strong>.</p>
+<p>RAID的基本思想就是把多个相对便宜的硬盘组合起来, 成为一个磁盘组, 使得这个磁盘组的性能和容错能力达到甚至超过一个价格昂贵的的磁盘. 根据组合方式的不同, RAID分成多个等级.而根据实现方式的不同, RAID又分为<strong>软件RAID</strong>和<strong>硬件RAID</strong>.</p>
+<p>补充说一下软件RAID和硬件RAID的区别. 价格!价格!价格!硬件RAID动辄就是好几万元, 而软件RAID几乎不需要花费多余的软妹币.硬件RAID贵就贵在它的磁盘阵列卡.磁盘阵列卡上有CPU专门用来进行RAID任务.这样既不会消耗原本系统的I&#x2F;O总线, 性能就更好. 而且还拥有备份电池和日志等功能.</p>
+<p>而软件实现的RAID又分两种, 一种是主板支持就可以, 这是需要消耗系统资源来进行的(<code>CPU</code>的计算, <code>IO</code>总线的资源), 但这种RAID不容易迁移(因为是和主板相关联的) 另一种是硬件辅助型的, 需要一张RAID卡以及配套的驱动程序.</p>
+<h2 id="RAID的分级"><a href="#RAID的分级" class="headerlink" title="RAID的分级"></a>RAID的分级</h2><h3 id="RAID0"><a href="#RAID0" class="headerlink" title="RAID0"></a>RAID0</h3><p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/RAID_0.svg/325px-RAID_0.svg.png" alt="RAID 0"></p>
+<p>这是RAID0, 简单的说就是将存放数据时, 分段后分散存储在这些磁盘中, 这样读写就可以并行处理.</p>
+<p>RAID0是所有的RAID等级中速度最快的, 但是没有冗余和容错的能力.</p>
+<p>一张盘损坏, 所有的数据都将丢失.</p>
+<h3 id="RAID1"><a href="#RAID1" class="headerlink" title="RAID1"></a>RAID1</h3><p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/RAID_1.svg/325px-RAID_1.svg.png" alt="File:RAID 1.svg"></p>
+<p>这是RAID1, 所有的数据都会N倍存储. 两个以上的磁盘相互做镜像. 读取速度等于硬盘数量的倍数.</p>
+<p>是所有RAID等级中可靠性很数据安全性是最高的, 但是无论多少个磁盘做RAID1, 最终都只是一个磁盘的容量, 因此也是所有等级的RAID中利用率最低的.</p>
+<p>当主硬盘损坏的时候, 镜像硬盘会代替主硬盘进行工作.</p>
+<h3 id="RAID5"><a href="#RAID5" class="headerlink" title="RAID5"></a>RAID5</h3><p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/RAID_5.svg/675px-RAID_5.svg.png" alt="File:RAID 5.svg"></p>
+<p>这是RAID5, 如图所示, 将数据和<strong>对应的奇偶校验信息</strong>存储到RAID5的各个磁盘上, 这些信息分别存储在不同的磁盘上.</p>
+<p>这里的下标 <code>p</code> 是指 <code>Parity</code> ( 同位检查码 ) , 就把它当成是可以恢复损坏信息的神奇数据吧, 当一张盘发生损坏的时候, 可以利用剩下的数据和刚刚说的神奇数据来算出坏掉的信息是什么.</p>
+<p>这样看起来, RAID5就像是RAID1和RAID0的折中方案.</p>
+<p>最少需要3张盘.</p>
+<h3 id="RAID6"><a href="#RAID6" class="headerlink" title="RAID6"></a>RAID6</h3><p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/RAID_6.svg/800px-RAID_6.svg.png" alt="File:RAID 6.svg"></p>
+<p>RAID6是RAID的升级版吧, 用了两张盘来存放神奇数据, 而且是两种不同的算法的神奇数据.</p>
+<p>这样即使有两张盘<strong>同时</strong>损坏了, RAID6还是可以正常工作, 而且数据还是可以被救回来的.</p>
+<p>这样算来, RAID6需要最少4个磁盘. 但是相比RAID5, RAID6需要更大的计算量和更多的IO操作, 所以一般都是使用的硬件方式实现RAID6.</p>
+<h3 id="RAID-10-x2F-01"><a href="#RAID-10-x2F-01" class="headerlink" title="RAID 10&#x2F;01"></a>RAID 10&#x2F;01</h3><p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/RAID_10.svg/600px-RAID_10.svg.png" alt="File:RAID 10.svg"></p>
+<p>RAID10也是一种常用的, 简单的说就是将RAID1实现的一组当做RAID0的一块盘.</p>
+<p>即使每一个RAID1组中的一个磁盘损坏, 整个磁盘阵列仍会正常工作, 但只要任意一个RAID1组的两个磁盘都坏了, 整个阵列就炸了. </p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/RAID_01.svg/600px-RAID_01.svg.png" alt="File:RAID 01.svg"></p>
+<p>和上面的相反, 将几个RAID0构建的磁盘当做RAID1的一个磁盘.</p>
+<p>当有一个磁盘损坏的时候, 同RAID0组就全玩完了. 所以RAID01的可靠性较低. 一般会选择RAID10而不是RAID01.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RAID%E5%8F%82%E8%80%83"><span class="toc-number">1.</span> <span class="toc-text">RAID参考</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RAID%E7%9A%84%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">RAID的概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RAID%E7%9A%84%E5%88%86%E7%BA%A7"><span class="toc-number">3.</span> <span class="toc-text">RAID的分级</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID0"><span class="toc-number">3.1.</span> <span class="toc-text">RAID0</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID1"><span class="toc-number">3.2.</span> <span class="toc-text">RAID1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID5"><span class="toc-number">3.3.</span> <span class="toc-text">RAID5</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID6"><span class="toc-number">3.4.</span> <span class="toc-text">RAID6</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RAID-10-x2F-01"><span class="toc-number">3.5.</span> <span class="toc-text">RAID 10&#x2F;01</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&text=RAID参考"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&is_video=false&description=RAID参考"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=RAID参考&body=Check out this article: https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&title=RAID参考"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&name=RAID参考&description=&lt;p&gt;写给自己的RAID参考memo.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/06/20/RAID%E5%8F%82%E8%80%83/&t=RAID参考"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

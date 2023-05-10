@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="哈~结束了systemd和GRUB2的了解, 我们就可以更新之前CentOS5&amp;6启动流程啦!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS7启动流程">
+<meta property="og:url" content="https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="哈~结束了systemd和GRUB2的了解, 我们就可以更新之前CentOS5&amp;6启动流程啦!">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/0/07/GUID_Partition_Table_Scheme.svg">
+<meta property="article:published_time" content="2017-09-06T15:51:12.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:32:18.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/0/07/GUID_Partition_Table_Scheme.svg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>CentOS7启动流程</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/05/bootloader-GRUB2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&text=CentOS7启动流程"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&is_video=false&description=CentOS7启动流程"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CentOS7启动流程&body=Check out this article: https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&name=CentOS7启动流程&description=&lt;p&gt;哈~结束了systemd和GRUB2的了解, 我们就可以更新之前CentOS5&amp;amp;6启动流程啦!&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&t=CentOS7启动流程"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E7%B3%BB%E7%BB%9F%E5%89%8D"><span class="toc-number">1.</span> <span class="toc-text">进入系统前</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%A0%E7%BB%9FBIOS%E5%BC%80%E6%9C%BA%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.</span> <span class="toc-text">传统BIOS开机流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.1.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#POST-Power-On-Self-Test%E5%BC%80%E6%9C%BA%E8%87%AA%E6%88%91%E6%A3%80%E6%B5%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">POST(Power On Self Test开机自我检测)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%BB%E6%89%BE%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.1.3.</span> <span class="toc-text">寻找操作系统</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#UEFI-%E6%90%AD%E9%85%8D-GPT"><span class="toc-number">1.2.</span> <span class="toc-text">UEFI 搭配 GPT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.</span> <span class="toc-text">进入系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BD%E5%85%A5%E5%86%85%E6%A0%B8%E5%92%8Cinitramfs"><span class="toc-number">2.1.</span> <span class="toc-text">载入内核和initramfs</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E7%B3%BB%E7%BB%9F%E4%B9%8B%E5%90%8E"><span class="toc-number">3.</span> <span class="toc-text">进入系统之后</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#sysinit-target"><span class="toc-number">3.0.1.</span> <span class="toc-text">sysinit.target</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#basic-target"><span class="toc-number">3.0.2.</span> <span class="toc-text">basic.target</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E5%AE%8C%E6%AF%95"><span class="toc-number">4.</span> <span class="toc-text">系统启动完毕</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        CentOS7启动流程
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-06T15:51:12.000Z" class="dt-published" itemprop="datePublished">2017-09-06</time>
+        
+        (Updated: <time datetime="2020-11-30T01:32:18.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>哈~结束了systemd和GRUB2的了解, 我们就可以更新之前CentOS5&amp;6启动流程啦!</p>
+<span id="more"></span>
+
+<h2 id="进入系统前"><a href="#进入系统前" class="headerlink" title="进入系统前"></a>进入系统前</h2><p>关于从我们摁下电源到BIOS legacy到bootloader的过程, 是没有什么变化的, 所以可以参考前面说过的:  <a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#%E6%AD%A3%E9%A4%90">BIOS到BootLoader</a></p>
+<p>这次又学习到了一点更细致更具体的, 所以再来谈一谈开机流程这个事情.</p>
+<h3 id="传统BIOS开机流程"><a href="#传统BIOS开机流程" class="headerlink" title="传统BIOS开机流程"></a>传统BIOS开机流程</h3><p>我们按下主机的电源键, 接着储存在主板上的EEPROM中的BIOS就会开始下面的工作:</p>
+<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><p>每当我们电脑打开, CPU就会自动重置成初始状态, 准备工作. BIOS boot block(开机区块)初始化阶段开始启动. 因为此时我们的内存啥的都是空的, 没有内容可以执行, 所以主板厂商会让CPU去寻找系统BIOS ROM中的reset vector(重置向量): 也就是用一个固定的位置来启动所谓的BIOS boot program开机程序.</p>
+<p>一般来说, 我们的这个程序会出现在内存的0xFFFF的位置, 当然里面其实只有一个jump指令, 进一步真正的BIOS启动程序. 各个BIOS供应商也可以把程序放在不同的位置, 只要通过jump来指定就可以了.</p>
+<h4 id="POST-Power-On-Self-Test开机自我检测"><a href="#POST-Power-On-Self-Test开机自我检测" class="headerlink" title="POST(Power On Self Test开机自我检测)"></a>POST(Power On Self Test开机自我检测)</h4><p>接着BIOS就会开始实行POST, 在过程中检查电脑的各项组件及设定. 然后再物理内存的开头处构建实模式的中断向量表, 这样我们就可以通过特定的中断来寻找硬件了. 接着是BIOS的数据区 以及 中断程序(仅仅是用于实模式的, 在后面加载操作系统的时候就会被抹除.)</p>
+<p>这些工作都是硬件层面设计好的 和操作系统没有一点关系.</p>
+<h4 id="寻找操作系统"><a href="#寻找操作系统" class="headerlink" title="寻找操作系统"></a>寻找操作系统</h4><p>OK~到了这个阶段, BIOS就会根据使用者的设定来决定搜索顺序, 产生INT_19来让CPU执行相应的中断服务程序. 这个程序把启动盘的第一扇区加载到物理内存的0x0700处, 这个也是硬件厂商设定的(因为不知道用户会安装什么操作系统). 这个扇区就是我们的引导程序所在的地方了. 接着就是我们的GRUB来做了. BIOS的使命结束.</p>
+<h3 id="UEFI-搭配-GPT"><a href="#UEFI-搭配-GPT" class="headerlink" title="UEFI 搭配 GPT"></a>UEFI 搭配 GPT</h3><blockquote>
+<p>在这里顺便更新一下这种较新的组合是怎么搞得. </p>
+</blockquote>
+<p>先来对比一下, 传统BIOS( BIOS legacy )和UEFI的区别.</p>
+<table>
+<thead>
+<tr>
+<th>比较项目</th>
+<th>传统BIOS</th>
+<th>UEFI</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>使用语言</td>
+<td>组合语言</td>
+<td>C 语言</td>
+</tr>
+<tr>
+<td>硬件资源控制</td>
+<td>使用中断(IRQ)管理不可变的内存存取不可变的输入&#x2F;输出存取</td>
+<td>使用驱动程序与协定</td>
+</tr>
+<tr>
+<td>处理器运行环境</td>
+<td>16位</td>
+<td>CPU 保护模式</td>
+</tr>
+<tr>
+<td>扩充方式</td>
+<td>透过IRQ 连结</td>
+<td>直接载入驱动程式</td>
+</tr>
+<tr>
+<td>第三方厂商支援</td>
+<td>较差</td>
+<td>较佳且可支持多平台</td>
+</tr>
+<tr>
+<td>图形化能力</td>
+<td>较差</td>
+<td>较佳</td>
+</tr>
+<tr>
+<td>内建简化作业系统前环境</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+</tbody></table>
+<p>可以看出来, 这个UEFI要比传统的BIOS高级很多, 从WikiPedia中摘录一段, 我觉得写的挺清楚:</p>
+<blockquote>
+<p>(UEFI)突破传统16位代码的<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=%E5%AF%BB%E5%9D%80%E8%83%BD%E5%8A%9B&action=edit&redlink=1">寻址能力</a>，达到处理器的最大寻址。它利用加载EFI驱动程序的形式，识别及操作硬件，不同于BIOS利用挂载真实模式<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E6%96%AD">中断</a>的方式增加硬件功能。后者必须将一段类似于驱动程序的16位代码（如RAID卡的Option ROM）放置在固定的0x000C0000至0x000DFFFF之间存储区中，运行这段代码的初始化部分，它将挂载实模式下约定的中断向量向其他程序提供服务。例如，<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%98%BE%E5%8D%A1">VGA</a>图形及文本输出中断（INT 10h），磁盘访问中断服务（INT 13h）等等。由于这段存储空间有限（128KB），BIOS对于所需放置的驱动程序代码大小超过空间大小的情况无能为力。</p>
+<p>另外，BIOS的硬件服务程序都以16位代码的形式存在，这就给运行于增强模式的操作系统访问其服务造成了困难。因此BIOS提供的服务在现实中只能提供给操作系统引导程序或MS-DOS类操作系统使用。而UEFI系统下的驱动程序可以由<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=EFI_Byte_Code&action=edit&redlink=1">EFI Byte Code</a>（EBC）编写而成，EFI Byte Code是一组专用于EFI驱动程序的虚拟<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%9C%BA%E5%99%A8%E8%AF%AD%E8%A8%80">机器语言</a>，必须在EFI驱动程序运行环境（Driver Execution Environment，或DXE）下被解释运行。</p>
+</blockquote>
+<p>加上EFI driver开发简单，所有的PC零组件厂商都可以参与，就像现代操作系统的开发模式，这样的模式曾使Windows系统短短几年就变得无比强大. 有了EFI driver，也可以让显卡在开机阶段就载入某种程度的功能，进而可以把传统文字界面为主的BIOS转成图形界面。</p>
+<p>至于GPT, 是GUID Partition Table的缩写, 而GUID就是全局唯一标识符的简称. 下面的一张图就把GPT的状态说的很清楚啦. </p>
+<p>**<em>LBA是指逻辑区块地址</em> **</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/0/07/GUID_Partition_Table_Scheme.svg" alt="GPT"></p>
+<p>尽管GPT对分区数量没有限制 但是Windows最大就支持128个分区. 至于为什么是128,这是这是因为EFI标准的最小值.</p>
+<blockquote>
+<p>最后补充一个小点, 我们的BIOS设定中由一个secure boot的选项, 这个选项是为了UEFI的安全, 开启后就只会运行经过事先写过的数字签名的验证的程序. 但是这一点遭到了RedHat的反对, 因为大部分的Windows用户的电脑上主板上仅仅写入了OEM和微软的数字签名, 这对Linux的安装就造成了麻烦. 尽管说会提供这个值的修改设置…但是你懂得</p>
+</blockquote>
+<h2 id="进入系统"><a href="#进入系统" class="headerlink" title="进入系统"></a>进入系统</h2><h3 id="载入内核和initramfs"><a href="#载入内核和initramfs" class="headerlink" title="载入内核和initramfs"></a>载入内核和initramfs</h3><p>虽然这个部分在之前还是说过了, 但是还是再提一遍…因为一些内容是新学到的~</p>
+<p>我们通过 Bootloader的管理而开始读取内核的时候, 接下来, 整个内核就会被解压到物理内存中. 接着利用内核的功能来测试周边装置, 也就是各个硬件啦 储存装置,CPU,网卡,声卡等等. 其实这个时候这些硬件的信息已经有了, 这是BIOS扫描得到的. 但是我们的Linux内核是不相信这个结果的, 所以要再次扫描一遍.</p>
+<p>有关的文件都放在&#x2F;boot下了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># ls --format=single-column -F /boot </span></span><br><span class="line">config-3.10.0-229.el7.x86_64                 &lt;==此版本内核被编译时选择的功能与模块设定文件 </span><br><span class="line">grub/                                        &lt; ==旧版grub1 没啥用了</span><br><span class="line">grub2/                                       &lt;==就是开机管理程序grub2相关目录 </span><br><span class="line">initramfs-0-rescue-309eb890d3d95ec7a.img     &lt;==下面几个都是虚拟文件系统 这一个是用来救援的</span><br><span class="line">initramfs-3.10.0-229.el7.x86_64.img          &lt;==正常开机会用到的虚拟文件系统</span><br><span class="line">initramfs-3.10.0-229.el7.x86_64kdump.img     &lt;==内核出问题时会用到的虚拟文件系统 </span><br><span class="line">System.map-3.10.0-229.el7.x86_64             &lt;==内核功能放置到内存地址的对应表 </span><br><span class="line">vmlinuz-0-rescue-309eb890d09543d95ec7a*      &lt;==救援用的内核</span><br><span class="line">vmlinuz-3.10.0- 229.el7.x86_64*               &lt;==这就是内核啦</span><br></pre></td></tr></table></figure>
+
+<p>我们知道Linux内核是可以动态加载模块的, 模块在哪里呢? 在我们的&#x2F;lib&#x2F;module&#x2F;$VERSION下面.所以我们也可以自信的说他们在根目录下, 因此为了开机就一定要挂载根目录, 而担心影响到磁盘中的文件系统, 这个根会用只读的方式挂载.</p>
+<p>接着又回到了那个难题. 如果你的linux是安装在SATA磁盘上的, 那么通过INT_13取得的Bootloader与kernel来开机, 接着kernel就会开始扫描硬件,尝试挂载根目录.  但是内核无法获得SATA磁盘, 所以需要驱动程序. 但是驱动程序在根目录下, 这就是那个经典的两难问题.</p>
+<p>解决方法就是上面的虚拟文件系统. 跟着Bootloader一起载入, 接着在内存中模拟成根目录, 并且提供一堆可执行程序(通常是USB,RAID,LVM啥的驱动程序), 载入模块.</p>
+<p>那么这个神奇的initramfs究竟有什么东西呢? 之前我一直傻傻的用cpio在复原, 其实有一个命令专门用来输出这个文件的内容的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW boot]<span class="comment"># lsinitrd initramfs-3.10.0-514.21.2.el7.x86_64.img | less</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Image: initramfs-3.10.0-514.21.2.el7.x86_64.img: 19M</span><br><span class="line">========================================================================</span><br><span class="line">Early CPIO image</span><br><span class="line">========================================================================</span><br><span class="line">drwxr-xr-x   3 root     root            0 Jun 25 08:40 .</span><br><span class="line">-rw-r--r--   1 root     root            2 Jun 25 08:40 early_cpio</span><br><span class="line">drwxr-xr-x   3 root     root            0 Jun 25 08:40 kernel</span><br><span class="line">drwxr-xr-x   3 root     root            0 Jun 25 08:40 kernel/x86</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 kernel/x86/microcode</span><br><span class="line">-rw-r--r--   1 root     root        97280 Jun 25 08:40 kernel/x86/microcode/GenuineIntel.bin</span><br><span class="line">========================================================================</span><br><span class="line">Version: dracut-033-463.el7_3.1</span><br><span class="line">...(omitted)</span><br><span class="line">drwxr-xr-x   3 root     root            0 Jun 25 08:40 usr/lib/modules</span><br><span class="line">drwxr-xr-x   3 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64</span><br><span class="line">drwxr-xr-x   8 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel</span><br><span class="line">drwxr-xr-x   3 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/arch</span><br><span class="line">drwxr-xr-x   3 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/arch/x86</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/arch/x86/crypto</span><br><span class="line">-rw-r--r--   1 root     root        21581 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/arch/x86/crypto/crc32c-intel.ko</span><br><span class="line">-rw-r--r--   1 root     root        12037 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/arch/x86/crypto/crct10dif-pclmul.ko</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/crypto</span><br><span class="line">-rw-r--r--   1 root     root         5021 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/crypto/crct10dif_common.ko</span><br><span class="line">-rw-r--r--   1 root     root         6229 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/crypto/crct10dif_generic.ko</span><br><span class="line">drwxr-xr-x  12 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/ata</span><br><span class="line">-rw-r--r--   1 root     root        68437 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/ata/ahci.ko</span><br><span class="line">-rw-r--r--   1 root     root        13797 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/ata/ata_generic.ko</span><br><span class="line">-rw-r--r--   1 root     root        52829 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/ata/ata_piix.ko</span><br><span class="line">-rw-r--r--   1 root     root        53245 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/ata/libahci.ko</span><br><span class="line">-rw-r--r--   1 root     root       410141 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/ata/libata.ko</span><br><span class="line">-rw-r--r--   1 root     root        12685 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/ata/pata_acpi.ko</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/block</span><br><span class="line">-rw-r--r--   1 root     root        27885 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/block/virtio_blk.ko</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/cdrom</span><br><span class="line">-rw-r--r--   1 root     root        69893 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/cdrom/cdrom.ko</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/char</span><br><span class="line">-rw-r--r--   1 root     root        53709 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/char/virtio_console.ko</span><br><span class="line">drwxr-xr-x   2 root     root            0 Jun 25 08:40 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/firmware</span><br><span class="line">-rw-r--r--   1 root     root        15893 Jun 20 09:11 usr/lib/modules/3.10.0-514.21.2.el7.x86_64/kernel/drivers/firmware/iscsi_ibft.ko</span><br><span class="line">...(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>输出很庞大. 通过观察输出, 我们可以知道这个文件前面是一个文档宣告, 但是后面才是真正用到的部分. 里面有个init程序, 已经给systemd管理了:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lrwxrwxrwx   1 root     root           23 Jun 25 08:40 init -&gt; usr/lib/systemd/systemd</span><br></pre></td></tr></table></figure>
+
+<p>之前说过, systemd的默认target取决于default.target这个软链:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lrwxrwxrwx   1 root     root           13 Jun 25 08:40 usr/lib/systemd/system/default.target -&gt; initrd.target</span><br></pre></td></tr></table></figure>
+
+<p>那么这个initrd.target就是开机启动的第一个target了~ 怎么启动的呢?</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">initrd.target</span><br><span class="line">● ├─dracut-cmdline.service</span><br><span class="line">● ├─dracut-initqueue.service</span><br><span class="line">● ├─dracut-mount.service</span><br><span class="line">● ├─dracut-pre-mount.service</span><br><span class="line">● ├─dracut-pre-pivot.service</span><br><span class="line">● ├─dracut-pre-trigger.service</span><br><span class="line">● ├─dracut-pre-udev.service</span><br><span class="line">● ├─initrd-parse-etc.service</span><br><span class="line">● ├─basic.target</span><br><span class="line">● │ ├─firewalld.service</span><br><span class="line">● │ ├─microcode.service</span><br><span class="line">● │ ├─rhel-autorelabel-mark.service</span><br><span class="line">● │ ├─rhel-autorelabel.service</span><br><span class="line">● │ ├─rhel-configure.service</span><br><span class="line">● │ ├─rhel-dmesg.service</span><br><span class="line">● │ ├─rhel-loadmodules.service</span><br><span class="line">● │ ├─selinux-policy-migrate-local-changes@targeted.service</span><br><span class="line">● │ ├─paths.target</span><br><span class="line">● │ ├─slices.target</span><br><span class="line">● │ │ ├─-.slice</span><br><span class="line">● │ │ └─system.slice</span><br><span class="line">● │ ├─sockets.target</span><br><span class="line">● │ │ ├─dbus.socket</span><br><span class="line">● │ │ ├─dm-event.socket</span><br><span class="line">● │ │ ├─systemd-initctl.socket</span><br><span class="line">● │ │ ├─systemd-journald.socket</span><br><span class="line">● │ │ ├─systemd-shutdownd.socket</span><br><span class="line">● │ │ ├─systemd-udevd-control.socket</span><br><span class="line">● │ │ └─systemd-udevd-kernel.socket</span><br><span class="line">● │ ├─sysinit.target</span><br><span class="line">....(omitted)</span><br></pre></td></tr></table></figure>
+
+<p>这样, 在内核完整载入完毕之后, 就是我们的systemd的主场了!</p>
+<h2 id="进入系统之后"><a href="#进入系统之后" class="headerlink" title="进入系统之后"></a>进入系统之后</h2><p>接下来系统连接到&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system这个目录去取按照用户的设定, 读取default.target所指向的目标target(注意呀,刚刚上面说的那个default是由系统生成的根文件系统, 和我们进入系统的那个不是一回事, 所以两个default.target不一样的), 读取完了之后, 就会去下面的两个地方,加载设定</p>
+<ul>
+<li>&#x2F;etc&#x2F;systemd&#x2F;system&#x2F;XXX(你设置的).target.wants&#x2F;：使用者设定载入的unit</li>
+<li>&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;XXX.target.wants&#x2F;：系统预设载入的unit</li>
+</ul>
+<p>一直这样XXX不是个事, 一般都是multi-user吧, 所以就拿这个好了.</p>
+<p>我们来看看multi-user.target:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Multi-User System</span><br><span class="line">Documentation=man:systemd.special(7)</span><br><span class="line">Requires=basic.target</span><br><span class="line">Conflicts=rescue.service rescue.target</span><br><span class="line">After=basic.target rescue.service rescue.target</span><br><span class="line">AllowIsolate=<span class="built_in">yes</span></span><br></pre></td></tr></table></figure>
+
+<p>也就是说, 在必须在basic.target运行完毕之后才能载入…载入什么呢? 我们来看看对应的wants文件夹:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW system]<span class="comment"># ls /etc/systemd/system/multi-user.target.wants/</span></span><br><span class="line">atd.service      crond.service       mdmonitor.service       remote-fs.target  sysstat.service  vboxadd-service.service</span><br><span class="line">auditd.service   irqbalance.service  NetworkManager.service  rsyslog.service   tuned.service    vboxadd-x11.service</span><br><span class="line">chronyd.service  kdump.service       postfix.service         sshd.service      vboxadd.service</span><br></pre></td></tr></table></figure>
+
+<p><em>因为我使用的是Virtual Box来着, 所以可以忽略一些</em></p>
+<p>系统加载的unit有这些:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW system]<span class="comment"># ls /usr/lib/systemd/system/multi-user.target.wants/</span></span><br><span class="line">brandbot.path  getty.target           plymouth-quit-wait.service      systemd-logind.service                systemd-user-sessions.service</span><br><span class="line">dbus.service   plymouth-quit.service  systemd-ask-password-wall.path  systemd-update-utmp-runlevel.service</span><br></pre></td></tr></table></figure>
+
+<p>简单分析一下<code>systemctl list-dependencies multi-user.target</code>所输出的依赖服务，基本上我们CentOS 7.x 的systemd 开机流程大约是这样：</p>
+<ol>
+<li>local-fs.target + swap.target：这两个target 主要在挂载本机&#x2F;etc&#x2F;fstab 里面所规范的文件系统与相关的内存置换空间</li>
+<li>sysinit.target：这个target 主要在扫描硬件，载入所需要的内核模块等</li>
+<li>basic.target：载入主要的周边硬件驱动程序与防火墙相关任务</li>
+<li>multi-user.target 底下的其它一般系统或网络服务的载入</li>
+</ol>
+<p>第一个步骤的那两个target, 很好理解 只要根据fstab就可以了. 那后面呢? 我们可以查看一下他们所启动的服务就知道了.</p>
+<h4 id="sysinit-target"><a href="#sysinit-target" class="headerlink" title="sysinit.target"></a>sysinit.target</h4><p>基本上，我们可以将这些服务归类成几个大项就是了:</p>
+<ul>
+<li>特殊文件系统装置的挂载：包括dev-hugepages.mount dev-mqueue.mount 等挂载服务，主要在挂载跟巨量内存分页使用与信息队列的功能。挂载成功后，会在&#x2F;dev 底下建立&#x2F;dev&#x2F;hugepages&#x2F;, &#x2F;dev&#x2F;mqueue&#x2F; 等目录；</li>
+<li>特殊文件系统的启用：包括磁盘阵列(RAID)、网路磁盘(iscsi)、LVM、文件系统对照服务(multipath) 等等，也会在这里被扫描和使用.</li>
+<li>开机过程的信息传递与动画执行：使用plymouthd 服务搭配plymouth 指令来传递动画与信息</li>
+<li>登录日志的使用：就是systemd-journald 这个服务的启用.</li>
+<li>载入额外的内核模块：透过&#x2F;etc&#x2F;modules-load.d&#x2F;*.conf 文件的设定，让内核额外载入所需要的内核模块.</li>
+<li>载入额外的内核参数设定：包括&#x2F;etc&#x2F;sysctl.conf 以及&#x2F;etc&#x2F;sysctl.d&#x2F;*.conf 内部设定</li>
+<li>启动系统的随机产生器：随机产生器可以帮助系统进行一些密码加密演算的功能</li>
+<li>设定终端(console)字体</li>
+<li>启动动态设备管理服务：就是udevd 啦 用在动态对应实际设备存取与设备档名对应的一个服务.</li>
+</ul>
+<p>不论你即将使用哪种操作环境来使用系统，这个sysinit.target 几乎都是必要的工作 从上面你也可以看的出来，基本的内核功能、文件系统、文件系统硬件的驱动等等， 都在这个时刻处理完毕～所以，这个sysinit.target 的阶段是挺重要.</p>
+<h4 id="basic-target"><a href="#basic-target" class="headerlink" title="basic.target"></a>basic.target</h4><p>执行完sysinit.target 之后，再来则是basic.target 这个项目了.</p>
+<p>sysinit.target 在初始化系统，而basic.target 的阶段主要启动的服务大概有这些：</p>
+<ul>
+<li>载入firewalld 防火墙：CentOS 7.x 以后使用firewalld 取代iptables 的防火墙设定，虽然最终都是使用iptables 的架构, 不过在设定上面差很多.</li>
+<li>载入CPU 的微指令功能；</li>
+<li>启动与设定SELinux 的安全上下文：如果由disable 的状态改成enable 的状态，或者是管理员设定强制重新设定一次SELinux 的安全上下</li>
+<li>将目前的开机过程所产生的开机信息写入到&#x2F;var&#x2F;log&#x2F;dmesg 当中</li>
+<li>由&#x2F;etc&#x2F;sysconfig&#x2F;modules&#x2F;*.modules 及&#x2F;etc&#x2F;rc.modules 载入管理员指定的模块</li>
+<li>载入systemd 支持的timer 功能；</li>
+</ul>
+<h2 id="系统启动完毕"><a href="#系统启动完毕" class="headerlink" title="系统启动完毕"></a>系统启动完毕</h2><p>这样就差不多了, 接下来就是关于模块的一些内容 关于这个 和之前的就没有什么不同了, 参考这个地方就可以了: <a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/07/16/Linux%E7%9A%84%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%92%8C%E7%BC%96%E8%AF%91%E5%88%9D%E6%AD%A5/#%E5%86%85%E6%A0%B8%E7%AE%A1%E7%90%86%E5%88%9D%E6%AD%A5">内核管理</a></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E7%B3%BB%E7%BB%9F%E5%89%8D"><span class="toc-number">1.</span> <span class="toc-text">进入系统前</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%A0%E7%BB%9FBIOS%E5%BC%80%E6%9C%BA%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.</span> <span class="toc-text">传统BIOS开机流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.1.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#POST-Power-On-Self-Test%E5%BC%80%E6%9C%BA%E8%87%AA%E6%88%91%E6%A3%80%E6%B5%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">POST(Power On Self Test开机自我检测)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%BB%E6%89%BE%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.1.3.</span> <span class="toc-text">寻找操作系统</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#UEFI-%E6%90%AD%E9%85%8D-GPT"><span class="toc-number">1.2.</span> <span class="toc-text">UEFI 搭配 GPT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.</span> <span class="toc-text">进入系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BD%E5%85%A5%E5%86%85%E6%A0%B8%E5%92%8Cinitramfs"><span class="toc-number">2.1.</span> <span class="toc-text">载入内核和initramfs</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E7%B3%BB%E7%BB%9F%E4%B9%8B%E5%90%8E"><span class="toc-number">3.</span> <span class="toc-text">进入系统之后</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#sysinit-target"><span class="toc-number">3.0.1.</span> <span class="toc-text">sysinit.target</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#basic-target"><span class="toc-number">3.0.2.</span> <span class="toc-text">basic.target</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E5%AE%8C%E6%AF%95"><span class="toc-number">4.</span> <span class="toc-text">系统启动完毕</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&text=CentOS7启动流程"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&is_video=false&description=CentOS7启动流程"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CentOS7启动流程&body=Check out this article: https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&title=CentOS7启动流程"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&name=CentOS7启动流程&description=&lt;p&gt;哈~结束了systemd和GRUB2的了解, 我们就可以更新之前CentOS5&amp;amp;6启动流程啦!&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/&t=CentOS7启动流程"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

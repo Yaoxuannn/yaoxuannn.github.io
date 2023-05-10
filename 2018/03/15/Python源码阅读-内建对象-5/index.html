@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录. Python中的列表对象 - PyDictObject. 这就是我们研究的最后一个内建对象啦.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python源码阅读-内建对象(-1)">
+<meta property="og:url" content="https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录. Python中的列表对象 - PyDictObject. 这就是我们研究的最后一个内建对象啦.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-03-16T00:38:46.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="Source Code">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python源码阅读-内建对象(-1)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/03/20/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B9%8BCode%E5%AF%B9%E8%B1%A1%E5%92%8Cpyc%E6%8E%A2%E7%A7%98/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/03/13/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-4/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&text=Python源码阅读-内建对象(-1)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&is_video=false&description=Python源码阅读-内建对象(-1)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python源码阅读-内建对象(-1)&body=Check out this article: https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&name=Python源码阅读-内建对象(-1)&description=&lt;p&gt;这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.&lt;/p&gt;
+&lt;p&gt;Python中的列表对象 - &lt;code&gt;PyDictObject&lt;/code&gt;. 这就是我们研究的最后一个内建对象啦.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&t=Python源码阅读-内建对象(-1)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B6%85%E7%BA%A7%E6%95%A3%E5%88%97%E8%A1%A8"><span class="toc-number">1.</span> <span class="toc-text">超级散列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AAPyDictObject%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.</span> <span class="toc-text">创建一个PyDictObject对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8PyDictObject%E4%B8%AD%E8%BF%9B%E8%A1%8C%E5%85%83%E7%B4%A0%E6%90%9C%E7%B4%A2"><span class="toc-number">3.</span> <span class="toc-text">在PyDictObject中进行元素搜索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E5%92%8C%E5%88%A0%E9%99%A4%E5%85%83%E7%B4%A0"><span class="toc-number">4.</span> <span class="toc-text">插入和删除元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%86%B2-%E6%B1%A0-%E6%80%8E%E4%B9%88%E8%BF%98%E6%9D%A5"><span class="toc-number">5.</span> <span class="toc-text">缓冲..池 (怎么还来?!</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">6.</span> <span class="toc-text">实验</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python源码阅读-内建对象(-1)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-03-16T00:38:46.000Z" class="dt-published" itemprop="datePublished">2018-03-15</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>, <a class="p-category" href="/tags/Source-Code/" rel="tag">Source Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.</p>
+<p>Python中的列表对象 - <code>PyDictObject</code>. 这就是我们研究的最后一个内建对象啦.</p>
+<span id="more"></span>
+
+<h2 id="超级散列表"><a href="#超级散列表" class="headerlink" title="超级散列表"></a>超级散列表</h2><p>我们都知道, 在最优的情况下, 散列表可以提供O(1)复杂度的搜索效率. 而dict对象正是使用了散列表这样的数据结构. 其实我个人觉得Python中的字典对象是一个较为复杂的对象了, 不过在后文中, 我打算更经常的称其为<strong>关联式容器</strong>.</p>
+<p>所谓关联就是指字典中的那键值对映射, 那么我们就来看看Python中的这个关联容器的设计吧.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">	<span class="comment">/* Cached hash code of me_key.  Note that hash codes are C longs.</span></span><br><span class="line"><span class="comment">	 * We have to use Py_ssize_t instead because dict_popitem() abuses</span></span><br><span class="line"><span class="comment">	 * me_hash to hold a search finger.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	Py_ssize_t me_hash;</span><br><span class="line">	PyObject *me_key;</span><br><span class="line">	PyObject *me_value;</span><br><span class="line">&#125; PyDictEntry;</span><br></pre></td></tr></table></figure>
+
+<p>看下名字, 没错. 这个就是我们每次去除的一对键值对的实现. 一般都叫做<code>entry</code>, 有的时候也叫做<code>slot</code>. 可以看到, 包含一个键, 一个值, 还有键的hash值. 我们再第一次看Python的对象实现基石的时候就说过了, 所有的对象都可以使用PyObject*指针来引用, 这也就是为啥dict可以容纳所有的对象的原因. 当然, 存储hash的原因不言自明, 就是为了避免重复计算嘛~</p>
+<p>为了能够更好的说明接下来的内容, 还是先说一些和散列表有关的话题. 当一个散列表的2&#x2F;3都已经被填充了的时候, 这个时候的冲突率会大大增加, 而Python选择的冲突解决方法是通过二次定址来寻找下一个可用的位置. 也就是说, 当哈希碰撞发生的时候, Python就会再进行一次计算来寻找下一个位置. 这样就会形成一个可能不是连续的<strong>冲突探测链</strong>. 通过这个探测链, 我们就可以寻找到冲突的元素的位置.</p>
+<p>那么经过上面的, 我们接下来就要来说下这个键值对, 也就是<code>entry</code> 他一共有三种状态:</p>
+<ul>
+<li>Unused</li>
+<li>Active</li>
+<li>Dummy</li>
+</ul>
+<p>是不是有点像是进程的三态呢? 哈哈我开玩笑的. 当我们初始化生成一个<code>entry</code>的时候, 这个<code>entry</code>的键和值都是NULL 此时, 我们就说这个键值对是Unused.</p>
+<p>接下来, 当我们给这个entry进行了键值对的填充之后, 它就会变成Active状态. 在这个状态下, 我们的key和value都不会是NULL的.</p>
+<p>而Dummy态就有趣了, 并且和我们上面说的冲突探测链有关系. 当我们这个<code>entry</code>存储的键值对删除了之后, 这个entry就会变成Dummy态, 而不是直接成为Unused. 为什么? 如果说这个entry是位于我们的探测链上的, 就会直接导致后面的元素将无法被检索到. 也就是说, 这个处理方法就是一种典型的<strong>伪删除</strong>. 在搜索时, 我们可以得知这个entry已经被删除了, 但是可能后面的entry仍然是有效的, 就可以继续进行搜索.</p>
+<p>那么我们实际使用的字典对象, 其实就是这么一堆Entry的集合嘛.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">dictobject</span> <span class="title">PyDictObject</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">dictobject</span> &#123;</span></span><br><span class="line">	PyObject_HEAD</span><br><span class="line">	Py_ssize_t ma_fill;  <span class="comment">/* # Active + # Dummy */</span></span><br><span class="line">	Py_ssize_t ma_used;  <span class="comment">/* # Active */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* The table contains ma_mask + 1 slots, and that&#x27;s a power of 2.</span></span><br><span class="line"><span class="comment">	 * We store the mask instead of the size because the mask is more</span></span><br><span class="line"><span class="comment">	 * frequently needed.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	Py_ssize_t ma_mask;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* ma_table points to ma_smalltable for small tables, else to</span></span><br><span class="line"><span class="comment">	 * additional malloc&#x27;ed memory.  ma_table is never NULL!  This rule</span></span><br><span class="line"><span class="comment">	 * saves repeated runtime null-tests in the workhorse getitem and</span></span><br><span class="line"><span class="comment">	 * setitem calls.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	PyDictEntry *ma_table;</span><br><span class="line">	PyDictEntry *(*ma_lookup)(PyDictObject *mp, PyObject *key, <span class="type">long</span> hash);</span><br><span class="line">	PyDictEntry ma_smalltable[PyDict_MINSIZE];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这里的<code>ma_fill</code>是指从对象创建开始所处于(或曾经处于)Active状态的Entry数量, 而<code>ma_used</code>就像是前者的子集, 他只包含当前Active状态的entry. 先来最后一个成员, 就是那个<code>smalltable</code>, 一开始就是<code>PyDict_MINSIZE</code>的大小. 这个值在文件中定义的是8:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PyDict_MINSIZE 8</span></span><br></pre></td></tr></table></figure>
+
+<p>这个值就是为了避免malloc所带来的效率下降, 而8是Python多次实验之后得到的一个比较理想的值.</p>
+<p>而整个对象的核心就是那个<code>ma_table</code>成员了. 它就是Dict的entry的那一大片内存的指针, 但是我们不是还有一个<code>ma_smalltable</code>这个玩意嘛. 对了 只要在没有到8个entry的时候就会指向这个smalltable的内存地址. 有了这样的一个机制, 就相当于是确保了<code>ma_table</code>不会成为NULL. 至于剩下的两个成员我们留在后面说.</p>
+<h2 id="创建一个PyDictObject对象"><a href="#创建一个PyDictObject对象" class="headerlink" title="创建一个PyDictObject对象"></a>创建一个PyDictObject对象</h2><p>直接祭出代码吧</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">PyObject *</span><br><span class="line"><span class="title function_">PyDict_New</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">register</span> dictobject *mp;</span><br><span class="line">	<span class="keyword">if</span> (dummy == <span class="literal">NULL</span>) &#123; <span class="comment">/* Auto-initialize dummy */</span></span><br><span class="line">		dummy = PyString_FromString(<span class="string">&quot;&lt;dummy key&gt;&quot;</span>);</span><br><span class="line">		<span class="keyword">if</span> (dummy == <span class="literal">NULL</span>)</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> SHOW_CONVERSION_COUNTS</span></span><br><span class="line">		Py_AtExit(show_counts);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (num_free_dicts) &#123;</span><br><span class="line">		mp = free_dicts[--num_free_dicts];</span><br><span class="line">		assert (mp != <span class="literal">NULL</span>);</span><br><span class="line">		assert (mp-&gt;ob_type == &amp;PyDict_Type);</span><br><span class="line">		_Py_NewReference((PyObject *)mp);</span><br><span class="line">		<span class="keyword">if</span> (mp-&gt;ma_fill) &#123;</span><br><span class="line">			EMPTY_TO_MINSIZE(mp);</span><br><span class="line">		&#125;</span><br><span class="line">		assert (mp-&gt;ma_used == <span class="number">0</span>);</span><br><span class="line">		assert (mp-&gt;ma_table == mp-&gt;ma_smalltable);</span><br><span class="line">		assert (mp-&gt;ma_mask == PyDict_MINSIZE - <span class="number">1</span>);</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		mp = PyObject_GC_New(dictobject, &amp;PyDict_Type);</span><br><span class="line">		<span class="keyword">if</span> (mp == <span class="literal">NULL</span>)</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">		EMPTY_TO_MINSIZE(mp);</span><br><span class="line">	&#125;</span><br><span class="line">	mp-&gt;ma_lookup = lookdict_string;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> SHOW_CONVERSION_COUNTS</span></span><br><span class="line">	++created;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">	_PyObject_GC_TRACK(mp);</span><br><span class="line">	<span class="keyword">return</span> (PyObject *)mp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>放眼望去, Python扔了很多assert进去. 眼尖的你可能瞬间就看到了<code>num_free_dicts</code>. 嘿嘿 恭喜你又猜到了后文的标题. 行吧, 废话就不说了, 我们还是来看代码吧.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">PyObject *</span><br><span class="line"><span class="title function_">PyDict_New</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">register</span> dictobject *mp;</span><br><span class="line">	<span class="keyword">if</span> (dummy == <span class="literal">NULL</span>) &#123; <span class="comment">/* Auto-initialize dummy */</span></span><br><span class="line">		dummy = PyString_FromString(<span class="string">&quot;&lt;dummy key&gt;&quot;</span>);</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你会发现, dummy其实是一个字符串对象, 毕竟 他只是用来作为一个指示标志. 然后就会从系统堆中申请一个Dict的内存空间, 它使用了两个宏, 一个宏套着另一个宏.</p>
+<p>来看下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> INIT_NONZERO_DICT_SLOTS(mp) do &#123;				\</span></span><br><span class="line"><span class="meta">	(mp)-&gt;ma_table = (mp)-&gt;ma_smalltable;				\</span></span><br><span class="line"><span class="meta">	(mp)-&gt;ma_mask = PyDict_MINSIZE - 1;				\</span></span><br><span class="line"><span class="meta">    &#125; while(0)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EMPTY_TO_MINSIZE(mp) do &#123;					\</span></span><br><span class="line"><span class="meta">	memset((mp)-&gt;ma_smalltable, 0, sizeof((mp)-&gt;ma_smalltable));	\</span></span><br><span class="line"><span class="meta">	(mp)-&gt;ma_used = (mp)-&gt;ma_fill = 0;				\</span></span><br><span class="line"><span class="meta">	INIT_NONZERO_DICT_SLOTS(mp);					\</span></span><br><span class="line"><span class="meta">    &#125; while(0)</span></span><br></pre></td></tr></table></figure>
+
+<p>先来看上面的, 它就是把table指向那个默认的小table(8个entry), 接着设置我们之前说的<code>mask</code>为最小值-1. 其实, 我们的这个<code>mask</code>也可以被叫做<code>size</code>, 之所以没有这样命名, 我们后面再说.</p>
+<p>接下来, 我们看下面的. 其实就是在初始化我们的table之前先初始化table内存和计数器.</p>
+<p>最后来关注这么一个东西:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mp-&gt;ma_lookup = lookdict_string;</span><br></pre></td></tr></table></figure>
+
+<p>这个我们会在下一小节讨论. 这个就是PyDictObject的搜索策略. 这个ma_lookup, 就决定这字典对象在进行搜索entry的时候如果出现冲突的时候, 二次探测函数的具体实现.</p>
+<h2 id="在PyDictObject中进行元素搜索"><a href="#在PyDictObject中进行元素搜索" class="headerlink" title="在PyDictObject中进行元素搜索"></a>在PyDictObject中进行元素搜索</h2><p>OK, 现在告诉你. 有两种进行搜索的方法:</p>
+<ul>
+<li>lookdict_string</li>
+<li>lookdict</li>
+</ul>
+<p>而默认的就是我们在上面看到的<code>lookdict_string</code>. 不过从名字也可以看出来, 显然是<code>lookdict</code>更加通用, 而<code>lookdict_string</code>是<code>lookdict</code>的一个特例. 那么就从通用的搜索策略开始看起吧.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> dictentry *</span><br><span class="line"><span class="title function_">lookdict</span><span class="params">(dictobject *mp, PyObject *key, <span class="keyword">register</span> <span class="type">long</span> hash)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">size_t</span> i;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">size_t</span> perturb;</span><br><span class="line">	<span class="keyword">register</span> dictentry *freeslot;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">size_t</span> mask = (<span class="type">size_t</span>)mp-&gt;ma_mask;</span><br><span class="line">	dictentry *ep0 = mp-&gt;ma_table;</span><br><span class="line">	<span class="keyword">register</span> dictentry *ep;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">int</span> cmp;</span><br><span class="line">	PyObject *startkey;</span><br><span class="line"></span><br><span class="line">	i = (<span class="type">size_t</span>)hash &amp; mask;</span><br><span class="line">	ep = &amp;ep0[i];</span><br><span class="line">	<span class="keyword">if</span> (ep-&gt;me_key == <span class="literal">NULL</span> || ep-&gt;me_key == key)</span><br><span class="line">		<span class="keyword">return</span> ep;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (ep-&gt;me_key == dummy)</span><br><span class="line">		freeslot = ep;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_hash == hash) &#123;</span><br><span class="line">			startkey = ep-&gt;me_key;</span><br><span class="line">			Py_INCREF(startkey);</span><br><span class="line">			cmp = PyObject_RichCompareBool(startkey, key, Py_EQ);</span><br><span class="line">			Py_DECREF(startkey);</span><br><span class="line">			<span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">			<span class="keyword">if</span> (ep0 == mp-&gt;ma_table &amp;&amp; ep-&gt;me_key == startkey) &#123;</span><br><span class="line">				<span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</span><br><span class="line">					<span class="keyword">return</span> ep;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="comment">/* The compare did major nasty stuff to the</span></span><br><span class="line"><span class="comment">				 * dict:  start over.</span></span><br><span class="line"><span class="comment">				 * XXX A clever adversary could prevent this</span></span><br><span class="line"><span class="comment">				 * XXX from terminating.</span></span><br><span class="line"><span class="comment"> 				 */</span></span><br><span class="line"> 				<span class="keyword">return</span> lookdict(mp, key, hash);</span><br><span class="line"> 			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		freeslot = <span class="literal">NULL</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到, 这个函数返回的值当中存在自己的递归调用, 这就说明在找entry的过程中是, 根据寻找的位置, 是存在不同的处理的. 我们来从变量定义下面来开始看吧.</p>
+<p>首先就是一个位与操作, 使用的是带搜索的字典的<code>mask</code>和传入的<code>hash</code>. 这样即可确保最后搜索不会超过这个这个字典对象所维护的entry数量, 而这个代表字典对象entry size的成员经常进行位与操作, 这就是命名为mask的原因.</p>
+<p>通过位与操作, 我们就可以定位到冲突探测链的第一个entry. <strong>(?)</strong> 接着就开始了第一次的比较, 如果巧了比对成功或者遇到了一个Unused的entry, 就直接返回这个entry.</p>
+<blockquote>
+<p>这里 补充一下, 字典对象的搜索策略始终返回的不是NULL或者0或者-1啥的(除非子函数执行失败), 不论是否搜索到, 都会返回一个entry对象, 如果是匹配到了的, 那就会返回搜索需要的, 如果是没有匹配到的, 就会返回一个<code>me_value</code>值为NULL的entry.</p>
+</blockquote>
+<p>接着, 如果这第一个entry的状态是<code>dummy</code>,  我们就要把这个entry记录下, 让<code>freeslot</code>来指向它. 接下来为了能够更好的理解后面, 我们先来讨论下这里的相等是个什么意思:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>l = &#123;&#125;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>l[<span class="number">9876</span>] = <span class="string">&quot;Python&quot;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(l[<span class="number">9876</span>])</span><br><span class="line">Python</span><br></pre></td></tr></table></figure>
+
+<p>有了前面的基础, 我们知道这里的两个9876肯定是两个不同的对象, 但是他们的值是相同的, 所以这里依然能够找到就是因为值相同, 这就是说如果仅仅就到我们分析的那个地方:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (ep-&gt;me_key == <span class="literal">NULL</span> || ep-&gt;me_key == key)</span><br><span class="line">    <span class="keyword">return</span> ep;</span><br></pre></td></tr></table></figure>
+
+<p>这里是不会相等的, 因为两个9876的引用是不一样的. 那么仍然能够正确返回的秘密就在后面了.</p>
+<p>先来看下如果不是一个dummy状态的entry, 而是一个Active状态的entry的话是什么效果. 最先当然是检查hash是否相同, 如果hash不一致, 显然值也不可能是相同的了.</p>
+<p>如果hash一致, 我们就继续进行比较, 这里调用了一个Python的比较函数, 并且使用<code>Py_EQ</code>宏来使得快速进行同类对象比较. 如果出现一些脏东西, 那么没办法了, 只能从头开始, 至于这个脏东西到底是什么, 什么情况下会发生, 我没搞清楚.</p>
+<blockquote>
+<p>找到了, 在这里有说明: <a target="_blank" rel="noopener" href="https://bugs.python.org/issue14205">Issue14205</a> 大概的意思就是说在比较中如果出现值的变化会导致问题的出现. 另外会出现C的无限递归出现.</p>
+</blockquote>
+<p>那行了. 到目前为止, 我们已经摸清楚了搜索时deal with第一个entry的做法. 如果说第一个entry搞完了还是没有结果我们就要继续向后了. 来继续看:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* In the loop, me_key == dummy is by far (factor of 100s) the</span></span><br><span class="line"><span class="comment">	   least likely outcome, so test for that last. */</span></span><br><span class="line"><span class="keyword">for</span> (perturb = hash; ; perturb &gt;&gt;= PERTURB_SHIFT) &#123;</span><br><span class="line">    i = (i &lt;&lt; <span class="number">2</span>) + i + perturb + <span class="number">1</span>;</span><br><span class="line">    ep = &amp;ep0[i &amp; mask];</span><br><span class="line">    <span class="keyword">if</span> (ep-&gt;me_key == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> freeslot == <span class="literal">NULL</span> ? ep : freeslot;</span><br><span class="line">    <span class="keyword">if</span> (ep-&gt;me_key == key)</span><br><span class="line">        <span class="keyword">return</span> ep;</span><br><span class="line">    <span class="keyword">if</span> (ep-&gt;me_hash == hash &amp;&amp; ep-&gt;me_key != dummy) &#123;</span><br><span class="line">        startkey = ep-&gt;me_key;</span><br><span class="line">        Py_INCREF(startkey);</span><br><span class="line">        cmp = PyObject_RichCompareBool(startkey, key, Py_EQ);</span><br><span class="line">        Py_DECREF(startkey);</span><br><span class="line">        <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">if</span> (ep0 == mp-&gt;ma_table &amp;&amp; ep-&gt;me_key == startkey) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</span><br><span class="line">                <span class="keyword">return</span> ep;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">/* The compare did major nasty stuff to the</span></span><br><span class="line"><span class="comment">				 * dict:  start over.</span></span><br><span class="line"><span class="comment">				 * XXX A clever adversary could prevent this</span></span><br><span class="line"><span class="comment">				 * XXX from terminating.</span></span><br><span class="line"><span class="comment"> 				 */</span></span><br><span class="line">            <span class="keyword">return</span> lookdict(mp, key, hash);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (ep-&gt;me_key == dummy &amp;&amp; freeslot == <span class="literal">NULL</span>)</span><br><span class="line">        freeslot = ep;</span><br><span class="line">&#125;</span><br><span class="line">assert(<span class="number">0</span>);	<span class="comment">/* NOT REACHED */</span></span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<p>这里就要继续沿着冲突探测链继续向前进了. 首先还是要获得探测链下一个entry的位置, 如果是一个<code>Unused</code>的entry, 说明已经结束了, 把freeslot返回, 或者是返回Unused的entry, 总之返回的那个总是可以使用的, 键值对为NULL的.</p>
+<p>接着就是分别检查引用和值是否相同 最后, 如果发现当前是个Dummy态的并且freeslot没有设置, 就把freeslot设置成这个Dummy态的entry. 直到搜索完, 这样 全部的搜索过程就结束了.</p>
+<p>通用的逻辑看完了, 接下来来看下特例<code>lookdict_string</code>吧.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> dictentry *</span><br><span class="line"><span class="title function_">lookdict_string</span><span class="params">(dictobject *mp, PyObject *key, <span class="keyword">register</span> <span class="type">long</span> hash)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">size_t</span> i;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">size_t</span> perturb;</span><br><span class="line">	<span class="keyword">register</span> dictentry *freeslot;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">size_t</span> mask = (<span class="type">size_t</span>)mp-&gt;ma_mask;</span><br><span class="line">	dictentry *ep0 = mp-&gt;ma_table;</span><br><span class="line">	<span class="keyword">register</span> dictentry *ep;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Make sure this function doesn&#x27;t have to handle non-string keys,</span></span><br><span class="line"><span class="comment">	   including subclasses of str; e.g., one reason to subclass</span></span><br><span class="line"><span class="comment">	   strings is to override __eq__, and for speed we don&#x27;t cater to</span></span><br><span class="line"><span class="comment">	   that here. */</span></span><br><span class="line">	<span class="keyword">if</span> (!PyString_CheckExact(key)) &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> SHOW_CONVERSION_COUNTS</span></span><br><span class="line">		++converted;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">		mp-&gt;ma_lookup = lookdict;</span><br><span class="line">		<span class="keyword">return</span> lookdict(mp, key, hash);</span><br><span class="line">	&#125;</span><br><span class="line">	i = hash &amp; mask;</span><br><span class="line">	ep = &amp;ep0[i];</span><br><span class="line">	<span class="keyword">if</span> (ep-&gt;me_key == <span class="literal">NULL</span> || ep-&gt;me_key == key)</span><br><span class="line">		<span class="keyword">return</span> ep;</span><br><span class="line">	<span class="keyword">if</span> (ep-&gt;me_key == dummy)</span><br><span class="line">		freeslot = ep;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_hash == hash &amp;&amp; _PyString_Eq(ep-&gt;me_key, key))</span><br><span class="line">			<span class="keyword">return</span> ep;</span><br><span class="line">		freeslot = <span class="literal">NULL</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* In the loop, me_key == dummy is by far (factor of 100s) the</span></span><br><span class="line"><span class="comment">	   least likely outcome, so test for that last. */</span></span><br><span class="line">	<span class="keyword">for</span> (perturb = hash; ; perturb &gt;&gt;= PERTURB_SHIFT) &#123;</span><br><span class="line">		i = (i &lt;&lt; <span class="number">2</span>) + i + perturb + <span class="number">1</span>;</span><br><span class="line">		ep = &amp;ep0[i &amp; mask];</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_key == <span class="literal">NULL</span>)</span><br><span class="line">			<span class="keyword">return</span> freeslot == <span class="literal">NULL</span> ? ep : freeslot;</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_key == key</span><br><span class="line">		    || (ep-&gt;me_hash == hash</span><br><span class="line">		        &amp;&amp; ep-&gt;me_key != dummy</span><br><span class="line">			&amp;&amp; _PyString_Eq(ep-&gt;me_key, key)))</span><br><span class="line">			<span class="keyword">return</span> ep;</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_key == dummy &amp;&amp; freeslot == <span class="literal">NULL</span>)</span><br><span class="line">			freeslot = ep;</span><br><span class="line">	&#125;</span><br><span class="line">	assert(<span class="number">0</span>);	<span class="comment">/* NOT REACHED */</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当所有的键都是字符串类型的时候, 就会调用这个玩意. 自一开始就开始了类型检测, 如果发现不是严格等于字符串对象的话, 就会返回使用通用搜索策略.</p>
+<p>基本的逻辑还是很相像的, 先获得第一个entry的位置, 接着开始分别比对Unused态, Dummy态, Active态, 并且设置恰当的freeslot. 接着就按照散列函数的定义这么一直比对下去就好了. 在这里就省略掉了大量错误捕获的代码, 因为我们不需要处理不明确的<code>PyObject* </code>而是确定的字符串对象了.</p>
+<h2 id="插入和删除元素"><a href="#插入和删除元素" class="headerlink" title="插入和删除元素"></a>插入和删除元素</h2><p>在Python字典对象的设计中, 插入元素(或者更好的应该说是设置元素, 因为有可能会触发update[键相同])的函数是<code>PyDict_SetItem</code>. 这个函数调用了两个子函数: <code>insertdict</code>, <code>dictresize</code>.所以我们就先看下这两个.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line"><span class="title function_">insertdict</span><span class="params">(<span class="keyword">register</span> dictobject *mp, PyObject *key, <span class="type">long</span> hash, PyObject *value)</span></span><br><span class="line">&#123;</span><br><span class="line">	PyObject *old_value;</span><br><span class="line">	<span class="keyword">register</span> dictentry *ep;</span><br><span class="line">	<span class="keyword">typedef</span> PyDictEntry *(*lookupfunc)(PyDictObject *, PyObject *, <span class="type">long</span>);</span><br><span class="line"></span><br><span class="line">	assert(mp-&gt;ma_lookup != <span class="literal">NULL</span>);</span><br><span class="line">	ep = mp-&gt;ma_lookup(mp, key, hash);</span><br><span class="line">	<span class="keyword">if</span> (ep == <span class="literal">NULL</span>) &#123;</span><br><span class="line">		Py_DECREF(key);</span><br><span class="line">		Py_DECREF(value);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (ep-&gt;me_value != <span class="literal">NULL</span>) &#123;</span><br><span class="line">		old_value = ep-&gt;me_value;</span><br><span class="line">		ep-&gt;me_value = value;</span><br><span class="line">		Py_DECREF(old_value); <span class="comment">/* which **CAN** re-enter */</span></span><br><span class="line">		Py_DECREF(key);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_key == <span class="literal">NULL</span>)</span><br><span class="line">			mp-&gt;ma_fill++;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			assert(ep-&gt;me_key == dummy);</span><br><span class="line">			Py_DECREF(dummy);</span><br><span class="line">		&#125;</span><br><span class="line">		ep-&gt;me_key = key;</span><br><span class="line">		ep-&gt;me_hash = (Py_ssize_t)hash;</span><br><span class="line">		ep-&gt;me_value = value;</span><br><span class="line">		mp-&gt;ma_used++;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先我们执行上一节的搜索函数, 这样要么就是获得了Active状态的entry, 即将replace, 或者是Dummy以及Unused的, 对于前者, 我们直接改变<code>value</code>就可以了, 后者我们还要重新的设置一遍. 这就是后面主要做的事情.</p>
+<p>现在我们回到<code>SetItem</code>身上, 来看看他是如何调用<code>insertdict</code>的:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span></span><br><span class="line"><span class="title function_">PyDict_SetItem</span><span class="params">(<span class="keyword">register</span> PyObject *op, PyObject *key, PyObject *value)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">register</span> dictobject *mp;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">long</span> hash;</span><br><span class="line">	<span class="keyword">register</span> Py_ssize_t n_used;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!PyDict_Check(op)) &#123;</span><br><span class="line">		PyErr_BadInternalCall();</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	assert(key);</span><br><span class="line">	assert(value);</span><br><span class="line">	mp = (dictobject *)op;</span><br><span class="line">	<span class="keyword">if</span> (PyString_CheckExact(key)) &#123;</span><br><span class="line">		hash = ((PyStringObject *)key)-&gt;ob_shash;</span><br><span class="line">		<span class="keyword">if</span> (hash == <span class="number">-1</span>)</span><br><span class="line">			hash = PyObject_Hash(key);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		hash = PyObject_Hash(key);</span><br><span class="line">		<span class="keyword">if</span> (hash == <span class="number">-1</span>)</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	assert(mp-&gt;ma_fill &lt;= mp-&gt;ma_mask);  <span class="comment">/* at least one empty slot */</span></span><br><span class="line">	n_used = mp-&gt;ma_used;</span><br><span class="line">	Py_INCREF(value);</span><br><span class="line">	Py_INCREF(key);</span><br><span class="line">	<span class="keyword">if</span> (insertdict(mp, key, hash, value) != <span class="number">0</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	<span class="comment">/* If we added a key, we can safely resize.  Otherwise just return!</span></span><br><span class="line"><span class="comment">	 * If fill &gt;= 2/3 size, adjust size.  Normally, this doubles or</span></span><br><span class="line"><span class="comment">	 * quaduples the size, but it&#x27;s also possible for the dict to shrink</span></span><br><span class="line"><span class="comment">	 * (if ma_fill is much larger than ma_used, meaning a lot of dict</span></span><br><span class="line"><span class="comment">	 * keys have been * deleted).</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * Quadrupling the size improves average dictionary sparseness</span></span><br><span class="line"><span class="comment">	 * (reducing collisions) at the cost of some memory and iteration</span></span><br><span class="line"><span class="comment">	 * speed (which loops over every possible entry).  It also halves</span></span><br><span class="line"><span class="comment">	 * the number of expensive resize operations in a growing dictionary.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * Very large dictionaries (over 50K items) use doubling instead.</span></span><br><span class="line"><span class="comment">	 * This may help applications with severe memory constraints.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">if</span> (!(mp-&gt;ma_used &gt; n_used &amp;&amp; mp-&gt;ma_fill*<span class="number">3</span> &gt;= (mp-&gt;ma_mask+<span class="number">1</span>)*<span class="number">2</span>))</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">return</span> dictresize(mp, (mp-&gt;ma_used &gt; <span class="number">50000</span> ? <span class="number">2</span> : <span class="number">4</span>) * mp-&gt;ma_used);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再调用插入之前发生了什么了? 其实很简单嘛, 就是在计算出哈希值好来调用插入字典函数, 接着如果出现了当前<code>fill &gt;= 2/3 size</code>的时候, 就要开始重新调整大小了, 这就是为了避免出现碰撞.</p>
+<p>我们先简单看下字典resize的签名:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line"><span class="title function_">dictresize</span><span class="params">(dictobject *mp, Py_ssize_t minused)</span></span><br></pre></td></tr></table></figure>
+
+<p>主要就是后者, 这个就是保证字典正常的大小的最小值. 而这个值被设定成:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(mp-&gt;ma_used &gt; <span class="number">50000</span> ? <span class="number">2</span> : <span class="number">4</span>) * mp-&gt;ma_used</span><br></pre></td></tr></table></figure>
+
+<p>2倍或者是4倍, 当Active状态的entry很大的时候(50000), Python就开始限制自己索取的内存量了. 具体是怎么改变的呢 我们来阅读下这个函数:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line"><span class="title function_">dictresize</span><span class="params">(dictobject *mp, Py_ssize_t minused)</span></span><br><span class="line">&#123;</span><br><span class="line">	Py_ssize_t newsize;</span><br><span class="line">	dictentry *oldtable, *newtable, *ep;</span><br><span class="line">	Py_ssize_t i;</span><br><span class="line">	<span class="type">int</span> is_oldtable_malloced;</span><br><span class="line">	dictentry small_copy[PyDict_MINSIZE];</span><br><span class="line"></span><br><span class="line">	assert(minused &gt;= <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Find the smallest table size &gt; minused. */</span></span><br><span class="line">	<span class="keyword">for</span> (newsize = PyDict_MINSIZE;</span><br><span class="line">	     newsize &lt;= minused &amp;&amp; newsize &gt; <span class="number">0</span>;</span><br><span class="line">	     newsize &lt;&lt;= <span class="number">1</span>)</span><br><span class="line">		;</span><br><span class="line">	<span class="keyword">if</span> (newsize &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">		PyErr_NoMemory();</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Get space for a new table. */</span></span><br><span class="line">	oldtable = mp-&gt;ma_table;</span><br><span class="line">	assert(oldtable != <span class="literal">NULL</span>);</span><br><span class="line">	is_oldtable_malloced = oldtable != mp-&gt;ma_smalltable;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (newsize == PyDict_MINSIZE) &#123;</span><br><span class="line">		<span class="comment">/* A large table is shrinking, or we can&#x27;t get any smaller. */</span></span><br><span class="line">		newtable = mp-&gt;ma_smalltable;</span><br><span class="line">		<span class="keyword">if</span> (newtable == oldtable) &#123;</span><br><span class="line">			<span class="keyword">if</span> (mp-&gt;ma_fill == mp-&gt;ma_used) &#123;</span><br><span class="line">				<span class="comment">/* No dummies, so no point doing anything. */</span></span><br><span class="line">				<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">/* We&#x27;re not going to resize it, but rebuild the</span></span><br><span class="line"><span class="comment">			   table anyway to purge old dummy entries.</span></span><br><span class="line"><span class="comment">			   Subtle:  This is *necessary* if fill==size,</span></span><br><span class="line"><span class="comment">			   as lookdict needs at least one virgin slot to</span></span><br><span class="line"><span class="comment">			   terminate failing searches.  If fill &lt; size, it&#x27;s</span></span><br><span class="line"><span class="comment">			   merely desirable, as dummies slow searches. */</span></span><br><span class="line">			assert(mp-&gt;ma_fill &gt; mp-&gt;ma_used);</span><br><span class="line">			<span class="built_in">memcpy</span>(small_copy, oldtable, <span class="keyword">sizeof</span>(small_copy));</span><br><span class="line">			oldtable = small_copy;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		newtable = PyMem_NEW(dictentry, newsize);</span><br><span class="line">		<span class="keyword">if</span> (newtable == <span class="literal">NULL</span>) &#123;</span><br><span class="line">			PyErr_NoMemory();</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Make the dict empty, using the new table. */</span></span><br><span class="line">	assert(newtable != oldtable);</span><br><span class="line">	mp-&gt;ma_table = newtable;</span><br><span class="line">	mp-&gt;ma_mask = newsize - <span class="number">1</span>;</span><br><span class="line">	<span class="built_in">memset</span>(newtable, <span class="number">0</span>, <span class="keyword">sizeof</span>(dictentry) * newsize);</span><br><span class="line">	mp-&gt;ma_used = <span class="number">0</span>;</span><br><span class="line">	i = mp-&gt;ma_fill;</span><br><span class="line">	mp-&gt;ma_fill = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Copy the data over; this is refcount-neutral for active entries;</span></span><br><span class="line"><span class="comment">	   dummy entries aren&#x27;t copied over, of course */</span></span><br><span class="line">	<span class="keyword">for</span> (ep = oldtable; i &gt; <span class="number">0</span>; ep++) &#123;</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_value != <span class="literal">NULL</span>) &#123;	<span class="comment">/* active entry */</span></span><br><span class="line">			--i;</span><br><span class="line">			insertdict_clean(mp, ep-&gt;me_key, (<span class="type">long</span>)ep-&gt;me_hash,</span><br><span class="line">					 ep-&gt;me_value);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (ep-&gt;me_key != <span class="literal">NULL</span>) &#123;	<span class="comment">/* dummy entry */</span></span><br><span class="line">			--i;</span><br><span class="line">			assert(ep-&gt;me_key == dummy);</span><br><span class="line">			Py_DECREF(ep-&gt;me_key);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">/* else key == value == NULL:  nothing to do */</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (is_oldtable_malloced)</span><br><span class="line">		PyMem_DEL(oldtable);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一开始就是获得更改之后的大小, 具体的方法就是一直翻倍, 只要没有超过那个<code>minsize</code>就一直这么做. 接着, 我们先备份就的table, 并且要知道此时是否还在使用smalltable. 接着, 如果获得的newsize就是8, 也就是说不需要继续分配内存了, 直接继续使用smalltable就可以了.然后就是直接进行一次memcpy就可以了. 否则我们就需要分配新的空间, 接着我们统一进行初始化操作, 另外设置内存, 使得这个字典对象变成一个全新的对象. 接着我们就可以把entry插回来, 如果是Active状态的 就使用一个精简版的<code>insertdict</code>来搞定. 如果是Dummy状态, 就直接把它的键值抹杀掉就好了, 因为他存在的意义就是保持探测链的连续. 最后, 为了防止内存泄露, 就清空那个外部table的内存了.</p>
+<p>这就是全部的插入过程了.</p>
+<p>接下来我们来看下删除操作, 删除操作要比插入操作简单清晰多了.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span></span><br><span class="line"><span class="title function_">PyDict_DelItem</span><span class="params">(PyObject *op, PyObject *key)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">register</span> dictobject *mp;</span><br><span class="line">	<span class="keyword">register</span> <span class="type">long</span> hash;</span><br><span class="line">	<span class="keyword">register</span> dictentry *ep;</span><br><span class="line">	PyObject *old_value, *old_key;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!PyDict_Check(op)) &#123;</span><br><span class="line">		PyErr_BadInternalCall();</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	assert(key);</span><br><span class="line">	<span class="keyword">if</span> (!PyString_CheckExact(key) ||</span><br><span class="line">	    (hash = ((PyStringObject *) key)-&gt;ob_shash) == <span class="number">-1</span>) &#123;</span><br><span class="line">		hash = PyObject_Hash(key);</span><br><span class="line">		<span class="keyword">if</span> (hash == <span class="number">-1</span>)</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	mp = (dictobject *)op;</span><br><span class="line">	ep = (mp-&gt;ma_lookup)(mp, key, hash);</span><br><span class="line">	<span class="keyword">if</span> (ep == <span class="literal">NULL</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	<span class="keyword">if</span> (ep-&gt;me_value == <span class="literal">NULL</span>) &#123;</span><br><span class="line">		set_key_error(key);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	old_key = ep-&gt;me_key;</span><br><span class="line">	Py_INCREF(dummy);</span><br><span class="line">	ep-&gt;me_key = dummy;</span><br><span class="line">	old_value = ep-&gt;me_value;</span><br><span class="line">	ep-&gt;me_value = <span class="literal">NULL</span>;</span><br><span class="line">	mp-&gt;ma_used--;</span><br><span class="line">	Py_DECREF(old_value);</span><br><span class="line">	Py_DECREF(old_key);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先就是获取Hash值, 接着根据获得的hash进行搜索, 如果没搜索到, 自然就是删除失败了, 如果搜索到了, 那就拿到了entry了, 这就好办了, 直接删除entry所维护的键值对, 并且通过减掉引用计数来抹杀掉他们. 另外一件重要的事情就是, 将这个entry标记成Dummy态.</p>
+<h2 id="缓冲-池-怎么还来"><a href="#缓冲-池-怎么还来" class="headerlink" title="缓冲..池 (怎么还来?!"></a>缓冲..池 (怎么还来?!</h2><p>OK, Python同样为字典对象设置了缓冲池, 我们之前在看创建函数的时候也注意到了那个缓冲池对象.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> MAXFREEDICTS 80</span></span><br><span class="line"><span class="type">static</span> PyDictObject *free_dicts[MAXFREEDICTS];</span><br><span class="line"><span class="type">static</span> <span class="type">int</span> num_free_dicts = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如果你记忆力足够好的话 你会发现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> MAXFREELISTS 80</span></span><br><span class="line"><span class="type">static</span> PyListObject *free_lists[MAXFREELISTS];</span><br><span class="line"><span class="type">static</span> <span class="type">int</span> num_free_lists = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<p>没错, 这根本就和列表对象的缓冲池一模一样嘛. 其实就连实现机制都是差不多的, 那就是在析构函数中将这个字典对象所维护的所有键值对销毁之后将这个字典对象本身加入到缓冲池之中. 来看代码吧:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">dict_dealloc</span><span class="params">(<span class="keyword">register</span> dictobject *mp)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">register</span> dictentry *ep;</span><br><span class="line">	Py_ssize_t fill = mp-&gt;ma_fill;</span><br><span class="line"> 	PyObject_GC_UnTrack(mp);</span><br><span class="line">	Py_TRASHCAN_SAFE_BEGIN(mp)</span><br><span class="line">	<span class="keyword">for</span> (ep = mp-&gt;ma_table; fill &gt; <span class="number">0</span>; ep++) &#123;</span><br><span class="line">		<span class="keyword">if</span> (ep-&gt;me_key) &#123;</span><br><span class="line">			--fill;</span><br><span class="line">			Py_DECREF(ep-&gt;me_key);</span><br><span class="line">			Py_XDECREF(ep-&gt;me_value);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mp-&gt;ma_table != mp-&gt;ma_smalltable)</span><br><span class="line">		PyMem_DEL(mp-&gt;ma_table);</span><br><span class="line">	<span class="keyword">if</span> (num_free_dicts &lt; MAXFREEDICTS &amp;&amp; mp-&gt;ob_type == &amp;PyDict_Type)</span><br><span class="line">		free_dicts[num_free_dicts++] = mp;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		mp-&gt;ob_type-&gt;tp_free((PyObject *)mp);</span><br><span class="line">	Py_TRASHCAN_SAFE_END(mp)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>把这个字典每一个entry的键值对引用释放, 接着释放内存归还给系统堆, 接着就把这一只丢到缓冲池之中了.  另外在创建的时候, 如果这个缓冲池中有, 就直接拿来用了:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (num_free_dicts) &#123;</span><br><span class="line">    mp = free_dicts[--num_free_dicts];</span><br><span class="line">    assert (mp != <span class="literal">NULL</span>);</span><br><span class="line">    assert (mp-&gt;ob_type == &amp;PyDict_Type);</span><br><span class="line">    _Py_NewReference((PyObject *)mp);</span><br><span class="line">    <span class="keyword">if</span> (mp-&gt;ma_fill) &#123;</span><br><span class="line">        EMPTY_TO_MINSIZE(mp);</span><br><span class="line">    &#125;</span><br><span class="line">    assert (mp-&gt;ma_used == <span class="number">0</span>);</span><br><span class="line">    assert (mp-&gt;ma_table == mp-&gt;ma_smalltable);</span><br><span class="line">    assert (mp-&gt;ma_mask == PyDict_MINSIZE - <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><p>最后还是惯例的结论验证时间, 这一次我们在字典每次插入的时候打印出当前的字典状态, 并且尝试体验下dummy状态.为了防止大量的输出(因为Python自己就会有大量的字典插入操作), 所以我们只打印拥有特殊ID的字典(我自己定义的)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>d = &#123;<span class="string">&quot;ID&quot;</span>:<span class="number">1</span>&#125;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d[<span class="number">9</span>] = <span class="number">9</span></span><br><span class="line">insert <span class="number">9</span></span><br><span class="line">  key : NULL	<span class="number">9</span>	NULL	NULL	NULL	<span class="string">&#x27;ID&#x27;</span>	NULL	NULL</span><br><span class="line">value : NULL	<span class="number">9</span>	NULL	NULL	NULL	<span class="string">&#x27;1&#x27;</span>	NULL	NULL</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d[<span class="number">17</span>] = <span class="number">17</span></span><br><span class="line">insert <span class="number">17</span></span><br><span class="line">  key : NULL	<span class="number">9</span>	NULL	NULL	NULL	<span class="string">&#x27;ID&#x27;</span>	NULL	<span class="number">17</span></span><br><span class="line">value : NULL	<span class="number">9</span>	NULL	NULL	NULL	<span class="string">&#x27;1&#x27;</span>	NULL	<span class="number">17</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">del</span> d[<span class="number">9</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d[<span class="number">17</span>] = <span class="number">16</span></span><br><span class="line">insert <span class="number">17</span></span><br><span class="line">  key : NULL	dummy	NULL	NULL	NULL	<span class="string">&#x27;ID&#x27;</span>	NULL	<span class="number">17</span></span><br><span class="line">value : NULL	NULL	NULL	NULL	NULL	<span class="string">&#x27;1&#x27;</span>	NULL	<span class="number">16</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">del</span> d[<span class="number">17</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d[<span class="number">17</span>] = <span class="number">17</span></span><br><span class="line">insert <span class="number">17</span></span><br><span class="line">  key : NULL	<span class="number">17</span>	NULL	NULL	NULL	<span class="string">&#x27;ID&#x27;</span>	NULL	dummy</span><br><span class="line">value : NULL	<span class="number">17</span>	NULL	NULL	NULL	<span class="string">&#x27;1&#x27;</span>	NULL	NULL</span><br></pre></td></tr></table></figure>
+
+<p>这就是实验的效果, 这里9和17是会出现哈希碰撞的, 从实验结果也可以看出来的.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B6%85%E7%BA%A7%E6%95%A3%E5%88%97%E8%A1%A8"><span class="toc-number">1.</span> <span class="toc-text">超级散列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AAPyDictObject%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.</span> <span class="toc-text">创建一个PyDictObject对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8PyDictObject%E4%B8%AD%E8%BF%9B%E8%A1%8C%E5%85%83%E7%B4%A0%E6%90%9C%E7%B4%A2"><span class="toc-number">3.</span> <span class="toc-text">在PyDictObject中进行元素搜索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E5%92%8C%E5%88%A0%E9%99%A4%E5%85%83%E7%B4%A0"><span class="toc-number">4.</span> <span class="toc-text">插入和删除元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%86%B2-%E6%B1%A0-%E6%80%8E%E4%B9%88%E8%BF%98%E6%9D%A5"><span class="toc-number">5.</span> <span class="toc-text">缓冲..池 (怎么还来?!</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">6.</span> <span class="toc-text">实验</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&text=Python源码阅读-内建对象(-1)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&is_video=false&description=Python源码阅读-内建对象(-1)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python源码阅读-内建对象(-1)&body=Check out this article: https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&title=Python源码阅读-内建对象(-1)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&name=Python源码阅读-内建对象(-1)&description=&lt;p&gt;这是《Python源码剖析 — 深度探索动态语言核心技术》的阅读记录.&lt;/p&gt;
+&lt;p&gt;Python中的列表对象 - &lt;code&gt;PyDictObject&lt;/code&gt;. 这就是我们研究的最后一个内建对象啦.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/03/15/Python%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB-%E5%86%85%E5%BB%BA%E5%AF%B9%E8%B1%A1-5/&t=Python源码阅读-内建对象(-1)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

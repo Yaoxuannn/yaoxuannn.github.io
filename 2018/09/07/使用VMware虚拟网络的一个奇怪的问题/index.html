@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="问题已经解决清楚, 下面记录的是我试图解决的一些过程. 顺便再来分享下过程中学习到的VMware各种上网模式的一些拓扑和原理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VMware的虚拟网络拓扑原理">
+<meta property="og:url" content="https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="问题已经解决清楚, 下面记录的是我试图解决的一些过程. 顺便再来分享下过程中学习到的VMware各种上网模式的一些拓扑和原理">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_conf.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ipconfig_conf.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/centos_conf.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/centos-ifcfg_conf.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/nmcli_conf.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/netadapter_conf.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ping1_result.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/ping2_result.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/win_info.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_hostonly.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_nat.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_bridge.png">
+<meta property="article:published_time" content="2018-09-07T14:05:25.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:48:34.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="VMware">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_conf.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>VMware的虚拟网络拓扑原理</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/09/08/Varnish%E5%88%9D%E8%A7%81/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/07/08/Python%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E5%B0%8F%E7%BB%93/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&text=VMware的虚拟网络拓扑原理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&is_video=false&description=VMware的虚拟网络拓扑原理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=VMware的虚拟网络拓扑原理&body=Check out this article: https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&name=VMware的虚拟网络拓扑原理&description=&lt;p&gt;问题已经解决清楚, 下面记录的是我试图解决的一些过程.&lt;/p&gt;
+&lt;p&gt;顺便再来分享下过程中学习到的VMware各种上网模式的一些拓扑和原理&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&t=VMware的虚拟网络拓扑原理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E8%BF%99%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98%E5%88%87%E5%85%A5"><span class="toc-number">1.</span> <span class="toc-text">从这个奇怪的问题切入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VMware%E7%9A%84%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E6%8B%93%E6%89%91%E5%92%8C%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">VMware的虚拟网络拓扑和原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Host-only"><span class="toc-number">2.1.</span> <span class="toc-text">Host-only</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NAT"><span class="toc-number">2.2.</span> <span class="toc-text">NAT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A1%A5%E6%8E%A5"><span class="toc-number">2.3.</span> <span class="toc-text">桥接</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        VMware的虚拟网络拓扑原理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-09-07T14:05:25.000Z" class="dt-published" itemprop="datePublished">2018-09-07</time>
+        
+        (Updated: <time datetime="2020-11-30T01:48:34.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/VMware/" rel="tag">VMware</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>问题已经解决清楚, 下面记录的是我试图解决的一些过程.</p>
+<p>顺便再来分享下过程中学习到的VMware各种上网模式的一些拓扑和原理</p>
+<span id="more"></span>
+
+<h2 id="从这个奇怪的问题切入"><a href="#从这个奇怪的问题切入" class="headerlink" title="从这个奇怪的问题切入"></a>从这个奇怪的问题切入</h2><p><strong>大前提: 宿主机连入Internet. 基本上的每一次操作都重启服务和虚拟机.</strong></p>
+<p>问题是这样子的,  当前我的VMware虚拟网络配置是:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_conf.png" alt="vmware_conf"></p>
+<p>如你所见, 配置的IP地址段是<code>192.168.16.2-192.168.16.254</code>. 并且使用nat方式.</p>
+<p>在命令行中能查看到这个虚拟网卡的相关信息, 能看到它的MAC地址是: <code>00-50-56-C0-00-08</code>.</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ipconfig_conf.png" alt="ipconfig_conf"></p>
+<p>接下来 我给我的CentOS7主机所配置的网卡就是上述的这一张, 如你所见:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/centos_conf.png" alt="centos_conf"></p>
+<p>而主机的配置也是标准的配置文件 但是没有声明<code>HWADDR</code>, 在NetworkManager的管理:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/centos-ifcfg_conf.png" alt="centos-ifcfg_conf"></p>
+<p>接下来一系列看起来很奇怪的事情就发生了.</p>
+<p>首先我们通过tty登录进虚拟机, 查看下当前的一些网络属性:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/nmcli_conf.png" alt="nmcli_conf"></p>
+<p>可以看到 当前的网关地址<code>192.168.16.1</code>对应的网卡地址(MAC)是<code>00-50-56-f8-7b-b1</code>. 而本机的MAC地址是<code>00-0c-29-d6-b2-26</code>. </p>
+<blockquote>
+<p>这里有一点疑问:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/netadapter_conf.png" alt="netadapter_conf"></p>
+<p>我明明配置的本机网卡MAC地址是上图那样子的, 可是结果却不是 不知道是为什么.</p>
+</blockquote>
+<p>接着我们自然是想要测试一下是否可以连通Internet:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ping1_result.png" alt="ping1_result"></p>
+<p>这个是百度的一个公网地址, 可以看到是没啥问题的. </p>
+<p>接下来就有趣了, 我们通过宿主机上的Xshell来进行连接使用 毕竟通过远程连接操作起来更方便嘛~</p>
+<p>然后登进去之后虚拟机就不能连通到Internet了 !</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/ping2_result.png" alt="ping2_result"></p>
+<p>经过一系列的尝试 我初步把问题定位在了ARP上, 因为连接前后发生的最大的变化就是网关地址的硬件地址:</p>
+<p><code>来自未来: 这图炸了 找不到原图了, 懒得复现这个问题了...</code></p>
+<p>你应该也发现了, 经过了宿主机的连接之后 新的网关地址的硬件地址变成了我们VMnet8的硬件地址:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/win_info.png" alt="win_info"></p>
+<p>到这里有点神奇, 不过能确定的一点是, 这个VMnet8能够使得我们的宿主机和虚拟机进行通信, 但是虚拟机自己的internet连接并不是通过VMnet8来实现的. </p>
+<p>不过到这里, 通过之前学到的一些网络排错知识, 已经知道问题的所在了, 那就是IP地址重复了, 换句话说, 我们的网关地址配置和宿主机的IP地址重合了, 这就导致arp的结果发生错乱以及MAC地址重写导致虚拟机无法把数据包发送出去了.</p>
+<p>经过将网关地址修改成另外一个值, 我们成功解决了这一个看起来有点奇怪的问题.</p>
+<h2 id="VMware的虚拟网络拓扑和原理"><a href="#VMware的虚拟网络拓扑和原理" class="headerlink" title="VMware的虚拟网络拓扑和原理"></a>VMware的虚拟网络拓扑和原理</h2><p>那么经过这次的问题之后, 自然我们得知道VMware是怎么控制虚拟机的网络拓扑的. 现在就VMware的三种连接方式来说下吧!</p>
+<h3 id="Host-only"><a href="#Host-only" class="headerlink" title="Host-only"></a>Host-only</h3><p>这一种看起来是最简单的一种, 从host-only模式来先说!</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_hostonly.png" alt="vmware_hostonly"></p>
+<p>在这种模式下,  我们的虚拟机以及配置的DHCP服务器全部都连接到由VMware所维护的一个虚拟交换机上, 可以看到, 在Windows网络适配器管理里面看到的那张VMnet1网卡其实就是隔断主机网络和VMware虚拟机网络的屏障了, 各个虚拟机通过VMnet1与主机进行通信, 但是没有办法通过连接主机网卡来访问互联网.</p>
+<p>那么你可能会有疑问, 如果我们配置成Host-only模式, 但是我们通过某种手段来把主机的网卡和VMnet1网卡进行桥接, 换句话说就是将主机网卡共享给VMnet1, 那我们的主机不是就可以向我们的主机一样 连通Internet了吗!</p>
+<p>没错, 这确实可行, 而且其实这几乎就是VMware的NAT实现方式, 只不过有一点点的小不同.</p>
+<h3 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h3><p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_nat.png" alt="vmware_nat"></p>
+<p>依然, 在NAT模式下, 虚拟机们还是连通道一个虚拟交换机上, 而这一次和之前不同的是, 我们多了一个虚拟的用来实现NAT功能的模块, 不仅如此, 这个模块与宿主机的网卡相连接, 从而可以让虚拟机通过这条连接访问到互联网, 值得注意的是, <strong>虚拟机和主机的通信仍然是依靠那个VMnet网卡来进行的.</strong></p>
+<p>随后我们再来看一下最易实现的一种网络连接方式 – 桥接</p>
+<h3 id="桥接"><a href="#桥接" class="headerlink" title="桥接"></a>桥接</h3><p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/vmware_bridge.png" alt="vmware_bridge"></p>
+<p>看! 当我们使用桥接的时候, 其实就是简单的在我们宿主机的网卡和我们虚拟交换机之间搭建了一条虚拟网桥来共享数据连接, 在这种模式下, 虚拟机访问宿主机和访问外网都通过这个网桥来进行.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E8%BF%99%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98%E5%88%87%E5%85%A5"><span class="toc-number">1.</span> <span class="toc-text">从这个奇怪的问题切入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VMware%E7%9A%84%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E6%8B%93%E6%89%91%E5%92%8C%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">VMware的虚拟网络拓扑和原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Host-only"><span class="toc-number">2.1.</span> <span class="toc-text">Host-only</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NAT"><span class="toc-number">2.2.</span> <span class="toc-text">NAT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A1%A5%E6%8E%A5"><span class="toc-number">2.3.</span> <span class="toc-text">桥接</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&text=VMware的虚拟网络拓扑原理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&is_video=false&description=VMware的虚拟网络拓扑原理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=VMware的虚拟网络拓扑原理&body=Check out this article: https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&title=VMware的虚拟网络拓扑原理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&name=VMware的虚拟网络拓扑原理&description=&lt;p&gt;问题已经解决清楚, 下面记录的是我试图解决的一些过程.&lt;/p&gt;
+&lt;p&gt;顺便再来分享下过程中学习到的VMware各种上网模式的一些拓扑和原理&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/09/07/%E4%BD%BF%E7%94%A8VMware%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E7%9A%84%E4%B8%80%E4%B8%AA%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98/&t=VMware的虚拟网络拓扑原理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

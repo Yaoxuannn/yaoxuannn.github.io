@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="初识OpenSSL与简单的密码学知识~">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenSSL初识与简单的网络通信安全">
+<meta property="og:url" content="https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="初识OpenSSL与简单的密码学知识~">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-09-08T14:28:07.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="OpenSSL">
+<meta property="article:tag" content="password">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>OpenSSL初识与简单的网络通信安全</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/09/%E6%9D%A5-%E5%BB%BA%E4%B8%AADNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%A7/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/07/Linux%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E6%9C%8D%E5%8A%A1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&text=OpenSSL初识与简单的网络通信安全"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&is_video=false&description=OpenSSL初识与简单的网络通信安全"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=OpenSSL初识与简单的网络通信安全&body=Check out this article: https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&name=OpenSSL初识与简单的网络通信安全&description=&lt;p&gt;初识OpenSSL与简单的密码学知识~&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&t=OpenSSL初识与简单的网络通信安全"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E9%80%9A%E4%BF%A1"><span class="toc-number">1.</span> <span class="toc-text">一次通信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E4%B8%8A%E7%9A%84%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7"><span class="toc-number">2.</span> <span class="toc-text">Linux上的通信安全工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="toc-number">2.1.</span> <span class="toc-text">对称加密</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86"><span class="toc-number">2.2.</span> <span class="toc-text">公钥加密</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%90%91%E5%8A%A0%E5%AF%86-%E7%AD%BE%E5%90%8D"><span class="toc-number">2.3.</span> <span class="toc-text">单向加密(签名)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E5%92%8CCA"><span class="toc-number">3.</span> <span class="toc-text">证书和CA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSL-x2F-TLS"><span class="toc-number">4.</span> <span class="toc-text">SSL&#x2F;TLS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenSSL"><span class="toc-number">5.</span> <span class="toc-text">OpenSSL</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        OpenSSL初识与简单的网络通信安全
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-08T14:28:07.000Z" class="dt-published" itemprop="datePublished">2017-09-08</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/OpenSSL/" rel="tag">OpenSSL</a>, <a class="p-category" href="/tags/password/" rel="tag">password</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>初识OpenSSL与简单的密码学知识~</p>
+<span id="more"></span>
+
+<h2 id="一次通信"><a href="#一次通信" class="headerlink" title="一次通信"></a>一次通信</h2><p>以Web服务为例, 当我们从应用程序向远端服务器发送一个请求的时候, 通过创建一个套接字经由随机端口发送, 经由路由设备层层转发, 服务器端监听套接字接收到之后, 应用程序将从磁盘上取得的结果通过协议栈封装成可以相应的报文格式重新托付给相同的套接字, 作为响应返回给客户端. </p>
+<p>简单来描述就是这样. 不过协议报文在我们封装完在互联网上传输时, 大多数的应用层协议以及底层的TCP层都会有问题. 在过程中我们的数据包仅仅是加了头部啥的, 他们都是<strong>明文</strong>的. 数据是原封不动的. 这样只要是网络上能够收到这个数据包的人, 他们都可以存一个副本, 接着查看内容, 一览无余.</p>
+<blockquote>
+<p>TCP的四层一次又一次的封装数据包, 那么为什么要封装这么多次呢, 为什么不能一步到位呢?</p>
+<p>分层设计的目的, 由于我们互联网通信的问题很大很复杂, 而分层就是为了把这个大问题分解成小问题, 接着每个问题单独解决.  更重要的是, 上下层之间互相服务, 他们之间通过接口进行通信. 这样的又一个好处是,如果某一层出现问题, 那么我们直接修改那一层的代码就可以了, 其他的层根本不需要知道这些. 只要提供能力没啥区别就行了. 这就类似于我们局域网通信, 不论通过双绞线或者无线调制通信, 和IP包是没有什么关系的. 底层怎么变换, 上层对于服务的接口不变, 就没有什么影响.</p>
+</blockquote>
+<p>这样太不安全啦! 那么为什么做不到加密传输呢, 为啥一定要明文呢? 我们现在使用的这些协议, 都是上个世纪的产物啊..当时能够把数据发送过去就已经很不容易了. 更别提有人要搞破坏了. 但是对于网络安全话题,美国国家安全署(NIST)定义了安全的三个方面: <strong>保密性, 完整性, 可用性</strong>. 也就是数据要保密, 未被授权的第三方不能获取到,即使被存下来也不能被获取到内容, 数据自己的完整性, 系统的完整性, 真正授权的第三方要能够收倒且获取到内容.</p>
+<p>使用我们现在的协议栈在互联网上进行通信的时候, 他们面临各种各样的攻击. 对于这种安全攻击, 主要有两种:</p>
+<ul>
+<li>被动攻击: 窃听</li>
+<li>主动攻击: 伪装, 重放, 消息篡改, 拒绝服务</li>
+</ul>
+<p>那么为了我们的安全, 我们就要尽可能的验证, 防止篡改, 拒绝接受伪装balabala, 就是要<strong>加密</strong>, 或者 <strong>数字签名</strong> 还有<strong>访问控制</strong> 以及想办法确保 <strong>数据完整性</strong> 还有所谓的 <strong>密钥认证交换机制</strong> , 还有比如 <strong>进行流量填充</strong> 还有 <strong>路由控制, 不走不安全的路由</strong>.</p>
+<p>为了实现这些安全机制, 就要有安全服务来支持, 这些服务主要包括:</p>
+<ul>
+<li>认证</li>
+<li>访问控制</li>
+<li>数据保密性<ul>
+<li>连接保密性</li>
+<li>无连接保密性</li>
+<li>选择域保密性</li>
+<li>流量保密性</li>
+</ul>
+</li>
+<li>数据完整性</li>
+<li>不可否认性</li>
+</ul>
+<p>那么为了保证这些安全服务, 就要有密码算法和协议, 常见的加密算法:</p>
+<p><strong>对称加密</strong>  <strong>公钥加密</strong>  <strong>单向加密</strong>  </p>
+<p><strong>认证协议</strong>  </p>
+<p>说到密码, 这个东西其实并不是程序员所研究的东西, 通常都是一些研究机构, 数学科学家, 军方在研究. 而各国都有自己秘而不宣的加密算法, 至于我们现在在生产环境中所使用的这些, 至少他们对于信息获取没有什么阻碍.</p>
+<h2 id="Linux上的通信安全工具"><a href="#Linux上的通信安全工具" class="headerlink" title="Linux上的通信安全工具"></a>Linux上的通信安全工具</h2><p><strong>OpenSSL</strong> 和 <strong>gpg</strong> , 后者是对pgp协议的实现. 接下来我们就说说常见的加密技术吧.</p>
+<h3 id="对称加密"><a href="#对称加密" class="headerlink" title="对称加密"></a>对称加密</h3><p>首先是<strong>对称加密</strong>技术: 其实就是说,加密和解密使用的是同一个密钥. 这里需要说的一件事是, 其实加密算法倒不是最重要的(不是说不重要啊), 算法可以公开, 但是问题在于即使知道了算法,也很难揣测出密钥是什么. 所以加密的关键是这个密钥, 比如AES-128,AES-256大家都知道算法的思想是什么,但是就是没法逆推. 那怎么解密呢, 我们有密钥啊, 对称加密使用的是一样的密钥. 这样带来的缺陷是 如果通信有n组用户, 那么就会存在n组密钥. 这样错误率就会出增大. </p>
+<p>在早期的: DES(Data Encryption Standard), 56位的密钥. 但是在2003年前后就被攻破了, 可以非常容易的进行逆推. 所以DES就进行了改进, 变成了3DES. 后来继续征集新的安全标准, 于是出现了AES, 也就是Advance ES, 这个标准支持128.192,258,384,512bits的长度. 类似的还有BlowFish, TwoFish, IDEA, RC6, CAST5(相信你都没听说过吧..现在互联网上使用最多的也就是3DES和AES了)</p>
+<p><strong>特性</strong>:</p>
+<ul>
+<li>加密解密使用的密钥相同</li>
+<li>将原始数据分割成关于固定大小的块, 逐个进行加密</li>
+</ul>
+<p><strong>缺陷</strong>:</p>
+<ul>
+<li>密钥过多</li>
+<li>密钥分发有问题</li>
+</ul>
+<h3 id="公钥加密"><a href="#公钥加密" class="headerlink" title="公钥加密"></a>公钥加密</h3><p><strong>公钥加密</strong>极大地推动了现在互联网安全. 公钥加密中, 密钥是成对出现的. 公钥(publiic key)可以公开给所有人, 私钥(private key)是自己留存的, 必须保证安全性. 但是密钥长度非常长, 通常都是1024,2048位为起点的.长则4096, 甚至还有8192位的都有. 使用公钥加密的数据, 仅仅能通过与之配对的私钥解密, 反之亦然.</p>
+<p>常见的公钥加密有三种功能: <strong>身份认证(数字签名)</strong>, <strong>密钥交换</strong>, <strong>数据加密</strong>   </p>
+<p>常见的算法有: RSA[数字签名和加密都能实现], DSA(DSS)[仅能用于数字签名], ELGamal</p>
+<p>一般情况下, 我们很少使用公钥加密来进行数据加密, 因为太长了, 光加密就需要很长时间. 基本上慢对称加密的三个数量级. 但事实上, 我们可以用来加密密钥. 这样就解决了之前对称加密的密钥分发问题. 发送方使用接收方的公钥进行密钥加密, 接着接收方使用自己的私钥进行解密. 最后就可以通过这个对称密钥进行加密通信了.</p>
+<p>那么数字签名是怎么实现的呢? 数字签名的作用是让接收方知道发送方的身份. 过程如下: 发送方在发送前使用单向计算得到自己要发送数据的特征码, 接着使用自己的私钥加密这个特征码附在数据的尾部发送过去, 接收方先尝试使用发送方的公钥进行特征码解密, 如果能解开, 就说明是发送方的发的,但是数据是否被人篡改过呢,使用同样的单向算法进行特征码计算, 最后再进行对比. 这样就可以了. </p>
+<p>但是这样就安全了吗? 不. 这一个过程依靠于最开始的公钥上.如果在通信线路上潜伏的人截取了最一开始的公钥, 而把自己的公钥发送过去的话, 后面就可想而知了.</p>
+<p>所以引入CA, 也就是证书签署机构. 在一开始扔过去的公钥不是公钥本身, 而是自己的证书.证书中有他的公钥.首先找到有公信力的组织, 证明身份, 接着机构就会扔给他证书, 证书上会有自己的戳. 所以接收方先对证书进行完整性验证, 接着验证证书机构, 最后才会接收到公钥.</p>
+<p>如果使用公钥加密, 我们只要维护一对儿密钥就行啦.</p>
+<h3 id="单向加密-签名"><a href="#单向加密-签名" class="headerlink" title="单向加密(签名)"></a>单向加密(签名)</h3><p>只能加密, 不能解密. 因为主要目的是为了提取数据指纹, 用来保证数据的完整性.</p>
+<p>特性: 定长输出(无论数据是什么长度的, 加密后的都是一样长度的), 雪崩效应(源数据的微小改变都会引起结果的巨大改变)</p>
+<p>常见的加密算法有: MD5, SHA1, SHA256, SHA512</p>
+<p>OK, 现在我们来说一种糅合了所有方法的通信过程, 让第三方无计可施!</p>
+<p>首先, 发信人使用单向加密算法提取发送数据的特征码, 接着用自己的私钥加密这段特征码并附在数据的最末尾. 接着发信人使用对称密钥加密整段数据, 包括特征码在内的全部数据 (此时收信人没有解密该数据的能力–没有密钥) 接着发信人使用收信人的公钥加密自己的对称密钥并附在这段数据的最后面. 就是这样, 发送过去.</p>
+<p>收信人收到了之后, 就可以先用自己的私钥去解密这段密钥, 如果能解密就得到了配对的对称密钥, 这样就可以继续得到数据和尾部加了密的特征码. 所以, 接着使用对方的公钥得到特征码, 再使用同样的单向加密算法进行计算, 比对指纹. 这样就完成了一次数据收发.</p>
+<p>虽然看起来已经很理想了, 但是这样的密钥交换还是不安全啊.</p>
+<p>所以我们又引入了一种密钥交换协议: IKE ( Internet Key Exchange ). </p>
+<p>另外一种常见的算法是: DH ( Deffie-Hellman ) 这个算法很独特, 密钥不需要在互联网上发送.怎么实现的呢?简单的说一下: </p>
+<p>首先, 双方为了实现密钥交换, 需要选择一个<strong>大的质数(p)<strong>和一个</strong>生成器(g)</strong> , 这个信息是公开的 通信过程也都是明文. 接着双方各生成一个保留数据(隐私, 只有自己知道, 假定为x,y) 接着发送方发送p^x%g的<strong>结果</strong>, 接收方也发送p^y%g<strong>结果</strong>. 接着双方各自进行y,x的次方运算. 结果一样! <strong>这个结果,就是密钥</strong>.</p>
+<h2 id="证书和CA"><a href="#证书和CA" class="headerlink" title="证书和CA"></a>证书和CA</h2><p>一些概念:</p>
+<p><strong>PKI</strong>: public key Insfrastructure</p>
+<p>签证机构: CA</p>
+<p>注册机构: RA</p>
+<p>证书吊销列表: CRL (revoke list)</p>
+<p>证书存取库</p>
+<p>X.509: 定义了证书的结构和认证协议标准 它规定一个证书需要包含下面的要素:</p>
+<ul>
+<li>版本号</li>
+<li>序列号</li>
+<li>签名算法ID</li>
+<li>发行者的名称</li>
+<li>有效期限</li>
+<li>主体名称(拥有者)</li>
+<li>主体公钥</li>
+<li>发行者的唯一标识</li>
+<li>主体的唯一标识</li>
+<li>扩展</li>
+<li>发行者签名</li>
+</ul>
+<p>在上面 的例子中, 我们说关于证书的一些, 其实并不能确保这些证书就是可以信任的. 所以我们还是要验证对方的证书是否可信. 首先,接收方找到证书发行者的签名. 接着,在本地我找到CA的证书使用公钥进行解密, 如果可以, 那么<strong>姑且认为这个证书可能是可信的</strong>. 接着还是, 经过了完整性验证, 才会认为是可信的.</p>
+<p>在我们的机器上有两种类型的证书: <strong>主机证书</strong>和<strong>个人证书</strong> .</p>
+<h2 id="SSL-x2F-TLS"><a href="#SSL-x2F-TLS" class="headerlink" title="SSL&#x2F;TLS"></a>SSL&#x2F;TLS</h2><p>之前说过SSL&#x2F;TLS的一些原理啥的. 但是没有怎么说说历史, 现在列在下面:</p>
+<ul>
+<li>1995, SSL 2.0, Netscape</li>
+<li>1996, SSL 3.0</li>
+<li>1999, TLS 1.0 (Transport Layer Security)</li>
+<li>2006, TLS 1.1 RFC 4346</li>
+<li>2008, TLS 1.2</li>
+<li>2015, TLS 1.3</li>
+</ul>
+<p>现在nginx等已经支持TLS1.3, 而各大现代浏览器也推出TLS1.3的实验性支持. 对于SSL&#x2F;TLS的简单理解, 可以参考之前的 <a target="_blank" rel="noopener" href="https://yaoxuannn.com/2017/04/04/%E5%AF%B9SSL-TLS%E7%9A%84%E7%90%86%E8%A7%A3/">我对SSl&#x2F;TLS的理解</a> (已更新)</p>
+<h2 id="OpenSSL"><a href="#OpenSSL" class="headerlink" title="OpenSSL"></a>OpenSSL</h2><p>OpenSSL是什么? OpenSSL开源项目, 主要包含了三个组件:</p>
+<ul>
+<li>openssl: 多用途的命令行工具</li>
+<li>libcrypto: 公共加密库</li>
+<li>libssl: 库, 实现了SSL&#x2F;TLS的功能.</li>
+</ul>
+<p>OK, 现在就来看一下我们的主角.openssl命令行客户端</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">Standard commands</span><br><span class="line">asn1parse         ca                ciphers           cms               </span><br><span class="line">crl               crl2pkcs7         dgst              dh                </span><br><span class="line">dhparam           dsa               dsaparam          ec                </span><br><span class="line">ecparam           enc               engine            errstr            </span><br><span class="line">gendh             gendsa            genpkey           genrsa            </span><br><span class="line">nseq              ocsp              passwd            pkcs12            </span><br><span class="line">pkcs7             pkcs8             pkey              pkeyparam         </span><br><span class="line">pkeyutl           prime             rand              req               </span><br><span class="line">rsa               rsautl            s_client          s_server          </span><br><span class="line">s_time            sess_id           smime             speed             </span><br><span class="line">spkac             ts                verify            version           </span><br><span class="line">x509              </span><br><span class="line"></span><br><span class="line">Message Digest commands (see the `dgst<span class="string">&#x27; command for more details)</span></span><br><span class="line"><span class="string">md2               md4               md5               rmd160            </span></span><br><span class="line"><span class="string">sha               sha1              </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Cipher commands (see the `enc&#x27;</span> <span class="built_in">command</span> <span class="keyword">for</span> more details)</span><br><span class="line">aes-128-cbc       aes-128-ecb       aes-192-cbc       aes-192-ecb       </span><br><span class="line">aes-256-cbc       aes-256-ecb       <span class="built_in">base64</span>            bf                </span><br><span class="line">bf-cbc            bf-cfb            bf-ecb            bf-ofb            </span><br><span class="line">camellia-128-cbc  camellia-128-ecb  camellia-192-cbc  camellia-192-ecb  </span><br><span class="line">camellia-256-cbc  camellia-256-ecb  cast              cast-cbc          </span><br><span class="line">cast5-cbc         cast5-cfb         cast5-ecb         cast5-ofb         </span><br><span class="line">des               des-cbc           des-cfb           des-ecb           </span><br><span class="line">des-ede           des-ede-cbc       des-ede-cfb       des-ede-ofb       </span><br><span class="line">des-ede3          des-ede3-cbc      des-ede3-cfb      des-ede3-ofb      </span><br><span class="line">des-ofb           des3              desx              idea              </span><br><span class="line">idea-cbc          idea-cfb          idea-ecb          idea-ofb          </span><br><span class="line">rc2               rc2-40-cbc        rc2-64-cbc        rc2-cbc           </span><br><span class="line">rc2-cfb           rc2-ecb           rc2-ofb           rc4               </span><br><span class="line">rc4-40            seed              seed-cbc          seed-cfb          </span><br><span class="line">seed-ecb          seed-ofb          zlib  </span><br></pre></td></tr></table></figure>
+
+<p>支持的命令和参数都超级多!  三种命令: 标准命令, 消息摘要加密命令以及加密命令. 我们使用前两个的场合多一些.</p>
+<p>来说一下加密命令enc吧, 比如说就用fstab为例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># openssl enc -e -des3 -a -salt -in fstab -out fstab.ciphertext</span></span><br><span class="line">enter des-ede3-cbc encryption password:</span><br><span class="line">Verifying - enter des-ede3-cbc encryption password:</span><br><span class="line"><span class="comment"># 上面的各项参数, -e表示加密, -d就是解密啦, 直接用-来表明自己想用的算法, -a表示使用文本格式存储而不是二进制, -salt表示加入杂质, -in和-out分别表示输入文件和输出文件</span></span><br><span class="line">[root@WWW ~]<span class="comment"># rm -rf fstab</span></span><br><span class="line">[root@WWW ~]<span class="comment"># cat fstab.ciphertext </span></span><br><span class="line">U2FsdGVkX1826FuxTIr5mUu49Nri1/xwwPeaPVy1vc8KQ8jkWPvOzvEgNLGjATM7</span><br><span class="line">YA7uVD3+FjXeykyxs8zn6alg3WZ9AbwBynaTYfJqtBytcdWv8g1pD/BbfWbZrxNI</span><br><span class="line">JUsgkz5RweTNTMQRwNBKlclhsc8H3YxXtBma6haR6kT6nR9defYzWvRXyrqzKm7d</span><br><span class="line">lJXhLXI/NXuKiZGwfjYaYRw/8u5P3gp2k4Ufux5O4co5Co8zIs1137BdzD4h2W08</span><br><span class="line">ncj9BZ316n8yeFENQGirScU+6Jnda6/qrNSHqKb8c25VKT9OtdjWpdBhboS2sUq7</span><br><span class="line">S5gAo0+Jpm2Hy8xF7RJm9LAyVImqTTn5NfOmobC9cBq3Jt9EYEgiCZI1mH0SADEX</span><br><span class="line">+iofQayvy4a04okQbt1umxW9DYzBd1cUByPGC6qXwbv3JstkzuLKMak8Lm1awGCw</span><br><span class="line">8fjVkzlbdEpGsMCJNfvNtus5gWc6oPQ6ztUvJXSi30YsKc1Kqu3c09ituMcIppwL</span><br><span class="line">oe0B3bTRpZsxRx/K8P74E61tk065C6Wgy0EwMXrN7I8q1oS2dSFtfS9on177I6p6</span><br><span class="line">VX6wVe71f7Vrnt+kCtda40dHF4CUZYppmDvR7XFFDfPuBYpjLtWLq6oQpLzwDACy</span><br><span class="line">sj70VGSCw7c=</span><br><span class="line"><span class="comment"># 现在尝试解密这个文件</span></span><br><span class="line">[root@WWW ~]<span class="comment"># openssl enc -d -des3 -a -salt -in fstab.ciphertext -out fstab</span></span><br><span class="line">enter des-ede3-cbc decryption password:</span><br><span class="line"><span class="comment"># 和刚才其实是一样的, 只要把-e改成-d就行了</span></span><br><span class="line">[root@WWW ~]<span class="comment"># cat fstab</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># /etc/fstab</span></span><br><span class="line"><span class="comment"># Created by anaconda on Sat Jun 24 22:20:05 2017</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Accessible filesystems, by reference, are maintained under &#x27;/dev/disk&#x27;</span></span><br><span class="line"><span class="comment"># See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">/dev/mapper/cl-root     /                       xfs     defaults        0 0</span><br><span class="line">UUID=74cf0f28-3566-4155-bfbb-4c9057316c8e /boot                   xfs     defaults        0 0</span><br><span class="line">/dev/mapper/cl-swap     swap                    swap    defaults        0 0</span><br></pre></td></tr></table></figure>
+
+<p>接下来介绍单向加密的工具: md5sum, sha1sum, sha224sum, sha256sum, … , openssl dgst</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># md5sum fstab</span></span><br><span class="line">06f9bcd23c16ba2f608412119455c7c6  fstab</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl dgst -md5 fstab</span></span><br><span class="line">MD5(fstab)= 06f9bcd23c16ba2f608412119455c7c6</span><br><span class="line"><span class="comment"># 如果想要把这段保存到文件中, 可以在前面加上-out参数哦</span></span><br></pre></td></tr></table></figure>
+
+<p>再认识一个MAC, 我们已经认识到很多MAC了啊hhh, 这个MAC是单向加密的一种延伸应用, 用于实现	网络传输中的数据完整性. 所使用的机制就是CBC-MAC或者HMAC(常用): 使用md5或者sha1算法. 这个玩意在集群中有很大的用处, 通过预共享密钥来证明彼此之间的身份.</p>
+<p>还可以用来生成用户密码:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># openssl passwd -1 -salt 12345</span></span><br><span class="line">Password: </span><br><span class="line">$1$12345<span class="variable">$0kPkvHGvrNZfdM</span>/fFERea.</span><br></pre></td></tr></table></figure>
+
+<p>还可以生成随机数:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># openssl rand -base64 10</span></span><br><span class="line">13eS4qtUtsu6qg==</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl rand -base64 10</span></span><br><span class="line">t3Fx1SermE8v7w==</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl rand -base64 10</span></span><br><span class="line">Q2tqCLDtAQWm9w==</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl rand -hex 10</span></span><br><span class="line">9c12c8bf820066d2e964</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl rand -hex 10</span></span><br><span class="line">5545589b64df7477e382</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl rand -hex 10</span></span><br><span class="line">f60aadd685c548cd6d25</span><br></pre></td></tr></table></figure>
+
+<p>还可以进行公钥加密&#x2F;数字签名.</p>
+<blockquote>
+<p>稍微扯一下随机数生成器.只要是软件的随机都是有规律可寻的, 不是完全的随机. 哪些才叫做随机呢?比如你敲击键盘两次的时间间隔, 磁盘IO中断的时间间隔等等. 操作系统维护了一个内存空间专门用来这些值存进去, 当程序需要随机数的时候, 就从这里取就行了. 这个空间, 我们把它叫做<strong>熵池</strong> 这个熵池已经作为一个device存在了. 所以有专门的虚拟设备random和urandom. 都位于&#x2F;dev下. 他们的主要区别就是random只从熵池中取随机数, 如果没有了就堵塞了. 但是urandom在熵池空了的情况下就会使用软件 的方式来生成伪随机数. 这样并不安全, 但不会堵塞.</p>
+</blockquote>
+<p>接下来看一下怎么产生一对密钥:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># openssl genrsa -out rsa.pri</span></span><br><span class="line">Generating RSA private key, 1024 bit long modulus</span><br><span class="line">.....................++++++</span><br><span class="line">...........++++++</span><br><span class="line">e is 65537 (0x10001)</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl genrsa -out rsa.pri 2048 # 默认是1024, 也可指定</span></span><br><span class="line">Generating RSA private key, 2048 bit long modulus</span><br><span class="line">..............+++</span><br><span class="line">.............................................+++</span><br><span class="line">e is 65537 (0x10001)</span><br><span class="line">[root@WWW ~]<span class="comment"># openssl rsa -in rsa.pri -pubout</span></span><br><span class="line">writing RSA key</span><br><span class="line">-----BEGIN PUBLIC KEY-----</span><br><span class="line">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyhOpjjSkWIRR6ONXMRcC</span><br><span class="line">GehrYjngRqQ4mWgr0LTdKispXhKBnGnu7TaVTB+lJnE1H8Rozd9oja/YCSxtfn/R</span><br><span class="line">LJWCFx3HAoL+o8JGcvRAJuqGHIoTjR5njzInsu81ZuhTVBn01TmfXlfbDLDxqWrz</span><br><span class="line">vrUg0fywBqtIbI9wzdrjuvJlIiHB8JUwkPK+CDb9htERhkhrr/X1P44XA4lI0LA2</span><br><span class="line">RIbCK7fiOVMaqQB2HA21s7dxZ5UZ7pH3KQ5SHeF+8F0/8DZZieO6Z2HCqgtwtrUN</span><br><span class="line">1Mx/wSXmO271cprwM2v01t2tqvED2OYMeN6aVsgCbdbBdVHzYgLgBxlZYE1NL0GU</span><br><span class="line">8QIDAQAB</span><br><span class="line">-----END PUBLIC KEY-----</span><br><span class="line"><span class="comment"># 这样就得到了一对公私钥</span></span><br><span class="line"><span class="comment"># 但是这个时候查看一下文件</span></span><br><span class="line">[root@WWW ~]<span class="comment"># ls rsa.pri -l</span></span><br><span class="line">-rw-r--r-- 1 root root 1675 Sep  8 12:12 rsa.pri</span><br><span class="line"><span class="comment"># 这可不行 这个文件可是最重要的私钥文件啊</span></span><br><span class="line">[root@WWW ~]<span class="comment"># chmod og= rsa.pri </span></span><br><span class="line">[root@WWW ~]<span class="comment"># ls rsa.pri -l</span></span><br><span class="line">-rw------- 1 root root 1675 Sep  8 12:12 rsa.pri</span><br><span class="line"><span class="comment"># 但是这样有点麻烦 为什么不在生成的时候就是这样呢, 所以我们可以这样执行</span></span><br><span class="line">[root@WWW ~]<span class="comment"># (umask 077 ;openssl genrsa -out rsa2.pri 2048)</span></span><br><span class="line">Generating RSA private key, 2048 bit long modulus</span><br><span class="line">..........................+++</span><br><span class="line">..+++</span><br><span class="line">e is 65537 (0x10001)</span><br><span class="line">[root@WWW ~]<span class="comment"># ls rsa2.pri -l</span></span><br><span class="line">-rw------- 1 root root 1679 Sep  8 12:20 rsa2.pri</span><br><span class="line">[root@WWW ~]<span class="comment"># umask </span></span><br><span class="line">0022</span><br><span class="line"><span class="comment"># 在子shell中进行umask临时修改, 这样就很方便啦</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E9%80%9A%E4%BF%A1"><span class="toc-number">1.</span> <span class="toc-text">一次通信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E4%B8%8A%E7%9A%84%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7"><span class="toc-number">2.</span> <span class="toc-text">Linux上的通信安全工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="toc-number">2.1.</span> <span class="toc-text">对称加密</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86"><span class="toc-number">2.2.</span> <span class="toc-text">公钥加密</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%90%91%E5%8A%A0%E5%AF%86-%E7%AD%BE%E5%90%8D"><span class="toc-number">2.3.</span> <span class="toc-text">单向加密(签名)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E5%92%8CCA"><span class="toc-number">3.</span> <span class="toc-text">证书和CA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSL-x2F-TLS"><span class="toc-number">4.</span> <span class="toc-text">SSL&#x2F;TLS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenSSL"><span class="toc-number">5.</span> <span class="toc-text">OpenSSL</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&text=OpenSSL初识与简单的网络通信安全"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&is_video=false&description=OpenSSL初识与简单的网络通信安全"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=OpenSSL初识与简单的网络通信安全&body=Check out this article: https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&title=OpenSSL初识与简单的网络通信安全"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&name=OpenSSL初识与简单的网络通信安全&description=&lt;p&gt;初识OpenSSL与简单的密码学知识~&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/08/OpenSSL%E5%88%9D%E8%AF%86%E4%B8%8E%E7%AE%80%E5%8D%95%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%AE%89%E5%85%A8/&t=OpenSSL初识与简单的网络通信安全"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="SchoolOfSRE是Linkedin的一个SRE基础教程, 里面有一些零碎知识点在这里记录下. 网络部分这个部分涉及到了DNS, UDP, HTTP, TCP, IP路由相关 DNS看的过程提到了FQDN, 一时间忘记了是啥. 再来复习一遍: FQDN: 叫做完全合格域名, fully qualified domain name. 例如, 我们的www.google.com就是FQDN, 而w">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SchoolOfSRE笔记">
+<meta property="og:url" content="https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="SchoolOfSRE是Linkedin的一个SRE基础教程, 里面有一些零碎知识点在这里记录下. 网络部分这个部分涉及到了DNS, UDP, HTTP, TCP, IP路由相关 DNS看的过程提到了FQDN, 一时间忘记了是啥. 再来复习一遍: FQDN: 叫做完全合格域名, fully qualified domain name. 例如, 我们的www.google.com就是FQDN, 而w">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://linkedin.github.io/school-of-sre/databases_sql/images/mysql_architecture.png">
+<meta property="og:image" content="https://linkedin.github.io/school-of-sre/databases_sql/images/innodb_architecture.png">
+<meta property="og:image" content="https://linkedin.github.io/school-of-sre/databases_nosql/images/vector_clocks.png">
+<meta property="article:published_time" content="2020-12-30T21:34:01.000Z">
+<meta property="article:modified_time" content="2021-02-13T00:02:24.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="SRE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://linkedin.github.io/school-of-sre/databases_sql/images/mysql_architecture.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>SchoolOfSRE笔记</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/12/23/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&text=SchoolOfSRE笔记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&is_video=false&description=SchoolOfSRE笔记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=SchoolOfSRE笔记&body=Check out this article: https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&name=SchoolOfSRE笔记&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&t=SchoolOfSRE笔记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E9%83%A8%E5%88%86"><span class="toc-number">1.</span> <span class="toc-text">网络部分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DNS"><span class="toc-number">1.1.</span> <span class="toc-text">DNS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UDP"><span class="toc-number">1.2.</span> <span class="toc-text">UDP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP"><span class="toc-number">1.3.</span> <span class="toc-text">HTTP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TCP"><span class="toc-number">1.4.</span> <span class="toc-text">TCP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Routing"><span class="toc-number">1.5.</span> <span class="toc-text">Routing</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Python%E5%92%8CWeb%E9%83%A8%E5%88%86"><span class="toc-number">2.</span> <span class="toc-text">Python和Web部分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91-VS-%E8%A7%A3%E9%87%8A"><span class="toc-number">2.1.</span> <span class="toc-text">编译 VS 解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9BPython%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">2.2.</span> <span class="toc-text">一些Python的概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python-Web%E5%92%8CFlask"><span class="toc-number">2.3.</span> <span class="toc-text">Python, Web和Flask</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#URL-Shortening-App%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.4.</span> <span class="toc-text">URL Shortening App的设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E8%8A%82"><span class="toc-number">2.5.</span> <span class="toc-text">小节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%84%E6%A8%A1%E5%8C%96%E5%BA%94%E7%94%A8"><span class="toc-number">2.5.1.</span> <span class="toc-text">规模化应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%91%E6%8E%A7%E7%AD%96%E7%95%A5"><span class="toc-number">2.5.2.</span> <span class="toc-text">监控策略</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE"><span class="toc-number">3.</span> <span class="toc-text">数据</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">3.1.</span> <span class="toc-text">关系型数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NoSQL"><span class="toc-number">3.2.</span> <span class="toc-text">NoSQL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5"><span class="toc-number">3.3.</span> <span class="toc-text">关键概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP-%E7%90%86%E8%AE%BA"><span class="toc-number">3.3.1.</span> <span class="toc-text">CAP 理论</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%A4%9A%E7%89%88%E6%9C%AC"><span class="toc-number">3.3.2.</span> <span class="toc-text">数据多版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%8C%BA"><span class="toc-number">3.3.3.</span> <span class="toc-text">分区</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%88%E5%B8%8C"><span class="toc-number">3.4.</span> <span class="toc-text">哈希</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C"><span class="toc-number">3.4.1.</span> <span class="toc-text">一致性哈希</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        SchoolOfSRE笔记
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-12-30T21:34:01.000Z" class="dt-published" itemprop="datePublished">2020-12-30</time>
+        
+        (Updated: <time datetime="2021-02-13T00:02:24.000Z" class="dt-updated" itemprop="dateModified">2021-02-12</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/SRE/" rel="tag">SRE</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p><a target="_blank" rel="noopener" href="https://linkedin.github.io/school-of-sre/">SchoolOfSRE</a>是Linkedin的一个SRE基础教程, 里面有一些零碎知识点在这里记录下.</p>
+<h1 id="网络部分"><a href="#网络部分" class="headerlink" title="网络部分"></a>网络部分</h1><p>这个部分涉及到了DNS, UDP, HTTP, TCP, IP路由相关</p>
+<h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2><p>看的过程提到了FQDN, 一时间忘记了是啥. 再来复习一遍:</p>
+<p><strong><code>FQDN</code></strong>: 叫做完全合格域名, <strong>fully qualified domain name</strong>. 例如, 我们的<code>www.google.com</code>就是FQDN, 而<code>www</code>, <code>com</code> 这些就不是.</p>
+<p>之后教程向我们展示了关于dig和tcpdump的使用, 简单展示了一个DNS查询和响应报文的样子, 然后就是dig的一些使用. 不得不说我对于这两个程序的使用还不到家, 只会最简单的使用. 记得复习. ( 而且我发现我没写过关于tcpdump的博客呢, 以后或许可以补一下 )</p>
+<p>另外忘记了SOA是什么, 在这就再把DNS的各个记录名字来补充一下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SOA	Start Of Authority, 定义域</span><br><span class="line">A	Address, 标记FQDN-&gt;IPv4</span><br><span class="line">NS	Name Server, 指向当前区域的DNS服务器地址</span><br><span class="line">MX	Mail Exchange, 邮件交换</span><br><span class="line">PTR	Pointer Record 反向解析记录, 标记IPv4-&gt;FQDN</span><br><span class="line">AAAA	标记FQDN-&gt;IPv6</span><br><span class="line">CNAME	Canonical Name 规范名, 别名记录</span><br></pre></td></tr></table></figure>
+
+<p>之后, 教程提到了对于SRE来讲DNS Infrastructure相关应用, 整理在下:</p>
+<ul>
+<li>DNS基础设施需要被优化(optimized)或者规划(scaled), 从而让其不要成为系统中的单点故障.</li>
+<li>系统内部的DNS问题会造成微服务API调用的问题以及一些连带效应</li>
+<li>DNS也可以用来做服务发现, 例如: serviceuser.internal.foo.com能够列出所有在foo.com下运行service user的实例</li>
+<li>DNS可以使用CNAME可以实现负载均衡, 以AWS&#x2F;Azure的云服务为例, 他们的CNAME指向的A记录存活时间很短(1分钟), 因为一种常见的做法是改变CNAME指向的IP地址来更新负载均衡器的IP地址.</li>
+<li>DNS还可以根据地址位置分布来为用户提供最近的服务的IP地址</li>
+<li>DNS Infra无验证, 因此响应是可以被欺骗的, 我们可以用其他协议例如HTTPS来施加保护, 也可使用DNSSEC来防止伪造的DNS响应.</li>
+<li>不新鲜的DNS Cache可能会造成某些应用请求过期的API地址, 从而调用出错.</li>
+<li>DNS的负载均衡和服务发现还需要关注TTL, 只有等到TTL之后对DNS记录进行修改之后, 才能将服务器从池子中移除. 否则一部分流量会因为服务器提前移除而访问失败.</li>
+</ul>
+<h2 id="UDP"><a href="#UDP" class="headerlink" title="UDP"></a>UDP</h2><p>书接上文, 这里UDP的例子就是通过描述DNS查询过程来讲解的. 主要是涉及到了两个系统调用, 分别是<code>sendto</code>和<code>recvfrom</code>. 客户内核随机选择一个非特权端口(&gt;1024)作为来源端口, 然后设置目标端口53, 接着将报文发送到下层.</p>
+<p>期间还涉及到了关于多路复用和解复用. 摘录一下:</p>
+<blockquote>
+<p>整体来看, 我们内核的这一过程被称为多路复用(将多个应用的数据包合并到同一个下层)和解复用(将数据包从单个下层隔离到多个应用)</p>
+</blockquote>
+<p>接着简单对比了TCP和UDP, UDP相较TCP更加轻量和用更小的开销来处理通信.</p>
+<p>那么对于SRE来讲, 和UDP相关的有哪些应用呢?</p>
+<p>如果我们的下层网络很慢而UDP层没法将数据包交付到网络层, <code>sendto</code>系统调用就会被挂起直到内核buffer清空. 这样就会影响到整体系统的吞吐能力. 此时可以考虑增加写buffer的容量, 涉及到的两个参数:</p>
+<ul>
+<li><em>net.core.wmem_max</em></li>
+<li><em>net.core.wmem_default</em></li>
+</ul>
+<p>同理, 如果上层进程读buffer的速度很慢, 内核就需要drop掉那些不能进buffer队列的数据包(因为此时的buffer满了) 而UDP不保证数据可靠交付因此就有可能造成数据丢失(除非应用层实现了相关功能), 这个时候我就要增大这两个值来为慢速应用增加缓冲:</p>
+<ul>
+<li><em>net.core.rmem_default</em></li>
+<li><em>net.core.rmem_max</em></li>
+</ul>
+<h2 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h2><p>之前我有写过关于HTTP的历史发展, 其中涉及到了一些HTTP的特性. 所以这一部分印象还是蛮深刻的, 教程涉及到的知识点也都理解. 而这部分着重笔墨在了HTTPS和Cookie上. 因此就跳过了.</p>
+<h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>这里TCP首先通过<code>tcpdump</code>抓包展示了TCP三次握手的过程, 具体解释了其中序列号演变和其中滑动窗口进行流量控制的例子. 另外, 一笔带过了TCP的拥堵控制. 最后描述了一遍TCP连接断开的过程, 这里关于断开连接一方<code>TIME_WAIT</code>的时间, 解释如下:</p>
+<blockquote>
+<p>一旦服务器端的应用请求调用close, 服务器端向客户端发送一个FIN的报文, 然后客户端进入<code>TIME_WAIT</code>的状态, 时长是2*MSS (120s), 这样该时间段内的套接字就不能再被重用, 从而防止因为一些网络中杂散的陈旧数据包到达导致TCP状态冲突.</p>
+</blockquote>
+<p>结合HTTP和TCP, 我们在SRE中的应用有这些:</p>
+<ul>
+<li>通过LB来增加HTTP的性能. 我们有多种不同的LB, 例如, L4, L7的负载均衡, DSR(Direct Server Return)</li>
+</ul>
+<blockquote>
+<p>这里穿插一下, 我第一次听说DSR, 因此去简单了解了一下. 结果看下来, 这不就是LVS的DR嘛哈哈哈, 被新名词搞傻了. 其实简单说就是为了防止LB作为系统性能瓶颈(因为在C2S, S2C路径上, 请求响应流量很多)</p>
+</blockquote>
+<ul>
+<li>微调<code>rmem</code>和<code>wmem</code>能够增加发送方和接收方的吞吐量</li>
+<li><code>net.ipv4.tcp_max_syn_backlog</code>和<code>net.core.somax.conn</code>决定在上层应用调用<code>accept</code>之前, 内核能完成多少数量的连接握手. 这对于一些单线程应用来说很有用, 一旦积压满了, 新的连接就会保持在<code>SYN_RCVD</code>的状态, 直到应用调用<code>ACCEPT</code>.</li>
+<li>当短连接很多的时候, 应用有可能会跑完所有的文件描述符, 这个时候我们需要来考察<code>net.ipv4.tcp_tw_recycle</code>和<code>net.ipv4.tcp_tw_reuse</code>从而减少呆在timewait状态的时间(当然这样像上文说的是有风险的), 让应用重用连接池而不是创建临时连接也有帮助.</li>
+<li>通过考察性能指标, 来分清楚是App的问题还是网络侧的问题能够帮助我们理解性能瓶颈所在. 例如当很多套接字在<code>close_wait</code>状态, 是应用上的问题. 而重传可能更多是网络和操作系统网络栈的问题, 而不是应用本身的问题. 通过理解基本原理能够让我们缩小范围来找到真正的系统瓶颈.</li>
+</ul>
+<h2 id="Routing"><a href="#Routing" class="headerlink" title="Routing"></a>Routing</h2><p>上面已经介绍过了应用层的HTTP, 传输层的UDP和TCP, 那么接下来就是网络层的路由部分了.</p>
+<p>这里首先是展示了内核IP路由表, 接着告诉我们匹配规则是做<code>AND</code>操作, 通过将目标IP和掩码做位与操作, 然后根据结果选择适当的路由决策. 如果所有的条目都不匹配, 就会和<code>0.0.0.0</code>做位与操作, 也就是我们所说的默认路由</p>
+<p>接着来说些应用:</p>
+<ul>
+<li>一般来说路由表是由DHCP生成的, 因此手动调整不是个好的实践.</li>
+<li>理解错误信息能够帮我们很快的定位问题</li>
+<li>在一些少见的场合, 通过检查ARP表能够帮助我们了解到是否有IP冲突</li>
+</ul>
+<h1 id="Python和Web部分"><a href="#Python和Web部分" class="headerlink" title="Python和Web部分"></a>Python和Web部分</h1><p>在这个部分, 涉及到了关于Python的一些基本概念, Web应用(以Flask框架为例), 以及一个<code>URL Shortening</code>的案例设计的例子.</p>
+<h2 id="编译-VS-解释"><a href="#编译-VS-解释" class="headerlink" title="编译 VS 解释"></a>编译 VS 解释</h2><p>首先是关于Python和C&#x2F;C++以及Java的对比. 从某种角度来说Python也算是编译语言, 他有自己的内置编译器. 类比Java, Java会生成一个<code>.class</code>的类文件, 也就是我们所熟悉的<code>bytecode</code>. 而Python也类似这样, 而区别在于Python不需要单独的编译命令来运行一个Python程序. 除此以外, Java是静态强类型语言, 因此编译器是在编译阶段可以知道类型相关的错误的, 而Python是动态语言, 直到程序运行, 我们都不会知道类型的. 因此, Python的编译器更加<code>dumb</code>一点, 或者说没有Java的严格.</p>
+<p>但不管怎么说, 当涉及到Python程序运行的时候, 一定会有编译的步骤. 这个我们在之前说Python的对象机制的时候就知道, 我们通过使用<code>dis</code>模块来查看了Python运行的<code>bytecode</code>. 这一点就和C&#x2F;C++又不一样了, C&#x2F;C++会生成机器码而不是字节码.</p>
+<p>对于机器码, 可以直接交给我们的OS来执行, 而字节码就不是这样了. 对于字节码, 我们需要对应的虚拟机, 例如JVM, CPython, Jython等等. 虚拟机也就是读取字节码并且在给定的操作系统上运行的程序.</p>
+<h2 id="一些Python的概念"><a href="#一些Python的概念" class="headerlink" title="一些Python的概念"></a>一些Python的概念</h2><p>万物皆对象, 这个在我们之前的Python源码阅读中也有所了解. 像我们的函数, 列表等数据结构, 类, 模块, 运行的函数, 都是对象. </p>
+<p>接着是关于Python执行上下文, 或者说命名空间, 我们可以通过<code>locals()</code>来查看 当前上下文中定义的对象. 接着教程像我们展示了函数作为对象的特性. 我们可以通过<code>dir()</code>来查看一个对象包含的对象.</p>
+<p>另外, 还有<code>__globals__</code>可以让我们访问到当前的全局变量.</p>
+<p>接着介绍了一个有趣的对象<code>__code__</code>, 因为万物皆对象, 包括我们的字节码也是对象, 因此我们可以通过访问<code>__code__</code>来做一些很有趣的事情, 例如获取文件名, 参数, 变量列表, 甚至字节码本身.</p>
+<p>装饰器. Python可以使用装饰器来对函数附加一些额外功能. 顺带一提, 之前有在一些面试资料里面了解到, 装饰器的设计模式叫做**<code>AOP (Aspect-oriented Programming)</code>**, 即面向切面编程. 我们在运行时, 动态将代码加入到类的指定位置, 指定方法上.</p>
+<p>接着说一些小tip类东西:</p>
+<ul>
+<li>Python构建原型非常迅速, 因为有大量的库可以使用, 这个时候我们的代码库往往会十分复杂, 类型错误就会更加普遍, 而由于Python的弱类型特性, 应付起来会更加困难.</li>
+<li>因为Python是动态类型语言, 也就意味着我们的类型是在运行时决定的, 相较其他静态类型语言, Python运行的十分缓慢.</li>
+<li>Python拥有<code>GIL</code>, 即全局解释器锁, 会成为在多核并行计算的限制因素</li>
+<li>一些鲜为人知的Python特性: <a target="_blank" rel="noopener" href="https://github.com/satwikkansal/wtfpython">https://github.com/satwikkansal/wtfpython</a></li>
+</ul>
+<h2 id="Python-Web和Flask"><a href="#Python-Web和Flask" class="headerlink" title="Python, Web和Flask"></a>Python, Web和Flask</h2><p>这一部分简单介绍了Python的Socket变成和Flask框架的简述, 没啥意思, 跳过啦</p>
+<h2 id="URL-Shortening-App的设计"><a href="#URL-Shortening-App的设计" class="headerlink" title="URL Shortening App的设计"></a>URL Shortening App的设计</h2><p>这里构建了一个十分简单的短URL应用, 仅仅实现了一个API. 我们来看看在实际编程之前做了什么事情吧.</p>
+<ol>
+<li>上层操作和API端点</li>
+</ol>
+<p>因为是一个短链接生成应用, 我们会需要一个API来生成, 以及一个API或者访问端点来接受短链接并且重定向到原始URL上去. 这两个API应该就能够让App的功能正常运行并且可以被任何人调用</p>
+<ol start="2">
+<li>如何缩短URL?</li>
+</ol>
+<p>给定一个URL, 我们需要生成一个缩短版的. 一种方法就是使用随机字符. 另外一种方案是使用某种哈希算法. 好处就是我们可以对相同的URL重用同样的短链接. 那么关于哈希碰撞呢? 即时在随机字符的方案中, 哈希碰撞也是有可能发生的. 在这种场合下, 我们也许可以通过结果前后增加随机值来避免冲突.</p>
+<p>另外, 不同哈希算法的选择也至关重要. 我们将会需要分析不同的算法. CPU需求和他们的性质.</p>
+<ol start="3">
+<li>URl合法吗?</li>
+</ol>
+<p>如何验证一个URL是合法的? 我们是需要验证还是要鉴定真实性? 常规检查可以通过正则匹配来完成. 或者我们会尝试去访问该URL. 有这些陷阱我们需要留意:</p>
+<ul>
+<li>我们需要定义那些情况是成功(建立基准线): HTTP 200?</li>
+<li>如果URL是在私有网络中呢?</li>
+<li>如果该URL暂时停止服务了呢?</li>
+</ul>
+<ol start="4">
+<li>存储</li>
+</ol>
+<p>我们如何让持久化数据呢? 有不同的数据库选择, 关系型数据库MySQL还是NoSQL数据库呢? 关于这点会在下面的数据章节详述.</p>
+<h2 id="小节"><a href="#小节" class="headerlink" title="小节"></a>小节</h2><p>在这里我们将从应用规模化, 监控策略, SRE应用三个方面来做小节</p>
+<h3 id="规模化应用"><a href="#规模化应用" class="headerlink" title="规模化应用"></a>规模化应用</h3><p>书接上文, 我们设计和开发了应用, 那么接下来我们就要简历持续集成和持续交付的流水线(pipeline). 最后我们还需要把这个应用部署到什么地方.</p>
+<p>最初我们可能就只是把应用部署到单一虚拟机或者任意云服务提供商. 但是这是一个单点(Single point of failure), 这对于SRE(或者哪怕说对于一个工程师)来说都是不允许的. 因此这里我们考虑的一个提升就是在负载均衡之后部署复数个应用实例. </p>
+<p>尽管可以增加更多的实例, 但在增加到某一个节点的时候系统的其他瓶颈会显露出来, 例如: DB或者是负载均衡本身. 那么我们怎样才能知道瓶颈在哪里呢? 我们需要能够对应用架构中的各个部分进行观察. 也就是这样, 我们才能知道指标, 从而知道哪里出了问题.  <strong>What gets measured, gets fixed!</strong></p>
+<p>更多我们后面的<code>scalability module</code>的章节涉及到.</p>
+<h3 id="监控策略"><a href="#监控策略" class="headerlink" title="监控策略"></a>监控策略</h3><p>一旦我们的应用部署好了, 他就可以正常运行了. 但是不可能永远都能正常提供服务. 既然可靠性都写在SRE的title里面了, 因此我们需要通过设计让系统运行可靠运行. 但是往往事与愿违, 机器会出问题, 磁盘可能也会有问题, 有问题的代码也有可能会被推送到生产环境上去. 而这些可能的场景都会让我们的系统更加的不可靠. 那么这个时候咋办呢? 当然就是监控了.</p>
+<p>如果系统出现问题, 或者说出现了我们没有预料到的情况, 我们希望能够收到警告. 那么以上面的例子(URL Shortening App)来说, 我们可以怎么监控呢?</p>
+<ol>
+<li>因为这是个WebApp, 接受HTTP请求, 因此我们可以关注HTTP状态码和延迟.</li>
+<li>请求容量也是我们需要关注的一个指标, 例如当app收到不寻常的请求流量, 应该有什么地方出问题了.</li>
+<li>我们也想关注一下数据库. 当然这取决于我们要选择什么样的数据库解决方案. 一般有查询时间, 容量, 磁盘使用率等等.</li>
+<li>最后, 我们还需要跑一些外部的监控, 用来模拟在用户的角度, 系统工作是否正常</li>
+</ol>
+<h1 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h1><p>在这个部分, 我们会涉及到关系型数据库和NoSQL数据库以及部分大数据的内容.</p>
+<h2 id="关系型数据库"><a href="#关系型数据库" class="headerlink" title="关系型数据库"></a>关系型数据库</h2><p>首先是对于数据库相关基本概念的介绍, 包括关系型数据库本身, 事务, ACID, CRUD操作, 约束, 索引, 连接, ACL. 接着是说了一些流行的数据库产品, 例如商业闭源的 - Oracle, MicroSoft SQL Server, IBM DB2. 开源的 - MySQL, MariaDB, PostgreSQL.</p>
+<p>以MySQL为例, 附一张MySQL的架构图:</p>
+<p><img src="https://linkedin.github.io/school-of-sre/databases_sql/images/mysql_architecture.png" alt="mysql_arch"></p>
+<p>接着是分开应用层, Server层来分别介绍各个层的组件和负责的功能.</p>
+<p>应用层: 连接处理, 身份验证, 安全. 服务器层: 服务和utils - 备份&#x2F;恢复, 复制, 集群功能等等, SQL接口, SQL分析器, 查询优化器, Cache和Buffer.</p>
+<p>另外, 我们还有这些常见存储引擎: InnoDB, MyISAM, Archive, Memory, CSV, …等等.</p>
+<blockquote>
+<p>关于MySQL的部分, 之前的文章有更详细的描述, 但是现在一看自己确实忘得也差不多了, 还是要多复习呀!</p>
+</blockquote>
+<p>以, InnoDB为例, 我们来看下架构图:</p>
+<p><img src="https://linkedin.github.io/school-of-sre/databases_sql/images/innodb_architecture.png" alt="alt_text"></p>
+<p>InnoDB是通用性最好的存储引擎了, 提供行级别的锁, ACID支持, 事务支持, 崩溃回复和多版本并发控制等特性.</p>
+<p>从架构图我们能很明显看到, InnoDB分成两个部分, 在磁盘的部分和内存中部分.</p>
+<p>在内存中, InnoDB有这些关键组件:</p>
+<ul>
+<li>缓冲池: 常用数据(表和索引)的LRU缓存</li>
+<li>变化缓冲: </li>
+<li>适应哈希索引: 通过快速哈希查找表补充InnoDB的B树索引. 未命中会有性能损失.</li>
+<li>日志缓冲: 见名知意, 存储那些没来得及刷新到磁盘的日志数据</li>
+</ul>
+<p>这些组件的内存都是可配置的, 这些配置项都会影响到InnoDB的性能. 调整这些需要对工作负载仔细的分析, 资源压测以及校准.</p>
+<p>而在磁盘上, 我们有这些:</p>
+<ul>
+<li>表文件</li>
+<li>索引文件</li>
+<li>重做日志</li>
+<li>撤销日志</li>
+</ul>
+<h2 id="NoSQL"><a href="#NoSQL" class="headerlink" title="NoSQL"></a>NoSQL</h2><p>一个常见的误解就是NoSQL数据库或者非关系型数据库不能很好的存储关系型数据. 事实上, 他们只不过是用的另外一种方式来存储数据而已, 并且, 很多NoSQL数据库在建模关系型数据上, 较之关系型数据库要更加容易, 因为关联的数据没有被分成表.</p>
+<p>我们可以把NoSQL数据库分成这四类:</p>
+<ul>
+<li>文档数据库: 文档类似JSON, 每一个文档都包含域和对应的值. 数据模型直观, 结构灵活. e.g: MongoDB, Couchbase</li>
+<li>键值对数据库: 适合存储大量数据但不需要复杂的查询. e.g: Redis</li>
+<li>宽列数据库: 数据可以存储到表, 行, 动态的列中. 灵活, 因为每一行不要求有同样的列. 常见存储IoT和用户档案数据. e.g: Cassandra, HBase</li>
+<li>图数据库: 数据被存储在节点和边中. 节点一般是信息而边一般都是存储这些节点之间的关系. e.g: Neo4j</li>
+</ul>
+<p>NoSQL简单总结下来, 有更灵活的数据模型. 并且更容易进行水平扩展, 通常能够执行比传统SQL系统更快的查询(非范式设计, 水平扩展). 另外, NoSQL通常可以直接将数据映射到对应的编程语言数据结构上(相对SQL DB而言, 不太需要ORM)</p>
+<h2 id="关键概念"><a href="#关键概念" class="headerlink" title="关键概念"></a>关键概念</h2><p>这里我们来看下对于NoSQL或者分布式系统来说的一些关键概念.</p>
+<h3 id="CAP-理论"><a href="#CAP-理论" class="headerlink" title="CAP 理论"></a>CAP 理论</h3><p>所谓CAP理论是2000年由Eric Brewer在ACM’s PODC讨论会的一个”Towards Robust Distributed Systems”提出的. 而CAP也就是<strong>一致性, 可用性, 分区容错</strong>的首字母缩略. 针对每一个特性, 来展开说.</p>
+<ul>
+<li>Consistency - 一致性</li>
+</ul>
+<p>简单的说, 这就是指系统在一次执行之后能有多一致. 所以一致就是指在一个分布式系统中, 一个源所作的写操作对该资源的所有读者可用. 不同的NoSQL系统支持不同等级的一致性.</p>
+<ul>
+<li>Availablity - 可用性</li>
+</ul>
+<p>可用性就是指系统如何应对不同系统当硬件或软件故障的时候导致失去部分功能. 而高可用就是指即使当系统中某些部分下线(故障或更新)的时候系统依然可用, 能够对读写操作进行处理.</p>
+<ul>
+<li>Partition Tolerance - 分区容错</li>
+</ul>
+<p>指系统在网络分区的情况下继续运行的能力. 简单的理解的话, 所谓分区容错性才是高可用的意思. 因为所谓网络分区就是节点之间的网络出故障而节点之间无法通信.</p>
+<p>通常来说, P我们必须满足, 那么接下来C和A就要选其一了. 而一般来说, A要比C更有价值一些. 但我们肯定也不是放着C就不管了. 通常我们会追求<strong>最终一致性</strong>.</p>
+<p>所谓最终一致性就是指随着时间推移, 所有的读者都会看到写入的内容: “在稳定状态下, 系统最后都会返回最后的写入值”. 因此在更新过程中, 客户端会面临一个数据的非一致状态.</p>
+<p>NoSQL系统支持不同等级的最终一致性模型, 例如:</p>
+<ul>
+<li>读自己写一致性</li>
+</ul>
+<p>客户端在写操作之后能立即看到其更新. 读取的内容会命中写入节点意外的节点. 但是他们不会立即看到其他客户的更新.</p>
+<ul>
+<li>会话一致性</li>
+</ul>
+<p>客户端能够在会话空间内看到对他们数据的更新. 这通常说明读操作和写操作发生在同一个服务器上. 其他使用同一个节点的客户端会收到同样的更新.</p>
+<ul>
+<li>因果一致性</li>
+</ul>
+<p>如果下列情况, 系统将会提供因果一致性: 由潜在因果关系相关的写操作会被系统的每个进程顺序看到. 不同进程会以不同的顺序观察到并发的写入操作.</p>
+<p>如果不太可能进行同分区数据的并发更新, 或者客户端不会立即依赖读到自己或者其他客户端发布的更新, 那么最终一致性会很有用.</p>
+<p>接着来看看在分布式系统中, 数据的版本管理相关.</p>
+<h3 id="数据多版本"><a href="#数据多版本" class="headerlink" title="数据多版本"></a>数据多版本</h3><p>我们的数据有可能在不同的节点中同时间被修改(假设现在是严格的一致性). 这样并发的更新修改就会出现冲突, 此时我们就需要一些冲突的解决方法, 常见的有这些:</p>
+<ul>
+<li>时间戳</li>
+</ul>
+<p>这就很简洁明了了, 我们记录修改时间然后选择最新的, 但是提到时间, 这就依赖我们infra中不同组件之间的时间同步了. 如果是异地可能会变得更麻烦点.</p>
+<ul>
+<li>乐观锁</li>
+</ul>
+<p>所谓乐观锁其实就是我们在每一次数据更新都会关联一个特殊的值, 类似计数器或者时钟. 当客户端更新数据的时候, 需要指明是哪个版本的数据. 为了达成这个效果, 我们会需要跟踪数据的更新历史.</p>
+<ul>
+<li>向量时钟</li>
+</ul>
+<p><img src="https://linkedin.github.io/school-of-sre/databases_nosql/images/vector_clocks.png" alt="alt_text"></p>
+<p>一个向量时钟是一个保存了各个节点时钟数值的元组. 在我们的分布式环境中, 每一个节点都维护这个一个代表节点自己和该节点的副本状态的时钟值的元组. 这里的时钟数值可以是从本地时钟或者版本号中获取的实时时间戳.</p>
+<p>向量时钟有这样的优点:</p>
+<ol>
+<li>对同步时钟没有依赖</li>
+<li>不需要对版本号做总排序</li>
+<li>不需要在不同的节点上存储和维护多版本的数据</li>
+</ol>
+<h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><p>当数据有了一定的量之后, 我们就需要考虑进行数据分区, 创建副本来进行负载均衡和灾难恢复了. 常见的方法思路如下:</p>
+<ul>
+<li>内存缓存 (常见的例如: memcache &#x2F; redis)</li>
+<li>集群</li>
+<li>读写分离</li>
+<li>数据分片</li>
+</ul>
+<h2 id="哈希"><a href="#哈希" class="headerlink" title="哈希"></a>哈希</h2><h3 id="一致性哈希"><a href="#一致性哈希" class="headerlink" title="一致性哈希"></a>一致性哈希</h3>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E9%83%A8%E5%88%86"><span class="toc-number">1.</span> <span class="toc-text">网络部分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DNS"><span class="toc-number">1.1.</span> <span class="toc-text">DNS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UDP"><span class="toc-number">1.2.</span> <span class="toc-text">UDP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP"><span class="toc-number">1.3.</span> <span class="toc-text">HTTP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TCP"><span class="toc-number">1.4.</span> <span class="toc-text">TCP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Routing"><span class="toc-number">1.5.</span> <span class="toc-text">Routing</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Python%E5%92%8CWeb%E9%83%A8%E5%88%86"><span class="toc-number">2.</span> <span class="toc-text">Python和Web部分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91-VS-%E8%A7%A3%E9%87%8A"><span class="toc-number">2.1.</span> <span class="toc-text">编译 VS 解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9BPython%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">2.2.</span> <span class="toc-text">一些Python的概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python-Web%E5%92%8CFlask"><span class="toc-number">2.3.</span> <span class="toc-text">Python, Web和Flask</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#URL-Shortening-App%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.4.</span> <span class="toc-text">URL Shortening App的设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E8%8A%82"><span class="toc-number">2.5.</span> <span class="toc-text">小节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%84%E6%A8%A1%E5%8C%96%E5%BA%94%E7%94%A8"><span class="toc-number">2.5.1.</span> <span class="toc-text">规模化应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%91%E6%8E%A7%E7%AD%96%E7%95%A5"><span class="toc-number">2.5.2.</span> <span class="toc-text">监控策略</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE"><span class="toc-number">3.</span> <span class="toc-text">数据</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">3.1.</span> <span class="toc-text">关系型数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NoSQL"><span class="toc-number">3.2.</span> <span class="toc-text">NoSQL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5"><span class="toc-number">3.3.</span> <span class="toc-text">关键概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP-%E7%90%86%E8%AE%BA"><span class="toc-number">3.3.1.</span> <span class="toc-text">CAP 理论</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%A4%9A%E7%89%88%E6%9C%AC"><span class="toc-number">3.3.2.</span> <span class="toc-text">数据多版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%8C%BA"><span class="toc-number">3.3.3.</span> <span class="toc-text">分区</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%88%E5%B8%8C"><span class="toc-number">3.4.</span> <span class="toc-text">哈希</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C"><span class="toc-number">3.4.1.</span> <span class="toc-text">一致性哈希</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&text=SchoolOfSRE笔记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&is_video=false&description=SchoolOfSRE笔记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=SchoolOfSRE笔记&body=Check out this article: https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&title=SchoolOfSRE笔记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&name=SchoolOfSRE笔记&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/&t=SchoolOfSRE笔记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Python的IO编程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python学习笔记(2)">
+<meta property="og:url" content="https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="Python的IO编程">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-03-19T06:01:08.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Python学习笔记(2)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/03/24/VIM%E7%BC%96%E8%BE%91%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/03/17/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&text=Python学习笔记(2)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&is_video=false&description=Python学习笔记(2)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python学习笔记(2)&body=Check out this article: https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&name=Python学习笔记(2)&description=&lt;p&gt;Python的IO编程&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&t=Python学习笔记(2)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99"><span class="toc-number">1.</span> <span class="toc-text">非二进制文件读写</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6IO%E5%92%8CFS%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">二进制IO和FS操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">序列化</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Python学习笔记(2)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-03-19T06:01:08.000Z" class="dt-published" itemprop="datePublished">2017-03-19</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Python/" rel="tag">Python</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>Python的IO编程</p>
+<span id="more"></span>
+
+<p>操作IO的能力都是有操作系统决定的，因此，使用高级语言来操作都是调用的系统所提供的低级C接口。</p>
+<p><u>本文探讨的IO都是同步的</u></p>
+<h2 id="非二进制文件读写"><a href="#非二进制文件读写" class="headerlink" title="非二进制文件读写"></a>非二进制文件读写</h2><p>向其他脚本语言相似，Python提供了以下非二进制文件IO模式：</p>
+<table>
+<thead>
+<tr>
+<th align="center">模式</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">r</td>
+<td align="center">以只读方式打开文件。文件的指针将会放在文件的开头。</td>
+</tr>
+<tr>
+<td align="center">r+</td>
+<td align="center">打开一个文件用于读写。文件指针将会放在文件的开头。</td>
+</tr>
+<tr>
+<td align="center">w</td>
+<td align="center">打开一个文件只用于写入。如果该文件已存在则将其覆盖。如果该文件不存在，创建新文件。</td>
+</tr>
+<tr>
+<td align="center">w+</td>
+<td align="center">打开一个文件用于读写。如果该文件已存在则将其覆盖。如果该文件不存在，创建新文件。</td>
+</tr>
+<tr>
+<td align="center">a</td>
+<td align="center">打开一个文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。也就是说，新的内容将会被写入到已有内容之后。如果该文件不存在，创建新文件进行写入。</td>
+</tr>
+<tr>
+<td align="center">a+</td>
+<td align="center">打开一个文件用于读写。如果该文件已存在，文件指针将会放在文件的结尾。文件打开时会是追加模式。如果该文件不存在，创建新文件用于读写。</td>
+</tr>
+</tbody></table>
+<p>总结一下就是：</p>
+<blockquote>
+<p>凡是有<code>+</code>的都可以读写，只有<code>r</code>模式不会创建新文件(抛出IOError的异常)，<code>w</code>和<code>a</code>都会在没有找到文件时创建，只有<code>a</code>的初始指针在文件尾。</p>
+</blockquote>
+<p><strong>基本API</strong>:</p>
+<p>使用<code>open()</code>来打开一个文件，从</p>
+<p><code>open(file, mode=&#39;r&#39;, buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None)</code></p>
+<p>可看出，默认的模式为 <strong>r</strong> ,必要参数只有一个，那就是<code>file</code>,这里，<code>file</code>是一个 <code>path-like-object</code> ,除了我们认为的文件，还能打开内存的字节流，网络流，自定义流等等。</p>
+<p>这样我们便得到了一个<code>file</code>对象，有用的属性有：</p>
+<table>
+<thead>
+<tr>
+<th align="center">属性</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">file.closed</td>
+<td align="center">返回文件是否已关闭</td>
+</tr>
+<tr>
+<td align="center">file.name</td>
+<td align="center">返回文件的名字</td>
+</tr>
+<tr>
+<td align="center">file.mode</td>
+<td align="center">返回文件的打开模式</td>
+</tr>
+</tbody></table>
+<p>使用<code>read()</code>来读取一个文件的全部内容，Python会把内容全部塞到内存中，用一个<code>str</code>,来表示。</p>
+<p>使用<code>write()</code>来向一个文件写入内容（<strong>注意：操作系统往往不会在我们调用write()时就立即写入数据，而是先暂存到内存中，空闲时在慢慢写入</strong>（这个可以使用交互式的Shell来试一下：执行写入操作后先不要关闭句柄，到资源管理器中看一下，会发现文件大小不变）），而当我们调用<code>close()</code>方法时，OS才会去确保把数据全部写入。</p>
+<p>因此，必须在文件使用完毕后调用<code>close()</code>方法（否则可能会有数据滞留内存中）。</p>
+<p>如果想要立即写入数据，可以调用<code>flush()</code>方法来刷新文件内部缓冲，相当于是主动写入。</p>
+<p>如果想要知道当前文件指针的位置，则可以直接调用<code>tell()</code>方法，返回文件指针的位置(字节数)</p>
+<p>使用<code>seek(offset[,from])</code>方法来调整指针位置,参数是支持负数的（也就是向前偏移）</p>
+<p>在做IO时一般都要考虑IO异常的产生，因此要进行异常处理：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">  f = <span class="built_in">open</span>(<span class="string">&quot;sample&quot;</span>, <span class="string">&quot;r&quot;</span>)</span><br><span class="line">  <span class="built_in">print</span>(f.read())</span><br><span class="line"><span class="keyword">except</span> IOError <span class="keyword">as</span> e:</span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&quot;IO异常！Error:&quot;</span>,e)</span><br><span class="line"><span class="keyword">finally</span>:</span><br><span class="line">  <span class="keyword">if</span> f:</span><br><span class="line">    f.close()</span><br></pre></td></tr></table></figure>
+
+<p>这样写比较繁琐，所以Python提供了<code>with</code>语法糖:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;sample&quot;</span>, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">  <span class="built_in">print</span>(f.read())</span><br></pre></td></tr></table></figure>
+
+<p>这样就使得代码变得更加简洁，而且不需要再调用<code>close</code>方法。</p>
+<p>回到前面说的，<code>read</code>方法会把文件全部读取到内存中，这对于小文件是可行的，如果文件大小超过了8G，内存可能就爆了。</p>
+<p>所以，最好使用反复调用<code>read(size)</code>这样来读取，或是使用<code>readlines()</code>来读取，这种读取方法非常适合读取配置文件或单行文本。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> f.readlines():</span><br><span class="line">  <span class="built_in">print</span>(line.strip())</span><br></pre></td></tr></table></figure>
+
+<h2 id="二进制IO和FS操作"><a href="#二进制IO和FS操作" class="headerlink" title="二进制IO和FS操作"></a>二进制IO和FS操作</h2><p>对于二进制的文件操作基本与之前的文件读写操作类似，不同的是访问模式：（也就是在之前的访问模式后加b &#x3D; _binary_）</p>
+<table>
+<thead>
+<tr>
+<th align="center">模式</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">rb</td>
+<td align="center">以只读方式打开一个二进制文件。文件的指针将会放在文件的开头。</td>
+</tr>
+<tr>
+<td align="center">rb+</td>
+<td align="center">打开一个二进制文件用于读写。文件指针将会放在文件的开头。</td>
+</tr>
+<tr>
+<td align="center">wb</td>
+<td align="center">打开一个二进制文件只用于写入。如果该文件已存在则将其覆盖。如果该文件不存在，创建新文件。</td>
+</tr>
+<tr>
+<td align="center">wb+</td>
+<td align="center">打开一个二进制文件用于读写。如果该文件已存在则将其覆盖。如果该文件不存在，创建新文件。</td>
+</tr>
+<tr>
+<td align="center">ab</td>
+<td align="center">打开一个二进制文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。也就是说，新的内容将会被写入到已有内容之后。如果该文件不存在，创建新文件进行写入。</td>
+</tr>
+<tr>
+<td align="center">ab+</td>
+<td align="center">打开一个二进制文件用于读写。如果该文件已存在，文件指针将会放在文件的结尾。文件打开时会是追加模式。如果该文件不存在，创建新文件用于读写。</td>
+</tr>
+</tbody></table>
+<hr>
+<p>对于文件系统的操作，主要使用一个在Python中非常重要的模块 – <code>os</code>.</p>
+<p>先来看一下<code>os</code>的一些基本属性吧。</p>
+<blockquote>
+<p>os中有很多API在Windows下是不可用的，如果想让os发挥最大作用，也许你需要一台高贵的Mac或者一只免费的penguin</p>
+</blockquote>
+<p>使用<code>os.name</code>,获取系统类型 ： 如<code>windows</code>为<code>nt</code>，<code>Linux/Unix/Mac OS X</code>为<code>posix</code></p>
+<p>使用<code>os.uname()</code>,获取详细的系统信息， 不支持<code>Windows</code></p>
+<p>os还提供了一系列的方法来进行文件系统的操作，就好像在跑命令行一样。</p>
+<p>来看一个综合实例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#! /usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> os,sys,stat</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;We are now at &quot;</span>+os.getcwd())</span><br><span class="line">os.chdir(<span class="string">&quot;./io&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;We are now at&quot;</span>,os.getcwd())</span><br><span class="line">content = os.listdir(os.getcwd())</span><br><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> content:</span><br><span class="line">    <span class="built_in">print</span>(n)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Now let us create a new dir&quot;</span>)</span><br><span class="line"><span class="keyword">try</span>:  </span><br><span class="line">    os.mkdir(<span class="string">&quot;./temp&quot;</span>)</span><br><span class="line"><span class="keyword">except</span> FileExistsError <span class="keyword">as</span> e:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[+] Error:File exists&quot;</span>)</span><br><span class="line">content = os.listdir(os.getcwd())</span><br><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> content:</span><br><span class="line">    <span class="built_in">print</span>(n)</span><br><span class="line">os.chdir(<span class="string">&quot;./temp&quot;</span>)</span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    f = <span class="built_in">open</span>(<span class="string">&quot;temp.file&quot;</span>, <span class="string">&quot;w&quot;</span>)</span><br><span class="line">    text = <span class="string">&quot;Now let us write data in this empty file&quot;</span></span><br><span class="line">    f.write(text)</span><br><span class="line">    f.flush()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Stream Position:&quot;</span>,f.tell(),<span class="string">&quot;And length of this file is &quot;</span>,<span class="built_in">len</span>(text))</span><br><span class="line">    f.seek(<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">    f.write(<span class="string">&quot;Rewrite&quot;</span>)</span><br><span class="line">    f.flush()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Let us see some info of this new file:&quot;</span>,os.stat(<span class="string">&quot;./temp.file&quot;</span>))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Now let change the mode of this file as Read-Only:&quot;</span>)</span><br><span class="line"><span class="keyword">except</span> PermissionError <span class="keyword">as</span> e:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[+] Error:&quot;</span>,e)</span><br><span class="line"><span class="keyword">finally</span>:</span><br><span class="line">    f.close()</span><br><span class="line">os.chmod(<span class="string">&quot;./temp.file&quot;</span>, stat.S_IREAD)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Now let us change the name of this file&quot;</span>)</span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    os.rename(<span class="string">&quot;./temp.file&quot;</span>, <span class="string">&quot;./temp.file.new&quot;</span>)</span><br><span class="line"><span class="keyword">except</span> (PermissionError,FileExistsError) <span class="keyword">as</span> e:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[+] Error&quot;</span>,e)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Is the change successfully?&quot;</span>)</span><br><span class="line">c = os.listdir(<span class="string">&quot;./&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(c)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Alright~Our test is nearly end.\nNow Let us remove the creations.&quot;</span>)</span><br><span class="line"><span class="keyword">if</span> c[<span class="number">0</span>] == <span class="string">&quot;temp.file.new&quot;</span>:</span><br><span class="line">    os.chmod(<span class="string">&quot;./temp.file.new&quot;</span>, stat.S_IWRITE)</span><br><span class="line">    os.remove(<span class="string">&quot;./temp.file.new&quot;</span>)</span><br><span class="line"><span class="keyword">elif</span> c[<span class="number">0</span>] == <span class="string">&quot;temp.file&quot;</span>:</span><br><span class="line">    os.chmod(<span class="string">&quot;./temp.file&quot;</span>, stat.S_IWRITE)</span><br><span class="line">    os.remove(<span class="string">&quot;./temp.file&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(os.getcwd())</span><br><span class="line">os.chdir(<span class="string">&quot;..&quot;</span>)</span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    os.remove(<span class="string">&quot;./temp&quot;</span>)</span><br><span class="line"><span class="keyword">except</span> OSError <span class="keyword">as</span> e:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[+] Error:&quot;</span>,e)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Oops..It seems that remove cannot delete a dir&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Now we use rmdir method&quot;</span>)</span><br><span class="line">os.rmdir(<span class="string">&quot;./temp&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>也许你会奇怪，为什么<code>os</code>模块中并没有封装剪切、复制这样的常用方法。(虽然我们已经可以使用上面的IO解决) </p>
+<p>铛铛铛！ Python为我们封装了<code>shutil</code>模块。<code>shutil</code>提供了各种剪切复制方法(文件，对象，信息，模式…都可以)</p>
+<p>事实上他的复制也就是我们所想的那样：</p>
+<p><strong>删除了部分注释</strong></p>
+<p>特意又去看了2.7的源码…基本没有改动(3.6增加了对文件链接的处理、以及3.3&#x2F;3.4对异常的更改)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">copyfile</span>(<span class="params">src, dst, *, follow_symlinks=<span class="literal">True</span></span>):</span><br><span class="line">    <span class="keyword">if</span> _samefile(src, dst):</span><br><span class="line">        <span class="keyword">raise</span> SameFileError(<span class="string">&quot;&#123;!r&#125; and &#123;!r&#125; are the same file&quot;</span>.<span class="built_in">format</span>(src, dst))</span><br><span class="line">    <span class="keyword">for</span> fn <span class="keyword">in</span> [src, dst]:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            st = os.stat(fn)</span><br><span class="line">        <span class="keyword">except</span> OSError:</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">if</span> stat.S_ISFIFO(st.st_mode):</span><br><span class="line">                <span class="keyword">raise</span> SpecialFileError(<span class="string">&quot;`%s` is a named pipe&quot;</span> % fn)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> follow_symlinks <span class="keyword">and</span> os.path.islink(src):</span><br><span class="line">        os.symlink(os.readlink(src), dst)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(src, <span class="string">&#x27;rb&#x27;</span>) <span class="keyword">as</span> fsrc: <span class="comment"># 文件输入流</span></span><br><span class="line">            <span class="keyword">with</span> <span class="built_in">open</span>(dst, <span class="string">&#x27;wb&#x27;</span>) <span class="keyword">as</span> fdst: <span class="comment"># 文件写入流</span></span><br><span class="line">                copyfileobj(fsrc, fdst)</span><br><span class="line">    <span class="keyword">return</span> dst</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">copyfileobj</span>(<span class="params">fsrc, fdst, length=<span class="number">16</span>*<span class="number">1024</span></span>):</span><br><span class="line">    <span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">        buf = fsrc.read(length) <span class="comment"># 读数据</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> buf:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        fdst.write(buf) <span class="comment"># 写数据</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h2><p>Python支持bytes序列化和流行的JSON序列化。</p>
+<p>本文仅谈一下JSON的部分。</p>
+<p>JSON中允许的数据类型有:</p>
+<ul>
+<li>{}</li>
+<li>[]</li>
+<li>“string”</li>
+<li>1234.56</li>
+<li>true&#x2F;false</li>
+<li>null</li>
+</ul>
+<p>与之对应的Python数据类型为：</p>
+<ul>
+<li>dict</li>
+<li>list</li>
+<li>str</li>
+<li>int&#x2F;float</li>
+<li>True&#x2F;False</li>
+<li>None</li>
+</ul>
+<p>使用起来也很容易，使用<code>dumps()</code>来进行序列化，使用<code>loads()</code>来反序列化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line">d = <span class="built_in">dict</span>(name=<span class="string">&#x27;Bob&#x27;</span>, age=<span class="number">20</span>, score=<span class="number">88</span>)</span><br><span class="line">json.dumps(d)</span><br><span class="line">&lt;<span class="keyword">return</span>&gt; <span class="string">&#x27;&#123;&quot;age&quot;: 20, &quot;score&quot;: 88, &quot;name&quot;: &quot;Bob&quot;&#125;&#x27;</span></span><br><span class="line">json_str = <span class="string">&#x27;&#123;&quot;age&quot;: 20, &quot;score&quot;: 88, &quot;name&quot;: &quot;Bob&quot;&#125;&#x27;</span></span><br><span class="line">json.loads(json_str)</span><br><span class="line">&lt;<span class="keyword">return</span>&gt; &#123;<span class="string">&#x27;age&#x27;</span>: <span class="number">20</span>, <span class="string">&#x27;score&#x27;</span>: <span class="number">88</span>, <span class="string">&#x27;name&#x27;</span>: <span class="string">&#x27;Bob&#x27;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>既然使用起来这么方便，那么我们可否直接序列化一个类的实例呢？</p>
+<p>答案是：<strong>可以</strong></p>
+<p>比方说我们定义一个Student类，有name,age,score参数，我们便可以定义这样的方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">student2dict</span>(<span class="params">std</span>):</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="string">&#x27;name&#x27;</span>: std.name,</span><br><span class="line">        <span class="string">&#x27;age&#x27;</span>: std.age,</span><br><span class="line">        <span class="string">&#x27;score&#x27;</span>: std.score</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着，在序列化该实例时，调用:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s = Student(<span class="string">&quot;Justin&quot;</span>, <span class="number">19</span>, <span class="number">100</span>)</span><br><span class="line">json.dumps(student, default=student2dict)</span><br></pre></td></tr></table></figure>
+
+<p>就可以按照我们的想法来序列化了。</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99"><span class="toc-number">1.</span> <span class="toc-text">非二进制文件读写</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6IO%E5%92%8CFS%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">二进制IO和FS操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">序列化</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&text=Python学习笔记(2)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&is_video=false&description=Python学习笔记(2)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Python学习笔记(2)&body=Check out this article: https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&title=Python学习笔记(2)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&name=Python学习笔记(2)&description=&lt;p&gt;Python的IO编程&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/03/19/Python%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-2/&t=Python学习笔记(2)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

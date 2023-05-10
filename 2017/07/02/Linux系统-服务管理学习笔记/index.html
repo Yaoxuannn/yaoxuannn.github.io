@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="学习基础的Linux的服务与进程管理.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux系统-服务管理学习笔记">
+<meta property="og:url" content="https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="学习基础的Linux的服务与进程管理.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/top.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/htop.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/signals.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.compri.png/">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/renice.png">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.comjobs.png/">
+<meta property="og:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.comvmstat.png/">
+<meta property="article:published_time" content="2017-07-02T23:18:13.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:41:14.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hexopic.s3-ap-northeast-1.amazonaws.com/top.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux系统-服务管理学习笔记</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/07/12/Linux%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/06/26/Linux%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&text=Linux系统-服务管理学习笔记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&is_video=false&description=Linux系统-服务管理学习笔记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux系统-服务管理学习笔记&body=Check out this article: https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&name=Linux系统-服务管理学习笔记&description=&lt;p&gt;学习基础的Linux的服务与进程管理.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&t=Linux系统-服务管理学习笔记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%B7%B2%E5%AE%89%E8%A3%85%E7%9A%84%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.</span> <span class="toc-text">查询已安装的服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%90%AF%E5%8A%A8%E4%B8%8E%E7%AB%AF%E5%8F%A3"><span class="toc-number">2.</span> <span class="toc-text">服务启动与端口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">服务管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E4%B9%8Bps%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">系统管理之ps命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E4%B9%8Btop%E5%91%BD%E4%BB%A4"><span class="toc-number">5.</span> <span class="toc-text">系统管理之top命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%80%E6%AD%BB%E8%BF%9B%E7%A8%8B"><span class="toc-number">6.</span> <span class="toc-text">杀死进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E8%BF%9B%E7%A8%8B%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">7.</span> <span class="toc-text">修改进程的优先级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E7%AE%A1%E7%90%86"><span class="toc-number">8.</span> <span class="toc-text">工作管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%84%B1%E7%A6%BB%E7%BB%88%E7%AB%AF"><span class="toc-number">9.</span> <span class="toc-text">脱离终端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E7%B3%BB%E7%BB%9F%E8%B5%84%E6%BA%90"><span class="toc-number">10.</span> <span class="toc-text">查询系统资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%86%B2%E5%92%8C%E7%BC%93%E5%AD%98%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">10.1.</span> <span class="toc-text">缓冲和缓存的区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="toc-number">11.</span> <span class="toc-text">定时任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-8%E7%9A%84%E8%A1%A5%E5%85%85%E5%92%8C%E6%9B%B4%E6%96%B0"><span class="toc-number">12.</span> <span class="toc-text">7.8的补充和更新</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%8D%E7%9C%8B%E7%9C%8B-x2F-proc-x2F"><span class="toc-number">12.1.</span> <span class="toc-text">再看看&#x2F;proc&#x2F;*</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%81%E5%8A%A8%E4%BA%86%E6%88%91%E7%9A%84%E6%96%87%E4%BB%B6"><span class="toc-number">12.2.</span> <span class="toc-text">谁动了我的文件 ?</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux系统-服务管理学习笔记
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-07-02T23:18:13.000Z" class="dt-published" itemprop="datePublished">2017-07-02</time>
+        
+        (Updated: <time datetime="2020-11-30T01:41:14.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>学习基础的Linux的服务与进程管理.</p>
+<span id="more"></span>
+
+<h2 id="查询已安装的服务"><a href="#查询已安装的服务" class="headerlink" title="查询已安装的服务"></a>查询已安装的服务</h2><p>首先了解系统的运行级别:</p>
+<p>参考这个: <a target="_blank" rel="noopener" href="https://yaoxuannn.com/2016/11/25/OrdersinLinux-1/#more">系统运行级别</a>.</p>
+<p>Linux的服务主要分类是这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Linux服务</span><br><span class="line"> |</span><br><span class="line"> |-RPM包默认安装的服务</span><br><span class="line"> |		|</span><br><span class="line"> |		|-独立的服务</span><br><span class="line"> |		|</span><br><span class="line"> | 		|-基于xinetd的服务</span><br><span class="line"> |</span><br><span class="line"> |-源码包安装的服务</span><br></pre></td></tr></table></figure>
+
+<p><del>查看系统中的服务可以通过<code>chkconfig --list</code>查看.(非原生服务)</del> 旧指令, 划掉!</p>
+<p>应该使用<code>systemctl list-units --type=service</code>来查看.</p>
+<p>如果要查看全部的系统的服务,使用<code>systemctl list-unit-files</code>.</p>
+<p>这里,我们并不能知道查看到的服务是否在运行当中, 但我们可以从中看出服务的自启动情况.</p>
+<p>这些数字和on&#x2F;off的键值对表明了服务是否是开机自启动的.数字代表的是系统运行状态, 而on&#x2F;off表示是否自启.</p>
+<blockquote>
+<p>chkconfig命令查询到的是RPM包安装的服务.如要查看源码包安装的服务, 一般是在&#x2F;usr&#x2F;local下.<br>而RPM包一般安装在&#x2F;etc&#x2F;init.d&#x2F;下.</p>
+</blockquote>
+<h2 id="服务启动与端口"><a href="#服务启动与端口" class="headerlink" title="服务启动与端口"></a>服务启动与端口</h2><p>一台拥有IP地址的主机可以提供许多服务，比如Web服务、FTP服务、SMTP服务等.<br>所以,主机通过”IP+端口”来区分不同的服务的.</p>
+<p>常规的服务对应端口可以在<code>/etc/services</code>里查看, 文件很大,有<code>11176</code>行.</p>
+<p>既然已经了解端口和服务的关系, 那么查看已经启动的服务的操作就会变成查看端口的操作.</p>
+<p>也就是<code>netstat</code>命令.</p>
+<p>下面好好说一下这个<code>netstat</code>.</p>
+<p>netstat主要用于查看网络后门, 说白了就是看有什么服务在占用端口, 所以也是查看启动服务的命令.</p>
+<p>常用的参数有:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-n (numberic~常用) 使用ip和port,而不进行反查.</span><br><span class="line">-a (all) 列出所有连接的状态(tcp/udp/unix socket)</span><br><span class="line">-t (TCP) </span><br><span class="line">-u (UDP)</span><br><span class="line">-p (pid~常用) 列出pid和服务名 </span><br><span class="line">-l (listen) 仅列出处于监听状态的服务连接</span><br></pre></td></tr></table></figure>
+
+<h2 id="服务管理"><a href="#服务管理" class="headerlink" title="服务管理"></a>服务管理</h2><p>(独立服务.基于xinetd服务) – RPM包</p>
+<p>学习服务管理之前, 先知道一些常用的目录, 这些都和RPM包服务有关 列举如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/ : 启动脚本的位置</span><br><span class="line">/etc/sysconfig/ : 初始化环境配置文件的位置</span><br><span class="line">/etc : 配置文件的位置</span><br><span class="line">/etc/xineted.conf : xineted的配置文件</span><br><span class="line">/etc/xineted.d/ : 基于xineted服务的启动脚本</span><br><span class="line">/var/lib : 服务产生的数据</span><br><span class="line">/var/log : 日志</span><br></pre></td></tr></table></figure>
+
+<p><del>查看.启动.终止.重启服务的命令就是 <code>service</code>, 注意, 这只是一直能够便利的方法,</del>(过时方法,划去!) 事实上Linux上应该通过绝对路径来进行启动的, 也就是那个<code>/etc/init.d/</code> </p>
+<p>启动.终止.重启服务 使用 systemctl start|stop|restart sth.service</p>
+<p>查看服务运行状态使用 systemctl status sth.service</p>
+<p>使某个服务开机(不)自启使用 systemctl enable|disable sth.service .</p>
+<h2 id="系统管理之ps命令"><a href="#系统管理之ps命令" class="headerlink" title="系统管理之ps命令"></a>系统管理之ps命令</h2><p>ps命令是查看当前进程的最常用的命令, 但它提供了BSD命令风格和Linux命令风格的两种语法,也就是<code>pa aux</code>和<code>ps -le</code>.</p>
+<p>ps会输出一大堆东西, 这些东西是什么呢? </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">USER : 表示该进程是那个用户产生的</span><br><span class="line">PID : 进程的PID号</span><br><span class="line">%CPU : 该进程占用CPU资源的百分比</span><br><span class="line">%MEM : 该进程占用物理内存的百分比</span><br><span class="line">VSZ : 该进程占用虚拟内存的大小 (KB) -- 虚拟内存集</span><br><span class="line">RSS : 该进程占用实际物理内存的大小 (KB) -- 常驻内存集</span><br><span class="line">TTY : 表示该进程运行在那个终端里 ( tty1-tty表示本地控制台(也就是在腾讯云里进行登录操作的那个窗口.), 其中tty1-tty6是字符终端, tty7是图形终端 pts0-????? 是虚拟终端(也就是XShell.PuTTy这类远程工具的窗口)), 如果是问号 ? ,说明该进程不是用户在终端内启动的, 他们是由内核直接启动的一般认为这样的进程是系统进程.</span><br><span class="line">STAT : 进程的状态 ; 常见的状态有: R (running) 运行, S (sleeping) 睡眠(可中断的), D(sleeping) 不可中断的睡眠, T (stoped) 停止, Z (Zombie) 僵尸进程,  s (session leader) 创建者, 负责引导和启动, + 前台进程, &lt; 高优先级, N 低优先级, l 多线程, 克隆线程.</span><br><span class="line">START : 该进程的启动时间</span><br><span class="line">TIME : 该进程占用的CPU运算时间, 不是系统时间</span><br><span class="line">COMMAND : 产生此进程的命令名</span><br></pre></td></tr></table></figure>
+
+<p><code>ps</code>还有一些可能会用到的命令组合.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">--------------</span><br><span class="line">ps -ef</span><br><span class="line">-e 显示所有进程</span><br><span class="line">-f 显示进程启动的详细信息</span><br><span class="line">--------------</span><br><span class="line">ps -ejH</span><br><span class="line">-j 任务控制模式输出</span><br><span class="line">-H 层级结构输出</span><br><span class="line">--------------</span><br><span class="line">ps -eFH</span><br><span class="line">-F 显示完整格式的进程信息</span><br><span class="line">--------------</span><br><span class="line">ps axZ / ps -eM</span><br><span class="line">a 与终端相关的进程</span><br><span class="line">x 与终端无关的进程</span><br><span class="line">Z 显示一列SELinux的数据, 同-M</span><br><span class="line">-M 显示一列SELinux的数据, 同Z</span><br><span class="line">--------------</span><br><span class="line"><span class="comment"># 显示某个用户的进程</span></span><br><span class="line">ps -U/-u root</span><br><span class="line">-U/-u 指明用户</span><br><span class="line">--------------</span><br></pre></td></tr></table></figure>
+
+<p>上面的输出参数是<code>BSD</code>风格的, 现在在补充一些<code>Linux</code>风格:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">NI: <span class="built_in">nice</span>值</span><br><span class="line">PRI: priority, 优先级</span><br><span class="line">PSR: processor, CPU</span><br><span class="line">RTPRIO: 实时优先级</span><br><span class="line">....man</span><br></pre></td></tr></table></figure>
+
+<p>另外一个更方便的命令是<code>pstree</code>命令, 可以以树形结构展示当前进程. 加 <code>-p</code> 参数查看pid号, 同时展开.</p>
+<h2 id="系统管理之top命令"><a href="#系统管理之top命令" class="headerlink" title="系统管理之top命令"></a>系统管理之top命令</h2><p>top命令是用来检测服务器健康的重要命令, 它的输出也是很多的, 但很多东西都和ps命令相同, 我们来看一下:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/top.png" alt="top"></p>
+<p>最上方的状态栏就是top命令的最重要的地方了, 下面的情况基本和ps命令类似, 就不在此记录了.</p>
+<p>首先, 最前面的时间是指当前的系统时间, 不是指运行了多长时间, 后面的时间(天数)表示的才是运行的时间, 例如: 这台服务器运行了36分钟.</p>
+<p>后一项表示当前登录的用户数, 后面的是平均负载.(1分钟, 5分钟, 15分钟) 平均负载的数字是指等待执行的队列</p>
+<p>事实上, 这一行的输出结果和<code>w</code>命令的输出是一样的.</p>
+<p>第二行: 分别表示系统中的进程总数以及其中的正在运行的, 睡眠的, 正在停止的, 以及僵尸进程.</p>
+<p>第三行的输出是一行很重要的信息, 即<code>CPU</code>的状态, 我们来看一下: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">%Cpu(s): 用户模式占用的CPU百分比 默认直接显示总数情况</span><br><span class="line">sy : 系统模式占用</span><br><span class="line">ni : 改变过优先级的用户进程占用</span><br><span class="line"><span class="built_in">id</span> : 空闲CPU的百分比 (重要)</span><br><span class="line">wa : 等待IO的进程 (重要)</span><br><span class="line">hi: 硬件中断</span><br><span class="line">si: 软件中断 (进行用户空间和内核空间的切换)</span><br><span class="line">st: 偷走的 (虚拟化技术)</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>t</code>命令进行显示视图的切换, 使用<code>l</code>命令来进行<code>uptime</code>信息的显示和隐藏.</p>
+<p>下面的是内存占用情况, 没有搞清楚, 暂时空缺. 等到搞清楚<code>Linux</code>的内存模型再补上.</p>
+<p>在进入<code>top</code>的界面后, 我们会发现数据是实时刷新的, 在这个交互界面中我们可以进行排序:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">P: 以占据的CPU百分比</span><br><span class="line">M: 占据内存的百分比</span><br><span class="line">T: 累计占据的CPU的时长</span><br></pre></td></tr></table></figure>
+
+<p>默认的刷新时间是<code>3.0s</code>, 我们可以在交互式的界面里使用<code>s</code>来进行调整. </p>
+<p>使用<code>m</code>可以改变内存占用情况的视图, 使用<code>1</code>命令来对<code>CPU</code>进行挨个查看.</p>
+<p>另外, 在启动时可以直接使用<code>-d #</code>来指定刷新时间. 如果在调用的时候使用了<code>-n</code>参数, 在后面跟上数字表示刷新几次之后直接退出.</p>
+<p>然而, <code>top</code>已经很有历史了, 现在我们使用一个更强的进程管理程序:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/htop.png" alt="htop"></p>
+<p>看起来就比<code>top</code>更厉害吧! 还有一些很强大的功能. 下面简单列举一下:</p>
+<p>首先..我不明白这个东西为什么要支持鼠标点击…</p>
+<p>使用<code>&lt;F5&gt;</code>或者<code>t</code>来进行树形视图和列表视图的切换,</p>
+<p>使用<code>p</code>来进行路径全名的展示&#x2F;缩略</p>
+<p><code>H/K</code>分别用来进行显示&#x2F;隐藏用户进程和内核进程</p>
+<p><strong>斜线</strong>和<strong>反斜线</strong>用来进行进程和过滤器的搜索和设定, 过滤器是动态过滤的, 很赞.</p>
+<p>使用<strong>空格</strong>进行多选, 后序可以直接进行批量的<code>kill</code>操作, 使用<code>k</code></p>
+<p>如果说你有多个<code>CPU</code>核心, 那么你可以将某个进程绑定到某个具体的<code>CPU</code>上. 使用<code>a</code>.</p>
+<p><code>htop</code>最强的的两个功能来了, 对特定进程使用<code>s</code>可以进行追踪这个进程进行了什么系统调用. 并且支持即时滚动</p>
+<p>第二个就是打开文件描述符, 尽管你可以通过打开<code>/proc</code>下的<code>fd</code>文件夹进行查看, 但是既然这个都封装了一层, 为什么不直接用呢 在相应的进程上使用<code>l</code>即可打开, 这个比直接打开<code>fd</code>可以看到更多信息哦.(比如说你不仅会看到打开的文件, 还可以查看到加载仅内存的库有哪些, 以及他们的文件类型, 以及大小)</p>
+<h2 id="杀死进程"><a href="#杀死进程" class="headerlink" title="杀死进程"></a>杀死进程</h2><p>结束进程的命令有这几个 <code>kill</code>,<code>killall</code>,<code>pkill</code>, 这些命令的作用都是类似的, 区别在于有些可以杀死单一进程, 有些可以杀死多进程, 接下来一个一个说.</p>
+<p>Linux杀死进程通过信号来执行. <code>kill -l</code>来查看所有的信号 (64个)</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/signals.png" alt="signals"></p>
+<p>其中常用的是1.2.9.15这些.</p>
+<table>
+<thead>
+<tr>
+<th align="center">信号</th>
+<th align="center">信号名称</th>
+<th align="center">信号说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">SIGHUP</td>
+<td align="center">让进程立即关闭, 然后重新读取配置文件重启(平滑重启), 举个例子就是说:正在使用服务器的用户不会被踢掉, 但是配置会重新加载</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">SIGINT</td>
+<td align="center">程序终止信号相当于是ctrl+c, (INTERRUPT)</td>
+</tr>
+<tr>
+<td align="center">9</td>
+<td align="center">SIGKILL</td>
+<td align="center">立即结束程序的运行, 这个信号不会被阻塞.处理.忽略, 一般用于强制结束终止进程</td>
+</tr>
+<tr>
+<td align="center">15</td>
+<td align="center">SIGTERM</td>
+<td align="center">正常结束进程的信号, 是kill的默认信号, 如果进程发生问题, 这个信号会失去作用, 这个时候再考虑信号9</td>
+</tr>
+</tbody></table>
+<p>使用kill杀死一个进程就像这样, <code>kill -9(signal) 15936(pid)</code>, 但要注意, 直接使用-9造成的影响和你<code>rm -f</code>是一样的,所以一定要小心.</p>
+<p>在指定信号时, 支持多种方法:</p>
+<ul>
+<li>信号的数字标识: 1 2 9</li>
+<li>信号的完整名称: <code>SIGHUP</code> </li>
+<li>信号的简写名称: <code>HUP</code></li>
+</ul>
+<p>另外, 向Apache这样的进程会有一运行就会有10几个进程, 而kill一次只能干掉一个,于是在这种情况下我们就可以使用<code>killall</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">killall -i -9 httpd</span><br></pre></td></tr></table></figure>
+<p>其中, <code>-i</code>参数表示<code>interactive</code>, 会不断询问你是否要杀死某个进程.</p>
+<p>最后再想象这样的场景; 你使用<code>last</code>命令,发现有人同时登陆了<code>terminal</code>,然后你很坏, 想把他踢了, 这个时候你想到了杀死他的登陆进程, 可是, 看的不是很清楚, 你害怕把自己给踢掉了. </p>
+<p>这个时候怎么办呢? 此时就是使用<code>pkill</code>的时候了.</p>
+<p><code>pkill</code>可以添加<code>-t</code>参数, 来指定TTY名, 这样就方便多了. 你先使用<code>w</code>命令, 非常快速的辨认出对方的TTY(因为在同一时间使用w的概率太低了), 接着你优雅的敲下了 <code>pkill -9 -t pts/1</code>.</p>
+<p>有一个和<code>pkill</code>同组的命令叫<code>pgrep</code>. 从名字就可以看出, <code>grep</code>是用来做筛选的, 那么<code>pgrep</code>就是用来进行进程筛选的.</p>
+<p>常用的选项有: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-u uid: 有效用户所指</span><br><span class="line">-U uid: 真实用户</span><br><span class="line">-t terminal 与指定终端相关的进程</span><br><span class="line">-l 显示进程名</span><br><span class="line">-a 显示完整格式的进程名</span><br><span class="line">-P pid: 显示其父进程为此处指定的进程的进程列表</span><br></pre></td></tr></table></figure>
+
+<p>有一个快速从进程名获得其所有的<code>pid</code>的命令: <code>pidof</code> , 还有一个专门用来先查看进程状态的命令: <code>pidstat</code>.</p>
+<h2 id="修改进程的优先级"><a href="#修改进程的优先级" class="headerlink" title="修改进程的优先级"></a>修改进程的优先级</h2><p>又到了使用ps的时候了, 但是注意, 如果要查看进程的优先级, 就不能使用<code>ps aux</code>了, 此时就要使用<code>ps -le</code>了.</p>
+<p>样例输出如下:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.compri.png/" alt="优先级"></p>
+<p>其中的PRI表示priority, NI表示Nice, 这两个值都是优先级, 越小表示优先级越高.</p>
+<p>最终生效的是PRI这个优先级, 而且用户不能修改PRI的值(即使是root也不能), 用户仅可以修改NI的值.</p>
+<p>最终系统计算的优先级是PRI+NI的值.</p>
+<p>而在修改NI的时候有注意事项:</p>
+<blockquote>
+<p>PRI的默认值为80<br>NI的值的范围是-20 - 19 (对于root而言)<br>而普通用户只能将其改为0-19, 而且只能调整自己的进程.</p>
+</blockquote>
+<p>这就意味, root用户才能提高进程的优先级.</p>
+<p>另外, <code>nice</code>仅仅可以修改新执行的命令的优先级, 用法类似这样: <code>nice -n -5 tar -zvxf node-v6.10.2.tar.gz</code>.</p>
+<p>这样,运行的<code>tar</code>就会以<code>75</code>的<code>PRI</code>执行.</p>
+<p>如果要改变一个已经启动的进程的优先级的话, 就要使用<code>renice</code>命令.</p>
+<p>使用的效果就像是这样:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.com/renice.png" alt="renice">.</p>
+<p>最后说一句:</p>
+<blockquote>
+<p>进程的优先级调整被用户发现的几率几乎为0, 优先级的调整更多是在嵌入式开发的上面. 所以,如果你不信仰玄学, 就不要随意修改优先级了.</p>
+</blockquote>
+<h2 id="工作管理"><a href="#工作管理" class="headerlink" title="工作管理"></a>工作管理</h2><p>工作管理指的是在单个登录终端中,同时管理多个工作的行为. </p>
+<p>简单地说,就是放入后台.</p>
+<p>想想在Windows下,放入后台其实就是指最小化, 那么为什么要最小化或者说放入后台呢?</p>
+<p>很简单, 窗口挡着我们工作或者进行其他事了. 在Linux下类比就是占着终端了.</p>
+<p>举个很简单的例子: <code>make</code>或者<code>make install</code>. 在执行完这个命令后,你是不是就被堵住了..? </p>
+<p>但是工作也不能滥用:</p>
+<ul>
+<li>首先,放在后台的工作要是能运行一段时间的, 比如ls&#x2F;pwd这种, 你放在后台没有任何意义, 因为他们很快就执行完了.<ul>
+<li>此外,后台的工作为了能够一直持续运行, 他不能与用户交互, 比如:vim, 把它放在后台同样没有意义, 因为它相当于是暂停了.</li>
+</ul>
+</li>
+</ul>
+<p>如何将一个命令放在后台工作呢?</p>
+<p>有两种方法: 一个是在命令的末尾添加 <code>&amp;</code> 号(命令继续运行), 一个是在命令执行的过程中按下 <code>ctrl+z</code>.(会使得命令暂停)</p>
+<p>接下来, 你就可以通过 <code>jobs -l</code> 来查看放入后台的工作和他们的PID号了.</p>
+<p>来看这么一种情况:</p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.comjobs.png/" alt="jobs-top"></p>
+<p>这两个top使用不同的方法进入后台, 一个是<code>ctrl+z</code>, 一个是<code>&amp;</code>, 可是神奇的是, 两个都是<code>stopped</code>的状态 ?</p>
+<blockquote>
+<p>补充: 看到+号-号了吗? 这个表明放入后台的次序, “+”号表明最近放入后台的工作, 而”-“表示倒数第二个, 恢复工作时会默认恢复”+”号也就是最近一个.</p>
+</blockquote>
+<p>原因很简单, 因为top命令的功能是将信息展示给前台, 并且提供与用户的交互(需要用户的介入). 放到后台就会直接停止.</p>
+<p>那么如何将放在后台的工作放回到前台呢?</p>
+<p>有这样的一组命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">bg</span> %n 放到后台 (将后台的Stopped的工作变为Running)</span><br><span class="line"><span class="built_in">fg</span> %n 放到前台 (将后台的工作拉回到前台).</span><br></pre></td></tr></table></figure>
+<p>这里的n是指工作号 , 也就是<code>[ ]</code>里面的数字.</p>
+<h2 id="脱离终端"><a href="#脱离终端" class="headerlink" title="脱离终端"></a>脱离终端</h2><p>假使,当我们在一个终端使用了<code>top</code>命令, 在另一个终端中我们使用<code>ps aux</code>就会看到这个进程, 那么,当第一个终端退出时, 这个<code>top</code>也将会被终止掉, 原因是因为终端在退出时, 会结束掉自己所有的进程(发送SIGHUP信号(?)), 但这并不是我们想要的, 如果这是数据库进程, 我们当然不希望它会伴随的终端的退出而结束, 所以, 这就需要脱离终端.</p>
+<p>Linux提供三种方法:</p>
+<ul>
+<li>把要后台执行的命令加入到&#x2F;etc&#x2F;rc.local中</li>
+<li>使用系统定时任务(下面会有)</li>
+<li>使用nohup命令(标准方法)</li>
+</ul>
+<p>nohup是最常用的一种.</p>
+<h2 id="查询系统资源"><a href="#查询系统资源" class="headerlink" title="查询系统资源"></a>查询系统资源</h2><blockquote>
+<p>1.vmstat</p>
+</blockquote>
+<p>这个命令整合了进程,内存,交换分区,磁盘IO,系统,CPU负载情况.</p>
+<p>vmstat [刷新延时 刷新次数] 这样的格式和<code>top</code>是很像的. 如果仅指定第一个参数, 那么<code>vmstat</code>将会一直输出下去.</p>
+<p>例如:<code>vmstat 1 3</code></p>
+<p><img src="http://hexopic.s3-ap-northeast-1.amazonaws.comvmstat.png/" alt="vmstat"></p>
+<p>这里有很多信息在之前的PS和TOP中都见过呢, 但仍然出现了一些没有见过的, 来说一下:</p>
+<ul>
+<li>procs: 进程信息字段</li>
+<li>-r : 等待运行的进程数 ( ready? )</li>
+<li>-b : 不可被唤醒的进程数量 ( 被阻塞(block)的进程  )</li>
+<li>io: 磁盘读写的信息字段</li>
+<li>b 表示block 块设备和系统的读入和写入, io的单位是kb</li>
+<li>system : 系统信息字段 </li>
+<li>in: 每秒被打断的的进程次数 (interrupt)</li>
+<li>cs: 每秒进行的进程(上下文)切换次数 (switch)</li>
+</ul>
+<p>除了直接进行简单的表查看, 可以在<code>vmstat</code> 的后面加上<code>-s</code>来显示内存的统计数据.</p>
+<p>vmstat也是一个很有年头的工具了, 一个更好用功能更强大的是<code>dstat</code>.</p>
+<blockquote>
+<p>2.dstat</p>
+</blockquote>
+<p>dstat支持很多信息的显示, 包括电池电量等等 并且 dstat支持插件机制, 这意味着dstat可以统计很多你原先想象不到的内容, 比如统计<code>MySQL</code>的连接 数据<code>IO</code>, <code>NFS</code>的各种状态, 无线网络的信号的强度, 邮件发送的队列情况等等.</p>
+<p>在dstat后面加上数字表示的信息和以往不同. 这个数字表示dstat显示<strong>累积的</strong>间隔数据, 说人话就是显示出来的信息是这X秒的<code>summary</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">-C 显示CPU信息 0, 3(哪一颗), total(所有的)</span><br><span class="line">-D total, sda(会列出单独的磁盘信息)</span><br><span class="line">-r 显示IO请求的统计数据</span><br><span class="line">-s 显示swapped相关的统计数据</span><br><span class="line">--ipc 进程间通信: 消息队列 信号量 共享内存 </span><br><span class="line">--tcp</span><br><span class="line">--udp</span><br><span class="line">--unix</span><br><span class="line">--raw</span><br><span class="line">--socket</span><br></pre></td></tr></table></figure>
+
+<p>不加参数时, <code>dstat</code>会默认加上<code>-cdngy == -a</code>, 也就是输出: <strong>Cpu, Disk, Net, paGing, sYstem</strong>.</p>
+<p><code>dstat</code>还有一个很强的功能, 那就是显示当前系统的<strong>最占用</strong>的进程是什么:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ dstat --top-cpu 最占用CPU的</span><br><span class="line">[root@WWW ~]$ dstat --top-mem 最占用内存的</span><br><span class="line">[root@WWW ~]$ dstat --top-io 最占用IO的进程</span><br><span class="line">[root@WWW ~]$ dstat --top-lantency 延迟最大的进程</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>3.dmesg</p>
+</blockquote>
+<p>这个命令可以查看开机信息.</p>
+<blockquote>
+<p>4.free</p>
+</blockquote>
+<p>查看内存使用状态.</p>
+<p>在后面加: [-b|-k|-m|-g] 可以以不同的单位显示.(默认是-k)</p>
+<p>这里要注意, free命令显示出的used不全是程序占用的, 其中还有buffer&#x2F;cache占用的, 所以真实的内存占用应该是free+buffer+cache.</p>
+<blockquote>
+<p>5.lsof</p>
+</blockquote>
+<p>列出进程打开或使用的文件信息.</p>
+<ul>
+<li>文件名 查询这个文件被什么进程调用</li>
+<li>-c (char?)字符串 仅列出以字符串开头的文件</li>
+<li>-u (user)用户名 只列出以某个用户的进程打开的文件</li>
+<li>-p (pid)PID 列出某个进程打开的文件</li>
+</ul>
+<p>这个命令的输出内容是很多的. 最好加上<code>less</code>或者<code>more</code></p>
+<blockquote>
+<p>6.pmap</p>
+</blockquote>
+<p>pmap可以显示进程占用的页实际的物理地址以及其他一些信息</p>
+<p>使用方法很简单, 直接在后面跟上进程的<code>PID</code>就好了. 选项几乎很少使用, 也就是一个<code>-x</code>用来显示详细格式的信息. </p>
+<p>其实这个命令底层调用的文件就是<code>/proc/$PID/maps</code>这个文件. 所以另外一种实现就是直接<code>cat</code>这个文件</p>
+<blockquote>
+<p>7.glances</p>
+</blockquote>
+<p>glances是一个使用<code>python</code>实现的借由<code>python-psutil</code>库实现的一个系统监视工具,基于<code>C/S</code>架构, 可以通过套接字连接到其他的主机上来监视主机状态.</p>
+<p>简单的看一下说明就可以上手了, 指令设计都很相像 </p>
+<p>可以将结果输出成<code>HTML</code>格式的文档, 使用<code>-o</code>参数来指定文件类型<code>&#123;HTML,CSV&#125;</code> 首先要指定输出的文件夹: <code>-f &lt;folder&gt;</code></p>
+<blockquote>
+<p>8.其他</p>
+</blockquote>
+<ul>
+<li>file &#x2F;bin&#x2F;ls 来判断系统位数</li>
+<li>uname 略</li>
+<li><del>lsb_release</del> CentOS7 已经没有了</li>
+<li>uptime 查看运行时间 用户数 平均负载(w&#x2F;top的第一行) </li>
+<li>cat &#x2F;proc&#x2F;cpuinfo 查看CPU的信息</li>
+<li>cat &#x2F;proc&#x2F;meminfo</li>
+</ul>
+<h3 id="缓冲和缓存的区别"><a href="#缓冲和缓存的区别" class="headerlink" title="缓冲和缓存的区别"></a>缓冲和缓存的区别</h3><p>简单来说, 缓存(cache)是用来加速数据从硬盘中读取的, 而缓冲(buffer)是用来加速数据”写入”硬盘的.</p>
+<h2 id="定时任务"><a href="#定时任务" class="headerlink" title="定时任务"></a>定时任务</h2><p>使用<code>at</code>来进行闹钟任务{我自己命的名 :)}</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ at now +2 minutes <span class="comment"># 两分钟后执行</span></span><br><span class="line">at&gt; ./date.sh &gt;&gt; ./date.log <span class="comment"># 执行内容</span></span><br><span class="line">at&gt; (ctrl+d 保存并退出)</span><br></pre></td></tr></table></figure>
+
+<p>接着可以通过<code>atq</code>查看当前服务器上待执行的任务, 如果要进行删除操作, 执行<code>at</code>.</p>
+<p>使用<code>at -c 工作号</code>来查看任务详情.</p>
+<p>删除任务使用<code>at -d</code> 等价于<code>atrm</code> </p>
+<p>设置时间,格式像这样</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HH:MM</span><br><span class="line">HH:MM YYYY-MM-DD</span><br></pre></td></tr></table></figure>
+
+<p><code>at</code>还有一些模糊时间支持, 比如: </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">noon, midnight, teatime</span><br><span class="line">tomorrow</span><br></pre></td></tr></table></figure>
+
+<p>有一个弱智版的<code>at</code>指令叫<code>batch</code>, 他会让系统自动进行选择执行时间(通常是在系统空闲的时候)</p>
+<p>Crontab定时任务请参考这个 : </p>
+<p><a target="_blank" rel="noopener" href="http://yaoxuannn.com/2017/04/27/Crontab%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/#more">Crontab学习日志</a></p>
+<h2 id="7-8的补充和更新"><a href="#7-8的补充和更新" class="headerlink" title="7.8的补充和更新"></a>7.8的补充和更新</h2><h3 id="再看看-x2F-proc-x2F"><a href="#再看看-x2F-proc-x2F" class="headerlink" title="再看看&#x2F;proc&#x2F;*"></a>再看看&#x2F;proc&#x2F;*</h3><p>现在都知道<code>/proc</code>是直接存在在内存中的, 每一个进程号对应的目录内包含的文件都是内存当中映射出来的.</p>
+<p>现在就来好好了解一下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/proc/cmdline 加载kernel的时候所执行的参数. 可以知道系统是怎么启动的.</span><br><span class="line">/proc/cpuinfo 本机的CPU参数, 包含频率 类型 和运算功能</span><br><span class="line">/proc/devices 记录了系统的主要设备的设备代号 也就是/dev/下看到的那些主设备号, 和<span class="built_in">mknod</span>有关</span><br><span class="line">/proc/filesystems 目前系统已经加载的文件系统</span><br><span class="line">/proc/interrupts 当前IRQ的分配状态</span><br><span class="line">/proc/ioports 当前系统上面各个设备的I/O地址</span><br><span class="line">/proc/kcore 内存(RAM)的大小 在64位的系统上表现为128TB, 这个是2的47次方(用户空间的大小)</span><br><span class="line">/proc/loadavg 不需要解释了吧, top/uptime等就是从这里获得的数值</span><br><span class="line">/proc/meminfo 内存使用信息</span><br><span class="line">/proc/modules 当前加载的模块信息, 也可以认为是驱动</span><br><span class="line">/proc/mounts 系统挂载的信息, 你会发现和mount命令是一样的输出</span><br><span class="line">/proc/swaps 系统加载的交换分区的信息</span><br><span class="line">/proc/partition 当前系统的分区情况</span><br><span class="line">/proc/pci 每个PCI总线上面的设备的详细情况.(但不知道为什么,在我的机子上没有这个文件, 但是使用lspci会看到结果, 原来是整合到了/proc/bus/下面了)</span><br><span class="line">/proc/uptime 和使用<span class="built_in">uptime</span>的输出结果是一致的</span><br><span class="line">/proc/version 内核的版本</span><br><span class="line">/proc/bus/* 一些总线的的设备, 还有USB的设备记录</span><br></pre></td></tr></table></figure>
+
+<h3 id="谁动了我的文件"><a href="#谁动了我的文件" class="headerlink" title="谁动了我的文件 ?"></a>谁动了我的文件 ?</h3><p>在一些后台进程出现错误或者当执行某些命令的时候显示<code>device is busy</code> 就要看看到底是什么东西在占用次文件或设备. 如同在<code>Windows</code>下, 删除某些文件时候, 会报正在使用的异常, 此时就需要进行解锁类似.</p>
+<p><code>Linux</code>下查看文件占用的命令有二: <code>fuser</code> 和 <code>lsof</code></p>
+<p><strong>fuser</strong> 是通过文件查询正在使用该文件的程序.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ fuser [-umv] [-k [i] [signal]] file</span><br><span class="line">-u 不仅列出进程的PID, 还列出其所有者</span><br><span class="line">-m 将后面的文件名直接上提这个文件系统的最顶层, 对于umount很有效</span><br><span class="line">-v 可以显示具体的命令, 并且会美化格式</span><br><span class="line">-k 在找到之后直接给予SIGKILL</span><br><span class="line">-i 和 -k 配合, 询问是否执行</span><br><span class="line">-signal 默认是9号</span><br></pre></td></tr></table></figure>
+
+<p>现在实际试一次:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ fuser -uv /etc</span><br><span class="line"><span class="comment"># 没有任何显示, 这是因为没有任何进程在使用/etc这个目录, 那/etc下的文件呢?</span></span><br><span class="line">[root@WWW ~]$ fuser -uvm /etc</span><br><span class="line">                     USER        PID ACCESS COMMAND</span><br><span class="line">/etc:                root     kernel mount (root)/</span><br><span class="line">                     root          1 .rce. (root)systemd</span><br><span class="line">...(omitted)</span><br><span class="line">                     root        578 Frce. (root)auditd</span><br><span class="line">                     polkitd     597 .rce. (polkitd)polkitd</span><br><span class="line">                     root        599 .rce. (root)systemd-logind</span><br><span class="line">                     dbus        605 .rce. (dbus)dbus-daemon</span><br><span class="line">                     chrony      607 .rce. (chrony)chronyd</span><br><span class="line">                     root        630 Frce. (root)firewalld</span><br><span class="line">                     root        631 .rce. (root)crond</span><br><span class="line">                     root        632 .rce. (root)atd</span><br><span class="line">                     root        748 .rce. (root)NetworkManager</span><br><span class="line">                     root       1023 Frce. (root)tuned</span><br><span class="line">                     root       1025 .rce. (root)sshd</span><br><span class="line">                     root       1026 Frce. (root)rsyslogd</span><br><span class="line">...(omited)</span><br></pre></td></tr></table></figure>
+
+<p>这些字母代表的权限都是什么意思啊?</p>
+<p><strong>c:</strong> 此进程在当前的目录下(非子目录)</p>
+<p><strong>e:</strong> 可被触发成执行状态</p>
+<p><strong>f:</strong> 是一个被打开的文件</p>
+<p><strong>r:</strong> 代表顶层目录</p>
+<p><strong>F:</strong> 该文件被打开了, 不过在等待回应中</p>
+<p><strong>m:</strong> 可能被分享的动态函数库</p>
+<p>另外一个比较常用的就是<code>lsof</code>了</p>
+<p><code>lsof</code>是列出进程所打开的文件名</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ lsof [-aUu] [+d]</span><br><span class="line">-a 多项数据需要同时成立的时候才显示出结果</span><br><span class="line">-U 仅列出Unix like系统的Socket文件类型</span><br><span class="line">-u 后面接username 列出该用户进程所打开的文件</span><br><span class="line">+d 目录文件, 找出某个目录下面的文件</span><br></pre></td></tr></table></figure>
+
+<p>如果什么参数都没有加, 那么默认会输出所有的进程所打开的所有文件, 这样的输出量是可怕的.因此一般都是有目的的来查找的.</p>
+<p>示例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]$ lsof -u root -a -U</span><br><span class="line">COMMAND    PID USER   FD   TYPE             DEVICE SIZE/OFF  NODE NAME</span><br><span class="line">systemd      1 root   12u  unix 0xffff88003615e400      0t0 11206 /run/systemd/private</span><br><span class="line">systemd      1 root   20u  unix 0xffff8800365c8c00      0t0 11250 /run/lvm/lvmpolld.socket</span><br><span class="line">systemd      1 root   21u  unix 0xffff88003615fc00      0t0 11259 /run/systemd/shutdownd</span><br><span class="line">systemd      1 root   22u  unix 0xffff8801161ae800      0t0  6804 /run/systemd/notify</span><br><span class="line">systemd      1 root   23u  unix 0xffff8801161aec00      0t0  6806 /run/systemd/cgroups-agent</span><br><span class="line">....(omitted)</span><br><span class="line"><span class="comment"># 如果这里不加-a参数输出的结果是不一样的哦, 这是因为默认是取并集, -a表示取交集</span></span><br><span class="line">[root@WWW ~]$ lsof +d /dev</span><br><span class="line">COMMAND    PID    USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME</span><br><span class="line">systemd      1    root    0u   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd      1    root    1u   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd      1    root    2u   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd      1    root   28u  unix 0xffff8801161adc00      0t0 6829 /dev/log</span><br><span class="line">systemd      1    root   34r   CHR             10,235      0t0 6465 /dev/autofs</span><br><span class="line">kdevtmpfs   12    root  cwd    DIR                0,5     3040    3 /dev</span><br><span class="line">kdevtmpfs   12    root  rtd    DIR                0,5     3040    3 /dev</span><br><span class="line">systemd-j  473    root    0r   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd-j  473    root    1w   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd-j  473    root    2w   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd-j  473    root    5u  unix 0xffff8801161adc00      0t0 6829 /dev/log</span><br><span class="line">systemd-j  473    root    6w   CHR               1,11      0t0 4794 /dev/kmsg</span><br><span class="line">systemd-j  473    root    9u   CHR               1,11      0t0 4794 /dev/kmsg</span><br><span class="line">lvmetad    488    root    0r   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd-u  504    root    0r   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">auditd     576    root    0u   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">auditd     576    root    1u   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">auditd     576    root    2u   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">dbus-daem  596    dbus    0r   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd-l  605    root    0r   CHR                1,3      0t0 4788 /dev/null</span><br><span class="line">systemd-l  605    root   17u   CHR                4,6      0t0 4808 /dev/tty6</span><br><span class="line">...(omitted)</span><br><span class="line"><span class="comment"># 会发现大量的进程都在使用/dev/null</span></span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%B7%B2%E5%AE%89%E8%A3%85%E7%9A%84%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.</span> <span class="toc-text">查询已安装的服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%90%AF%E5%8A%A8%E4%B8%8E%E7%AB%AF%E5%8F%A3"><span class="toc-number">2.</span> <span class="toc-text">服务启动与端口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">服务管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E4%B9%8Bps%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">系统管理之ps命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E4%B9%8Btop%E5%91%BD%E4%BB%A4"><span class="toc-number">5.</span> <span class="toc-text">系统管理之top命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%80%E6%AD%BB%E8%BF%9B%E7%A8%8B"><span class="toc-number">6.</span> <span class="toc-text">杀死进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E8%BF%9B%E7%A8%8B%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">7.</span> <span class="toc-text">修改进程的优先级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E7%AE%A1%E7%90%86"><span class="toc-number">8.</span> <span class="toc-text">工作管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%84%B1%E7%A6%BB%E7%BB%88%E7%AB%AF"><span class="toc-number">9.</span> <span class="toc-text">脱离终端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E7%B3%BB%E7%BB%9F%E8%B5%84%E6%BA%90"><span class="toc-number">10.</span> <span class="toc-text">查询系统资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%86%B2%E5%92%8C%E7%BC%93%E5%AD%98%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">10.1.</span> <span class="toc-text">缓冲和缓存的区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="toc-number">11.</span> <span class="toc-text">定时任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-8%E7%9A%84%E8%A1%A5%E5%85%85%E5%92%8C%E6%9B%B4%E6%96%B0"><span class="toc-number">12.</span> <span class="toc-text">7.8的补充和更新</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%8D%E7%9C%8B%E7%9C%8B-x2F-proc-x2F"><span class="toc-number">12.1.</span> <span class="toc-text">再看看&#x2F;proc&#x2F;*</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%81%E5%8A%A8%E4%BA%86%E6%88%91%E7%9A%84%E6%96%87%E4%BB%B6"><span class="toc-number">12.2.</span> <span class="toc-text">谁动了我的文件 ?</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&text=Linux系统-服务管理学习笔记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&is_video=false&description=Linux系统-服务管理学习笔记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux系统-服务管理学习笔记&body=Check out this article: https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&title=Linux系统-服务管理学习笔记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&name=Linux系统-服务管理学习笔记&description=&lt;p&gt;学习基础的Linux的服务与进程管理.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/07/02/Linux%E7%B3%BB%E7%BB%9F-%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/&t=Linux系统-服务管理学习笔记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

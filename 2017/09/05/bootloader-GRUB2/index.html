@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="之前说过了grub的0.X版本, 而新版本是相当于重构了整个bootloader. 来学习一下.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bootloader-GRUB2">
+<meta property="og:url" content="https://19971122.xyz/2017/09/05/bootloader-GRUB2/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="之前说过了grub的0.X版本, 而新版本是相当于重构了整个bootloader. 来学习一下.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/img.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/733013/201706/733013-20170629150034914-1219800403.png">
+<meta property="article:published_time" content="2017-09-05T12:13:42.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:30:37.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="OS">
+<meta property="article:tag" content="bootloader">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexopic.s3-ap-northeast-1.amazonaws.com/img.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Bootloader-GRUB2</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/09/06/CentOS7%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/07/21/CentOS7-systemd/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/05/bootloader-GRUB2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&text=Bootloader-GRUB2"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&is_video=false&description=Bootloader-GRUB2"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Bootloader-GRUB2&body=Check out this article: https://19971122.xyz/2017/09/05/bootloader-GRUB2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&name=Bootloader-GRUB2&description=&lt;p&gt;之前说过了grub的0.X版本, 而新版本是相当于重构了整个bootloader. 来学习一下.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&t=Bootloader-GRUB2"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#grub2%E6%95%B4%E4%BD%93%E8%A7%82"><span class="toc-number">1.</span> <span class="toc-text">grub2整体观</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E5%AF%BC%E6%96%B9%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">引导方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%BD%8D%E7%BD%AE%E4%BB%A5%E5%8F%8A%E5%AE%89%E8%A3%85%E4%BD%8D%E7%BD%AE"><span class="toc-number">1.2.</span> <span class="toc-text">文件位置以及安装位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#img%E6%96%87%E4%BB%B6"><span class="toc-number">1.3.</span> <span class="toc-text">img文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GRUB2%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">1.4.</span> <span class="toc-text">GRUB2的配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E8%8F%9C%E5%8D%95%E5%8A%A0%E4%B8%8A%E5%AF%86%E7%A0%81"><span class="toc-number">1.5.</span> <span class="toc-text">为菜单加上密码</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Bootloader-GRUB2
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-05T12:13:42.000Z" class="dt-published" itemprop="datePublished">2017-09-05</time>
+        
+        (Updated: <time datetime="2020-11-30T01:30:37.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/OS/" rel="tag">OS</a>, <a class="p-category" href="/tags/bootloader/" rel="tag">bootloader</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>之前说过了grub的0.X版本, 而新版本是相当于重构了整个bootloader. 来学习一下.</p>
+<span id="more"></span>
+
+<h2 id="grub2整体观"><a href="#grub2整体观" class="headerlink" title="grub2整体观"></a>grub2整体观</h2><p>这些是和grub1的区别:</p>
+<ul>
+<li>配置文件的名称改变了。在grub中，配置文件为grub.conf或menu.lst(grub.conf的一个软链接)，在grub2中改名为grub.cfg</li>
+<li>grub2增添了许多语法，更接近于脚本语言了，例如支持变量、条件判断、循环</li>
+<li>grub2中，设备名称从1开始，而在grub中是从0开始的<ul>
+<li>举个例子, 当我们表示第一块硬盘的时候还是hd(0) 但是当说道分区的时候就变了, (hd0, msdos1)就表示第一块硬盘的第一个mbr分区, 而(hd0, gpt1)就表示第一块硬盘的第一个gpt分区.</li>
+</ul>
+</li>
+<li>grub2使用img文件，不再使用grub中的stage1、stage1.5和stage2。</li>
+<li>在已进入操作系统环境下，不再提供grub命令，也就是不能进入grub交互式界面，只有在开机时才能进入</li>
+<li>在grub2中取消了find命令.</li>
+</ul>
+<h3 id="引导方式"><a href="#引导方式" class="headerlink" title="引导方式"></a>引导方式</h3><p>grub2有两种引导方式,但是第二种几乎不会用到,除非你需要引导grub2无法引导的操作系统.</p>
+<p>这两种方式分别是:</p>
+<ul>
+<li>直接引导(direct): grub2直接通过默认的grub2 bootloader来引导写在默认配置文件中的操作系统</li>
+<li>链式引导(indirect): 使用默认的grub2 bootloader 来引导另一个bootloader而不是操作系统.</li>
+</ul>
+<h3 id="文件位置以及安装位置"><a href="#文件位置以及安装位置" class="headerlink" title="文件位置以及安装位置"></a>文件位置以及安装位置</h3><p>当使用grub来管理启动菜单时，那么boot loader都是grub程序安装的。</p>
+<p>传统的grub(legacy)将stage1转换后的内容安装到MBR(VBR或EBR)中的boot loader部分，将stage1_5转换后的内容安装在紧跟在MBR后的扇区中，将stage2转换后的内容安装在&#x2F;boot分区中。</p>
+<p>而grub2将boot.img转换后的内容安装到MBR(VBR或EBR)中的boot loader部分，将diskboot.img和kernel.img结合成为core.img(刚刚在上面说过img文件)，同时还会嵌入一些模块或加载模块的代码到core.img中，然后将core.img转换后的内容安装到磁盘的指定位置处。</p>
+<p>它们之间更具体的关系后面会有说.</p>
+<p>根据分区表格式的不同, grub的安装位置(严格说是core.img的安装位置)也有所不同, 由于我的试验机器是MBR分区,所以就只说一下这个.</p>
+<p>MBR允许四个主分区和额外的逻辑分区, 有两种方式安装GURB：</p>
+<ol>
+<li>嵌入到MBR和第一个分区中间的空间，这部分就是大众所称的”boot track”,”MBR gap”或”embedding area”，它们大致需要31kB的空间；</li>
+<li>将core.img安装到某个文件系统中，然后使用分区的第一个扇区(严格地说不是第一个扇区，而是第一个block)存储启动它的代码。</li>
+</ol>
+<p>这两种方法有不同的问题。</p>
+<p>使用嵌入的方式安装grub，就没有保留的空闲空间来保证安全性，例如有些专门的软件就是使用这段空间来实现许可限制的；另外分区的时候，虽然会在MBR和第一个分区中间留下空闲空间，但可能留下的空间会比这更小.</p>
+<p>方法二安装grub到文件系统，但这样的grub是脆弱的 例如，文件系统的某些特性需要做尾部包装，甚至某些fsck检测，它们可能会移动这些block.</p>
+<p><strong>GRUB开发团队建议将GRUB嵌入到MBR和第一个分区之间，除非有特殊需求，但仍必须要保证第一个分区至少是从第31kB(第63个扇区)之后才开始创建的.</strong></p>
+<p>现在的磁盘设备，一般都会有分区边界对齐的性能优化提醒，所以第一个分区可能会自动从第1MB处开始创建的.</p>
+<h3 id="img文件"><a href="#img文件" class="headerlink" title="img文件"></a>img文件</h3><p>img文件是GRUB2的关键了, 也是他的核心. 我们来说一下这些文件的作用和GRUB legacy中的stage的对应关系.</p>
+<p>grub2生成了好几个img文件，有些分布在&#x2F;usr&#x2F;lib&#x2F;grub&#x2F;i386-pc目录下，有些分布在&#x2F;boot&#x2F;grub2&#x2F;i386-pc目录下, </p>
+<p><img src="https://hexopic.s3-ap-northeast-1.amazonaws.com/img.png" alt="img"></p>
+<p>事实上, 我们的core.img是动态生成的.而其他的img则存在在&#x2F;usr&#x2F;lib&#x2F;grub&#x2F;i386-pc&#x2F;下. 在安装grub2的时候 boot.img会拷贝一份到&#x2F;boot&#x2F;grub2&#x2F;i386-pc&#x2F;目录下</p>
+<p><img src="http://images2015.cnblogs.com/blog/733013/201706/733013-20170629150034914-1219800403.png" alt="imgs"></p>
+<p>上图描述了各个模块的关系和层级.</p>
+<p><strong>boot.img</strong>是grub启动的第一个img文件 我们先把他当成入口好了. 这个玩意存在于MBR中或者分区的boot sector里. 因为我们的boot sector大小就是512字节 所以我们的boot.img也正好是这个大小. boot.img的唯一作用就是读取core的第一扇区并跳转上去 接着移交控制权, 由于最大512所以boot.img是无法理解文件系统的. 因此这个core.img的路径是经过硬编码的, 确保boot.img能够找到core.img的位置.</p>
+<p><strong>core.img</strong>是给grub2-mkimage程序根据diskboot.img、kernel.img和一系列的模块动态创建的 core.img中嵌入了足够多的功能模块以保证grub能访问&#x2F;boot&#x2F;grub，并且可以加载相关的模块实现相关的功能，例如加载启动菜单、加载目标操作系统的信息等，由于grub2大量使用了动态功能模块，使得core.img体积变得足够小. core.img中包含了多个img文件的内容，包括diskboot.img&#x2F;kernel.img等等.. 至于core.img的位置 我们在上面也说过啦.</p>
+<p>根据启动环境的不同, core.img第一个扇区的内容是不同的.如果你的启动设备是磁盘, 那么第一个扇区就是diskboot.img, 如果是光盘,那么第一个扇区的内容就是cdboot.img, 作用和diskboot.img是一样的.</p>
+<p><strong>kernel.img</strong>文件包含了grub的基本运行时环境:设备框架, 文件句柄, 环境变量, 救援模式下的命令行解析器等等. 很少直接使用, 因为它们已经整个嵌入到了core.img中了. 注意, kernel.img是grub的kernel, 和操作系统的内核无关. </p>
+<p>如果再多观察一下的话就会发现, kernel.img的大小是比core.img大的.这是因为生成的core中压缩了kernel.</p>
+<p>除了这些***.img** 文件 各种*.mod其实就是各种功能模块, 部分模块已经嵌入到core.img中, 或者会被grub自动加载, 但有时也需要使用insmod命令手动加载.</p>
+<p>还记得我们在说GRUB的时候, 简单的说了一下stage文件的作用. 现在我们把他们做一个简单的对应.</p>
+<p>stage1在功能上就等于boot.img, stage1_5有点类似于core.img中的加载响应文件系统的代码, 但是core.img的功能显然比stage1 _5要多很多. </p>
+<h3 id="GRUB2的配置"><a href="#GRUB2的配置" class="headerlink" title="GRUB2的配置"></a>GRUB2的配置</h3><p>我们已经知道了GRUB2中的磁盘代号的表示, 现在就来看一下grub.cfg这个重要的配置文件了. grub的官方并不期望用户直接修改这个文件, 而是通过修改其他的配置项接着在使用<code>grub2-mkconfig</code>来生成配置文件, 这个程序会参考&#x2F;etc&#x2F;default&#x2F;grub作为模板, 这个文件中有很多宏. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@study ~]<span class="comment"># cat /etc/default/grub</span></span><br><span class="line">GRUB_TIMEOUT=5                   <span class="comment"># 指定预设的倒数秒数, 如果一定要用户来选择, 那么就写成-1即可</span></span><br><span class="line">GRUB_DEFAULT=saved               <span class="comment"># 指定预设选单</span></span><br><span class="line">GRUB_DISABLE_SUBMENU=<span class="literal">true</span>        <span class="comment"># 是否要隐藏次选单</span></span><br><span class="line">GRUB_TERMINAL_OUTPUT=<span class="string">&quot;console&quot;</span>   <span class="comment"># 指定data的输出, 通常是终端控制台</span></span><br><span class="line">GRUB_CMDLINE_LINUX=<span class="string">&quot;rd.lvm.lv=centos/root rd.lvm.lv=centos/swap crashkernel=auto rhgb quiet&quot;</span></span><br><span class="line">                                 <span class="comment"># 就是在 menuentry 括号内的 linux16 后面的核心参数</span></span><br><span class="line">GRUB_DISABLE_RECOVERY=<span class="string">&quot;true&quot;</span>     <span class="comment"># 取消救援选单的制作</span></span><br></pre></td></tr></table></figure>
+
+<p>每次修改完这个模板文件, 为了使其生效, 我们执行:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW ~]<span class="comment"># vim /etc/default/grub </span></span><br><span class="line">[root@WWW ~]<span class="comment"># grub2-mkconfig -o /boot/grub2/grub.cfg</span></span><br><span class="line">Generating grub configuration file ...</span><br><span class="line">Found linux image: /boot/vmlinuz-3.10.0-514.21.2.el7.x86_64</span><br><span class="line">Found initrd image: /boot/initramfs-3.10.0-514.21.2.el7.x86_64.img</span><br><span class="line">Found linux image: /boot/vmlinuz-3.10.0-514.el7.x86_64</span><br><span class="line">Found initrd image: /boot/initramfs-3.10.0-514.el7.x86_64.img</span><br><span class="line">Found linux image: /boot/vmlinuz-0-rescue-9a3f06751f26419c8e00e76f67d74f6b</span><br><span class="line">Found initrd image: /boot/initramfs-0-rescue-9a3f06751f26419c8e00e76f67d74f6b.img</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<p>观察输出 这个程序能够主动的抓到对应的vmlinuz和initramfs. 这是怎么做到的呢?</p>
+<p>这是因为grub2-mkconfig程序会去找&#x2F;etc&#x2F;grub.d&#x2F;*里面的shell脚本, 所以这些脚本就显得尤为重要了<del>我们来看一下(你会发现 这些脚本的名称在grub.cfg中就出现了</del>):</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW grub.d]<span class="comment"># ls -lh</span></span><br><span class="line">total 72K</span><br><span class="line">-rwxr-xr-x. 1 root root 8.5K Nov 22  2016 00_header</span><br><span class="line">-rwxr-xr-x. 1 root root  992 Jun 16  2016 00_tuned</span><br><span class="line">-rwxr-xr-x. 1 root root  232 Nov 22  2016 01_users</span><br><span class="line">-rwxr-xr-x. 1 root root  11K Nov 22  2016 10_linux</span><br><span class="line">-rwxr-xr-x. 1 root root  11K Nov 22  2016 20_linux_xen</span><br><span class="line">-rwxr-xr-x. 1 root root 2.5K Nov 22  2016 20_ppc_terminfo</span><br><span class="line">-rwxr-xr-x. 1 root root  11K Nov 22  2016 30_os-prober</span><br><span class="line">-rwxr-xr-x. 1 root root  214 Nov 22  2016 40_custom</span><br><span class="line">-rwxr-xr-x. 1 root root  216 Nov 22  2016 41_custom</span><br><span class="line">-rw-r--r--. 1 root root  483 Nov 22  2016 README</span><br></pre></td></tr></table></figure>
+
+<p>首先是00_header, 我们在模板文件中所设定的大部分参数都体现在这个脚本中, 因为该脚本主要建立在初始的显示项目上, 比如需要的模块, 终端的格式, 倒计时, 是否隐藏菜单等等.</p>
+<p>关于00_tuned, 其实也就只是设置了几个tune这个daemon的参数而已, 我们先忽略. 01 _users我没看懂 为什么是cat了一段shell?? (啊…我好像明白了, 这一段cat的内容会原封不动的跑到最终生成的配置文件里)</p>
+<p>接着就是重要的10_linux了 这个脚本主要是为了制作菜单项, 它尝试分析&#x2F;boot下的配置, 并且尝试找到对应的所需模块和参数.</p>
+<p>后面的不想学了(摔!)</p>
+<p>一般我们所需要用的就是40_custom了, 也就是手动加上菜单的时候才会动他. 至于怎么写, 从生成好的配置文件里模仿就好了..我不学了.</p>
+<h3 id="为菜单加上密码"><a href="#为菜单加上密码" class="headerlink" title="为菜单加上密码"></a>为菜单加上密码</h3><p>grub2在用户管理上有一点像Linux, 有两种用户:</p>
+<ul>
+<li>superusers 可以修改grub2下所有的项目的权限, 但是设定了这个参数之后	所有指令的修改将变成受限制的</li>
+<li>users 可以设置多个, 就是简单的进入某个菜单, 搭配账号</li>
+</ul>
+<p>我们来看一个grub.cfg:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 第一个部分就是设定好管理员和用户的账号和密码</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> superusers=<span class="string">&quot;root&quot;</span>    <span class="comment"># 设定系统管理员的账号</span></span><br><span class="line">password root mimamima   <span class="comment"># 接下来就是设定账号和密码啦</span></span><br><span class="line">password justin justinjustin  <span class="comment"># 沒有输入 superusers 的其他账号, 就判定成一般账号</span></span><br><span class="line"></span><br><span class="line">menuentry <span class="string">&quot;For Everyone!&quot;</span> --unrestricted &#123;</span><br><span class="line">	<span class="built_in">set</span> root=(hd0,1)</span><br><span class="line">	chainloader +1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">menuentry <span class="string">&quot;For 管理员 ONLY&quot;</span> --<span class="built_in">users</span> <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">	<span class="built_in">set</span> root=(hd0,2)</span><br><span class="line">	chainloader +1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">menuentry <span class="string">&quot;For 管理员 和 justin&quot;</span> --<span class="built_in">users</span> justin &#123;</span><br><span class="line">	<span class="built_in">set</span> root=(hd0,3)</span><br><span class="line">	chainloader +1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是问题是, 我们之前就说过了, 这个配置文件是不推荐进行修改的. 那么怎么让配置文件中出现这些内容呢?</p>
+<p>在上文说的那些脚本文件中, 就出现了superusers这个关键词, 对了, 就是01_users这个文件, 我们如果要设置密码的话, 就对这个文件进行修改.</p>
+<p>同grub-legacy一样, grub2也提供了密码工具, 叫做<code>grub2-mkpasswd-pbkdf2</code> 这是一个交互式的密码生成工具, 使用起来实在是太简便了.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@WWW grub.d]<span class="comment"># grub2-mkpasswd-pbkdf2</span></span><br><span class="line">Enter password: </span><br><span class="line">Reenter password: </span><br><span class="line">PBKDF2 <span class="built_in">hash</span> of your password is grub.pbkdf2.sha512.10000.DEDC4DF8BD3FC85D670AA4D86C957432131B0824F81B47EAA2B1542CCD7E1AE32D136B606A2D5786FBC137C8632A417886EF48B82ED74E2E3DB386E22A890205.0DA123913F52203900B012E20FF57FA5DE0402814DAC5FF700ECC829139B2F8257F191147148BE97CC6EF87072DE32049CE70E1D43724D682EDC6972B8E67BE7</span><br></pre></td></tr></table></figure>
+
+<p>这个从grub2.pbkdf2开始的一大串字符串就是密码了.</p>
+<p>这样, 我们直接修改01_users这个脚本, 具体的修改就像这样:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh -e</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">set superusers=&quot;justin&quot;</span></span><br><span class="line"><span class="string">password_pbkdf2 justin grub.pbkdf2.sha512.10000.27E9FC1D4955E2DB0542F7198D86A4103A525B20CC500577BD646EA48785D3EFB70CFA05BBF8B536E73AB4F144F4F9FC76040B745B1F3A0E2EE2F2DFEE5A4145.442DE0D08D00B21FE793DA96588D1144AF1597519921BC6125E35C13E345A8E738FF5D3A3EA90B94D023CA51148F5BEAF8C2A17C43081C5F371B33278D1BCDDE</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"><span class="comment"># 也可以指定(多个)一般用户, 这里懒得弄了 hhhh 你打我啊</span></span><br></pre></td></tr></table></figure>
+
+<p>接着我们修改10_linux这个脚本, 在第一个CLASS的位置, 我们把原本在后面的–unrestricted的参数移除.</p>
+<p>重启机器. 在开机的时候就会看到请求输入用户名和密码的界面了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#grub2%E6%95%B4%E4%BD%93%E8%A7%82"><span class="toc-number">1.</span> <span class="toc-text">grub2整体观</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E5%AF%BC%E6%96%B9%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">引导方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%BD%8D%E7%BD%AE%E4%BB%A5%E5%8F%8A%E5%AE%89%E8%A3%85%E4%BD%8D%E7%BD%AE"><span class="toc-number">1.2.</span> <span class="toc-text">文件位置以及安装位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#img%E6%96%87%E4%BB%B6"><span class="toc-number">1.3.</span> <span class="toc-text">img文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GRUB2%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">1.4.</span> <span class="toc-text">GRUB2的配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E8%8F%9C%E5%8D%95%E5%8A%A0%E4%B8%8A%E5%AF%86%E7%A0%81"><span class="toc-number">1.5.</span> <span class="toc-text">为菜单加上密码</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2017/09/05/bootloader-GRUB2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&text=Bootloader-GRUB2"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&is_video=false&description=Bootloader-GRUB2"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Bootloader-GRUB2&body=Check out this article: https://19971122.xyz/2017/09/05/bootloader-GRUB2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&title=Bootloader-GRUB2"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&name=Bootloader-GRUB2&description=&lt;p&gt;之前说过了grub的0.X版本, 而新版本是相当于重构了整个bootloader. 来学习一下.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2017/09/05/bootloader-GRUB2/&t=Bootloader-GRUB2"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>

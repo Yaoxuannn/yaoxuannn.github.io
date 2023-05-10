@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="接下来就来看一下MySQL对于用户权限的管理相关.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL用户权限查询缓存与索引">
+<meta property="og:url" content="https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="接下来就来看一下MySQL对于用户权限的管理相关.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-10-17T05:38:41.000Z">
+<meta property="article:modified_time" content="2020-11-30T01:24:55.000Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Database">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>MySQL用户权限查询缓存与索引</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/12/05/Xen%E8%99%9A%E6%8B%9F%E5%8C%96%E5%88%9D%E8%AF%86/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&text=MySQL用户权限查询缓存与索引"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&is_video=false&description=MySQL用户权限查询缓存与索引"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MySQL用户权限查询缓存与索引&body=Check out this article: https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&name=MySQL用户权限查询缓存与索引&description=&lt;p&gt;接下来就来看一下MySQL对于用户权限的管理相关.&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&t=MySQL用户权限查询缓存与索引"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E4%B8%AD%E7%9A%84%E7%94%A8%E6%88%B7%E5%92%8C%E6%9D%83%E9%99%90"><span class="toc-number">1.</span> <span class="toc-text">MySQL中的用户和权限</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%B1%BB%E6%9D%83%E9%99%90"><span class="toc-number">1.1.</span> <span class="toc-text">管理类权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E7%B1%BB%E6%9D%83%E9%99%90"><span class="toc-number">1.2.</span> <span class="toc-text">程序类权限</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98"><span class="toc-number">2.</span> <span class="toc-text">查询缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%92%8Cexplain"><span class="toc-number">3.</span> <span class="toc-text">索引和explain</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        MySQL用户权限查询缓存与索引
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-10-17T05:38:41.000Z" class="dt-published" itemprop="datePublished">2018-10-17</time>
+        
+        (Updated: <time datetime="2020-11-30T01:24:55.000Z" class="dt-updated" itemprop="dateModified">2020-11-29</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database/" rel="tag">Database</a>, <a class="p-category" href="/tags/MySQL/" rel="tag">MySQL</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>接下来就来看一下MySQL对于用户权限的管理相关.</p>
+<span id="more"></span>
+
+<h2 id="MySQL中的用户和权限"><a href="#MySQL中的用户和权限" class="headerlink" title="MySQL中的用户和权限"></a>MySQL中的用户和权限</h2><p>首先来说说MySQL中的对于通常所说的权限可以分成用户和用户权限两个概念. 对于MySQL来说, 就算由一个用户可以登录进入, 他也有可能无法进行任何操作. 对于这样的权限我们可以划分成:</p>
+<ul>
+<li>库级别</li>
+<li>表级别</li>
+<li>字段级别</li>
+</ul>
+<p>这样, 通过操作这些级别的权限就可以指定用户是否有权限进行数据库的某些操作.</p>
+<p>除了这些, 还有两种:</p>
+<ul>
+<li>管理类</li>
+<li>程序类</li>
+</ul>
+<p>其中, 管理类的权限就是指的能否存在第三方用户去进行数据库的管理和一些维护操作. 而程序类权限就是说用户能否运行某些存储过程或者存储函数.</p>
+<p>我们先从管理类权限说起吧.</p>
+<h3 id="管理类权限"><a href="#管理类权限" class="headerlink" title="管理类权限"></a>管理类权限</h3><p>一个典型的管理权限就是进行临时表的创建, 一般临时表是不会具有持久性的, 但是他的查询效率要比普通的表高处一个数量级的, 所以一般我们可以使用临时表来存储一些临时的数据. 一个临时表, 一般需要16M大小的内存空间.</p>
+<p>另外还有例如: 创建用户(CREATE USER), 进行文件导入导出(FILE), SUPER权限分配, 显示数据库, RELOAD, SHUTDOWN, REPLICATION SLAVE&#x2F;CLIENT做复制等等, 这些我们在后面也会再次提到的.  </p>
+<h3 id="程序类权限"><a href="#程序类权限" class="headerlink" title="程序类权限"></a>程序类权限</h3><p>所谓程序就是指的一些存储过程代码段和一些函数, 当然还有一些触发器的代码.</p>
+<p>当我们安装好MySQL之后, 会看到有一个元数据数据库, 现在我们可以看一下这个表:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [mysql]<span class="operator">&gt;</span> <span class="keyword">show</span> tables;</span><br><span class="line"><span class="operator">+</span><span class="comment">---------------------------+</span></span><br><span class="line"><span class="operator">|</span> Tables_in_mysql           <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------------------------+</span></span><br><span class="line"><span class="operator">|</span> columns_priv              <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> db                        <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> event                     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> func                      <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> general_log               <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> help_category             <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> help_keyword              <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> help_relation             <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> help_topic                <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> host                      <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> ndb_binlog_index          <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> plugin                    <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> proc                      <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> procs_priv                <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> proxies_priv              <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> servers                   <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> slow_log                  <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> tables_priv               <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> time_zone                 <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> time_zone_leap_second     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> time_zone_name            <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> time_zone_transition      <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> time_zone_transition_type <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> <span class="keyword">user</span>                      <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---------------------------+</span></span><br><span class="line"><span class="number">24</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里面有很多使用<code>priv</code>结尾的表, 这些表就是描述权限的, 除了一个特例, 就是<code>db</code>表, 这个是描述库级别的权限的.  包括一些用户的连接访问权限也会有描述.</p>
+<p>首先我们划分授权表: 包括db, host, user. 这三者描述哪些用户可以通过哪些主机进行连接访问哪些数据库. 其实要是打开看一下的话就会知道了, db和host这两个表几乎是一样的, db比host多了2个字段, 也即是User和Event_priv这两个.</p>
+<p>接下来我们说说如果管理员忘记了密码的解决方法:</p>
+<p>一种可行的方法就是在启动mysqld进程的时候, 加上<code>--skip-grant-table</code>的选项. (建议在这个时候同时加上<code>--skip-networking</code>防止远程用户登录进入). 然后使用UPDATE直接修改密码, 接着关闭进程, 移除选项重新启动.</p>
+<p>顺便我们来说说GRANT, 大家都知道这个命令可以进行用户权限的设定, 其实还可以通过他提供的选项进行一些更细致的设定, 例如:</p>
+<p>现在我们创建一个用户test, 允许这个用户通过<code>172.16.9.*</code>的主机连接mysqld, 但是每秒钟的最大查询次数不得超过5次, 同时该账户的同时连接次数不得超过3次.</p>
+<p>创建的语句如下:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [mysql]<span class="operator">&gt;</span> <span class="keyword">grant</span> usage <span class="keyword">on</span> <span class="operator">*</span>.<span class="operator">*</span> <span class="keyword">to</span> <span class="string">&#x27;test&#x27;</span>@<span class="string">&#x27;172.16.9.%&#x27;</span> <span class="keyword">with</span>  MAX_QUERIES_PER_HOUR <span class="number">18000</span> MAX_USER_CONNECTIONS <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h2><p>之前我们曾经简单的描述了一下关于MySQL的查询缓存. 除了有查询引擎自行实现的表级别或者是其他什么的缓存, MySQL的服务端也自行实现了一个查询缓存. 这个查询缓存的是SELECT语句所执行之后得到的结果集数据. 这么设计的一个问题就是如果查询的目标表数据发生变化的话, 这个查询缓存就会立即失效, 也就是说有可能出现刚刚缓存结束还没有被命中就已经失效了. 所以这样就反而影响了整体的查询效率.</p>
+<p>另外, 这个SELECT缓存的数据集, MySQL如何判断缓存命中了呢? 第一是通过查询语句的哈希值, 其中哈希值考虑到的因素包括: 查询本身, 要查询的数据库, 客户端使用的协议版本等等, 都会纳入哈希生成的条件.</p>
+<p>这也就是说, 查询语句在任何字符上的不同, 都会导致缓存不能命中. (所以说要规范SQL的写法, 或者是养成自己习惯). 另外, 就像我们之前说的, 如果查询中包含自己的自定义的函数, 存储过, 可临时表或者包含列权限的表, 是不会被缓存的. 如果查询中包含随机值, 例如时间(now()), 查询的结果也不会被缓存, 因为这样缓存了也没有作用.</p>
+<p>另外, 查询缓存是根据使用情况进行动态的改变的, 这也就必然引入了关于内存碎片的问题, 既然会产生碎片就需要进行整理, 这也就带来了额外的开销. 当然了, 只要缓存带来的性能提升大于额外的开销就是可以接受的.</p>
+<p>那么到底我们查询缓存的收益是大于这个额外的开销的呢? 还记得我们之前查看的关于缓存的相关变量参数嘛:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(<span class="keyword">none</span>)]<span class="operator">&gt;</span> <span class="keyword">show</span> <span class="keyword">global</span> variables <span class="keyword">like</span> <span class="string">&#x27;%query%&#x27;</span>;</span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------------+--------------------+</span></span><br><span class="line"><span class="operator">|</span> Variable_name                <span class="operator">|</span> <span class="keyword">Value</span>              <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------------+--------------------+</span></span><br><span class="line"><span class="operator">|</span> expensive_subquery_limit     <span class="operator">|</span> <span class="number">100</span>                <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> ft_query_expansion_limit     <span class="operator">|</span> <span class="number">20</span>                 <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> have_query_cache             <span class="operator">|</span> YES                <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> long_query_time              <span class="operator">|</span> <span class="number">10.000000</span>          <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_alloc_block_size       <span class="operator">|</span> <span class="number">8192</span>               <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_limit            <span class="operator">|</span> <span class="number">1048576</span>            <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_min_res_unit     <span class="operator">|</span> <span class="number">4096</span>               <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_size             <span class="operator">|</span> <span class="number">0</span>                  <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_strip_comments   <span class="operator">|</span> OFF                <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_type             <span class="operator">|</span> <span class="keyword">ON</span>                 <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_cache_wlock_invalidate <span class="operator">|</span> OFF                <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> query_prealloc_size          <span class="operator">|</span> <span class="number">8192</span>               <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> slow_query_log               <span class="operator">|</span> OFF                <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> slow_query_log_file          <span class="operator">|</span> VM<span class="operator">-</span>master<span class="operator">-</span>slow.log <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------------+--------------------+</span></span><br><span class="line"><span class="number">14</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.01</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>其中有一个<code>query_cache_min_res_unit</code>, 这个表示的是缓存的最小资源单元, 如果结果小于4K, 是不予缓存的. 如果这个值调整的过小, 能够减少浪费, 但是必然会导致更频繁的内存分配操作, 如果调整的较大, 会导致浪费(碎片变得更多). </p>
+<p>而<code>query_cache_limit</code>表示的是MySQL所缓存的最大查询结果. </p>
+<p>除了这些全局变量, 还有一些状态变量可以用来评估当前的缓存状态, 也就是我们之前所看到的:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(<span class="keyword">none</span>)]<span class="operator">&gt;</span> <span class="keyword">show</span> <span class="keyword">global</span> status <span class="keyword">like</span> <span class="string">&#x27;Qcache%&#x27;</span>;</span><br><span class="line"><span class="operator">+</span><span class="comment">-------------------------+-------+</span></span><br><span class="line"><span class="operator">|</span> Variable_name           <span class="operator">|</span> <span class="keyword">Value</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------------------------+-------+</span></span><br><span class="line"><span class="operator">|</span> Qcache_free_blocks      <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> Qcache_free_memory      <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> Qcache_hits             <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> Qcache_inserts          <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> Qcache_lowmem_prunes    <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> Qcache_not_cached       <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> Qcache_queries_in_cache <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> Qcache_total_blocks     <span class="operator">|</span> <span class="number">0</span>     <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-------------------------+-------+</span></span><br><span class="line"><span class="number">8</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+
+<p>另外还有一个统计当前的查询总数的: <code>Com_select</code>. 因此我们可以计算当前的缓存命中率: <code>Qcache_hits / (Qcache_hits+Com_select)</code>.</p>
+<h2 id="索引和explain"><a href="#索引和explain" class="headerlink" title="索引和explain"></a>索引和explain</h2><p>之前虽然简单的说了一下MySQL中的索引, 但是在这里我们再来详细的说一说.</p>
+<p>我们说索引建立的最基本的法则就是需要在经常被使用到的字段上, 或者说是被用作查询条件的字段上. 在MySQL中, 一般的索引类型都是B树类型的. 但是即使都是B树索引, 不同的存储引擎实现上都是不一样的. 有些可能会进行索引的压缩.</p>
+<p>鉴于B树数据结构的特性, 并且由于采用了左前缀索引的方案, 使得MySQL特别适合:</p>
+<ul>
+<li>进行全值匹配, 精确查找</li>
+<li>匹配最左前缀, 只精确匹配开头部分</li>
+<li>匹配范围数据, 精确匹配某一列并范围匹配另一列</li>
+<li>只访问索引的查询</li>
+</ul>
+<p>既然有适合的, 就有不适合使用B-Tree索引的场合, 例如:</p>
+<ul>
+<li>如果不从最左列开始, 索引就是无效的</li>
+<li>不能跳过索引中的列, 如果我们的索引是一个组合的, 多键索引.</li>
+<li>如果查询中的某个列(左侧的列)是范围查询, 右侧的列都无法使用索引优化, 只能将左侧的结果进行扫描筛选.</li>
+</ul>
+<p>MySQL除了B树索引, 还有另外一个, 即哈希索引. 其实这个就比较简单了, 这个索引将所有的字段进行哈希计算, 并且再分成一级哈希头, 二级哈希头等等. 但是我们知道哈希的特性, 如果元数据发生改变. 他的哈希值也会发生巨大的改变, 不仅如此, 哈希索引不适合进行顺序查询, 因为无法进行数据的排序, 而且模糊匹配也不容易做. 那么哈希索引最适合的查询是哪一种? 当然就是进行列的精确匹配了. <strong>注: 在MySQL中, 只有Memory存储引擎支持显示Hash索引.</strong></p>
+<p>另外, 除了B树和哈希索引, 第三种索引就是空间索引, 只有MyISAM存储引擎支持这种索引. 最后一种要说的就是全文索引(FULLTEXT), 在文本中查找关键字. </p>
+<p>全文索引更多的应该通过搜索引擎实现, 需要分析全部文本进行权重排序, 这种涉及到很多复杂的算法和排序构建以及运算量, 这里就不说了.</p>
+<p>那么! 我到底为啥要使用索引呢? </p>
+<p>首先, 索引可以降低服务需要扫描的数据量, 减少了IO次数. 其次, 索引可以帮助服务器避免排序和使用临时表. 另外还有一点, 所以可以帮助将随机IO改为顺序IO, 当然这里所说的是传统的机械硬盘. 随机和顺序IO对固态来说没啥大的影响.</p>
+<p>那么说了这么多, 我们如何才能高性能的使用索引呢? </p>
+<ul>
+<li>独立使用列, 尽量避免其参与到运算中, 一旦使用了运算就会忽略索引</li>
+<li>左前缀索引, 索引构建在左侧的N个字符. 这个字符数量的选择是需要评估的<ul>
+<li><code>RELATED</code>索引选择性: 不重复的索引值和数据表的记录总数的比值</li>
+</ul>
+</li>
+<li>多列索引, 有些时候单独的三个索引可能会比一个三列的组合索引更好, 根据具体的查询业务做定夺</li>
+<li>选择合适的索引列次序, 将选择性最高的放在左侧</li>
+</ul>
+<p>在使用索引的过程中是可能出现冗余和重复的, 例如下面的这样子:</p>
+<p>建立两个索引, 分别是(Name)和(Name, Age)此时的(Name)单键索引就是一个冗余的重复索引, 因为我们完全可以使用后面的组合索引, 因为是最左侧匹配. 另外, 例如这样子的两个索引: (Age)和(Age, Name).在需要进行年龄的范围查询的时候就不是重复的了. 因为后面的组合索引是用不到的. </p>
+<p>那么怎么知道索引到底有没有使用到呢?对了, 就使用之前的EXPALIN来分析就行了.</p>
+<p>我们只要把SELECT执行语句放到EXPLAIN的后面, 就可以获取到查询执行计划信息了. 这是什么东西? 其实就是MySQL查询优化器如何执行查询的, 不过, 说到底这也是一个查询计划, 实际上的查询过程可能也是和这个结果又出入的.</p>
+<p>我们之前曾经使用过这个explain, 显示的信息有这些:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> course <span class="keyword">from</span> courses <span class="keyword">where</span> CourseID<span class="operator">=</span><span class="number">2</span>\G</span><br><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> course <span class="keyword">from</span> courses <span class="keyword">where</span> CourseID<span class="operator">=</span><span class="number">2</span>\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">1</span></span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        <span class="keyword">table</span>: courses</span><br><span class="line">         type: const</span><br><span class="line">possible_keys: <span class="keyword">PRIMARY</span></span><br><span class="line">          key: <span class="keyword">PRIMARY</span></span><br><span class="line">      key_len: <span class="number">2</span></span><br><span class="line">          <span class="keyword">ref</span>: const</span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">1</span></span><br><span class="line">        Extra: </span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>其中, id表示当前的查询语句中, select语句的编号. 复杂类型的查询有三种, 包括简单子查询, 用于FROM的子查询, 联合查询: UNION. 其中只要使用到了UNION, 就一定会引入一张额外的匿名临时表.</p>
+<p>而第二列, select_type就表示的是查询的类型, 如果是简单的查询, 就是SIMPLE. 而对应上面说的几种复杂查询的, 分别有:</p>
+<ul>
+<li>SUBQUERY: 表示不用FROM的简单子查询</li>
+<li>DERIVED: 表示用于FROM的子查询</li>
+<li>UNION: 表示UNION语句的第一个之后的SELECT语句</li>
+<li>UNION_RESULT: 表示UNION之后的匿名临时表</li>
+</ul>
+<p>来试试:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [hellodb]<span class="operator">&gt;</span> explain <span class="keyword">select</span> Name <span class="keyword">from</span> students <span class="keyword">union</span> <span class="keyword">select</span> Name <span class="keyword">from</span> teachers\G</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">1.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">1</span></span><br><span class="line">  select_type: <span class="keyword">PRIMARY</span></span><br><span class="line">        <span class="keyword">table</span>: students</span><br><span class="line">         type: index</span><br><span class="line">possible_keys: <span class="keyword">NULL</span></span><br><span class="line">          key: name_index</span><br><span class="line">      key_len: <span class="number">152</span></span><br><span class="line">          <span class="keyword">ref</span>: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">25</span></span><br><span class="line">        Extra: <span class="keyword">Using</span> index</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">2.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="number">2</span></span><br><span class="line">  select_type: <span class="keyword">UNION</span></span><br><span class="line">        <span class="keyword">table</span>: teachers</span><br><span class="line">         type: <span class="keyword">ALL</span></span><br><span class="line">possible_keys: <span class="keyword">NULL</span></span><br><span class="line">          key: <span class="keyword">NULL</span></span><br><span class="line">      key_len: <span class="keyword">NULL</span></span><br><span class="line">          <span class="keyword">ref</span>: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">rows</span>: <span class="number">4</span></span><br><span class="line">        Extra: </span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> <span class="number">3.</span> <span class="type">row</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span></span><br><span class="line">           id: <span class="keyword">NULL</span></span><br><span class="line">  select_type: <span class="keyword">UNION</span> <span class="keyword">RESULT</span></span><br><span class="line">        <span class="keyword">table</span>: <span class="operator">&lt;</span>union1,<span class="number">2</span><span class="operator">&gt;</span></span><br><span class="line">         type: <span class="keyword">ALL</span></span><br><span class="line">possible_keys: <span class="keyword">NULL</span></span><br><span class="line">          key: <span class="keyword">NULL</span></span><br><span class="line">      key_len: <span class="keyword">NULL</span></span><br><span class="line">          <span class="keyword">ref</span>: <span class="keyword">NULL</span></span><br><span class="line">         <span class="keyword">rows</span>: <span class="keyword">NULL</span></span><br><span class="line">        Extra: </span><br><span class="line"><span class="number">3</span> <span class="keyword">rows</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里就是使用到了UNION的情况.</p>
+<p>接着table很简单了, 就是查询关联到的表的名字. <code>type</code>表示的是关联的类型, 说通俗一点就是MySQL是如何查询表中的行的方式, 有这些:</p>
+<ul>
+<li>ALL: 表示的是全表扫描</li>
+<li>index: 根据索引的次序进行全表扫描, 如果在Extra中列出了<code>Using index</code>表示使用了覆盖索引.</li>
+<li>range: 范围扫描, 从索引中的某一个点到另一个点</li>
+<li>ref: 也是索引访问, 但是他是根据索引返回表中匹配的某个单值的所有行</li>
+<li>eq_ref</li>
+<li>const, system</li>
+</ul>
+<p>后面的结果也都很简单, possible_keys表示查询的时候可能使用到的索引 key就是查询中使用了的索引 而key_len表示在索引中使用的字节数, row表示为了找到目标所扫描的行数, 最后的extra就是一些额外的信息.</p>
+<p>额外的信息直接读就能明白, 有:</p>
+<ul>
+<li>Using index: 将会使用索引, 避免访问表</li>
+<li>Using where: 在存储引擎层次进行检索, 在进行一次过滤</li>
+<li>Using temporary: 将会使用临时表</li>
+<li>Using filesort: 对结果进行一个外部的索引排序</li>
+</ul>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL%E4%B8%AD%E7%9A%84%E7%94%A8%E6%88%B7%E5%92%8C%E6%9D%83%E9%99%90"><span class="toc-number">1.</span> <span class="toc-text">MySQL中的用户和权限</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E7%B1%BB%E6%9D%83%E9%99%90"><span class="toc-number">1.1.</span> <span class="toc-text">管理类权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E7%B1%BB%E6%9D%83%E9%99%90"><span class="toc-number">1.2.</span> <span class="toc-text">程序类权限</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98"><span class="toc-number">2.</span> <span class="toc-text">查询缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%92%8Cexplain"><span class="toc-number">3.</span> <span class="toc-text">索引和explain</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&text=MySQL用户权限查询缓存与索引"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&is_video=false&description=MySQL用户权限查询缓存与索引"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MySQL用户权限查询缓存与索引&body=Check out this article: https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&title=MySQL用户权限查询缓存与索引"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&name=MySQL用户权限查询缓存与索引&description=&lt;p&gt;接下来就来看一下MySQL对于用户权限的管理相关.&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2018/10/17/MySQL%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E5%92%8C%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98/&t=MySQL用户权限查询缓存与索引"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+</body>
+</html>
