@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="咳咳…你好啊 (尴尬的咳嗽声) 时隔两年半 我又回来了. 昨夜直接在新的环境上重新构建了博客, 好在有之前的_config, 重新部署起来还是很快速的.. 闲话少聊, 让我们直接开始吧.  2023年还在学Java 8也太逊了 Stream此Stream非彼Stream学过Java I&#x2F;O的朋友肯定知道InputStream和OutputStream, 这里所谓的输入输出流表示的是字节">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 8 Stream和其他特性">
+<meta property="og:url" content="https://19971122.xyz/2023/05/10/Java8%20Stream/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="咳咳…你好啊 (尴尬的咳嗽声) 时隔两年半 我又回来了. 昨夜直接在新的环境上重新构建了博客, 好在有之前的_config, 重新部署起来还是很快速的.. 闲话少聊, 让我们直接开始吧.  2023年还在学Java 8也太逊了 Stream此Stream非彼Stream学过Java I&#x2F;O的朋友肯定知道InputStream和OutputStream, 这里所谓的输入输出流表示的是字节">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-10T16:35:00.000Z">
+<meta property="article:modified_time" content="2023-05-10T18:51:07.442Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Java 8 Stream和其他特性</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/12/30/SchoolOfSRE%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2023/05/10/Java8%20Stream/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&text=Java 8 Stream和其他特性"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&is_video=false&description=Java 8 Stream和其他特性"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java 8 Stream和其他特性&body=Check out this article: https://19971122.xyz/2023/05/10/Java8%20Stream/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&name=Java 8 Stream和其他特性&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2023/05/10/Java8%20Stream/&t=Java 8 Stream和其他特性"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Stream"><span class="toc-number">1.</span> <span class="toc-text">Stream</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A4Stream%E9%9D%9E%E5%BD%BCStream"><span class="toc-number">1.1.</span> <span class="toc-text">此Stream非彼Stream</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Extension-Methods"><span class="toc-number">1.2.</span> <span class="toc-text">Extension Methods</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Functional-Interfaces-amp-Method-and-Constructor-References"><span class="toc-number">1.3.</span> <span class="toc-text">Functional Interfaces &amp; Method and Constructor References</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Built-in-Functional-Interfaces"><span class="toc-number">1.4.</span> <span class="toc-text">Built-in Functional Interfaces</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Predicates"><span class="toc-number">1.4.1.</span> <span class="toc-text">Predicates</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Functions"><span class="toc-number">1.4.2.</span> <span class="toc-text">Functions</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Suppiers"><span class="toc-number">1.4.3.</span> <span class="toc-text">Suppiers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Consumers"><span class="toc-number">1.4.4.</span> <span class="toc-text">Consumers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Comparators"><span class="toc-number">1.4.5.</span> <span class="toc-text">Comparators</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Optionals"><span class="toc-number">1.4.6.</span> <span class="toc-text">Optionals</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Streams"><span class="toc-number">1.5.</span> <span class="toc-text">Streams</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Java 8 Stream和其他特性
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-05-10T16:35:00.000Z" class="dt-published" itemprop="datePublished">2023-05-10</time>
+        
+        (Updated: <time datetime="2023-05-10T18:51:07.442Z" class="dt-updated" itemprop="dateModified">2023-05-10</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Java/" rel="tag">Java</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <blockquote>
+<p>咳咳…你好啊 (尴尬的咳嗽声)</p>
+<p>时隔两年半 我又回来了.</p>
+<p>昨夜直接在新的环境上重新构建了博客, 好在有之前的<code>_config</code>, 重新部署起来还是很快速的..</p>
+<p>闲话少聊, 让我们直接开始吧.</p>
+</blockquote>
+<p><del>2023年还在学Java 8也太逊了</del></p>
+<h2 id="Stream"><a href="#Stream" class="headerlink" title="Stream"></a>Stream</h2><h3 id="此Stream非彼Stream"><a href="#此Stream非彼Stream" class="headerlink" title="此Stream非彼Stream"></a>此Stream非彼Stream</h3><p>学过Java I&#x2F;O的朋友肯定知道<code>InputStream</code>和<code>OutputStream</code>, 这里所谓的输入输出流表示的是字节流, 直接继承自<code>java.lang.Object</code>. 而我们今天讨论的<code>Stream</code>, 是一个完全不同的概念. (Stream直接就是<code>java.util.Stream</code>)</p>
+<p>Stream为Java带来了函数式编程, <code>Streams are Monads</code>.</p>
+<blockquote>
+<p>Monads简单的说就是一种结构, which 将计算通过一系列的步骤串起来. 更好理解的说法是 -&gt; <code>computation builder</code></p>
+</blockquote>
+<p>在正式进入到<code>Stream</code>的讨论之前, 我们或许还需要了解一些其他的Java 8特性, 不然我们会看到很多Stream的报错信息都一头雾水.</p>
+<h3 id="Extension-Methods"><a href="#Extension-Methods" class="headerlink" title="Extension Methods"></a>Extension Methods</h3><p>也叫做<code>Default Methods</code>. 其实就是通过<code>default</code>关键字, 我们可以直接在接口中实现一个非抽象方法. 例如:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Formula</span> &#123;</span><br><span class="line">    <span class="keyword">default</span> <span class="type">double</span> <span class="title function_">sqrt</span><span class="params">(<span class="type">int</span> a)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Math.sqrt(a);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样我们就可以直接使用到sqrt方法而不需要再override.</p>
+<h3 id="Functional-Interfaces-amp-Method-and-Constructor-References"><a href="#Functional-Interfaces-amp-Method-and-Constructor-References" class="headerlink" title="Functional Interfaces &amp; Method and Constructor References"></a>Functional Interfaces &amp; Method and Constructor References</h3><p>通过使用<code>functional interface</code>, 我们就可以将lambda引入到Java的类型系统中.</p>
+<p>一个<code>functional interface</code>必须仅包含<strong>一个抽象方法</strong>. 一个最典型的例子就是我们经常使用到的<code>Comparable</code>接口.</p>
+<p>他的代码如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> java.lang;</span><br><span class="line"><span class="keyword">import</span> java.util.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Comparable</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Compares this object with the specified object for order.  Returns a</span></span><br><span class="line"><span class="comment">     * negative integer, zero, or a positive integer as this object is less</span></span><br><span class="line"><span class="comment">     * than, equal to, or greater than the specified object.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;The implementor must ensure &#123;<span class="doctag">@link</span> Integer#signum</span></span><br><span class="line"><span class="comment">     * signum&#125;&#123;<span class="doctag">@code</span> (x.compareTo(y)) == -signum(y.compareTo(x))&#125; for</span></span><br><span class="line"><span class="comment">     * all &#123;<span class="doctag">@code</span> x&#125; and &#123;<span class="doctag">@code</span> y&#125;.  (This implies that &#123;<span class="doctag">@code</span></span></span><br><span class="line"><span class="comment">     * x.compareTo(y)&#125; must throw an exception if and only if &#123;<span class="doctag">@code</span></span></span><br><span class="line"><span class="comment">     * y.compareTo(x)&#125; throws an exception.)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;The implementor must also ensure that the relation is transitive:</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@code</span> (x.compareTo(y) &gt; 0 &amp;&amp; y.compareTo(z) &gt; 0)&#125; implies</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@code</span> x.compareTo(z) &gt; 0&#125;.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;Finally, the implementor must ensure that &#123;<span class="doctag">@code</span></span></span><br><span class="line"><span class="comment">     * x.compareTo(y)==0&#125; implies that &#123;<span class="doctag">@code</span> signum(x.compareTo(z))</span></span><br><span class="line"><span class="comment">     * == signum(y.compareTo(z))&#125;, for all &#123;<span class="doctag">@code</span> z&#125;.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@apiNote</span></span></span><br><span class="line"><span class="comment">     * It is strongly recommended, but &lt;i&gt;not&lt;/i&gt; strictly required that</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@code</span> (x.compareTo(y)==0) == (x.equals(y))&#125;.  Generally speaking, any</span></span><br><span class="line"><span class="comment">     * class that implements the &#123;<span class="doctag">@code</span> Comparable&#125; interface and violates</span></span><br><span class="line"><span class="comment">     * this condition should clearly indicate this fact.  The recommended</span></span><br><span class="line"><span class="comment">     * language is &quot;Note: this class has a natural ordering that is</span></span><br><span class="line"><span class="comment">     * inconsistent with equals.&quot;</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>   o the object to be compared.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span>  a negative integer, zero, or a positive integer as this object</span></span><br><span class="line"><span class="comment">     *          is less than, equal to, or greater than the specified object.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> NullPointerException if the specified object is null</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> ClassCastException if the specified object&#x27;s type prevents it</span></span><br><span class="line"><span class="comment">     *         from being compared to this object.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(T o)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因此我们可以这样来写:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PriorityQueue&lt;Integer&gt; queue = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;((a, b) -&gt; a - b);</span><br></pre></td></tr></table></figure>
+
+<p>类似的, 还有像<code>Integer.valueOf()</code> 也可以这么使用.</p>
+<blockquote>
+<p>关于lambda的变量访问, 需要提醒的一点是, 在lambda中的outer scope变量, 需要是<code>final</code>的. Java允许不显式声明final关键字, 但是该变量不允许再被修改 (编译报错)</p>
+<p>同样的, 在lambda中的写outer scope变量的操作也是不可以的.</p>
+<p>当然了, 如果变量是在lambda内部, 我们是可以随意读写的. 这个规则和我们之前使用匿名对象&#x2F;函数是一样的.</p>
+</blockquote>
+<p>还记得我们在上一节提到的<code>default methods</code>吗? 这种方法不可以使用lambda表达式, 下面的code会编译报错:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Formula</span> <span class="variable">formula</span> <span class="operator">=</span> (a) -&gt; sqrt(a * <span class="number">100</span>); <span class="comment">// Panic!</span></span><br></pre></td></tr></table></figure>
+
+<p>lambda已经可以简化很多代码, 还可以继续精简吗?</p>
+<p>答案是可以. 通过使用<code>Method and Constructor References</code>, 我们可以使用<code>::</code>关键字来引用方法, 例如:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PriorityQueue&lt;Integer&gt; queue = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;(Integer::compareTo);</span><br></pre></td></tr></table></figure>
+
+<p>既然方法可以, 接下来我们再来看看构造器:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    String firstName;</span><br><span class="line">    string lastName;</span><br><span class="line"></span><br><span class="line">    Person() &#123;&#125;</span><br><span class="line"></span><br><span class="line">    Person(String firstName, String lastName) &#123;</span><br><span class="line">        <span class="built_in">this</span>.firstName = firstName;</span><br><span class="line">        <span class="built_in">this</span>.lastName = lastName;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">PersonFactory</span>&lt;P <span class="keyword">extends</span> <span class="title class_">Person</span>&gt; &#123;</span><br><span class="line">    P <span class="title function_">create</span><span class="params">(String firstName, String lastName)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PersonalFactory&lt;Person&gt; pf = Person::<span class="keyword">new</span>;</span><br><span class="line"><span class="type">Personal</span> <span class="variable">person</span> <span class="operator">=</span> personFactory.create(<span class="string">&quot;Jane&quot;</span>, <span class="string">&quot;Doe&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Built-in-Functional-Interfaces"><a href="#Built-in-Functional-Interfaces" class="headerlink" title="Built-in Functional Interfaces"></a>Built-in Functional Interfaces</h3><p>接下来让我们看看几个内置的<code>functional interfaces</code>.</p>
+<h4 id="Predicates"><a href="#Predicates" class="headerlink" title="Predicates"></a>Predicates</h4><h4 id="Functions"><a href="#Functions" class="headerlink" title="Functions"></a>Functions</h4><h4 id="Suppiers"><a href="#Suppiers" class="headerlink" title="Suppiers"></a>Suppiers</h4><h4 id="Consumers"><a href="#Consumers" class="headerlink" title="Consumers"></a>Consumers</h4><h4 id="Comparators"><a href="#Comparators" class="headerlink" title="Comparators"></a>Comparators</h4><h4 id="Optionals"><a href="#Optionals" class="headerlink" title="Optionals"></a>Optionals</h4><h3 id="Streams"><a href="#Streams" class="headerlink" title="Streams"></a>Streams</h3><p>前面铺垫了这么多, 终于我们可以进入到Stream了.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Stream"><span class="toc-number">1.</span> <span class="toc-text">Stream</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A4Stream%E9%9D%9E%E5%BD%BCStream"><span class="toc-number">1.1.</span> <span class="toc-text">此Stream非彼Stream</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Extension-Methods"><span class="toc-number">1.2.</span> <span class="toc-text">Extension Methods</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Functional-Interfaces-amp-Method-and-Constructor-References"><span class="toc-number">1.3.</span> <span class="toc-text">Functional Interfaces &amp; Method and Constructor References</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Built-in-Functional-Interfaces"><span class="toc-number">1.4.</span> <span class="toc-text">Built-in Functional Interfaces</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Predicates"><span class="toc-number">1.4.1.</span> <span class="toc-text">Predicates</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Functions"><span class="toc-number">1.4.2.</span> <span class="toc-text">Functions</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Suppiers"><span class="toc-number">1.4.3.</span> <span class="toc-text">Suppiers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Consumers"><span class="toc-number">1.4.4.</span> <span class="toc-text">Consumers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Comparators"><span class="toc-number">1.4.5.</span> <span class="toc-text">Comparators</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Optionals"><span class="toc-number">1.4.6.</span> <span class="toc-text">Optionals</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Streams"><span class="toc-number">1.5.</span> <span class="toc-text">Streams</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2023/05/10/Java8%20Stream/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&text=Java 8 Stream和其他特性"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&is_video=false&description=Java 8 Stream和其他特性"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java 8 Stream和其他特性&body=Check out this article: https://19971122.xyz/2023/05/10/Java8%20Stream/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&title=Java 8 Stream和其他特性"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2023/05/10/Java8%20Stream/&name=Java 8 Stream和其他特性&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2023/05/10/Java8%20Stream/&t=Java 8 Stream和其他特性"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+<script src="https://cdn.jsdelivr.net/npm/live2d-widget@^3.1.3/lib/L2Dwidget.min.js"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"https://cdn.jsdelivr.net/npm/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>
