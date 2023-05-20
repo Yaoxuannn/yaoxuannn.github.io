@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="刷题还是得多反思复盘总结…开个post吧 先把之前写的一些奇奇怪怪的东西贴过来: Read questions carefully. Matrixhow to flatten a 2d matrix?2d matrix &lt;-&gt; 1d array 12M[i][j] &#x3D; M[n*i+j]M[i] &#x3D; M[i&#x2F;n][i%n] n: column of the matrix search i">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我不想刷题">
+<meta property="og:url" content="https://19971122.xyz/2023/05/19/leetcode/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="刷题还是得多反思复盘总结…开个post吧 先把之前写的一些奇奇怪怪的东西贴过来: Read questions carefully. Matrixhow to flatten a 2d matrix?2d matrix &lt;-&gt; 1d array 12M[i][j] &#x3D; M[n*i+j]M[i] &#x3D; M[i&#x2F;n][i%n] n: column of the matrix search i">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-20T02:09:42.000Z">
+<meta property="article:modified_time" content="2023-05-20T02:12:59.305Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="leetcode">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>我不想刷题</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-09NWQ40K0B"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-09NWQ40K0B');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023/05/10/Java8%20Stream/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2023/05/19/leetcode/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2023/05/19/leetcode/&text=我不想刷题"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2023/05/19/leetcode/&is_video=false&description=我不想刷题"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=我不想刷题&body=Check out this article: https://19971122.xyz/2023/05/19/leetcode/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2023/05/19/leetcode/&name=我不想刷题&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2023/05/19/leetcode/&t=我不想刷题"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Matrix"><span class="toc-number">1.</span> <span class="toc-text">Matrix</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#how-to-flatten-a-2d-matrix"><span class="toc-number">1.1.</span> <span class="toc-text">how to flatten a 2d matrix?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#search-in-a-matrix"><span class="toc-number">1.2.</span> <span class="toc-text">search in a matrix</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Two-Pointers"><span class="toc-number">2.</span> <span class="toc-text">Two Pointers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Intervals-looking-for-boundaries"><span class="toc-number">2.1.</span> <span class="toc-text">Intervals - looking for boundaries</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sliding-window"><span class="toc-number">2.2.</span> <span class="toc-text">Sliding window</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tree"><span class="toc-number">3.</span> <span class="toc-text">Tree</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#postorderTraversal"><span class="toc-number">3.1.</span> <span class="toc-text">postorderTraversal</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BST"><span class="toc-number">3.2.</span> <span class="toc-text">BST</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#backtrack"><span class="toc-number">4.</span> <span class="toc-text">backtrack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Strings-x2F-Chars"><span class="toc-number">5.</span> <span class="toc-text">Strings &#x2F; Chars</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#think-reversely-sometimes-helps"><span class="toc-number">6.</span> <span class="toc-text">think reversely sometimes helps.</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prefix-Sum"><span class="toc-number">7.</span> <span class="toc-text">Prefix Sum</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        我不想刷题
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-05-20T02:09:42.000Z" class="dt-published" itemprop="datePublished">2023-05-19</time>
+        
+        (Updated: <time datetime="2023-05-20T02:12:59.305Z" class="dt-updated" itemprop="dateModified">2023-05-19</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/leetcode/" rel="tag">leetcode</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>刷题还是得多反思复盘总结…开个post吧</p>
+<p>先把之前写的一些奇奇怪怪的东西贴过来:</p>
+<p>Read questions <strong>carefully</strong>.</p>
+<h2 id="Matrix"><a href="#Matrix" class="headerlink" title="Matrix"></a>Matrix</h2><h3 id="how-to-flatten-a-2d-matrix"><a href="#how-to-flatten-a-2d-matrix" class="headerlink" title="how to flatten a 2d matrix?"></a>how to flatten a 2d matrix?</h3><p>2d matrix &lt;-&gt; 1d array</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">M[i][j] = M[n*i+j]</span><br><span class="line">M[i] = M[i/n][i%n]</span><br></pre></td></tr></table></figure>
+<p>n: column of the matrix</p>
+<h3 id="search-in-a-matrix"><a href="#search-in-a-matrix" class="headerlink" title="search in a matrix"></a>search in a matrix</h3><p>Some matrix have <code>descending/non-descending</code> row or columns.<br>In such cases, we can:</p>
+<ul>
+<li>use <code>binary search</code>.</li>
+<li>assign a <code>cursor</code>.</li>
+<li>…</li>
+</ul>
+<h2 id="Two-Pointers"><a href="#Two-Pointers" class="headerlink" title="Two Pointers"></a>Two Pointers</h2><h3 id="Intervals-looking-for-boundaries"><a href="#Intervals-looking-for-boundaries" class="headerlink" title="Intervals - looking for boundaries"></a>Intervals - looking for <em>boundaries</em></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">start</span> <span class="operator">=</span> Math.max(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line"><span class="type">int</span> <span class="variable">end</span> <span class="operator">=</span> Math.min(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(start &lt;= end)</span><br><span class="line">interval</span><br></pre></td></tr></table></figure>
+
+<h3 id="Sliding-window"><a href="#Sliding-window" class="headerlink" title="Sliding window"></a>Sliding window</h3><p>0,0 -&gt; 0,1 … 0,size<br>for(right)<br>right go ahead, make window<br>then move left</p>
+<h2 id="Tree"><a href="#Tree" class="headerlink" title="Tree"></a>Tree</h2><h3 id="postorderTraversal"><a href="#postorderTraversal" class="headerlink" title="postorderTraversal"></a>postorderTraversal</h3><p>postorderTraversal is opposite to preorderTraversal, so we can put preorderTraversal to a stack, then pop the postorderTraversal.</p>
+<h3 id="BST"><a href="#BST" class="headerlink" title="BST"></a>BST</h3><p>sorted array &#x3D;&gt; BST<br>middle element is the root node</p>
+<h2 id="backtrack"><a href="#backtrack" class="headerlink" title="backtrack"></a>backtrack</h2><p>use a linkedlist as track or use arguments<br>like tree traversal, when we get the base case, add result then return.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">we add track(make decision)</span><br><span class="line">recursion()</span><br><span class="line">remove track(recall decision)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Strings-x2F-Chars"><a href="#Strings-x2F-Chars" class="headerlink" title="Strings &#x2F; Chars"></a>Strings &#x2F; Chars</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span>[ ] hash = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">26</span>/<span class="number">256</span>];</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="think-reversely-sometimes-helps"><a href="#think-reversely-sometimes-helps" class="headerlink" title="think reversely sometimes helps."></a>think reversely sometimes helps.</h2><ul>
+<li>iterating from the smallest? or largest?</li>
+<li>if A-&gt;B is difficult, how about use B to verify A?</li>
+</ul>
+<p>Greedy (??????)</p>
+<h2 id="Prefix-Sum"><a href="#Prefix-Sum" class="headerlink" title="Prefix Sum"></a>Prefix Sum</h2><p>curSum - prevSum &#x3D; k (prev, cur)<br>curSum - k &#x3D; prevSum</p>
+<p>min<br>secondMin</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Matrix"><span class="toc-number">1.</span> <span class="toc-text">Matrix</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#how-to-flatten-a-2d-matrix"><span class="toc-number">1.1.</span> <span class="toc-text">how to flatten a 2d matrix?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#search-in-a-matrix"><span class="toc-number">1.2.</span> <span class="toc-text">search in a matrix</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Two-Pointers"><span class="toc-number">2.</span> <span class="toc-text">Two Pointers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Intervals-looking-for-boundaries"><span class="toc-number">2.1.</span> <span class="toc-text">Intervals - looking for boundaries</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sliding-window"><span class="toc-number">2.2.</span> <span class="toc-text">Sliding window</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tree"><span class="toc-number">3.</span> <span class="toc-text">Tree</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#postorderTraversal"><span class="toc-number">3.1.</span> <span class="toc-text">postorderTraversal</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BST"><span class="toc-number">3.2.</span> <span class="toc-text">BST</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#backtrack"><span class="toc-number">4.</span> <span class="toc-text">backtrack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Strings-x2F-Chars"><span class="toc-number">5.</span> <span class="toc-text">Strings &#x2F; Chars</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#think-reversely-sometimes-helps"><span class="toc-number">6.</span> <span class="toc-text">think reversely sometimes helps.</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prefix-Sum"><span class="toc-number">7.</span> <span class="toc-text">Prefix Sum</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2023/05/19/leetcode/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2023/05/19/leetcode/&text=我不想刷题"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2023/05/19/leetcode/&is_video=false&description=我不想刷题"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=我不想刷题&body=Check out this article: https://19971122.xyz/2023/05/19/leetcode/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2023/05/19/leetcode/&title=我不想刷题"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2023/05/19/leetcode/&name=我不想刷题&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2023/05/19/leetcode/&t=我不想刷题"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+<script src="https://cdn.jsdelivr.net/npm/live2d-widget@^3.1.3/lib/L2Dwidget.min.js"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"https://cdn.jsdelivr.net/npm/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>
