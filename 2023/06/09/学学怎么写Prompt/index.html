@@ -14,7 +14,7 @@
 <meta property="og:description" content="咒语课开课啦, 本文的参考的教程是 -&gt; 传送门. 这篇文章纯属自嗨 建议去看原文 Prompt EngineeringPrompt 就是大家所谓的咒语, 咒语写好了才可以发挥出模型真正的实力. 让我们开始吧. (声明: 除实例外, 本文不由 LLM 生成) TT, 但不是 tiktok首先的首先, 让我们来看两个概念:  Temperature Top_p   Temperature 简单">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-06-09T21:14:04.000Z">
-<meta property="article:modified_time" content="2023-06-09T23:20:35.050Z">
+<meta property="article:modified_time" content="2023-06-09T23:52:45.267Z">
 <meta property="article:author" content="Yaoxuan Wei">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="Prompt Engineering">
@@ -122,7 +122,7 @@
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Engineering"><span class="toc-number">1.</span> <span class="toc-text">Prompt Engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TT-%E4%BD%86%E4%B8%8D%E6%98%AF-tiktok"><span class="toc-number">1.1.</span> <span class="toc-text">TT, 但不是 tiktok</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.2.</span> <span class="toc-text">Prompt 的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompting-Techniques"><span class="toc-number">1.3.</span> <span class="toc-text">Prompting Techniques</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zero-shot-Promoting"><span class="toc-number">1.3.1.</span> <span class="toc-text">Zero-shot Promoting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Few-Shot-Prompting"><span class="toc-number">1.3.2.</span> <span class="toc-text">Few-Shot Prompting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Chain-of-Thought-COT-Prompting"><span class="toc-number">1.3.3.</span> <span class="toc-text">Chain-of-Thought (COT) Prompting</span></a></li></ol></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Engineering"><span class="toc-number">1.</span> <span class="toc-text">Prompt Engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TT-%E4%BD%86%E4%B8%8D%E6%98%AF-tiktok"><span class="toc-number">1.1.</span> <span class="toc-text">TT, 但不是 tiktok</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.2.</span> <span class="toc-text">Prompt 的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompting-Techniques"><span class="toc-number">1.3.</span> <span class="toc-text">Prompting Techniques</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zero-shot-Promoting"><span class="toc-number">1.3.1.</span> <span class="toc-text">Zero-shot Promoting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Few-Shot-Prompting"><span class="toc-number">1.3.2.</span> <span class="toc-text">Few-Shot Prompting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Chain-of-Thought-COT-Prompting"><span class="toc-number">1.3.3.</span> <span class="toc-text">Chain-of-Thought (COT) Prompting</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tips-amp-amp-Best-Practises"><span class="toc-number">1.4.</span> <span class="toc-text">Tips &amp;&amp; Best Practises</span></a></li></ol></li></ol>
     </div>
   </span>
 </div>
@@ -148,7 +148,7 @@
       
         <time datetime="2023-06-09T21:14:04.000Z" class="dt-published" itemprop="datePublished">2023-06-09</time>
         
-        (Updated: <time datetime="2023-06-09T23:20:35.050Z" class="dt-updated" itemprop="dateModified">2023-06-09</time>)
+        (Updated: <time datetime="2023-06-09T23:52:45.267Z" class="dt-updated" itemprop="dateModified">2023-06-09</time>)
         
       
     </div>
@@ -338,6 +338,29 @@
 
 <p>看! 我们只是加了一句话, 但是模型输出的内容发生了巨大的改变, 不仅如此, 我们也获得了正确的答案.</p>
 <p>基于 COT, 学术上还有很多 Prompting Techniques, 例如, <code>ReAct</code>, <code>Active-Prompt</code>, <code>Self-Consistency</code>, <code>Tree-of-thoughts</code>, etc.</p>
+<h2 id="Tips-amp-amp-Best-Practises"><a href="#Tips-amp-amp-Best-Practises" class="headerlink" title="Tips &amp;&amp; Best Practises"></a>Tips &amp;&amp; Best Practises</h2><p>最后再让我们总结下一些实用的玩意儿.</p>
+<p>想要明确一些指令(Instruction)的时候, 请使用<code>###</code>, 或者<code>&quot;&quot;&quot;</code>来分开指令和内容(Context). 这也就是我们前文提到的格式 (format)</p>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">### Instruction ###</span><br><span class="line">Translate the text below to Spanish:</span><br><span class="line">Text: &quot;hello!&quot;</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">### Instruction ###</span><br><span class="line">Translate the text below to Spanish:</span><br><span class="line">Text: &quot;hello!&quot;</span><br><span class="line"></span><br><span class="line">¡Hola!</span><br></pre></td></tr></table></figure>
+
+<p>特别的, 当进行代码生成的时候, 注意多使用<code>leading words</code> (e.g: import).</p>
+<p>另外, 我们应该尽可能的明确, 少用<code>few</code>这种模糊的词.</p>
+<p>最后, 少说<code>DO NOT</code>, 尽可能的说<code>what TO DO</code>. 例如:</p>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The following is an agent that recommends movies to a customer. DO NOT ASK FOR INTERESTS. DO NOT ASK FOR PERSONAL INFORMATION.</span><br><span class="line">Customer: Please recommend a movie based on my interests.</span><br><span class="line">Agent:</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">The following is an agent that recommends movies to a customer. DO NOT ASK FOR INTERESTS. DO NOT ASK FOR PERSONAL INFORMATION.</span><br><span class="line">Customer: Please recommend a movie based on my interests.</span><br><span class="line">Agent:</span><br><span class="line">What kind of movie are you looking for? Do you prefer action, comedy, romance, or something else?</span><br></pre></td></tr></table></figure>
+
+<p>如果我们修改成:</p>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The following is an agent that recommends movies to a customer. The agent is responsible to recommend a movie from the top global trending movies. It should refrain from asking users for their preferences and avoid asking for personal information. If the agent doesn&#x27;t have a movie to recommend, it should respond &quot;Sorry, couldn&#x27;t find a movie to recommend today.&quot;.</span><br><span class="line">Customer: Please recommend a movie based on my interests.</span><br><span class="line">Agent:</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The following is an agent that recommends movies to a customer. The agent is responsible to recommend a movie from the top global trending movies. It should refrain from asking users for their preferences and avoid asking for personal information. If the agent doesn&#x27;t have a movie to recommend, it should respond &quot;Sorry, couldn&#x27;t find a movie to recommend today.&quot;.</span><br><span class="line">Customer: Please recommend a movie based on my interests.</span><br><span class="line">Agent: Sorry, I&#x27;m unable to recommend a movie based on your interests. However, I can recommend one of the top global trending movies. How about &#x27;Joker&#x27;?</span><br></pre></td></tr></table></figure>
 
   </div>
 </article>
@@ -371,7 +394,7 @@
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Engineering"><span class="toc-number">1.</span> <span class="toc-text">Prompt Engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TT-%E4%BD%86%E4%B8%8D%E6%98%AF-tiktok"><span class="toc-number">1.1.</span> <span class="toc-text">TT, 但不是 tiktok</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.2.</span> <span class="toc-text">Prompt 的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompting-Techniques"><span class="toc-number">1.3.</span> <span class="toc-text">Prompting Techniques</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zero-shot-Promoting"><span class="toc-number">1.3.1.</span> <span class="toc-text">Zero-shot Promoting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Few-Shot-Prompting"><span class="toc-number">1.3.2.</span> <span class="toc-text">Few-Shot Prompting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Chain-of-Thought-COT-Prompting"><span class="toc-number">1.3.3.</span> <span class="toc-text">Chain-of-Thought (COT) Prompting</span></a></li></ol></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Engineering"><span class="toc-number">1.</span> <span class="toc-text">Prompt Engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TT-%E4%BD%86%E4%B8%8D%E6%98%AF-tiktok"><span class="toc-number">1.1.</span> <span class="toc-text">TT, 但不是 tiktok</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.2.</span> <span class="toc-text">Prompt 的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompting-Techniques"><span class="toc-number">1.3.</span> <span class="toc-text">Prompting Techniques</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zero-shot-Promoting"><span class="toc-number">1.3.1.</span> <span class="toc-text">Zero-shot Promoting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Few-Shot-Prompting"><span class="toc-number">1.3.2.</span> <span class="toc-text">Few-Shot Prompting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Chain-of-Thought-COT-Prompting"><span class="toc-number">1.3.3.</span> <span class="toc-text">Chain-of-Thought (COT) Prompting</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tips-amp-amp-Best-Practises"><span class="toc-number">1.4.</span> <span class="toc-text">Tips &amp;&amp; Best Practises</span></a></li></ol></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">
