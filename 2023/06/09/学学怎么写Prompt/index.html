@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="咒语课开课啦, 本文的参考的教程是 -&gt; 传送门. 这篇文章纯属自嗨 建议去看原文 Prompt EngineeringPrompt 就是大家所谓的咒语, 咒语写好了才可以发挥出模型真正的实力. 让我们开始吧. (声明: 除实例外, 本文不由 LLM 生成) TT, 但不是 tiktok首先的首先, 让我们来看两个概念:  Temperature Top_p   Temperature 简单">
+<meta property="og:type" content="article">
+<meta property="og:title" content="学学怎么写Prompt">
+<meta property="og:url" content="https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/index.html">
+<meta property="og:site_name" content="Yaoxuannn&#39;s Blog">
+<meta property="og:description" content="咒语课开课啦, 本文的参考的教程是 -&gt; 传送门. 这篇文章纯属自嗨 建议去看原文 Prompt EngineeringPrompt 就是大家所谓的咒语, 咒语写好了才可以发挥出模型真正的实力. 让我们开始吧. (声明: 除实例外, 本文不由 LLM 生成) TT, 但不是 tiktok首先的首先, 让我们来看两个概念:  Temperature Top_p   Temperature 简单">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-06-09T21:14:04.000Z">
+<meta property="article:modified_time" content="2023-06-09T22:22:02.309Z">
+<meta property="article:author" content="Yaoxuan Wei">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Prompt Engineering">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>学学怎么写Prompt</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-09NWQ40K0B"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-09NWQ40K0B');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023/05/19/leetcode/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&text=学学怎么写Prompt"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&is_video=false&description=学学怎么写Prompt"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=学学怎么写Prompt&body=Check out this article: https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&name=学学怎么写Prompt&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&t=学学怎么写Prompt"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Engineering"><span class="toc-number">1.</span> <span class="toc-text">Prompt Engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TT-%E4%BD%86%E4%B8%8D%E6%98%AF-tiktok"><span class="toc-number">1.1.</span> <span class="toc-text">TT, 但不是 tiktok</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.2.</span> <span class="toc-text">Prompt 的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompting-Techniques"><span class="toc-number">1.3.</span> <span class="toc-text">Prompting Techniques</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zero-shot-Promoting"><span class="toc-number">1.3.1.</span> <span class="toc-text">Zero-shot Promoting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Few-Shot-Prompting"><span class="toc-number">1.3.2.</span> <span class="toc-text">Few-Shot Prompting</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        学学怎么写Prompt
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Yaoxuan Wei</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-06-09T21:14:04.000Z" class="dt-published" itemprop="datePublished">2023-06-09</time>
+        
+        (Updated: <time datetime="2023-06-09T22:22:02.309Z" class="dt-updated" itemprop="dateModified">2023-06-09</time>)
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/LLM/" rel="tag">LLM</a>, <a class="p-category" href="/tags/Prompt-Engineering/" rel="tag">Prompt Engineering</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>咒语课开课啦, 本文的参考的教程是 -&gt; <a target="_blank" rel="noopener" href="https://www.promptingguide.ai/">传送门</a>.</p>
+<p>这篇文章纯属自嗨 建议去看原文</p>
+<h1 id="Prompt-Engineering"><a href="#Prompt-Engineering" class="headerlink" title="Prompt Engineering"></a>Prompt Engineering</h1><p>Prompt 就是大家所谓的咒语, 咒语写好了才可以发挥出模型真正的实力. 让我们开始吧. (声明: 除实例外, 本文<strong>不</strong>由 LLM 生成)</p>
+<h2 id="TT-但不是-tiktok"><a href="#TT-但不是-tiktok" class="headerlink" title="TT, 但不是 tiktok"></a>TT, 但不是 tiktok</h2><p>首先的首先, 让我们来看两个概念:</p>
+<ul>
+<li>Temperature</li>
+<li>Top_p</li>
+</ul>
+<blockquote>
+<p>Temperature</p>
+<p>简单的说, <code>Temperature</code>这个值越低, 结果就越确定. (选择下一个最可能的 token) 增大这个值就会导致更多的随机, 从而使得输出的结果会变得更 diverse. (因为可能的 token 的权重都增加了) 更加具体的说: 如果我们的应用场景是基于事实的 Q&amp;A, 那我肯定是希望调低这个参数. 反之, 如果我希望模型能够输出一些文学创作的内容, 那就调高一点.</p>
+</blockquote>
+<blockquote>
+<p>Top_p</p>
+<p>和<code>Temperature</code>类似, 这个值同样也是决定输出结果的. 不同的是, 它控制结果的方式是通过采样范围, 例如, <code>0.1</code>则表示我只会在前 10%的可能性中选择下一个 token. 所以你知道了, 这个值越大, 输出的结果自然也就越”随机”. 反之输出的结果就会越确定.</p>
+</blockquote>
+<p>需要注意的是, 这个参数的值是跟模型相关联的, 同样的参数在不同的模型上表现是不同的. 另外, 这两个参数都是可以独立调整的.</p>
+<p>对于 GPT-3, 有这样的一些参考组合:</p>
+<table>
+<thead>
+<tr>
+<th>Use Case</th>
+<th>Temperature</th>
+<th>Top_p</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Code 生成</td>
+<td>0.2</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>文学创作</td>
+<td>0.7</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>聊天机器人</td>
+<td>0.5</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>数据分析</td>
+<td>0.2</td>
+<td>0.2</td>
+</tr>
+</tbody></table>
+<p>接下来我们就可以正式进入咒语的学习了. 你可以打开一个 OpenAI 的<a target="_blank" rel="noopener" href="https://platform.openai.com/playground">游乐场</a>玩一玩.</p>
+<blockquote>
+<p>接下来我会使用</p>
+<p><em>Prompt</em></p>
+<p><em>Output</em></p>
+<p>来表示我这边游乐场的输入输出. 使用的模型是<code>text-davinci-003</code>, <code>temperature=0.7 &amp;&amp; top_p=1</code>.</p>
+</blockquote>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">The sky is</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The sky is blue</span><br><span class="line"></span><br><span class="line">The sky is usually blue during the day, due to the atmosphere of the Earth scattering blue light from the sun more than other colors. At night, the sky can appear to be black due to the lack of sunlight in the atmosphere.</span><br></pre></td></tr></table></figure>
+
+<p>说了一大堆是不是, 这样就很有可能会超出你原本想要的内容. 如果我们这样修改一下:</p>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Complete the sentence:</span><br><span class="line">The sky is</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Complete the sentence:</span><br><span class="line">The sky is ______</span><br><span class="line">blue.</span><br></pre></td></tr></table></figure>
+
+<p>看, 这样输出的结果就好多了. 因为我们给了明确的指令 (需要做什么事? -&gt; 补完句子)<br>除此之外, 你可能还留意到 GPT 输出了一条线. 这告诉我们, 我们的咒语其实是讲究格式的, 测试一下:</p>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">The sky is ______</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The sky is ______</span><br><span class="line"></span><br><span class="line">blue</span><br></pre></td></tr></table></figure>
+
+<p>看, 这一次我们没有给出文本指令, 但是通过一条线 (格式) 也表达了我们的诉求. 再举一个例子:</p>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">This is awesome! // Positive</span><br><span class="line">This is bad! // Negative</span><br><span class="line">Wow that movie was rad! // Positive</span><br><span class="line">What a horrible show! //</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">This is awesome! // Positive</span><br><span class="line">This is bad! // Negative</span><br><span class="line">Wow that movie was rad! // Positive</span><br><span class="line">What a horrible show! // Negative</span><br></pre></td></tr></table></figure>
+
+<h2 id="Prompt-的组成"><a href="#Prompt-的组成" class="headerlink" title="Prompt 的组成"></a>Prompt 的组成</h2><p>从上面的几个例子我们能总结出来一个好的 Prompt 会包含:</p>
+<ul>
+<li>Instruction - 明确的指令</li>
+<li>Input Data - 我们的输入</li>
+</ul>
+<p>除此之外, 为了更好的获得结果, 我们通常还可以加上:</p>
+<ul>
+<li>Context - 帮助模型能更好的返回结果的辅助信息</li>
+<li>Output Indicator - 返回结果的格式</li>
+</ul>
+<p>当然跟模型交互也没让你一定要带上这些, 你就算只写个字母<code>A</code>上去, 模型都可以热情的帮你生成一道 multiple choice (笑)</p>
+<h2 id="Prompting-Techniques"><a href="#Prompting-Techniques" class="headerlink" title="Prompting Techniques"></a>Prompting Techniques</h2><p>好啦, 简单的 Prompt 我们已经了解了, 那么接下来. 大的要来了.</p>
+<h3 id="Zero-shot-Promoting"><a href="#Zero-shot-Promoting" class="headerlink" title="Zero-shot Promoting"></a>Zero-shot Promoting</h3><p>Zero shot 简单的说就是我们不需要教模型做事, 直接发号施令就可以了. 回过头看一下我们在上节用到的情绪例子, 我们向模型提供了三个例子, 接着才问出我们想问的问题. 但实际上很多任务其实并不需要我们向模型解释 – 它们早就会了!</p>
+<p>请看:</p>
+<p><em>Prompt</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Classify the text into neutral, negative or positive.</span><br><span class="line">Text: What a horrible show!</span><br><span class="line">Sentiment:</span><br></pre></td></tr></table></figure>
+
+<p><em>Output</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Classify the text into neutral, negative or positive.</span><br><span class="line">Text: What a horrible show!</span><br><span class="line">Sentiment:  Negative</span><br></pre></td></tr></table></figure>
+
+<p>当然你可以尝试修改 Text 的内容, 你会发现, 有的时候好像结果也不是这么可靠. 那么这个时候就需要<code>Few-Shot Prompting</code>登场了</p>
+<h3 id="Few-Shot-Prompting"><a href="#Few-Shot-Prompting" class="headerlink" title="Few-Shot Prompting"></a>Few-Shot Prompting</h3><p>是的, 我们在上面已经使用过这种咒语了. 简单的说, 如果完全没有铺垫, 很多时候模型的表现还是不尽如人意, 因为我们需要简单的提供一下上下文和用例. 这里的<code>Few</code>, 可以是<code>1-shot</code>, 也可以是<code>3-shot</code>, <code>5-shot</code>更多…取决于我们的任务复杂度.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/tags/">Tags</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Engineering"><span class="toc-number">1.</span> <span class="toc-text">Prompt Engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TT-%E4%BD%86%E4%B8%8D%E6%98%AF-tiktok"><span class="toc-number">1.1.</span> <span class="toc-text">TT, 但不是 tiktok</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.2.</span> <span class="toc-text">Prompt 的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompting-Techniques"><span class="toc-number">1.3.</span> <span class="toc-text">Prompting Techniques</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zero-shot-Promoting"><span class="toc-number">1.3.1.</span> <span class="toc-text">Zero-shot Promoting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Few-Shot-Prompting"><span class="toc-number">1.3.2.</span> <span class="toc-text">Few-Shot Prompting</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&text=学学怎么写Prompt"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&is_video=false&description=学学怎么写Prompt"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=学学怎么写Prompt&body=Check out this article: https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&title=学学怎么写Prompt"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&name=学学怎么写Prompt&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://19971122.xyz/2023/06/09/%E5%AD%A6%E5%AD%A6%E6%80%8E%E4%B9%88%E5%86%99Prompt/&t=学学怎么写Prompt"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Yaoxuan Wei
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tags</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'yaoxuannn-com';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+<!-- utterances Comments -->
+
+<script src="https://cdn.jsdelivr.net/npm/live2d-widget@^3.1.3/lib/L2Dwidget.min.js"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"https://cdn.jsdelivr.net/npm/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>
